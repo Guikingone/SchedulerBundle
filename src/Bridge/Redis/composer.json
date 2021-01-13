@@ -1,0 +1,39 @@
+{
+    "name": "symfony/redis-scheduler",
+    "type": "symfony-bridge",
+    "description": "Symfony Redis Scheduler Bridge",
+    "keywords": ["symfony", "bridge", "schedule", "scheduler", "redis"],
+    "homepage": "https://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+           "name": "Guillaume Loulier",
+           "email": "contact@guillaumeloulier.fr"
+        },
+        {
+           "name": "Symfony Community",
+           "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.5",
+        "ext-redis": ">=4.3",
+        "symfony/scheduler": "^5.3"
+    },
+    "require-dev": {
+        "symfony/event-dispatcher": "^5.2",
+        "symfony/serializer": "^5.2"
+    },
+    "autoload": {
+        "psr-4": { "Symfony\\Component\\Scheduler\\Bridge\\Redis\\": "" },
+        "exclude-from-classmap": [
+           "/Tests/"
+        ]
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "5.3"
+        }
+    }
+}

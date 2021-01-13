@@ -1,0 +1,75 @@
+name: SchedulerBundle - Daily
+on:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  meili_search:
+    name: PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }}
+    # https://hub.docker.com/_/ubuntu/
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: true
+      matrix:
+        php-versions: ['7.2', '7.3', '7.4', '8.0']
+        composer-dependencies: ['', 'lowest']
+    steps:
+      # https://github.com/actions/checkout (official)
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # https://github.com/azohra/shell-linter (community)
+      - name: Lint check
+        uses: azohra/shell-linter@v0.3.0
+        with:
+          path: "docker/php"
+
+      # https://github.com/shivammathur/setup-php (community)
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: zip, xdebug
+          coverage: xdebug
+        env:
+          update: true
+
+      # —— Composer️ —————————————————————————————————————————————————————
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ matrix.composer-dependencies }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.composer-dependencies }}-
+
+      - name: Install Composer dependencies
+        if: matrix.composer-dependencies == ''
+        run: composer update
+
+      - name: Install Composer dependencies - Lowest
+        if: matrix.composer-dependencies == 'lowest'
+        run: composer update --prefer-lowest
+
+      # —— Security ——————————————————————————————————————————————————————
+      - name: Symfony Security Checker
+        uses: symfonycorp/security-checker-action@v2
+
+      # —— Style —————————————————————————————————————————————————————————
+      - name: PHP-CS-FIXER
+        uses: docker://oskarstark/php-cs-fixer-ga
+        with:
+          args: --dry-run .
+
+      # —— PHPUnit ———————————————————————————————————————————————————————
+      - name: PHPUnit
+        run: php vendor/bin/phpunit tests
+
+      # —— Infection —————————————————————————————————————————————————————
+      - name: Infection
+        run: php vendor/bin/infection --no-progress --min-covered-msi=95 --min-msi=95
