@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
@@ -29,8 +22,8 @@ final class LongTailTransportTest extends TestCase
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->get('foo');
     }
 
@@ -58,8 +51,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->get('foo');
     }
 
@@ -89,15 +82,15 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $transport->get('foo'));
     }
 
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->list();
     }
 
@@ -123,8 +116,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->list();
     }
 
@@ -147,7 +140,7 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::assertSame($taskList, $transport->list());
+        self::assertSame($taskList, $transport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void
@@ -156,8 +149,8 @@ final class LongTailTransportTest extends TestCase
 
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->create($task);
     }
 
@@ -186,8 +179,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->create($task);
     }
 
@@ -223,8 +216,8 @@ final class LongTailTransportTest extends TestCase
 
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->update('foo', $task);
     }
 
@@ -253,8 +246,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->update('foo', $task);
     }
 
@@ -288,8 +281,8 @@ final class LongTailTransportTest extends TestCase
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->delete('foo');
     }
 
@@ -316,8 +309,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->delete('foo');
     }
 
@@ -349,8 +342,8 @@ final class LongTailTransportTest extends TestCase
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->pause('foo');
     }
 
@@ -377,8 +370,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->pause('foo');
     }
 
@@ -410,8 +403,8 @@ final class LongTailTransportTest extends TestCase
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->resume('foo');
     }
 
@@ -438,8 +431,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->resume('foo');
     }
 
@@ -471,8 +464,8 @@ final class LongTailTransportTest extends TestCase
     {
         $transport = new LongTailTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
         $transport->clear();
     }
 
@@ -499,8 +492,8 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
         $transport->clear();
     }
 

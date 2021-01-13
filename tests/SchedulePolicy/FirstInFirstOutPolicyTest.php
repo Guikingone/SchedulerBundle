@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
@@ -24,8 +17,8 @@ final class FirstInFirstOutPolicyTest extends TestCase
     {
         $policy = new FirstInFirstOutPolicy();
 
-        static::assertFalse($policy->support('test'));
-        static::assertTrue($policy->support('first_in_first_out'));
+        self::assertFalse($policy->support('test'));
+        self::assertTrue($policy->support('first_in_first_out'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -38,7 +31,7 @@ final class FirstInFirstOutPolicyTest extends TestCase
 
         $policy = new FirstInFirstOutPolicy();
 
-        static::assertSame([
+        self::assertSame([
             'foo' => $secondTask,
             'app' => $task,
         ], $policy->sort(['foo' => $secondTask, 'app' => $task]));

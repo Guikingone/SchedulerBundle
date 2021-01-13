@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
@@ -20,11 +13,16 @@ use SchedulerBundle\Exception\UnrecognizedCommandException;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use Throwable;
+use function array_key_exists;
+use function get_class;
+use function implode;
+use function is_int;
+use function sprintf;
+use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class CommandTaskRunner implements RunnerInterface
 {
@@ -53,7 +51,7 @@ final class CommandTaskRunner implements RunnerInterface
             if (Command::FAILURE === $statusCode) {
                 return new Output($task, $output->fetch(), Output::ERROR);
             }
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
             return new Output($task, $output->fetch(), Output::ERROR);
@@ -82,23 +80,29 @@ final class CommandTaskRunner implements RunnerInterface
 
     private function buildOptions(TaskInterface $task): array
     {
-        $arguments = [];
-        foreach ($task->getOptions() as $key => $argument) {
-            $arguments[] = sprintf('%s="%s"', $key, $argument);
+        $options = [];
+        foreach ($task->getOptions() as $key => $option) {
+            if (is_int($key)) {
+                $options[] = 0 === strpos($option, '--') ? $option : sprintf('--%s', $option);
+
+                continue;
+            }
+
+            $options[] = sprintf('%s %s', 0 === strpos($key, '--') ? $key : sprintf('--%s', $key), $option);
         }
 
-        return $arguments;
+        return $options;
     }
 
     private function findCommand(string $command): Command
     {
         $registeredCommands = $this->application->all();
-        if (\array_key_exists($command, $registeredCommands)) {
+        if (array_key_exists($command, $registeredCommands)) {
             return $registeredCommands[$command];
         }
 
         foreach ($registeredCommands as $registeredCommand) {
-            if ($command === \get_class($registeredCommand)) {
+            if ($command === get_class($registeredCommand)) {
                 return $registeredCommand;
             }
         }

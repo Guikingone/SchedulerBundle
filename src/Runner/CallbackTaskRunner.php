@@ -1,24 +1,18 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
 use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use Throwable;
+use function call_user_func_array;
+use function trim;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class CallbackTaskRunner implements RunnerInterface
 {
@@ -30,7 +24,7 @@ final class CallbackTaskRunner implements RunnerInterface
         $task->setExecutionState(TaskInterface::RUNNING);
 
         try {
-            $output = \call_user_func_array($task->getCallback(), $task->getArguments());
+            $output = call_user_func_array($task->getCallback(), $task->getArguments());
 
             if (false === $output) {
                 $task->setExecutionState(TaskInterface::ERRORED);
@@ -40,8 +34,8 @@ final class CallbackTaskRunner implements RunnerInterface
 
             $task->setExecutionState(TaskInterface::SUCCEED);
 
-            return new Output($task, trim($output));
-        } catch (\Throwable $throwable) {
+            return new Output($task, trim((string) $output));
+        } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
             return new Output($task, null, Output::ERROR);

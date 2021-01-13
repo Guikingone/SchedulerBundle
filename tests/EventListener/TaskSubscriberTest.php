@@ -1,17 +1,11 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +17,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -33,9 +28,9 @@ final class TaskSubscriberTest extends TestCase
 {
     public function testEventsAreCorrectlyListened(): void
     {
-        static::assertArrayHasKey(KernelEvents::REQUEST, TaskSubscriber::getSubscribedEvents());
-        static::assertContainsEquals('onKernelRequest', TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
-        static::assertContainsEquals(50, TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertArrayHasKey(KernelEvents::REQUEST, TaskSubscriber::getSubscribedEvents());
+        self::assertContainsEquals('onKernelRequest', TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertContainsEquals(50, TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
     }
 
     public function testInvalidPathCannotBeHandledWithInvalidPath(): void
@@ -55,7 +50,7 @@ final class TaskSubscriberTest extends TestCase
         $expected = $request->attributes->all();
         $subscriber->onKernelRequest($event);
 
-        static::assertSame($expected, $request->attributes->all());
+        self::assertSame($expected, $request->attributes->all());
     }
 
     public function testValidPathCannotBeHandledWithoutParams(): void
@@ -72,13 +67,13 @@ final class TaskSubscriberTest extends TestCase
 
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
-        static::expectException(\InvalidArgumentException::class);
+        self::expectException(\InvalidArgumentException::class);
         $subscriber->onKernelRequest($event);
     }
 
     public function testValidPathCanBeHandledWithValidName(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createMock(Serializer::class);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber');
@@ -87,7 +82,7 @@ final class TaskSubscriberTest extends TestCase
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
         $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -103,18 +98,18 @@ final class TaskSubscriberTest extends TestCase
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $subscriber->onKernelRequest($event);
 
-        static::assertArrayHasKey('task_filter', $request->attributes->all());
-        static::assertSame('app.bar', $request->attributes->get('task_filter'));
+        self::assertArrayHasKey('task_filter', $request->attributes->all());
+        self::assertSame('app.bar', $request->attributes->get('task_filter'));
     }
 
     public function testValidPathCanBeHandledWithValidExpression(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createMock(Serializer::class);
         $task = $this->createMock(TaskInterface::class);
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
         $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -133,8 +128,8 @@ final class TaskSubscriberTest extends TestCase
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $subscriber->onKernelRequest($event);
 
-        static::assertArrayHasKey('task_filter', $request->attributes->all());
-        static::assertSame('* * * * *', $request->attributes->get('task_filter'));
+        self::assertArrayHasKey('task_filter', $request->attributes->all());
+        self::assertSame('* * * * *', $request->attributes->get('task_filter'));
     }
 
     public function testResponseIsSetWhenWorkerErrorIsThrown(): void
@@ -144,14 +139,14 @@ final class TaskSubscriberTest extends TestCase
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
         $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->willThrowException(new \RuntimeException('An error occur'));
+        $worker->expects(self::once())->method('execute')->willThrowException(new RuntimeException('An error occur'));
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
@@ -163,9 +158,9 @@ final class TaskSubscriberTest extends TestCase
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $subscriber->onKernelRequest($event);
 
-        static::assertTrue($event->hasResponse());
-        static::assertInstanceOf(JsonResponse::class, $event->getResponse());
-        static::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()->getStatusCode());
+        self::assertTrue($event->hasResponse());
+        self::assertInstanceOf(JsonResponse::class, $event->getResponse());
+        self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()->getStatusCode());
     }
 
     public function testResponseIsSetWhenWorkerSucceed(): void
@@ -174,9 +169,8 @@ final class TaskSubscriberTest extends TestCase
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
         $taskList->expects(self::once())->method('count')->willReturn(1);
-        $taskList->expects(self::once())->method('toArray')->willReturn(['foo' => $task]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -191,14 +185,14 @@ final class TaskSubscriberTest extends TestCase
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber');
 
-        $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('serialize')->with(['foo' => $task], 'json');
+        $serializer = $this->createMock(Serializer::class);
+        $serializer->expects(self::once())->method('normalize')->with([$task], self::equalTo('json'));
 
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $subscriber->onKernelRequest($event);
 
-        static::assertTrue($event->hasResponse());
-        static::assertInstanceOf(JsonResponse::class, $event->getResponse());
-        static::assertSame(JsonResponse::HTTP_OK, $event->getResponse()->getStatusCode());
+        self::assertTrue($event->hasResponse());
+        self::assertInstanceOf(JsonResponse::class, $event->getResponse());
+        self::assertSame(JsonResponse::HTTP_OK, $event->getResponse()->getStatusCode());
     }
 }

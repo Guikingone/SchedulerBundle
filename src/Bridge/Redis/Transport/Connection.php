@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use Redis;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
@@ -18,16 +12,16 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function sprintf;
+use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class Connection implements ConnectionInterface
 {
     /**
-     * @var \Redis
+     * @var Redis
      */
     private $connection;
 
@@ -47,11 +41,11 @@ final class Connection implements ConnectionInterface
     private $serializer;
 
     /**
-     * @param array<string,string|int> $options
+     * @param array<string, string|int> $options
      */
-    public function __construct(array $options, SerializerInterface $serializer, ?\Redis $redis = null)
+    public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
-        $this->connection = $redis ?? new \Redis();
+        $this->connection = $redis ?? new Redis();
 
         $this->connection->connect($options['host'], $options['port'], $options['timeout']);
 

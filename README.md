@@ -1,54 +1,68 @@
-Scheduler Component
-===================
+# Scheduler Bundle
 
-The Scheduler component provides an API to schedule and run repetitive tasks.
+A Symfony bundle built to schedule/consume tasks.
 
-**This Component is experimental**.
-[Experimental features](https://symfony.com/doc/current/contributing/code/experimental.html)
-are not covered by Symfony's
-[Backward Compatibility Promise](https://symfony.com/doc/current/contributing/code/bc.html).
+## Main features
 
-Resources
----------
+- External transports (Doctrine, Redis, etc)
+- Retry / Remove tasks if failed
+- Can wait until tasks are dues
+- Messenger integration
 
-  * [Documentation](https://symfony.com/doc/current/components/scheduler.html)
-  * [Contributing](https://symfony.com/doc/current/contributing/index.html)
-  * [Report issues](https://github.com/symfony/symfony/issues) and
-    [send Pull Requests](https://github.com/symfony/symfony/pulls)
-    in the [main Symfony repository](https://github.com/symfony/symfony)
+## Installation
 
-Getting Started
----------------
+Make sure Composer is installed globally, as explained in the
+[installation chapter](https://getcomposer.org/doc/00-intro.md)
+of the Composer documentation.
 
+```bash
+$ composer require guikingone/scheduler-bundle
 ```
-$ composer require symfony/scheduler
-```
+
+## Quick start
+
+Once installed, time to update the `config/bundles.php`:
 
 ```php
-<?php
+// config/bundles.php
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use SchedulerBundle\Scheduler;
-use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskExecutionTracker;
-use SchedulerBundle\Transport\InMemoryTransport;
-use SchedulerBundle\Worker\Worker;
-use Symfony\Component\Stopwatch\Stopwatch;
-
-$eventDispatcher = new EventDispatcher();
-
-$transport = new InMemoryTransport();
-$scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
-$scheduler->schedule(new ShellTask('app.foo', ['ls', '-al']));
-
-$worker = new Worker($scheduler, [], new TaskExecutionTracker(new Stopwatch()), $eventDispatcher);
-$worker->execute();
+return [
+    // ...
+    SchedulerBundle\SchedulerBundle::class => ['all' => true],
+];
 ```
 
-Resources
----------
+Once done, just add a `config/packages/scheduler.yaml`:
 
-  * [Contributing](https://symfony.com/doc/current/contributing/index.html)
-  * [Report issues](https://github.com/symfony/symfony/issues) and
-    [send Pull Requests](https://github.com/symfony/symfony/pulls)
-    in the [main Symfony repository](https://github.com/symfony/symfony)
+```yaml
+# config/packages/scheduler.yaml
+scheduler_bundle:
+    transport:
+        dsn: 'filesystem://first_in_first_out'
+```
+
+Once transport is configured, time to create a simple task:
+
+```yaml
+# config/packages/scheduler.yaml
+scheduler_bundle:
+    transport:
+        dsn: 'memory://first_in_first_out'
+    tasks:
+        foo:
+            type: 'command'
+            command: 'cache:clear'
+            expression: '*/5 * * * *'
+            description: 'A simple cache clear task'
+            options:
+              env: test
+```
+
+Once a task is configured, time to execute it, two approaches can be used:
+
+- Adding a cron entry `* * * * * cd /path-to-your-project && php bin/console scheduler:consume >> /dev/null 2>&1`
+- Launching the command `scheduler:consume --wait` in a background command
+
+## Documentation
+
+For a full breakdown of each feature, please head to the [documentation](doc)

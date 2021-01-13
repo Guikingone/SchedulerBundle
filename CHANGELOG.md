@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-5.3.0
+0.1.0
 -----
 
- * Introduced the component as experimental
+ * Introduced the bundle

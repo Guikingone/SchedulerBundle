@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -35,8 +28,8 @@ final class TaskBuilderTest extends TestCase
             new NullBuilder(),
         ], PropertyAccess::createPropertyAccessor());
 
-        static::expectException(InvalidArgumentException::class);
-        static::expectExceptionMessage('The task cannot be created as no builder has been defined for "test"');
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task cannot be created as no builder has been defined for "test"');
         $builder->create([
             'type' => 'test',
         ]);
@@ -51,7 +44,7 @@ final class TaskBuilderTest extends TestCase
             new NullBuilder(),
         ], PropertyAccess::createPropertyAccessor());
 
-        static::assertInstanceOf(NullTask::class, $builder->create($options));
+        self::assertInstanceOf(NullTask::class, $builder->create($options));
     }
 
     /**
@@ -63,7 +56,7 @@ final class TaskBuilderTest extends TestCase
             new ShellBuilder(),
         ], PropertyAccess::createPropertyAccessor());
 
-        static::assertInstanceOf(ShellTask::class, $builder->create($options));
+        self::assertInstanceOf(ShellTask::class, $builder->create($options));
     }
 
     /**
@@ -75,7 +68,7 @@ final class TaskBuilderTest extends TestCase
             new CommandBuilder(),
         ], PropertyAccess::createPropertyAccessor());
 
-        static::assertInstanceOf(CommandTask::class, $builder->create($options));
+        self::assertInstanceOf(CommandTask::class, $builder->create($options));
     }
 
     /**
@@ -87,7 +80,7 @@ final class TaskBuilderTest extends TestCase
             new HttpBuilder(),
         ], PropertyAccess::createPropertyAccessor());
 
-        static::assertInstanceOf(HttpTask::class, $builder->create($options));
+        self::assertInstanceOf(HttpTask::class, $builder->create($options));
     }
 
     public function provideNullTaskData(): \Generator

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
@@ -36,12 +29,14 @@ final class RebootSchedulerCommandTest extends TestCase
 
         $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
 
-        static::assertSame('scheduler:reboot', $command->getName());
-        static::assertSame('Reboot the scheduler', $command->getDescription());
-        static::assertTrue($command->getDefinition()->hasOption('dry-run'));
-        static::assertSame('d', $command->getDefinition()->getOption('dry-run')->getShortcut());
-        static::assertSame('Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed', $command->getDefinition()->getOption('dry-run')->getDescription());
-        static::assertSame($command->getHelp(), <<<'EOF'
+        self::assertSame('scheduler:reboot', $command->getName());
+        self::assertSame('Reboot the scheduler', $command->getDescription());
+        self::assertTrue($command->getDefinition()->hasOption('dry-run'));
+        self::assertSame('d', $command->getDefinition()->getOption('dry-run')->getShortcut());
+        self::assertSame('Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed', $command->getDefinition()->getOption('dry-run')->getDescription());
+        self::assertSame(
+            $command->getHelp(),
+            <<<'EOF'
 The <info>%command.name%</info> command reboot the scheduler.
 
     <info>php %command.full_name%</info>
@@ -74,8 +69,8 @@ EOF
         $tester = new CommandTester($application->get('scheduler:reboot'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] The scheduler have been rebooted, no tasks have been executed', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] The scheduler have been rebooted, no tasks have been executed', $tester->getDisplay());
     }
 
     public function testRebootCanSucceedOnHydratedTasksListAndWithRebootTask(): void
@@ -94,6 +89,7 @@ EOF
         $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('reboot');
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
@@ -106,16 +102,16 @@ EOF
         $tester = new CommandTester($application->get('scheduler:reboot'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] The scheduler have been rebooted', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('foo', $tester->getDisplay());
-        static::assertStringContainsString('Type', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('enabled', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
-        static::assertStringContainsString('app', $tester->getDisplay());
-        static::assertStringContainsString('slow', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] The scheduler have been rebooted', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('Type', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('enabled', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app', $tester->getDisplay());
+        self::assertStringContainsString('slow', $tester->getDisplay());
     }
 
     public function testCommandCanDryRunTheSchedulerReboot(): void
@@ -132,6 +128,7 @@ EOF
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
 
         $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('reboot');
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
@@ -147,15 +144,15 @@ EOF
             '--dry-run' => true,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] The following tasks will be executed when the scheduler will reboot:', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('foo', $tester->getDisplay());
-        static::assertStringContainsString('Type', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('enabled', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
-        static::assertStringContainsString('app', $tester->getDisplay());
-        static::assertStringContainsString('slow', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] The following tasks will be executed when the scheduler will reboot:', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('Type', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('enabled', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app', $tester->getDisplay());
+        self::assertStringContainsString('slow', $tester->getDisplay());
     }
 }

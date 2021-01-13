@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task\Builder;
 
@@ -26,8 +19,8 @@ final class CommandBuilderTest extends TestCase
     {
         $builder = new CommandBuilder();
 
-        static::assertFalse($builder->support('test'));
-        static::assertTrue($builder->support('command'));
+        self::assertFalse($builder->support('test'));
+        self::assertTrue($builder->support('command'));
     }
 
     /**
@@ -39,16 +32,16 @@ final class CommandBuilderTest extends TestCase
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        static::assertInstanceOf(CommandTask::class, $task);
-        static::assertSame($options['name'], $task->getName());
-        static::assertSame($options['expression'], $task->getExpression());
-        static::assertSame($options['command'], $task->getCommand());
-        static::assertSame($options['arguments'], $task->getArguments());
-        static::assertSame($options['options'], $task->getOptions());
-        static::assertSame($options['description'], $task->getDescription());
-        static::assertFalse($task->isQueued());
-        static::assertNull($task->getTimezone());
-        static::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertInstanceOf(CommandTask::class, $task);
+        self::assertSame($options['name'], $task->getName());
+        self::assertSame($options['expression'], $task->getExpression());
+        self::assertSame($options['command'], $task->getCommand());
+        self::assertSame($options['arguments'], $task->getArguments());
+        self::assertSame($options['options'], $task->getOptions());
+        self::assertSame($options['description'], $task->getDescription());
+        self::assertFalse($task->isQueued());
+        self::assertNull($task->getTimezone());
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
     public function provideTaskData(): \Generator

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
@@ -18,15 +11,13 @@ use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 interface TransportInterface
 {
     public function get(string $name): TaskInterface;
 
     /**
-     * @return TaskListInterface<string|int,TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function list(): TaskListInterface;
 
@@ -54,7 +45,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string,int|string|bool|array>
+     * @return array<string, int|string|bool|array>
      */
     public function getOptions(): array;
 }

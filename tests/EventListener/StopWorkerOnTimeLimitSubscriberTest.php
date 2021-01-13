@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Tests\EventListener;
 
@@ -26,8 +19,8 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        static::assertArrayHasKey(WorkerStartedEvent::class, StopWorkerOnTimeLimitSubscriber::getSubscribedEvents());
-        static::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnTimeLimitSubscriber::getSubscribedEvents());
+        self::assertArrayHasKey(WorkerStartedEvent::class, StopWorkerOnTimeLimitSubscriber::getSubscribedEvents());
+        self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnTimeLimitSubscriber::getSubscribedEvents());
     }
 
     /**

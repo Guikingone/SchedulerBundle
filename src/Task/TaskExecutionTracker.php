@@ -36,7 +36,7 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
             return;
         }
 
-        $this->watch->start(sprintf('task_execution.%s', $task->getName()));
+        $this->watch->start(\sprintf('task_execution.%s', $task->getName()));
     }
 
     /**
@@ -48,13 +48,13 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
             return;
         }
 
-        $task->setExecutionMemoryUsage(memory_get_usage());
+        $task->setExecutionMemoryUsage(\memory_get_usage());
 
-        if (!$this->watch->isStarted(sprintf('task_execution.%s', $task->getName()))) {
+        if (!$this->watch->isStarted(\sprintf('task_execution.%s', $task->getName()))) {
             return;
         }
 
-        $event = $this->watch->stop(sprintf('task_execution.%s', $task->getName()));
+        $event = $this->watch->stop(\sprintf('task_execution.%s', $task->getName()));
         $task->setExecutionComputationTime($event->getDuration());
     }
 }

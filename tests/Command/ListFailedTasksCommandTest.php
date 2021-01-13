@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
@@ -32,8 +25,8 @@ final class ListFailedTasksCommandTest extends TestCase
 
         $command = new ListFailedTasksCommand($worker);
 
-        static::assertSame('scheduler:list:failed', $command->getName());
-        static::assertSame('List all the failed tasks', $command->getDescription());
+        self::assertSame('scheduler:list:failed', $command->getName());
+        self::assertSame('List all the failed tasks', $command->getDescription());
     }
 
     public function testCommandCannotListEmptyFailedTasks(): void
@@ -51,8 +44,8 @@ final class ListFailedTasksCommandTest extends TestCase
         $tester = new CommandTester($application->get('scheduler:list:failed'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('No failed task has been found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('No failed task has been found', $tester->getDisplay());
     }
 
     public function testCommandCanListFailedTasks(): void
@@ -76,14 +69,14 @@ final class ListFailedTasksCommandTest extends TestCase
         $tester = new CommandTester($application->get('scheduler:list:failed'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('1 task found', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('foo.failed', $tester->getDisplay());
-        static::assertStringContainsString('Expression', $tester->getDisplay());
-        static::assertStringContainsString('* * * * *', $tester->getDisplay());
-        static::assertStringContainsString('Reason', $tester->getDisplay());
-        static::assertStringContainsString('Foo error occurred', $tester->getDisplay());
-        static::assertStringContainsString('Date', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('1 task found', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo.failed', $tester->getDisplay());
+        self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('* * * * *', $tester->getDisplay());
+        self::assertStringContainsString('Reason', $tester->getDisplay());
+        self::assertStringContainsString('Foo error occurred', $tester->getDisplay());
+        self::assertStringContainsString('Date', $tester->getDisplay());
     }
 }

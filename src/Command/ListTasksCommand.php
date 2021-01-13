@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
@@ -24,8 +17,6 @@ use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class ListTasksCommand extends Command
 {
@@ -54,7 +45,8 @@ final class ListTasksCommand extends Command
                 new InputOption('expression', null, InputOption::VALUE_OPTIONAL, 'The expression of the tasks'),
                 new InputOption('state', 's', InputOption::VALUE_OPTIONAL, 'The state of the tasks'),
             ])
-            ->setHelp(<<<'EOF'
+            ->setHelp(
+                <<<'EOF'
 The <info>%command.name%</info> command list tasks.
 
     <info>php %command.full_name%</info>
@@ -102,13 +94,13 @@ EOF
             return self::SUCCESS;
         }
 
-        $style->success(sprintf('%d task%s found', \count($tasks), \count($tasks) > 1 ? 's' : ''));
+        $style->success(\sprintf('%d task%s found', \count($tasks), \count($tasks) > 1 ? 's' : ''));
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Description', 'Expression', 'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
 
         $tableRows = [];
-        array_walk($tasks, function (TaskInterface $task) use (&$tableRows): void {
+        \array_walk($tasks, function (TaskInterface $task) use (&$tableRows): void {
             $tableRows[] = [
                 $task->getName(),
                 $task->getDescription() ?? 'No description set',
@@ -118,7 +110,7 @@ EOF
                 null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
                 null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
                 $task->getState(),
-                implode(', ', $task->getTags()) ?: 'No tags set',
+                \implode(', ', $task->getTags()) ?: 'No tags set',
             ];
         });
 

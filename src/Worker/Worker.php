@@ -1,16 +1,12 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
+use Countable;
+use DateTimeImmutable;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Lock\BlockingStoreInterface;
@@ -36,11 +32,17 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
+use function array_replace_recursive;
+use function count;
+use function in_array;
+use function is_array;
+use function sleep;
+use function sprintf;
+use function usleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class Worker implements WorkerInterface
 {
@@ -121,7 +123,7 @@ final class Worker implements WorkerInterface
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
-                    } catch (\Throwable $throwable) {
+                    } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
                         $this->dispatch(new TaskFailedEvent($failedTask));
@@ -139,7 +141,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === \count($tasks) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === (is_array($tasks) || $tasks instanceof Countable ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }
@@ -199,13 +201,21 @@ final class Worker implements WorkerInterface
         return $this->lastExecutedTask;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
     private function checkTaskState(TaskInterface $task): bool
     {
         if (TaskInterface::UNDEFINED === $task->getState()) {
-            throw new \LogicException('The task state must be defined in order to be executed!');
+            throw new LogicException('The task state must be defined in order to be executed!');
         }
 
-        if (\in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED])) {
+        if (in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED])) {
             $this->logger->info(sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), [
                 'name' => $task->getName(),
                 'expression' => $task->getExpression(),
@@ -222,13 +232,13 @@ final class Worker implements WorkerInterface
     {
         $this->dispatch(new TaskExecutingEvent($task));
 
-        $task->setArrivalTime(new \DateTimeImmutable());
-        $task->setExecutionStartTime(new \DateTimeImmutable());
+        $task->setArrivalTime(new DateTimeImmutable());
+        $task->setExecutionStartTime(new DateTimeImmutable());
         $this->tracker->startTracking($task);
         $output = $runner->run($task);
         $this->tracker->endTracking($task);
-        $task->setExecutionEndTime(new \DateTimeImmutable());
-        $task->setLastExecution(new \DateTimeImmutable());
+        $task->setExecutionEndTime(new DateTimeImmutable());
+        $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
     }
@@ -255,10 +265,10 @@ final class Worker implements WorkerInterface
 
     private function getSleepDuration(): int
     {
-        $nextExecutionDate = new \DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
+        $nextExecutionDate = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
         $updatedNextExecutionDate = $nextExecutionDate->setTime((int) $nextExecutionDate->format('H'), (int) $nextExecutionDate->format('i'), 0);
 
-        return (new \DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
+        return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
     }
 
     private function dispatch(Event $event): void

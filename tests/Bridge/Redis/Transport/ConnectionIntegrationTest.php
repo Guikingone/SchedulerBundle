@@ -1,17 +1,11 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
-namespace SchedulerBundle\Bridge\Redis\Tests\Transport;
+namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
 use PHPUnit\Framework\TestCase;
+use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Serializer\TaskNormalizer;
@@ -26,6 +20,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -33,7 +28,6 @@ use Symfony\Component\Serializer\Serializer;
  * @requires extension redis >= 4.3.0
  *
  * @group time-sensitive
- * @group integration
  */
 final class ConnectionIntegrationTest extends TestCase
 {
@@ -45,18 +39,18 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!getenv('SCHEDULER_REDIS_DSN')) {
+        if (!\getenv('SCHEDULER_REDIS_DSN')) {
             $this->markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
         }
 
-        $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
+        $dsn = Dsn::fromString(\getenv('SCHEDULER_REDIS_DSN'));
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         try {
-            $this->redis = new \Redis();
+            $this->redis = new Redis();
             $this->connection = new Connection([
                 'host' => $dsn->getHost(),
                 'password' => $dsn->getPassword(),
@@ -79,8 +73,8 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $list = $this->connection->list();
 
-        static::assertInstanceOf(TaskList::class, $list);
-        static::assertEmpty($list);
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertEmpty($list);
     }
 
     /**
@@ -92,15 +86,16 @@ final class ConnectionIntegrationTest extends TestCase
 
         $list = $this->connection->list();
 
-        static::assertInstanceOf(TaskList::class, $list);
-        static::assertNotEmpty($list);
-        static::assertInstanceOf(TaskInterface::class, $list->get($task->getName()));
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertNotEmpty($list);
+        self::assertInstanceOf(TaskInterface::class, $list->get($task->getName()));
     }
 
     public function testTaskCannotBeRetrievedWhenNotCreated(): void
     {
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The task "foo" does not exist');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
@@ -112,8 +107,8 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
     }
 
     /**
@@ -123,8 +118,9 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $this->connection->create($task);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" has already been scheduled!', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" has already been scheduled!', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->create($task);
     }
 
@@ -136,8 +132,8 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
     }
 
     /**
@@ -145,8 +141,9 @@ final class ConnectionIntegrationTest extends TestCase
      */
     public function testTaskCannotBeUpdatedIfUndefined(TaskInterface $task): void
     {
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" cannot be updated as it does not exist', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" cannot be updated as it does not exist', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->update($task->getName(), $task);
     }
 
@@ -158,17 +155,17 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
 
         $storedTask->setExpression('0 * * * *');
 
         $this->connection->update($task->getName(), $storedTask);
 
         $updatedTask = $this->connection->get($task->getName());
-        static::assertSame('0 * * * *', $updatedTask->getExpression());
-        static::assertInstanceOf(TaskInterface::class, $updatedTask);
-        static::assertSame($task->getName(), $updatedTask->getName());
+        self::assertSame('0 * * * *', $updatedTask->getExpression());
+        self::assertInstanceOf(TaskInterface::class, $updatedTask);
+        self::assertSame($task->getName(), $updatedTask->getName());
     }
 
     /**
@@ -179,14 +176,15 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
 
         $storedTask->setState(TaskInterface::PAUSED);
         $this->connection->update($task->getName(), $storedTask);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->pause($storedTask->getName());
     }
 
@@ -200,9 +198,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->pause($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
-        static::assertSame(TaskInterface::PAUSED, $storedTask->getState());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
+        self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
     }
 
     /**
@@ -215,14 +213,15 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
-        static::assertSame(TaskInterface::PAUSED, $storedTask->getState());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
+        self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
 
         $this->connection->resume($storedTask->getName());
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" is already enabled', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" is already enabled', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->resume($storedTask->getName());
     }
 
@@ -236,16 +235,16 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->pause($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
-        static::assertSame(TaskInterface::PAUSED, $storedTask->getState());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
+        self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
 
         $this->connection->resume($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
-        static::assertSame(TaskInterface::ENABLED, $storedTask->getState());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
+        self::assertSame(TaskInterface::ENABLED, $storedTask->getState());
     }
 
     /**
@@ -253,8 +252,9 @@ final class ConnectionIntegrationTest extends TestCase
      */
     public function testTaskCanBeDeletedIfUndefined(TaskInterface $task): void
     {
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" cannot be deleted as it does not exist', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" cannot be deleted as it does not exist', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->delete($task->getName());
     }
 
@@ -265,13 +265,14 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $this->connection->create($task);
         $storedTask = $this->connection->get($task->getName());
-        static::assertInstanceOf(TaskInterface::class, $storedTask);
-        static::assertSame($task->getName(), $storedTask->getName());
+        self::assertInstanceOf(TaskInterface::class, $storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
 
         $this->connection->delete($task->getName());
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectExceptionCode(0);
         $this->connection->get($task->getName());
     }
 

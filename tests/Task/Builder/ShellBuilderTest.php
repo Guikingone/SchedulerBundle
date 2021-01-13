@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task\Builder;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\ShellBuilder;
@@ -26,8 +20,8 @@ final class ShellBuilderTest extends TestCase
     {
         $builder = new ShellBuilder();
 
-        static::assertFalse($builder->support('test'));
-        static::assertTrue($builder->support('shell'));
+        self::assertFalse($builder->support('test'));
+        self::assertTrue($builder->support('shell'));
     }
 
     /**
@@ -39,20 +33,28 @@ final class ShellBuilderTest extends TestCase
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        static::assertInstanceOf(ShellTask::class, $task);
-        static::assertSame($options['name'], $task->getName());
-        static::assertSame($options['expression'], $task->getExpression());
-        static::assertSame($options['command'], $task->getCommand());
-        static::assertNull($task->getCwd());
-        static::assertNotEmpty($task->getEnvironmentVariables());
-        static::assertSame((float) $options['timeout'], $task->getTimeout());
-        static::assertSame($options['description'], $task->getDescription());
-        static::assertFalse($task->isQueued());
-        static::assertNull($task->getTimezone());
-        static::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertInstanceOf(ShellTask::class, $task);
+        self::assertSame($options['name'], $task->getName());
+        self::assertSame($options['expression'], $task->getExpression());
+        self::assertSame($options['command'], $task->getCommand());
+        self::assertNull($task->getCwd());
+        self::assertNotEmpty($task->getEnvironmentVariables());
+        self::assertSame((float) $options['timeout'], $task->getTimeout());
+        self::assertSame($options['description'], $task->getDescription());
+        self::assertFalse($task->isQueued());
+        self::assertNull($task->getTimezone());
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'foo',
+            'command' => ['ls', '-al'],
+        ]);
+
+        self::assertSame(60.0, $task->getTimeout());
+        self::assertEmpty($task->getEnvironmentVariables());
     }
 
-    public function provideTaskData(): \Generator
+    public function provideTaskData(): Generator
     {
         yield [
             [

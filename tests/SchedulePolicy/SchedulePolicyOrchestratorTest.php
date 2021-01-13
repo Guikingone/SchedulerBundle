@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
@@ -33,8 +26,8 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     {
         $orchestrator = new SchedulePolicyOrchestrator([]);
 
-        static::expectException(\RuntimeException::class);
-        static::expectExceptionMessage('The tasks cannot be sorted as no policies have been defined');
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be sorted as no policies have been defined');
         $orchestrator->sort('deadline', []);
     }
 
@@ -44,7 +37,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             new BatchPolicy(),
         ]);
 
-        static::assertEmpty($orchestrator->sort('batch', []));
+        self::assertEmpty($orchestrator->sort('batch', []));
     }
 
     public function testSchedulePolicyCannotSortWithInvalidPolicy(): void
@@ -55,8 +48,8 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             new BatchPolicy(),
         ]);
 
-        static::expectException(\InvalidArgumentException::class);
-        static::expectExceptionMessage('The policy "test" cannot be used');
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('The policy "test" cannot be used');
         $orchestrator->sort('test', [$task]);
     }
 
@@ -72,7 +65,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
 
-        static::assertCount(2, $orchestrator->sort('batch', [$secondTask, $task]));
+        self::assertCount(2, $orchestrator->sort('batch', [$secondTask, $task]));
     }
 
     public function testSchedulePolicyCanSortTasksUsingDeadline(): void
@@ -87,7 +80,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new \DateInterval('P2D'));
 
-        static::assertSame([
+        self::assertSame([
             'bar' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('deadline', ['foo' => $secondTask, 'bar' => $task]));
@@ -105,7 +98,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getExecutionComputationTime')->willReturn(12.0);
 
-        static::assertSame([
+        self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('execution_duration', ['foo' => $secondTask, 'app' => $task]));
@@ -123,7 +116,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 2 minute'));
 
-        static::assertSame([
+        self::assertSame([
             'foo' => $secondTask,
             'app' => $task,
         ], $orchestrator->sort('first_in_first_out', ['foo' => $secondTask, 'app' => $task]));
@@ -141,7 +134,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 2 minute'));
 
-        static::assertSame([
+        self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('first_in_last_out', ['foo' => $secondTask, 'app' => $task]));
@@ -161,8 +154,8 @@ final class SchedulePolicyOrchestratorTest extends TestCase
 
         $tasks = $orchestrator->sort('idle', ['app' => $secondTask, 'foo' => $task]);
 
-        static::assertCount(2, $tasks);
-        static::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
+        self::assertCount(2, $tasks);
+        self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
     }
 
     public function testTasksCanBeSortTasksUsingMemoryUsage(): void
@@ -177,7 +170,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getExecutionMemoryUsage')->willReturn(15);
 
-        static::assertSame([
+        self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('memory_usage', ['foo' => $secondTask, 'app' => $task]));
@@ -195,7 +188,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getNice')->willReturn(5);
 
-        static::assertSame([
+        self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('nice', ['foo' => $secondTask, 'app' => $task]));
@@ -214,7 +207,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.0);
         $secondTask->expects(self::once())->method('getMaxDuration')->willReturn(10.0);
 
-        static::assertSame([
+        self::assertSame([
             'bar' => $task,
             'foo' => $secondTask,
         ], $orchestrator->sort('round_robin', ['foo' => $secondTask, 'bar' => $task]));

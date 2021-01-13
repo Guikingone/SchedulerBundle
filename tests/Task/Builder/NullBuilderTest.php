@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task\Builder;
 
@@ -26,8 +19,8 @@ final class NullBuilderTest extends TestCase
     {
         $builder = new NullBuilder();
 
-        static::assertFalse($builder->support('test'));
-        static::assertTrue($builder->support());
+        self::assertFalse($builder->support('test'));
+        self::assertTrue($builder->support());
     }
 
     /**
@@ -40,13 +33,13 @@ final class NullBuilderTest extends TestCase
 
         $task = $builder->build($propertyAccessor, $options);
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame($options['name'], $task->getName());
-        static::assertSame($options['expression'], $task->getExpression());
-        static::assertNull($task->getDescription());
-        static::assertSame($options['queued'], $task->isQueued());
-        static::assertSame($options['timezone'], $task->getTimezone()->getName());
-        static::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame($options['name'], $task->getName());
+        self::assertSame($options['expression'], $task->getExpression());
+        self::assertNull($task->getDescription());
+        self::assertSame($options['queued'], $task->isQueued());
+        self::assertSame($options['timezone'], $task->getTimezone()->getName());
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
     public function provideTaskData(): \Generator

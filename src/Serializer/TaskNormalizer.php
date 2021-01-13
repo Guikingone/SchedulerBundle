@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use Closure;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -30,11 +24,15 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use function array_key_exists;
+use function array_merge;
+use function get_class;
+use function is_array;
+use function is_object;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
 {
@@ -58,7 +56,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        if ($object instanceof CallbackTask && $object->getCallback() instanceof \Closure) {
+        if ($object instanceof CallbackTask && $object->getCallback() instanceof Closure) {
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
@@ -69,14 +67,14 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 AbstractNormalizer::CALLBACKS => [
                     'message' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
                         return [
-                            'class' => \get_class($innerObject),
+                            'class' => get_class($innerObject),
                             'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
                         ];
                     },
                 ],
             ]));
 
-            return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => \get_class($object)];
+            return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => get_class($object)];
         }
 
         if ($object instanceof CallbackTask) {
@@ -84,20 +82,20 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 AbstractNormalizer::CALLBACKS => [
                     'callback' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
                         return [
-                            'class' => \is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
+                            'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
                             'method' => $innerObject[1],
-                            'type' => \get_class($innerObject[0]),
+                            'type' => get_class($innerObject[0]),
                         ];
                     },
                 ],
             ]));
 
-            return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => \get_class($object)];
+            return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => get_class($object)];
         }
 
         $data = $this->objectNormalizer->normalize($object, $format, array_merge($context, $dateAttributesContext));
 
-        return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => \get_class($object)];
+        return ['body' => $data, self::NORMALIZATION_DISCRIMINATOR => get_class($object)];
     }
 
     /**
@@ -228,11 +226,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function supportsDenormalization($data, string $type, string $format = null): bool
     {
-        return \is_array($data) && \array_key_exists(self::NORMALIZATION_DISCRIMINATOR, $data);
+        return is_array($data) && array_key_exists(self::NORMALIZATION_DISCRIMINATOR, $data);
     }
 
     /**
-     * @return array<string,array<string,\Closure>>
+     * @return array<string, array<string, Closure>>
      */
     private function handleDateAttributes(): array
     {

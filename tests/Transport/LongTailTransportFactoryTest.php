@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
@@ -30,9 +23,9 @@ final class LongTailTransportFactoryTest extends TestCase
     {
         $factory = new LongTailTransportFactory([]);
 
-        static::assertFalse($factory->support('test://'));
-        static::assertTrue($factory->support('longtail://'));
-        static::assertTrue($factory->support('lt://'));
+        self::assertFalse($factory->support('test://'));
+        self::assertTrue($factory->support('longtail://'));
+        self::assertTrue($factory->support('lt://'));
     }
 
     /**
@@ -45,8 +38,8 @@ final class LongTailTransportFactoryTest extends TestCase
         $factory = new LongTailTransportFactory([]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        static::assertInstanceOf(TransportInterface::class, $transport);
-        static::assertInstanceOf(LongTailTransport::class, $transport);
+        self::assertInstanceOf(TransportInterface::class, $transport);
+        self::assertInstanceOf(LongTailTransport::class, $transport);
     }
 
     public function provideDsn(): \Generator

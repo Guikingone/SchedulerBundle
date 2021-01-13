@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
@@ -31,7 +24,7 @@ final class SchedulerPassTest extends TestCase
 
         (new SchedulerPass())->process($container);
 
-        static::assertFalse($container->hasDefinition('scheduler.foo_task'));
+        self::assertFalse($container->hasDefinition('scheduler.foo_task'));
     }
 
     public function testSchedulerExtraCanBeRegisteredWithDependency(): void
@@ -45,7 +38,7 @@ final class SchedulerPassTest extends TestCase
 
         (new SchedulerPass())->process($container);
 
-        static::assertTrue($container->hasDefinition('scheduler.foo_task'));
-        static::assertTrue($container->getDefinition('scheduler.foo_task')->hasTag('scheduler.tag'));
+        self::assertTrue($container->hasDefinition('scheduler.foo_task'));
+        self::assertTrue($container->getDefinition('scheduler.foo_task')->hasTag('scheduler.tag'));
     }
 }

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
@@ -24,8 +17,8 @@ final class IdlePolicyTest extends TestCase
     {
         $policy = new IdlePolicy();
 
-        static::assertFalse($policy->support('test'));
-        static::assertTrue($policy->support('idle'));
+        self::assertFalse($policy->support('test'));
+        self::assertTrue($policy->support('idle'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -39,7 +32,7 @@ final class IdlePolicyTest extends TestCase
         $policy = new IdlePolicy();
         $tasks = $policy->sort(['app' => $secondTask, 'foo' => $task]);
 
-        static::assertCount(2, $tasks);
-        static::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
+        self::assertCount(2, $tasks);
+        self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
     }
 }

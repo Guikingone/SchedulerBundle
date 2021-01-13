@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
@@ -21,8 +14,6 @@ use SchedulerBundle\Event\TaskUnscheduledEvent;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskLoggerSubscriber implements EventSubscriberInterface
 {
@@ -47,7 +38,7 @@ final class TaskLoggerSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string,array<int,string|int>>
+     * @return array<string, array<int, string|int>>
      */
     public static function getSubscribedEvents(): array
     {

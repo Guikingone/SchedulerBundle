@@ -41,7 +41,7 @@ final class TaskEventList implements \Countable
      */
     public function getScheduledTaskEvents(): array
     {
-        return array_filter($this->events, function (TaskEventInterface $event): bool {
+        return \array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskScheduledEvent;
         });
     }
@@ -51,7 +51,7 @@ final class TaskEventList implements \Countable
      */
     public function getUnscheduledTaskEvents(): array
     {
-        return array_filter($this->events, function (TaskEventInterface $event): bool {
+        return \array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskUnscheduledEvent;
         });
     }
@@ -61,7 +61,7 @@ final class TaskEventList implements \Countable
      */
     public function getExecutedTaskEvents(): array
     {
-        return array_filter($this->events, function (TaskEventInterface $event): bool {
+        return \array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskExecutedEvent;
         });
     }
@@ -71,7 +71,7 @@ final class TaskEventList implements \Countable
      */
     public function getFailedTaskEvents(): array
     {
-        return array_filter($this->events, function (TaskEventInterface $event): bool {
+        return \array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskFailedEvent;
         });
     }
@@ -81,7 +81,7 @@ final class TaskEventList implements \Countable
      */
     public function getQueuedTaskEvents(): array
     {
-        return array_filter($this->events, function (TaskEventInterface $event): bool {
+        return \array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskScheduledEvent && $event->getTask()->isQueued();
         });
     }

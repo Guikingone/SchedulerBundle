@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -29,8 +22,8 @@ final class NullTaskRunnerTest extends TestCase
 
         $runner = new NullTaskRunner();
 
-        static::assertFalse($runner->support($task));
-        static::assertTrue($runner->support(new NullTask('foo')));
+        self::assertFalse($runner->support($task));
+        self::assertTrue($runner->support(new NullTask('foo')));
     }
 
     public function testOutputIsReturned(): void
@@ -40,9 +33,9 @@ final class NullTaskRunnerTest extends TestCase
         $runner = new NullTaskRunner();
         $output = $runner->run($task);
 
-        static::assertInstanceOf(Output::class, $output);
-        static::assertNull($output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertInstanceOf(Output::class, $output);
+        self::assertNull($output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }
 

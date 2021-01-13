@@ -1,18 +1,12 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
-namespace SchedulerBundle\Bridge\Doctrine\Tests\Transport;
+namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
@@ -32,9 +26,9 @@ final class DoctrineTransportFactoryTest extends TestCase
 
         $factory = new DoctrineTransportFactory($registry);
 
-        static::assertFalse($factory->support('test://'));
-        static::assertTrue($factory->support('doctrine://'));
-        static::assertTrue($factory->support('dbal://'));
+        self::assertFalse($factory->support('test://'));
+        self::assertTrue($factory->support('doctrine://'));
+        self::assertTrue($factory->support('dbal://'));
     }
 
     public function testFactoryCannotReturnUndefinedTransport(): void
@@ -42,14 +36,14 @@ final class DoctrineTransportFactoryTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $registry = $this->createMock(ConnectionRegistry::class);
-        $registry->expects(self::once())->method('getConnection')->willThrowException(new \InvalidArgumentException('Doctrine %s Connection named "%s" does not exist.'));
+        $registry->expects(self::once())->method('getConnection')->willThrowException(new InvalidArgumentException('Doctrine %s Connection named "%s" does not exist.'));
 
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new DoctrineTransportFactory($registry);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
         $factory->createTransport(Dsn::fromString('doctrine://test'), [], $serializer, $schedulePolicyOrchestrator);
     }
 
@@ -64,7 +58,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new DoctrineTransportFactory($registry);
-        static::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default'), [], $serializer, $schedulePolicyOrchestrator));
+        self::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default'), [], $serializer, $schedulePolicyOrchestrator));
     }
 
     public function testFactoryReturnTransportWithExecutionMode(): void
@@ -78,7 +72,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new DoctrineTransportFactory($registry);
-        static::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], $serializer, $schedulePolicyOrchestrator));
+        self::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], $serializer, $schedulePolicyOrchestrator));
     }
 
     public function testFactoryReturnTransportWithTableName(): void
@@ -92,6 +86,6 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new DoctrineTransportFactory($registry);
-        static::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator));
+        self::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator));
     }
 }

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\DataCollector;
 
@@ -17,11 +10,10 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class SchedulerDataCollector extends DataCollector implements LateDataCollectorInterface
 {
@@ -40,7 +32,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, \Throwable $exception = null): void
+    public function collect(Request $request, Response $response, Throwable $exception = null): void
     {
         // As data can comes from Messenger, local or remote schedulers|workers, we should collect it as late as possible.
     }

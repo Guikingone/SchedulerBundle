@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
@@ -20,11 +13,14 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_merge;
+use function file_get_contents;
+use function sprintf;
+use function strtr;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class FilesystemTransport extends AbstractTransport
 {
@@ -35,7 +31,7 @@ final class FilesystemTransport extends AbstractTransport
     public function __construct(string $path = null, array $options = [], SerializerInterface $serializer = null, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
     {
         $this->defineOptions(array_merge($options, [
-            'path' => null === $path ? sys_get_temp_dir() : $path,
+            'path' => $path ?? sys_get_temp_dir(),
             'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ]), [
             'path' => ['string'],

@@ -1,15 +1,8 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
-namespace SchedulerBundle\Bridge\Doctrine\Tests\Transport;
+namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
@@ -47,8 +40,8 @@ final class ConnectionIntegrationTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';
-        $this->driverConnection = DriverManager::getConnection(['url' => sprintf('sqlite:///%s', $this->sqliteFile)]);
+        $this->sqliteFile = \sys_get_temp_dir().'/symfony.scheduler.sqlite';
+        $this->driverConnection = DriverManager::getConnection(['url' => \sprintf('sqlite:///%s', $this->sqliteFile)]);
         $this->connection = new Connection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -61,8 +54,8 @@ final class ConnectionIntegrationTest extends TestCase
     protected function tearDown(): void
     {
         $this->driverConnection->close();
-        if (file_exists($this->sqliteFile)) {
-            unlink($this->sqliteFile);
+        if (\file_exists($this->sqliteFile)) {
+            \unlink($this->sqliteFile);
         }
     }
 
@@ -70,8 +63,8 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $list = $this->connection->list();
 
-        static::assertInstanceOf(TaskListInterface::class, $list);
-        static::assertEmpty($list);
+        self::assertInstanceOf(TaskListInterface::class, $list);
+        self::assertEmpty($list);
     }
 
     public function testConnectionCanListHydratedTasks(): void
@@ -81,17 +74,18 @@ final class ConnectionIntegrationTest extends TestCase
 
         $list = $this->connection->list();
 
-        static::assertInstanceOf(TaskListInterface::class, $list);
-        static::assertNotEmpty($list);
-        static::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertInstanceOf(TaskListInterface::class, $list);
+        self::assertNotEmpty($list);
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
     public function testConnectionCannotRetrieveAnUndefinedTask(): void
     {
         $this->connection->setup();
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
@@ -102,9 +96,9 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testTaskCannotBeCreatedTwice(): void
@@ -112,8 +106,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->setup();
         $this->connection->create(new NullTask('foo'));
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectExceptionCode(0);
         $this->connection->create(new NullTask('foo'));
     }
 
@@ -124,9 +119,9 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testTaskCannotBeUpdatedIfUndefined(): void
@@ -135,8 +130,9 @@ final class ConnectionIntegrationTest extends TestCase
         $task = new NullTask('foo');
         $task->setExpression('0 * * * *');
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The given task cannot be updated as the identifier or the body is invalid');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The given task cannot be updated as the identifier or the body is invalid');
+        self::expectExceptionCode(0);
         $this->connection->update('foo', $task);
     }
 
@@ -147,9 +143,9 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $task = $this->connection->get('foo');
         $task->setExpression('0 * * * *');
@@ -157,9 +153,9 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('0 * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('0 * * * *', $task->getExpression());
     }
 
     public function testTaskCanBePaused(): void
@@ -169,16 +165,16 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $this->connection->pause('foo');
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame(TaskInterface::PAUSED, $task->getState());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame(TaskInterface::PAUSED, $task->getState());
     }
 
     public function testTaskCannotBePausedTwice(): void
@@ -188,14 +184,15 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $this->connection->pause('foo');
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The task "foo" is already paused');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" is already paused');
+        self::expectExceptionCode(0);
         $this->connection->pause('foo');
     }
 
@@ -206,23 +203,23 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $this->connection->pause('foo');
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame(TaskInterface::PAUSED, $task->getState());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame(TaskInterface::PAUSED, $task->getState());
 
         $this->connection->resume('foo');
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
     public function testTaskCannotBeEnabledTwice(): void
@@ -232,21 +229,22 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $this->connection->pause('foo');
 
         $task = $this->connection->get('foo');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame(TaskInterface::PAUSED, $task->getState());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame(TaskInterface::PAUSED, $task->getState());
 
         $this->connection->resume('foo');
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The task "foo" is already enabled');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" is already enabled');
+        self::expectExceptionCode(0);
         $this->connection->resume('foo');
     }
 
@@ -254,8 +252,9 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $this->connection->setup();
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The given identifier is invalid.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The given identifier is invalid.');
+        self::expectExceptionCode(0);
         $this->connection->delete('foo');
     }
 
@@ -265,8 +264,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create(new NullTask('foo'));
         $this->connection->delete('foo');
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
@@ -276,10 +276,11 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create(new NullTask('foo'));
         $this->connection->empty();
 
-        static::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
+        self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 }

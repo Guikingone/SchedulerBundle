@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
@@ -23,12 +16,21 @@ use SchedulerBundle\Transport\TransportInterface;
  */
 final class RoundRobinTransportTest extends TestCase
 {
+    public function testTransportIsConfigured(): void
+    {
+        $transport = new RoundRobinTransport([]);
+
+        self::assertArrayHasKey('quantum', $transport->getOptions());
+        self::assertSame(2, $transport->getOptions()['quantum']);
+    }
+
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->get('foo');
     }
 
@@ -49,8 +51,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->get('foo');
     }
 
@@ -73,15 +76,16 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $transport->get('foo'));
     }
 
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->list();
     }
 
@@ -100,7 +104,7 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::assertInstanceOf(TaskListInterface::class, $transport->list());
+        self::assertInstanceOf(TaskListInterface::class, $transport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void
@@ -109,8 +113,9 @@ final class RoundRobinTransportTest extends TestCase
 
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->create($task);
     }
 
@@ -129,8 +134,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->create($task);
     }
 
@@ -159,8 +165,9 @@ final class RoundRobinTransportTest extends TestCase
 
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->update('foo', $task);
     }
 
@@ -179,8 +186,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->update('foo', $task);
     }
 
@@ -207,8 +215,9 @@ final class RoundRobinTransportTest extends TestCase
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->delete('foo');
     }
 
@@ -225,8 +234,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->delete('foo');
     }
 
@@ -250,8 +260,9 @@ final class RoundRobinTransportTest extends TestCase
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->pause('foo');
     }
 
@@ -274,8 +285,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->pause('foo');
     }
 
@@ -304,8 +316,9 @@ final class RoundRobinTransportTest extends TestCase
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->resume('foo');
     }
 
@@ -328,8 +341,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->resume('foo');
     }
 
@@ -358,8 +372,9 @@ final class RoundRobinTransportTest extends TestCase
     {
         $transport = new RoundRobinTransport([]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('No transport found');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->clear();
     }
 
@@ -380,8 +395,9 @@ final class RoundRobinTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->clear();
     }
 

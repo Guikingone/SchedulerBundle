@@ -41,7 +41,7 @@ final class TaskMessageHandler implements MessageHandlerInterface
         }
 
         while ($this->worker->isRunning()) {
-            sleep($message->getWorkerTimeout());
+            \sleep($message->getWorkerTimeout());
         }
 
         $this->worker->execute([], $task);

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -23,16 +16,16 @@ final class MessengerTaskTest extends TestCase
     {
         $task = new MessengerTask('foo', new FooMessage());
 
-        static::assertInstanceOf(FooMessage::class, $task->getMessage());
+        self::assertInstanceOf(FooMessage::class, $task->getMessage());
     }
 
     public function testTaskCanBeCreatedAndMessageChangedLater(): void
     {
         $task = new MessengerTask('foo', new FooMessage());
-        static::assertInstanceOf(FooMessage::class, $task->getMessage());
+        self::assertInstanceOf(FooMessage::class, $task->getMessage());
 
         $task->setMessage(new BarMessage());
-        static::assertInstanceOf(BarMessage::class, $task->getMessage());
+        self::assertInstanceOf(BarMessage::class, $task->getMessage());
     }
 }
 

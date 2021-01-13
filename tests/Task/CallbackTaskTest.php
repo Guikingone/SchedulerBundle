@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -21,7 +14,7 @@ final class CallbackTaskTest extends TestCase
 {
     public function testTaskCannotBeCreatedWithInvalidCallback(): void
     {
-        static::expectException(\InvalidArgumentException::class);
+        self::expectException(\InvalidArgumentException::class);
         new CallbackTask('foo', [$this, 'test']);
     }
 
@@ -29,8 +22,8 @@ final class CallbackTaskTest extends TestCase
     {
         $task = new CallbackTask('foo', [new FooService(), 'echo']);
 
-        static::assertNotEmpty($task->getCallback());
-        static::assertEmpty($task->getArguments());
+        self::assertNotEmpty($task->getCallback());
+        self::assertEmpty($task->getArguments());
     }
 
     public function testTaskCanBeCreatedWithValidCallback(): void
@@ -39,7 +32,7 @@ final class CallbackTaskTest extends TestCase
             echo 'test';
         });
 
-        static::assertEmpty($task->getArguments());
+        self::assertEmpty($task->getArguments());
     }
 
     public function testTaskCanBeCreatedWithCallbackAndChangeCallbackLater(): void
@@ -48,7 +41,7 @@ final class CallbackTaskTest extends TestCase
             echo 'test';
         });
 
-        static::assertEmpty($task->getArguments());
+        self::assertEmpty($task->getArguments());
 
         $task->setCallback(function () {
             echo 'Symfony';
@@ -61,7 +54,7 @@ final class CallbackTaskTest extends TestCase
             echo $value;
         }, ['value' => 'test']);
 
-        static::assertNotEmpty($task->getArguments());
+        self::assertNotEmpty($task->getArguments());
     }
 
     public function testTaskCanBeCreatedWithValidCallbackAndSetArgumentsLater(): void
@@ -71,7 +64,7 @@ final class CallbackTaskTest extends TestCase
         });
         $task->setArguments(['value' => 'test']);
 
-        static::assertNotEmpty($task->getArguments());
+        self::assertNotEmpty($task->getArguments());
     }
 }
 

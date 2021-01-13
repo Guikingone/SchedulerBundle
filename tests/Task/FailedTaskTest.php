@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -27,9 +20,9 @@ final class FailedTaskTest extends TestCase
 
         $failedTask = new FailedTask($task, 'foo');
 
-        static::assertSame('bar.failed', $failedTask->getName());
-        static::assertSame($task, $failedTask->getTask());
-        static::assertSame('foo', $failedTask->getReason());
-        static::assertInstanceOf(\DateTimeInterface::class, $failedTask->getFailedAt());
+        self::assertSame('bar.failed', $failedTask->getName());
+        self::assertSame($task, $failedTask->getTask());
+        self::assertSame('foo', $failedTask->getReason());
+        self::assertInstanceOf(\DateTimeInterface::class, $failedTask->getFailedAt());
     }
 }

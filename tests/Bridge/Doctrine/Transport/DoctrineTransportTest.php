@@ -1,23 +1,17 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
-namespace SchedulerBundle\Bridge\Doctrine\Tests\Transport;
+namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\DBAL\Abstraction\Result as AbstractionResult;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\SchemaConfig;
 use Doctrine\DBAL\Statement;
@@ -28,12 +22,36 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function class_exists;
+use function interface_exists;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class DoctrineTransportTest extends TestCase
 {
+    public function testTransportCanBeConfigured(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        $transport = new DoctrineTransport([
+            'connection' => 'default',
+            'execution_mode' => 'normal',
+            'auto_setup' => true,
+            'table_name' => '_symfony_scheduler_tasks',
+        ], $connection, $serializer);
+
+        self::assertArrayHasKey('connection', $transport->getOptions());
+        self::assertSame('default', $transport->getOptions()['connection']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('normal', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getOptions());
+        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertArrayHasKey('table_name', $transport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+    }
+
     public function testTransportCanListTasks(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
@@ -46,7 +64,7 @@ final class DoctrineTransportTest extends TestCase
             [
                 'id' => 1,
                 'task_name' => 'foo',
-                'body' => json_encode([
+                'body' => \json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 1,
@@ -58,7 +76,7 @@ final class DoctrineTransportTest extends TestCase
             [
                 'id' => 2,
                 'task_name' => 'bar',
-                'body' => json_encode([
+                'body' => \json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 2,
@@ -102,8 +120,8 @@ final class DoctrineTransportTest extends TestCase
 
         $list = $transport->list();
 
-        static::assertInstanceOf(TaskListInterface::class, $list);
-        static::assertNotEmpty($list);
+        self::assertInstanceOf(TaskListInterface::class, $list);
+        self::assertNotEmpty($list);
     }
 
     public function testTransportCanGetATask(): void
@@ -112,15 +130,6 @@ final class DoctrineTransportTest extends TestCase
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::once())->method('deserialize')->willReturn($task);
-
-        $statement = $this->getStatementMock([
-            'id' => 1,
-            'task_name' => 'foo',
-            'body' => json_encode([
-                'expression' => '* * * * *',
-                'taskInternalType' => NullTask::class,
-            ]),
-        ]);
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('select')->with(self::equalTo('t.*'))->willReturnSelf();
@@ -151,6 +160,15 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
+        $statement = $this->getStatementMock([
+            'id' => 1,
+            'task_name' => 'foo',
+            'body' => \json_encode([
+                'expression' => '* * * * *',
+                'taskInternalType' => NullTask::class,
+            ]),
+        ]);
+
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -163,7 +181,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
-        static::assertInstanceOf(TaskInterface::class, $transport->get('foo'));
+        self::assertInstanceOf(TaskInterface::class, $transport->get('foo'));
     }
 
     public function testTransportCanCreateATask(): void
@@ -203,7 +221,8 @@ final class DoctrineTransportTest extends TestCase
     }
 
     public function testTransportCanPauseATask(): void
-    {$task = $this->createMock(TaskInterface::class);
+    {
+        $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('setState')->with(self::equalTo(TaskInterface::PAUSED));
 
         $serializer = $this->createMock(SerializerInterface::class);
@@ -212,7 +231,7 @@ final class DoctrineTransportTest extends TestCase
         $statement = $this->getStatementMock([
             'id' => 1,
             'task_name' => 'foo',
-            'body' => json_encode([
+            'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
             ]),
@@ -274,7 +293,7 @@ final class DoctrineTransportTest extends TestCase
         $statement = $this->getStatementMock([
             'id' => 1,
             'task_name' => 'foo',
-            'body' => json_encode([
+            'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
             ]),
@@ -371,7 +390,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
-        static::assertNotEmpty($transport->getOptions());
+        self::assertNotEmpty($transport->getOptions());
     }
 
     private function getDBALConnectionMock(): MockObject
@@ -399,7 +418,7 @@ final class DoctrineTransportTest extends TestCase
 
     private function getStatementMock($expectedResult, bool $list = false): MockObject
     {
-        $statement = $this->createMock(interface_exists(Result::class) ? Result::class : Statement::class);
+        $statement = $this->createMock(class_exists(Result::class) ? Result::class : (interface_exists(AbstractionResult::class) ? AbstractionResult::class : Statement::class));
         if ($list && interface_exists(Result::class)) {
             $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult);
         }

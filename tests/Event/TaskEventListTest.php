@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Event;
 
@@ -32,13 +25,13 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskExecutedEvent($task));
 
-        static::assertNotEmpty($list->getEvents());
-        static::assertSame(1, $list->count());
-        static::assertEmpty($list->getScheduledTaskEvents());
-        static::assertEmpty($list->getFailedTaskEvents());
-        static::assertNotEmpty($list->getExecutedTaskEvents());
-        static::assertEmpty($list->getUnscheduledTaskEvents());
-        static::assertEmpty($list->getQueuedTaskEvents());
+        self::assertNotEmpty($list->getEvents());
+        self::assertSame(1, $list->count());
+        self::assertEmpty($list->getScheduledTaskEvents());
+        self::assertEmpty($list->getFailedTaskEvents());
+        self::assertNotEmpty($list->getExecutedTaskEvents());
+        self::assertEmpty($list->getUnscheduledTaskEvents());
+        self::assertEmpty($list->getQueuedTaskEvents());
     }
 
     public function testScheduledTaskEventsCanBeRetrieved(): void
@@ -48,8 +41,8 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskScheduledEvent($task));
 
-        static::assertNotEmpty($list->getScheduledTaskEvents());
-        static::assertSame($task, $list->getScheduledTaskEvents()[0]->getTask());
+        self::assertNotEmpty($list->getScheduledTaskEvents());
+        self::assertSame($task, $list->getScheduledTaskEvents()[0]->getTask());
     }
 
     public function testUnscheduledTaskEventsCanBeRetrieved(): void
@@ -57,8 +50,8 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskUnscheduledEvent('foo'));
 
-        static::assertNotEmpty($list->getUnscheduledTaskEvents());
-        static::assertSame('foo', $list->getUnscheduledTaskEvents()[0]->getTask());
+        self::assertNotEmpty($list->getUnscheduledTaskEvents());
+        self::assertSame('foo', $list->getUnscheduledTaskEvents()[0]->getTask());
     }
 
     public function testExecutedTaskEventsCanBeRetrieved(): void
@@ -68,8 +61,8 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskExecutedEvent($task));
 
-        static::assertNotEmpty($list->getExecutedTaskEvents());
-        static::assertSame($task, $list->getExecutedTaskEvents()[0]->getTask());
+        self::assertNotEmpty($list->getExecutedTaskEvents());
+        self::assertSame($task, $list->getExecutedTaskEvents()[0]->getTask());
     }
 
     public function testFailedTaskEventsCanBeRetrieved(): void
@@ -80,9 +73,9 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskFailedEvent($failedTask));
 
-        static::assertNotEmpty($list->getFailedTaskEvents());
-        static::assertSame($failedTask, $list->getFailedTaskEvents()[0]->getTask());
-        static::assertSame($task, $list->getFailedTaskEvents()[0]->getTask()->getTask());
+        self::assertNotEmpty($list->getFailedTaskEvents());
+        self::assertSame($failedTask, $list->getFailedTaskEvents()[0]->getTask());
+        self::assertSame($task, $list->getFailedTaskEvents()[0]->getTask()->getTask());
     }
 
     public function testQueuedTaskEventsCanBeRetrieved(): void
@@ -93,7 +86,7 @@ final class TaskEventListTest extends TestCase
         $list = new TaskEventList();
         $list->addEvent(new TaskScheduledEvent($task));
 
-        static::assertNotEmpty($list->getQueuedTaskEvents());
-        static::assertSame($task, $list->getQueuedTaskEvents()[0]->getTask());
+        self::assertNotEmpty($list->getQueuedTaskEvents());
+        self::assertSame($task, $list->getQueuedTaskEvents()[0]->getTask());
     }
 }

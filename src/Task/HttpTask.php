@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
@@ -16,8 +9,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class HttpTask extends AbstractTask
 {
@@ -88,9 +79,9 @@ final class HttpTask extends AbstractTask
             return;
         }
 
-        array_walk($clientOptions, function ($_, $key): void {
+        \array_walk($clientOptions, function ($_, $key): void {
             if (!\array_key_exists($key, HttpClientInterface::OPTIONS_DEFAULTS)) {
-                throw new InvalidArgumentException(sprintf('The following option: "%s" is not supported', $key));
+                throw new InvalidArgumentException(\sprintf('The following option: "%s" is not supported', $key));
             }
         });
     }

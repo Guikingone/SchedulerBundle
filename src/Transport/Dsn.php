@@ -1,22 +1,20 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
+use function array_merge;
+use function parse_str;
+use function parse_url;
+use function preg_match;
+use function sprintf;
+use function strtr;
+use function urldecode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class Dsn
 {

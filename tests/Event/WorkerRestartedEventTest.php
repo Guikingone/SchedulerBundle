@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Tests\Event;
 
@@ -28,6 +21,6 @@ final class WorkerRestartedEventTest extends TestCase
 
         $event = new WorkerRestartedEvent($worker);
 
-        static::assertSame($worker, $event->getWorker());
+        self::assertSame($worker, $event->getWorker());
     }
 }

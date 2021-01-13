@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task\Builder;
 
@@ -26,8 +19,8 @@ final class HttpBuilderTest extends TestCase
     {
         $builder = new HttpBuilder();
 
-        static::assertFalse($builder->support('test'));
-        static::assertTrue($builder->support('http'));
+        self::assertFalse($builder->support('test'));
+        self::assertTrue($builder->support('http'));
     }
 
     /**
@@ -39,16 +32,16 @@ final class HttpBuilderTest extends TestCase
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        static::assertInstanceOf(HttpTask::class, $task);
-        static::assertSame($options['name'], $task->getName());
-        static::assertSame($options['expression'], $task->getExpression());
-        static::assertSame($options['url'], $task->getUrl());
-        static::assertSame($options['method'], $task->getMethod());
-        static::assertSame($options['client_options'], $task->getClientOptions());
-        static::assertNull($task->getDescription());
-        static::assertFalse($task->isQueued());
-        static::assertNull($task->getTimezone());
-        static::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertInstanceOf(HttpTask::class, $task);
+        self::assertSame($options['name'], $task->getName());
+        self::assertSame($options['expression'], $task->getExpression());
+        self::assertSame($options['url'], $task->getUrl());
+        self::assertSame($options['method'], $task->getMethod());
+        self::assertSame($options['client_options'], $task->getClientOptions());
+        self::assertNull($task->getDescription());
+        self::assertFalse($task->isQueued());
+        self::assertNull($task->getTimezone());
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
     public function provideTaskData(): \Generator

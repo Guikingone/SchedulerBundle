@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
@@ -15,11 +8,10 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class RedisTransport extends AbstractTransport
 {
@@ -29,7 +21,7 @@ final class RedisTransport extends AbstractTransport
     private $connection;
 
     /**
-     * @param array<string,int|string> $options
+     * @param array<string, int|string> $options
      */
     public function __construct(array $options, SerializerInterface $serializer)
     {

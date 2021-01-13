@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
@@ -29,11 +22,11 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class Connection implements ConnectionInterface
 {
@@ -70,7 +63,7 @@ final class Connection implements ConnectionInterface
             }
 
             return $taskList;
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -98,7 +91,7 @@ final class Connection implements ConnectionInterface
             }
 
             return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -145,7 +138,7 @@ final class Connection implements ConnectionInterface
                     throw new DBALException('The given data are invalid.');
                 }
             });
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -171,7 +164,7 @@ final class Connection implements ConnectionInterface
 
             $task->setState(AbstractTask::PAUSED);
             $this->update($name, $task);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -189,7 +182,7 @@ final class Connection implements ConnectionInterface
 
             $task->setState(AbstractTask::ENABLED);
             $this->update($name, $task);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -217,7 +210,7 @@ final class Connection implements ConnectionInterface
                     throw new InvalidArgumentException('The given identifier is invalid.');
                 }
             });
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new TransportException($exception->getMessage());
         }
     }
@@ -233,7 +226,7 @@ final class Connection implements ConnectionInterface
 
                 $connection->executeQuery($deleteQuery->getSQL());
             });
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -280,7 +273,7 @@ final class Connection implements ConnectionInterface
                     throw new DBALException('The given task cannot be updated as the identifier or the body is invalid');
                 }
             });
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
     }
@@ -297,7 +290,7 @@ final class Connection implements ConnectionInterface
     {
         try {
             $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             if ($this->driverConnection->isTransactionActive()) {
                 throw $throwable;
             }

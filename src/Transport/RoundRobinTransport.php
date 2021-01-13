@@ -1,24 +1,22 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
+use Countable;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SplObjectStorage;
+use Throwable;
+use function array_merge;
+use function count;
+use function is_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class RoundRobinTransport extends AbstractTransport
 {
@@ -37,7 +35,7 @@ final class RoundRobinTransport extends AbstractTransport
         ]);
 
         $this->transports = $transports;
-        $this->sleepingTransports = new \SplObjectStorage();
+        $this->sleepingTransports = new SplObjectStorage();
     }
 
     /**
@@ -120,13 +118,13 @@ final class RoundRobinTransport extends AbstractTransport
         });
     }
 
-    private function execute(\Closure $func)
+    private function execute(Closure $func)
     {
         if (empty($this->transports)) {
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== \count($this->transports)) {
+        while ($this->sleepingTransports->count() !== (is_array($this->transports) || $this->transports instanceof Countable ? count($this->transports) : 0)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;
@@ -138,7 +136,7 @@ final class RoundRobinTransport extends AbstractTransport
                     $this->sleepingTransports->attach($transport);
 
                     return $res;
-                } catch (\Throwable $throwable) {
+                } catch (Throwable $throwable) {
                     $this->sleepingTransports->attach($transport);
 
                     continue;

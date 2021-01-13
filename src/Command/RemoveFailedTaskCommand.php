@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
@@ -23,8 +16,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class RemoveFailedTaskCommand extends Command
 {
@@ -52,7 +43,8 @@ final class RemoveFailedTaskCommand extends Command
                 new InputArgument('name', InputArgument::REQUIRED, 'The name of the task to remove'),
                 new InputOption('force', 'f', InputOption::VALUE_NONE, 'Force the operation without confirmation'),
             ])
-            ->setHelp(<<<'EOF'
+            ->setHelp(
+                <<<'EOF'
 The <info>%command.name%</info> command remove a failed task.
 
     <info>php %command.full_name%</info>
@@ -78,7 +70,7 @@ EOF
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
-            $style->error(sprintf('The task "%s" does not fails', $name));
+            $style->error(\sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
@@ -95,11 +87,11 @@ EOF
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $style->success(\sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
         } else {
-            $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+            $style->note(\sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
 
             return self::FAILURE;
         }

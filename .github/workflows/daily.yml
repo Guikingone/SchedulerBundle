@@ -3,15 +3,20 @@ on:
   schedule:
     - cron: "0 0 * * *"
 jobs:
-  meili_search:
+  scheduler_bundle:
     name: PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }}
     # https://hub.docker.com/_/ubuntu/
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.2', '7.3', '7.4', '8.0']
+        php-versions: ['7.2', '7.3', '7.4']
         composer-dependencies: ['', 'lowest']
+    services:
+      redis:
+        image: redis:6.0.0
+        ports:
+          - 6379:6379
     steps:
       # https://github.com/actions/checkout (official)
       - name: Checkout
@@ -56,10 +61,6 @@ jobs:
         if: matrix.composer-dependencies == 'lowest'
         run: composer update --prefer-lowest
 
-      # —— Security ——————————————————————————————————————————————————————
-      - name: Symfony Security Checker
-        uses: symfonycorp/security-checker-action@v2
-
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER
         uses: docker://oskarstark/php-cs-fixer-ga
@@ -69,7 +70,9 @@ jobs:
       # —— PHPUnit ———————————————————————————————————————————————————————
       - name: PHPUnit
         run: php vendor/bin/phpunit tests
+        env:
+          SCHEDULER_REDIS_DSN: redis://127.0.0.1:7006/_symfony_scheduler_tasks
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
-        run: php vendor/bin/infection --no-progress --min-covered-msi=95 --min-msi=95
+        run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=70 --show-mutations

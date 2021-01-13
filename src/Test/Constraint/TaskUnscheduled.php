@@ -34,7 +34,7 @@ final class TaskUnscheduled extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('%s %s been unscheduled', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
+        return \sprintf('%s %s been unscheduled', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
     }
 
     /**

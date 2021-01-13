@@ -34,7 +34,7 @@ final class Output
 
     public function __toString(): string
     {
-        return null !== $this->output ? $this->output : '';
+        return $this->output ?? '';
     }
 
     public function getOutput(): ?string

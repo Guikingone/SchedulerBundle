@@ -1,15 +1,8 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
-namespace SchedulerBundle\Bridge\Doctrine\Tests\Transport;
+namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Configuration;
@@ -61,7 +54,7 @@ final class ConnectionTest extends TestCase
             [
                 'id' => 1,
                 'task_name' => 'foo',
-                'body' => json_encode([
+                'body' => \json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 1,
@@ -73,7 +66,7 @@ final class ConnectionTest extends TestCase
             [
                 'id' => 2,
                 'task_name' => 'bar',
-                'body' => json_encode([
+                'body' => \json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 2,
@@ -94,12 +87,12 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $taskList = $connection->list();
 
-        static::assertNotEmpty($taskList);
-        static::assertInstanceOf(TaskInterface::class, $taskList->get('bar'));
+        self::assertNotEmpty($taskList);
+        self::assertInstanceOf(TaskInterface::class, $taskList->get('bar'));
 
         $list = $taskList->toArray(false);
-        static::assertSame('foo', $list[0]->getName());
-        static::assertSame('bar', $list[1]->getName());
+        self::assertSame('foo', $list[0]->getName());
+        self::assertSame('bar', $list[1]->getName());
     }
 
     public function testConnectionCanReturnAnEmptyTaskList(): void
@@ -124,7 +117,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $taskList = $connection->list();
 
-        static::assertEmpty($taskList);
+        self::assertEmpty($taskList);
     }
 
     public function testConnectionCannotReturnAnInvalidTask(): void
@@ -148,8 +141,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $connection->get('foo');
     }
 
@@ -161,7 +155,7 @@ final class ConnectionTest extends TestCase
         $statement = $this->getStatementMock([
             'id' => 1,
             'task_name' => 'foo',
-            'body' => json_encode([
+            'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
             ]),
@@ -185,9 +179,9 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $task = $connection->get('foo');
 
-        static::assertInstanceOf(TaskInterface::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testConnectionCannotInsertASingleTaskWithExistingIdentifier(): void
@@ -203,8 +197,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectExceptionCode(0);
         $connection->create($task);
     }
 
@@ -221,8 +216,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The given data are invalid.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The given data are invalid.');
+        self::expectExceptionCode(0);
         $connection->create($task);
     }
 
@@ -263,8 +259,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $connection->pause('bar');
     }
 
@@ -326,8 +323,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The desired task cannot be found.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionCode(0);
         $connection->resume('foo');
     }
 
@@ -382,8 +380,9 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $doctrineConnection, $serializer);
 
-        static::expectException(TransportException::class);
-        static::expectExceptionMessage('The given identifier is invalid.');
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The given identifier is invalid.');
+        self::expectExceptionCode(0);
         $connection->delete('bar');
     }
 
@@ -413,7 +412,8 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
 
-        static::expectException(TransportException::class);
+        self::expectException(TransportException::class);
+        self::expectExceptionCode(0);
         $connection->empty();
     }
 
@@ -535,20 +535,20 @@ final class ConnectionTest extends TestCase
 
     private function getStatementMock($expectedResult, bool $list = false)
     {
-        $statement = $this->createMock(interface_exists(Result::class) ? Result::class : Statement::class);
-        if ($list && interface_exists(Result::class)) {
+        $statement = $this->createMock(\interface_exists(Result::class) ? Result::class : Statement::class);
+        if ($list && \interface_exists(Result::class)) {
             $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult);
         }
 
-        if ($list && !interface_exists(Result::class)) {
+        if ($list && !\interface_exists(Result::class)) {
             $statement->expects(self::once())->method('fetchAll')->willReturn($expectedResult);
         }
 
-        if (!$list && interface_exists(Result::class)) {
+        if (!$list && \interface_exists(Result::class)) {
             $statement->expects(self::once())->method('fetchAssociative')->willReturn($expectedResult);
         }
 
-        if (!$list && !interface_exists(Result::class)) {
+        if (!$list && !\interface_exists(Result::class)) {
             $statement->expects(self::once())->method('fetch')->willReturn($expectedResult);
         }
 

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
@@ -31,15 +24,17 @@ final class ListTasksCommandTest extends TestCase
         $schedulerRegistry = $this->createMock(SchedulerInterface::class);
         $command = new ListTasksCommand($schedulerRegistry);
 
-        static::assertSame('scheduler:list', $command->getName());
-        static::assertSame('List the tasks', $command->getDescription());
-        static::assertTrue($command->getDefinition()->hasOption('expression'));
-        static::assertSame('The expression of the tasks', $command->getDefinition()->getOption('expression')->getDescription());
-        static::assertNull($command->getDefinition()->getOption('expression')->getShortcut());
-        static::assertTrue($command->getDefinition()->hasOption('state'));
-        static::assertSame('The state of the tasks', $command->getDefinition()->getOption('state')->getDescription());
-        static::assertSame('s', $command->getDefinition()->getOption('state')->getShortcut());
-        static::assertSame($command->getHelp(), <<<'EOF'
+        self::assertSame('scheduler:list', $command->getName());
+        self::assertSame('List the tasks', $command->getDescription());
+        self::assertTrue($command->getDefinition()->hasOption('expression'));
+        self::assertSame('The expression of the tasks', $command->getDefinition()->getOption('expression')->getDescription());
+        self::assertNull($command->getDefinition()->getOption('expression')->getShortcut());
+        self::assertTrue($command->getDefinition()->hasOption('state'));
+        self::assertSame('The state of the tasks', $command->getDefinition()->getOption('state')->getDescription());
+        self::assertSame('s', $command->getDefinition()->getOption('state')->getShortcut());
+        self::assertSame(
+            $command->getHelp(),
+            <<<'EOF'
 The <info>%command.name%</info> command list tasks.
 
     <info>php %command.full_name%</info>
@@ -68,8 +63,8 @@ EOF
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
     }
 
     /**
@@ -101,16 +96,16 @@ EOF
             $stateOption => TaskInterface::ENABLED,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('Description', $tester->getDisplay());
-        static::assertStringContainsString('Expression', $tester->getDisplay());
-        static::assertStringContainsString('Last execution date', $tester->getDisplay());
-        static::assertStringContainsString('Next execution date', $tester->getDisplay());
-        static::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('Last execution date', $tester->getDisplay());
+        self::assertStringContainsString('Next execution date', $tester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
     }
 
     /**
@@ -142,16 +137,16 @@ EOF
             $expressionOption => '* * * * *',
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('Description', $tester->getDisplay());
-        static::assertStringContainsString('Expression', $tester->getDisplay());
-        static::assertStringContainsString('Last execution date', $tester->getDisplay());
-        static::assertStringContainsString('Next execution date', $tester->getDisplay());
-        static::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('Last execution date', $tester->getDisplay());
+        self::assertStringContainsString('Next execution date', $tester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithoutFilter(): void
@@ -178,16 +173,16 @@ EOF
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('Description', $tester->getDisplay());
-        static::assertStringContainsString('Expression', $tester->getDisplay());
-        static::assertStringContainsString('Last execution date', $tester->getDisplay());
-        static::assertStringContainsString('Next execution date', $tester->getDisplay());
-        static::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('Last execution date', $tester->getDisplay());
+        self::assertStringContainsString('Next execution date', $tester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
     }
 
     /**
@@ -228,27 +223,27 @@ EOF
             $stateOption => TaskInterface::ENABLED,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] 2 tasks found', $tester->getDisplay());
-        static::assertStringContainsString('Name', $tester->getDisplay());
-        static::assertStringContainsString('foo', $tester->getDisplay());
-        static::assertStringContainsString('bar', $tester->getDisplay());
-        static::assertStringContainsString('Description', $tester->getDisplay());
-        static::assertStringContainsString('A random task', $tester->getDisplay());
-        static::assertStringContainsString('A second random task', $tester->getDisplay());
-        static::assertStringContainsString('Expression', $tester->getDisplay());
-        static::assertStringContainsString('* * * * *', $tester->getDisplay());
-        static::assertStringContainsString('* * * * *', $tester->getDisplay());
-        static::assertStringContainsString('Last execution date', $tester->getDisplay());
-        static::assertStringContainsString('Next execution date', $tester->getDisplay());
-        static::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        static::assertStringContainsString('Last execution memory usage', $tester->getDisplay());
-        static::assertStringContainsString('State', $tester->getDisplay());
-        static::assertStringContainsString('Tags', $tester->getDisplay());
-        static::assertStringContainsString('app', $tester->getDisplay());
-        static::assertStringContainsString('slow', $tester->getDisplay());
-        static::assertStringContainsString('app', $tester->getDisplay());
-        static::assertStringContainsString('fast', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] 2 tasks found', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('bar', $tester->getDisplay());
+        self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('A random task', $tester->getDisplay());
+        self::assertStringContainsString('A second random task', $tester->getDisplay());
+        self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('* * * * *', $tester->getDisplay());
+        self::assertStringContainsString('* * * * *', $tester->getDisplay());
+        self::assertStringContainsString('Last execution date', $tester->getDisplay());
+        self::assertStringContainsString('Next execution date', $tester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('Last execution memory usage', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app', $tester->getDisplay());
+        self::assertStringContainsString('slow', $tester->getDisplay());
+        self::assertStringContainsString('app', $tester->getDisplay());
+        self::assertStringContainsString('fast', $tester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidExpressionFilter(): void
@@ -271,8 +266,8 @@ EOF
             '--expression' => '0 * * * *',
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidStateFilter(): void
@@ -295,8 +290,8 @@ EOF
             '--state' => 'test',
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidStateAndExpressionFilter(): void
@@ -320,8 +315,8 @@ EOF
             '--state' => 'started',
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
     }
 
     public function provideStateOption(): \Generator

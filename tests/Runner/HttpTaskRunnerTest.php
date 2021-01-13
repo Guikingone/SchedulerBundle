@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -28,14 +21,14 @@ final class HttpTaskRunnerTest extends TestCase
     {
         $runner = new HttpTaskRunner();
 
-        static::assertFalse($runner->support(new NullTask('foo')));
-        static::assertTrue($runner->support(new HttpTask('foo', 'https://symfony.com', 'GET')));
+        self::assertFalse($runner->support(new NullTask('foo')));
+        self::assertTrue($runner->support(new HttpTask('foo', 'https://symfony.com', 'GET')));
     }
 
     public function testRunnerCanGenerateErrorOutput(): void
     {
         $httpClient = new MockHttpClient([
-            new MockResponse(json_encode([
+            new MockResponse(\json_encode([
                 'error' => 404,
                 'message' => 'Resource not found',
             ]), ['http_code' => 404]),
@@ -44,14 +37,14 @@ final class HttpTaskRunnerTest extends TestCase
         $runner = new HttpTaskRunner($httpClient);
         $output = $runner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
 
-        static::assertSame('HTTP 404 returned for "https://symfony.com/".', $output->getOutput());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame('HTTP 404 returned for "https://symfony.com/".', $output->getOutput());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanGenerateSuccessOutput(): void
     {
         $httpClient = new MockHttpClient([
-            new MockResponse(json_encode([
+            new MockResponse(\json_encode([
                 'body' => 'test',
             ]), ['http_code' => 200]),
         ]);
@@ -59,7 +52,7 @@ final class HttpTaskRunnerTest extends TestCase
         $runner = new HttpTaskRunner($httpClient);
         $output = $runner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
 
-        static::assertSame('{"body":"test"}', $output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertSame('{"body":"test"}', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }

@@ -3,3 +3,9 @@ composer.lock
 phpunit.xml
 
 Tests/Transport/assets/**/*.json
+
+# Tools
+.php_cs.cache
+
+# Tests
+.phpunit.result.cache

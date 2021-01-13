@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
@@ -27,8 +21,8 @@ final class InMemoryTransportFactoryTest extends TestCase
     {
         $factory = new InMemoryTransportFactory();
 
-        static::assertFalse($factory->support('test://'));
-        static::assertTrue($factory->support('memory://'));
+        self::assertFalse($factory->support('test://'));
+        self::assertTrue($factory->support('memory://'));
     }
 
     /**
@@ -42,18 +36,40 @@ final class InMemoryTransportFactoryTest extends TestCase
         $factory = new InMemoryTransportFactory();
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
-        static::assertInstanceOf(InMemoryTransport::class, $transport);
-        static::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertInstanceOf(InMemoryTransport::class, $transport);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
     }
 
-    public function provideDsn(): \Generator
+    /**
+     * @dataProvider provideAdvancedDsn
+     */
+    public function testFactoryReturnTransportWithAdvancedConfiguration(string $dsn): void
     {
-        yield [
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $factory = new InMemoryTransportFactory();
+        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+
+        self::assertInstanceOf(InMemoryTransport::class, $transport);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertCount(2, $transport->getOptions());
+    }
+
+    public function provideDsn(): Generator
+    {
+        yield 'simple configuration' => [
             'memory://batch',
             'memory://deadline',
             'memory://first_in_first_out',
             'memory://normal',
-            'memory://normal?nice=10',
+        ];
+    }
+
+    public function provideAdvancedDsn(): Generator
+    {
+        yield 'advanced configuration' => [
+            'memory://normal?path=/srv/app',
         ];
     }
 }

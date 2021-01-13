@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Serializer;
 
@@ -44,8 +37,8 @@ final class TaskNormalizerTest extends TestCase
     {
         $normalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer());
 
-        static::assertFalse($normalizer->supportsNormalization(new FooTask()));
-        static::assertTrue($normalizer->supportsNormalization(new NullTask('foo')));
+        self::assertFalse($normalizer->supportsNormalization(new FooTask()));
+        self::assertTrue($normalizer->supportsNormalization(new NullTask('foo')));
     }
 
     public function testNormalizerCanNormalizeValidObject(): void
@@ -57,35 +50,35 @@ final class TaskNormalizerTest extends TestCase
 
         $data = $serializer->normalize(new NullTask('foo'));
 
-        static::assertContainsEquals('name', $data['body']);
-        static::assertContainsEquals('arrivalTime', $data['body']);
-        static::assertContainsEquals('description', $data['body']);
-        static::assertContainsEquals('expression', $data['body']);
-        static::assertContainsEquals('executionComputationTime', $data['body']);
-        static::assertContainsEquals('lastExecution', $data['body']);
-        static::assertContainsEquals('maxDuration', $data['body']);
-        static::assertContainsEquals('nice', $data['body']);
-        static::assertContainsEquals('output', $data['body']);
-        static::assertContainsEquals('priority', $data['body']);
-        static::assertContainsEquals('queued', $data['body']);
-        static::assertContainsEquals('singleRun', $data['body']);
-        static::assertContainsEquals('state', $data['body']);
-        static::assertContainsEquals('timezone', $data['body']);
-        static::assertContainsEquals('tracked', $data['body']);
-        static::assertSame(NullTask::class, $data['taskInternalType']);
-        static::assertArrayHasKey('taskInternalType', $data);
+        self::assertContainsEquals('name', $data['body']);
+        self::assertContainsEquals('arrivalTime', $data['body']);
+        self::assertContainsEquals('description', $data['body']);
+        self::assertContainsEquals('expression', $data['body']);
+        self::assertContainsEquals('executionComputationTime', $data['body']);
+        self::assertContainsEquals('lastExecution', $data['body']);
+        self::assertContainsEquals('maxDuration', $data['body']);
+        self::assertContainsEquals('nice', $data['body']);
+        self::assertContainsEquals('output', $data['body']);
+        self::assertContainsEquals('priority', $data['body']);
+        self::assertContainsEquals('queued', $data['body']);
+        self::assertContainsEquals('singleRun', $data['body']);
+        self::assertContainsEquals('state', $data['body']);
+        self::assertContainsEquals('timezone', $data['body']);
+        self::assertContainsEquals('tracked', $data['body']);
+        self::assertSame(NullTask::class, $data['taskInternalType']);
+        self::assertArrayHasKey('taskInternalType', $data);
 
         $task = $serializer->denormalize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(TaskInterface::class, $task);
+        self::assertInstanceOf(TaskInterface::class, $task);
     }
 
     public function testCallbackTaskCannotBeDenormalizedWithClosure(): void
     {
         $normalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer());
 
-        static::expectException(InvalidArgumentException::class);
-        static::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
         $normalizer->normalize(new CallbackTask('foo', function () {
             echo 'Symfony!';
         }));
@@ -103,8 +96,8 @@ final class TaskNormalizerTest extends TestCase
         $body = $serializer->serialize(new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']), 'json');
         $deserializedTask = $serializer->deserialize($body, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(CallbackTask::class, $deserializedTask);
-        static::assertEquals($task->getCallback(), $deserializedTask->getCallback());
+        self::assertInstanceOf(CallbackTask::class, $deserializedTask);
+        self::assertEquals($task->getCallback(), $deserializedTask->getCallback());
     }
 
     public function testCommandTaskCanBeDenormalized(): void
@@ -117,9 +110,9 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new CommandTask('foo', 'cache:clear', [], ['--env' => 'test']), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(CommandTask::class, $task);
-        static::assertSame('cache:clear', $task->getCommand());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(CommandTask::class, $task);
+        self::assertSame('cache:clear', $task->getCommand());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testCommandTaskCanBeSerializedAndUpdated(): void
@@ -132,17 +125,17 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new CommandTask('foo', 'cache:clear', [], ['--env' => 'test']), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(CommandTask::class, $task);
-        static::assertSame('cache:clear', $task->getCommand());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(CommandTask::class, $task);
+        self::assertSame('cache:clear', $task->getCommand());
+        self::assertSame('* * * * *', $task->getExpression());
 
         $task->setExpression('0 * * * *');
         $data = $serializer->serialize($task, 'json');
         $updatedTask = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(CommandTask::class, $updatedTask);
-        static::assertSame('cache:clear', $updatedTask->getCommand());
-        static::assertSame('0 * * * *', $updatedTask->getExpression());
+        self::assertInstanceOf(CommandTask::class, $updatedTask);
+        self::assertSame('cache:clear', $updatedTask->getCommand());
+        self::assertSame('0 * * * *', $updatedTask->getExpression());
     }
 
     public function testNullTaskCanBeDenormalized(): void
@@ -158,9 +151,9 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(NullTask::class, $task);
-        static::assertSame('* * * * *', $task->getExpression());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getScheduledAt());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getScheduledAt());
     }
 
     public function testShellTaskCanBeDenormalized(): void
@@ -176,10 +169,10 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(ShellTask::class, $task);
-        static::assertContainsEquals('echo', $task->getCommand());
-        static::assertContainsEquals('Symfony', $task->getCommand());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(ShellTask::class, $task);
+        self::assertContainsEquals('echo', $task->getCommand());
+        self::assertContainsEquals('Symfony', $task->getCommand());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testTaskWithDatetimeCanBeDenormalized(): void
@@ -200,16 +193,16 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(ShellTask::class, $task);
-        static::assertContainsEquals('echo', $task->getCommand());
-        static::assertContainsEquals('Symfony', $task->getCommand());
-        static::assertSame('* * * * *', $task->getExpression());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getArrivalTime());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getScheduledAt());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionStartTime());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionEndTime());
-        static::assertInstanceOf(\DateTimeImmutable::class, $task->getLastExecution());
-        static::assertInstanceOf(\DateTimeZone::class, $task->getTimeZone());
+        self::assertInstanceOf(ShellTask::class, $task);
+        self::assertContainsEquals('echo', $task->getCommand());
+        self::assertContainsEquals('Symfony', $task->getCommand());
+        self::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getArrivalTime());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getScheduledAt());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionStartTime());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionEndTime());
+        self::assertInstanceOf(\DateTimeImmutable::class, $task->getLastExecution());
+        self::assertInstanceOf(\DateTimeZone::class, $task->getTimeZone());
     }
 
     public function testMessengerTaskCanBeDenormalized(): void
@@ -222,10 +215,10 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new MessengerTask('foo', new FooMessage()), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(MessengerTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertInstanceOf(FooMessage::class, $task->getMessage());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(MessengerTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertInstanceOf(FooMessage::class, $task->getMessage());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testNotificationTaskCanBeDenormalized(): void
@@ -238,10 +231,10 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new NotificationTask('foo', new Notification('bar'), new Recipient('test@test.fr', '')), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(NotificationTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertInstanceOf(Notification::class, $task->getNotification());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NotificationTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertInstanceOf(Notification::class, $task->getNotification());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testNotificationTaskWithMultipleRecipientsCanBeDenormalized(): void
@@ -254,13 +247,13 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new NotificationTask('foo', new Notification('bar'), new Recipient('test@test.fr', ''), new Recipient('foo@test.fr', '')), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(NotificationTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertInstanceOf(Notification::class, $task->getNotification());
-        static::assertCount(2, $task->getRecipients());
-        static::assertSame('test@test.fr', $task->getRecipients()[0]->getEmail());
-        static::assertSame('foo@test.fr', $task->getRecipients()[1]->getEmail());
-        static::assertSame('* * * * *', $task->getExpression());
+        self::assertInstanceOf(NotificationTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertInstanceOf(Notification::class, $task->getNotification());
+        self::assertCount(2, $task->getRecipients());
+        self::assertSame('test@test.fr', $task->getRecipients()[0]->getEmail());
+        self::assertSame('foo@test.fr', $task->getRecipients()[1]->getEmail());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testHttpTaskCanBeDenormalized(): void
@@ -273,11 +266,11 @@ final class TaskNormalizerTest extends TestCase
         $data = $serializer->serialize(new HttpTask('foo', 'https://symfony.com', 'GET'), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
-        static::assertInstanceOf(HttpTask::class, $task);
-        static::assertSame('foo', $task->getName());
-        static::assertSame('* * * * *', $task->getExpression());
-        static::assertSame('https://symfony.com', $task->getUrl());
-        static::assertSame('GET', $task->getMethod());
+        self::assertInstanceOf(HttpTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+        self::assertSame('https://symfony.com', $task->getUrl());
+        self::assertSame('GET', $task->getMethod());
     }
 }
 

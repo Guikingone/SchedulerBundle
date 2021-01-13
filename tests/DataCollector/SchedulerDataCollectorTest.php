@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DataCollector;
 
@@ -24,7 +17,7 @@ final class SchedulerDataCollectorTest extends TestCase
     {
         $logger = new TaskLoggerSubscriber();
 
-        static::assertSame('scheduler', (new SchedulerDataCollector($logger))->getName());
+        self::assertSame('scheduler', (new SchedulerDataCollector($logger))->getName());
     }
 
     public function testTasksCanBeCollected(): void
@@ -34,6 +27,6 @@ final class SchedulerDataCollectorTest extends TestCase
         $dataCollector = new SchedulerDataCollector($logger);
         $dataCollector->lateCollect();
 
-        static::assertEmpty($dataCollector->getEvents());
+        self::assertEmpty($dataCollector->getEvents());
     }
 }

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -33,10 +26,10 @@ final class NotificationTaskRunnerTest extends TestCase
         $task = new BarTask('test');
 
         $runner = new NotificationTaskRunner();
-        static::assertFalse($runner->support($task));
+        self::assertFalse($runner->support($task));
 
         $task = new NotificationTask('test', $notification, $recipient);
-        static::assertTrue($runner->support($task));
+        self::assertTrue($runner->support($task));
     }
 
     public function testRunnerCanReturnOutputWithoutNotifier(): void
@@ -49,9 +42,9 @@ final class NotificationTaskRunnerTest extends TestCase
         $runner = new NotificationTaskRunner();
 
         $output = $runner->run($task);
-        static::assertSame('The task cannot be handled as the notifier is not defined', $output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame('The task cannot be handled as the notifier is not defined', $output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnExceptionOutput(): void
@@ -67,9 +60,9 @@ final class NotificationTaskRunnerTest extends TestCase
         $runner = new NotificationTaskRunner($notifier);
 
         $output = $runner->run($task);
-        static::assertSame('An error occurred', $output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame('An error occurred', $output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnSuccessOutput(): void
@@ -85,8 +78,8 @@ final class NotificationTaskRunnerTest extends TestCase
         $runner = new NotificationTaskRunner($notifier);
 
         $output = $runner->run($task);
-        static::assertNull($output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }

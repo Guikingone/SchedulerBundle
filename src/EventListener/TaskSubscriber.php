@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,11 +16,12 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
+use function array_key_exists;
+use function rawurldecode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskSubscriber implements EventSubscriberInterface
 {
@@ -58,20 +53,20 @@ final class TaskSubscriber implements EventSubscriberInterface
         }
 
         $query = $request->query->all();
-        if (Request::METHOD_GET === $request->getMethod() && (!\array_key_exists('name', $query) && !\array_key_exists('expression', $query))) {
-            throw new \InvalidArgumentException('A GET request should at least contains a task name or its expression!');
+        if (Request::METHOD_GET === $request->getMethod() && (!array_key_exists('name', $query) && !array_key_exists('expression', $query))) {
+            throw new InvalidArgumentException('A GET request should at least contains a task name or its expression!');
         }
 
         $tasks = $this->scheduler->getTasks();
 
-        if (\array_key_exists('name', $query) && $name = $query['name']) {
+        if (array_key_exists('name', $query) && $name = $query['name']) {
             $request->attributes->set('task_filter', $name);
             $tasks->filter(function (TaskInterface $task) use ($name): bool {
                 return $name === $task->getName();
             });
         }
 
-        if (\array_key_exists('expression', $query) && $expression = $query['expression']) {
+        if (array_key_exists('expression', $query) && $expression = $query['expression']) {
             $request->attributes->set('task_filter', $expression);
             $tasks->filter(function (TaskInterface $task) use ($expression): bool {
                 return $expression === $task->getExpression();
@@ -80,9 +75,11 @@ final class TaskSubscriber implements EventSubscriberInterface
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));
 
+        $tasks = $tasks->toArray(false);
+
         try {
             $this->worker->execute([], ...$tasks);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $event->setResponse(new JsonResponse([
                 'code' => JsonResponse::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => $throwable->getMessage(),
@@ -94,7 +91,7 @@ final class TaskSubscriber implements EventSubscriberInterface
 
         $event->setResponse(new JsonResponse([
             'code' => JsonResponse::HTTP_OK,
-            'tasks' => $this->serializer->serialize($tasks->toArray(), 'json'),
+            'tasks' => $this->serializer->normalize($tasks, 'json'),
         ]));
     }
 

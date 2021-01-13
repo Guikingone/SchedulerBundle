@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
@@ -32,15 +25,17 @@ final class RemoveFailedTaskCommandTest extends TestCase
 
         $command = new RemoveFailedTaskCommand($scheduler, $worker);
 
-        static::assertSame('scheduler:remove:failed', $command->getName());
-        static::assertSame('Remove given task from the scheduler', $command->getDescription());
-        static::assertTrue($command->getDefinition()->hasArgument('name'));
-        static::assertSame('The name of the task to remove', $command->getDefinition()->getArgument('name')->getDescription());
-        static::assertTrue($command->getDefinition()->getArgument('name')->isRequired());
-        static::assertTrue($command->getDefinition()->hasOption('force'));
-        static::assertSame('Force the operation without confirmation', $command->getDefinition()->getOption('force')->getDescription());
-        static::assertSame('f', $command->getDefinition()->getOption('force')->getShortcut());
-        static::assertSame($command->getHelp(), <<<'EOF'
+        self::assertSame('scheduler:remove:failed', $command->getName());
+        self::assertSame('Remove given task from the scheduler', $command->getDescription());
+        self::assertTrue($command->getDefinition()->hasArgument('name'));
+        self::assertSame('The name of the task to remove', $command->getDefinition()->getArgument('name')->getDescription());
+        self::assertTrue($command->getDefinition()->getArgument('name')->isRequired());
+        self::assertTrue($command->getDefinition()->hasOption('force'));
+        self::assertSame('Force the operation without confirmation', $command->getDefinition()->getOption('force')->getDescription());
+        self::assertSame('f', $command->getDefinition()->getOption('force')->getShortcut());
+        self::assertSame(
+            $command->getHelp(),
+            <<<'EOF'
 The <info>%command.name%</info> command remove a failed task.
 
     <info>php %command.full_name%</info>
@@ -70,8 +65,8 @@ EOF
             'name' => 'foo',
         ]);
 
-        static::assertSame(Command::FAILURE, $tester->getStatusCode());
-        static::assertStringContainsString('[ERROR] The task "foo" does not fails', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('[ERROR] The task "foo" does not fails', $tester->getDisplay());
     }
 
     public function testCommandCannotRemoveTaskWithException(): void
@@ -94,9 +89,9 @@ EOF
             'name' => 'foo',
         ]);
 
-        static::assertSame(Command::FAILURE, $tester->getStatusCode());
-        static::assertStringContainsString('[ERROR] An error occurred when trying to unschedule the task:', $tester->getDisplay());
-        static::assertStringContainsString('Random error', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('[ERROR] An error occurred when trying to unschedule the task:', $tester->getDisplay());
+        self::assertStringContainsString('Random error', $tester->getDisplay());
     }
 
     public function testCommandCanRemoveTaskWithForceOption(): void
@@ -120,8 +115,8 @@ EOF
             '--force' => true,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
     }
 
     public function testCommandCanRemoveTask(): void
@@ -145,7 +140,7 @@ EOF
             'name' => 'foo',
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
     }
 }

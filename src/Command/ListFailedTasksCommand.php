@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
@@ -20,8 +13,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class ListFailedTasksCommand extends Command
 {
@@ -70,7 +61,7 @@ final class ListFailedTasksCommand extends Command
 
         $table->addRows($failedTasks);
 
-        $style->success(sprintf('%d task%s found', \count($failedTasks), \count($failedTasks) > 1 ? 's' : ''));
+        $style->success(\sprintf('%d task%s found', \count($failedTasks), \count($failedTasks) > 1 ? 's' : ''));
         $table->render();
 
         return self::SUCCESS;

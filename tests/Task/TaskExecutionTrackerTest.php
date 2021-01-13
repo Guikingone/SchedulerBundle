@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -30,10 +23,10 @@ final class TaskExecutionTrackerTest extends TestCase
         $tracker = new TaskExecutionTracker(new Stopwatch());
 
         $tracker->startTracking($task);
-        sleep(1);
+        \sleep(1);
         $tracker->endTracking($task);
 
-        static::assertNull($task->getExecutionComputationTime());
+        self::assertNull($task->getExecutionComputationTime());
     }
 
     /**
@@ -44,11 +37,11 @@ final class TaskExecutionTrackerTest extends TestCase
         $tracker = new TaskExecutionTracker(new Stopwatch());
 
         $tracker->startTracking($task);
-        sleep(1);
+        \sleep(1);
         $tracker->endTracking($task);
 
-        static::assertNotNull($task->getExecutionComputationTime());
-        static::assertNotNull($task->getExecutionMemoryUsage());
+        self::assertNotNull($task->getExecutionComputationTime());
+        self::assertNotNull($task->getExecutionMemoryUsage());
     }
 
     public function provideTrackedTasks(): \Generator

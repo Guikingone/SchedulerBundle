@@ -1,16 +1,10 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -19,12 +13,22 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class InMemoryTransportTest extends TestCase
 {
+    public function testTransportCannotBeConfiguredWithInvalidOptionType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_mode" with value 350 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        $transport = new InMemoryTransport(['execution_mode' => 350], new SchedulePolicyOrchestrator([]));
+    }
+
     /**
      * @dataProvider provideTasks
      */
@@ -35,7 +39,7 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
     }
 
     public function testTransportCannotCreateATaskTwice(): void
@@ -52,7 +56,7 @@ final class InMemoryTransportTest extends TestCase
 
         $transport->create($task);
         $transport->create($secondTask);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
     }
 
     public function testTransportCanAddTaskAndSortAList(): void
@@ -72,8 +76,8 @@ final class InMemoryTransportTest extends TestCase
         $transport->create($secondTask);
         $transport->create($task);
 
-        static::assertNotEmpty($transport->list());
-        static::assertSame([
+        self::assertNotEmpty($transport->list());
+        self::assertSame([
             'foo' => $secondTask,
             'bar' => $task,
         ], $transport->list()->toArray());
@@ -89,12 +93,12 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
 
         $task->setTags(['test']);
 
         $transport->update($task->getName(), $task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
     }
 
     /**
@@ -107,10 +111,10 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
 
         $transport->delete($task->getName());
-        static::assertCount(0, $transport->list());
+        self::assertCount(0, $transport->list());
     }
 
     /**
@@ -122,8 +126,9 @@ final class InMemoryTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        static::expectException(InvalidArgumentException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectExceptionCode(0);
         $transport->pause($task->getName());
     }
 
@@ -137,11 +142,11 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
         $transport->pause($task->getName());
 
-        static::expectException(LogicException::class);
-        static::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
+        self::expectException(LogicException::class);
+        self::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
         $transport->pause($task->getName());
     }
 
@@ -155,11 +160,11 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
 
         $transport->pause($task->getName());
         $task = $transport->get($task->getName());
-        static::assertSame(TaskInterface::PAUSED, $task->get('state'));
+        self::assertSame(TaskInterface::PAUSED, $task->get('state'));
     }
 
     /**
@@ -172,15 +177,15 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
 
         $transport->pause($task->getName());
         $task = $transport->get($task->getName());
-        static::assertSame(TaskInterface::PAUSED, $task->get('state'));
+        self::assertSame(TaskInterface::PAUSED, $task->get('state'));
 
         $transport->resume($task->getName());
         $task = $transport->get($task->getName());
-        static::assertSame(TaskInterface::ENABLED, $task->get('state'));
+        self::assertSame(TaskInterface::ENABLED, $task->get('state'));
     }
 
     /**
@@ -193,13 +198,13 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $transport->create($task);
-        static::assertCount(1, $transport->list());
+        self::assertCount(1, $transport->list());
 
         $transport->clear();
-        static::assertCount(0, $transport->list());
+        self::assertCount(0, $transport->list());
     }
 
-    public function provideTasks(): \Generator
+    public function provideTasks(): Generator
     {
         yield [
             (new ShellTask('ShellTask - Hello', ['echo', 'Symfony']))->setScheduledAt(new \DateTimeImmutable()),

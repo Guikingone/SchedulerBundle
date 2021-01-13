@@ -56,6 +56,6 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
             return $schedulePolicy->sort($tasks);
         }
 
-        throw new \InvalidArgumentException(sprintf('The policy "%s" cannot be used', $policy));
+        throw new \InvalidArgumentException(\sprintf('The policy "%s" cannot be used', $policy));
     }
 }

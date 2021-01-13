@@ -1,24 +1,19 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SplObjectStorage;
+use Throwable;
+use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class FailoverTransport extends AbstractTransport
 {
@@ -37,7 +32,7 @@ final class FailoverTransport extends AbstractTransport
         ]);
 
         $this->transports = $transports;
-        $this->failedTransports = new \SplObjectStorage();
+        $this->failedTransports = new SplObjectStorage();
     }
 
     /**
@@ -120,7 +115,7 @@ final class FailoverTransport extends AbstractTransport
         });
     }
 
-    private function execute(\Closure $func)
+    private function execute(Closure $func)
     {
         if (empty($this->transports)) {
             throw new TransportException('No transport found');
@@ -133,7 +128,7 @@ final class FailoverTransport extends AbstractTransport
 
             try {
                 return $func($transport);
-            } catch (\Throwable $throwable) {
+            } catch (Throwable $throwable) {
                 $this->failedTransports->attach($transport);
 
                 continue;

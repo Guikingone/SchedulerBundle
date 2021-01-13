@@ -1,17 +1,12 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle;
 
 use Cron\CronExpression;
+use DateTimeImmutable;
+use DateTimeZone;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -24,11 +19,10 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class Scheduler implements SchedulerInterface
 {
@@ -43,8 +37,8 @@ final class Scheduler implements SchedulerInterface
 
     public function __construct(string $timezone, TransportInterface $transport, EventDispatcherInterface $eventDispatcher = null, MessageBusInterface $bus = null)
     {
-        $this->timezone = new \DateTimeZone($timezone);
-        $this->initializationDate = new \DateTimeImmutable('now', $this->timezone);
+        $this->timezone = new DateTimeZone($timezone);
+        $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
         $this->transport = $transport;
         $this->eventDispatcher = $eventDispatcher;
         $this->bus = $bus;
@@ -78,7 +72,6 @@ final class Scheduler implements SchedulerInterface
     public function unschedule(string $name): void
     {
         $this->transport->delete($name);
-
         $this->dispatch(new TaskUnscheduledEvent($name));
     }
 
@@ -114,16 +107,16 @@ final class Scheduler implements SchedulerInterface
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
         $dueTasks = $this->transport->list()->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
-            return CronExpression::factory($task->getExpression())->isDue($synchronizedCurrentDate, $task->getTimezone()->getName());
+            return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName());
         });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             switch ($task) {
-                case $task->getExecutionStartDate() instanceof \DateTimeImmutable && $task->getExecutionEndDate() instanceof \DateTimeImmutable:
+                case $task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable:
                     return ($task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate) && $task->getExecutionEndDate() > $synchronizedCurrentDate;
-                case $task->getExecutionStartDate() instanceof \DateTimeImmutable:
+                case $task->getExecutionStartDate() instanceof DateTimeImmutable:
                     return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
-                case $task->getExecutionEndDate() instanceof \DateTimeImmutable:
+                case $task->getExecutionEndDate() instanceof DateTimeImmutable:
                     return $task->getExecutionEndDate() > $synchronizedCurrentDate;
                 default:
                     return true;
@@ -134,7 +127,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTimezone(): \DateTimeZone
+    public function getTimezone(): DateTimeZone
     {
         return $this->timezone;
     }
@@ -174,9 +167,9 @@ final class Scheduler implements SchedulerInterface
         $this->eventDispatcher->dispatch($event);
     }
 
-    private function getSynchronizedCurrentDate(): \DateTimeImmutable
+    private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
-        $initializationDelay = $this->initializationDate->diff(new \DateTimeImmutable('now', $this->timezone));
+        $initializationDelay = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
         if ($initializationDelay->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $initializationDelay->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
             throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $initializationDelay->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }

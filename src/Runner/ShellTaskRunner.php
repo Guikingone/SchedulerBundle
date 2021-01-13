@@ -48,7 +48,7 @@ final class ShellTaskRunner implements RunnerInterface
 
         $exitCode = $process->run(null, $task->getEnvironmentVariables());
 
-        $output = $task->isOutput() ? trim($process->getOutput()) : null;
+        $output = $task->isOutput() ? \trim($process->getOutput()) : null;
         if (0 !== $exitCode) {
             $task->setExecutionState(TaskInterface::ERRORED);
 

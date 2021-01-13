@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Event;
 
@@ -25,6 +18,6 @@ final class SchedulerRebootedEventTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $event = new SchedulerRebootedEvent($scheduler);
-        static::assertSame($scheduler, $event->getScheduler());
+        self::assertSame($scheduler, $event->getScheduler());
     }
 }

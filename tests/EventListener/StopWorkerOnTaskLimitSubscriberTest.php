@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
@@ -24,7 +17,7 @@ final class StopWorkerOnTaskLimitSubscriberTest extends TestCase
 {
     public function testEventIsListened(): void
     {
-        static::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnTaskLimitSubscriber::getSubscribedEvents());
+        self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnTaskLimitSubscriber::getSubscribedEvents());
     }
 
     public function testWorkerCannotBeStopped(): void
@@ -54,7 +47,12 @@ final class StopWorkerOnTaskLimitSubscriberTest extends TestCase
     public function testWorkerCanBeStoppedWithLogger(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info');
+        $logger->expects(self::once())->method('info')
+            ->with(
+                self::equalTo('The worker has been stopped due to maximum tasks executed'),
+                self::equalTo(['count' => 10])
+            )
+        ;
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');

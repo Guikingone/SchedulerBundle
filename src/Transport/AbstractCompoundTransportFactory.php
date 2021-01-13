@@ -1,24 +1,18 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_walk;
+use function explode;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 abstract class AbstractCompoundTransportFactory implements TransportFactoryInterface
 {

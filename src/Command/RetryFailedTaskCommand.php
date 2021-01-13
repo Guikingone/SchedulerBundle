@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
@@ -19,28 +12,25 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class RetryFailedTaskCommand extends Command
 {
-    private $scheduler;
     private $worker;
     private $eventDispatcher;
     private $logger;
 
     protected static $defaultName = 'scheduler:retry:failed';
 
-    public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)
+    public function __construct(WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)
     {
-        $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
@@ -59,7 +49,8 @@ final class RetryFailedTaskCommand extends Command
                 new InputArgument('name', InputArgument::REQUIRED, 'Specific task name(s) to retry'),
                 new InputOption('force', 'f', InputOption::VALUE_NONE, 'Force the operation without confirmation'),
             ])
-            ->setHelp(<<<'EOF'
+            ->setHelp(
+                <<<'EOF'
 The <info>%command.name%</info> command retry a failed task.
 
     <info>php %command.full_name%</info>
@@ -95,7 +86,7 @@ EOF
 
             try {
                 $this->worker->execute([], $task);
-            } catch (\Throwable $throwable) {
+            } catch (Throwable $throwable) {
                 $style->error([
                     sprintf('An error occurred when trying to retry the task:'),
                     $throwable->getMessage(),

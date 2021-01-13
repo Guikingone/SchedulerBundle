@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
@@ -27,11 +20,13 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
+use function array_pop;
+use function implode;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class ConsumeTasksCommand extends Command
 {
@@ -68,7 +63,8 @@ final class ConsumeTasksCommand extends Command
                 new InputOption('failure-limit', 'f', InputOption::VALUE_REQUIRED, 'Limit the amount of task allowed to fail'),
                 new InputOption('wait', 'w', InputOption::VALUE_NONE, 'Set the worker to wait for tasks every minutes'),
             ])
-            ->setHelp(<<<'EOF'
+            ->setHelp(
+                <<<'EOF'
 The <info>%command.name%</info> command consumes due tasks.
 
     <info>php %command.full_name%</info>
@@ -97,7 +93,7 @@ EOF
         $style = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getDueTasks();
-        if (0 === $tasks->count()) {
+        if (0 === $tasks->count() && !$input->getOption('wait')) {
             $style->warning('No due tasks found');
 
             return self::SUCCESS;
@@ -148,7 +144,7 @@ EOF
             $this->worker->execute([
                 'sleepUntilNextMinute' => $input->getOption('wait'),
             ]);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $style->error([
                 'An error occurred when executing the tasks',
                 $throwable->getMessage(),

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
@@ -15,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -26,8 +20,21 @@ final class TaskLoggerSubscriberTest extends TestCase
 {
     public function testEventsAreSubscribed(): void
     {
-        static::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
-        static::assertArrayHasKey(TaskExecutedEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
+        self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
+
+        self::assertArrayHasKey(TaskFailedEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
+        self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
+
+        self::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
+        self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
+
+        self::assertArrayHasKey(TaskUnscheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
+        self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
     }
 
     public function testScheduledTaskCanBeRetrieved(): void
@@ -39,11 +46,11 @@ final class TaskLoggerSubscriberTest extends TestCase
         $subscriber = new TaskLoggerSubscriber();
         $subscriber->onTask($event);
 
-        static::assertNotEmpty($subscriber->getEvents()->getEvents());
-        static::assertNotEmpty($subscriber->getEvents()->getScheduledTaskEvents());
-        static::assertEmpty($subscriber->getEvents()->getFailedTaskEvents());
-        static::assertEmpty($subscriber->getEvents()->getExecutedTaskEvents());
-        static::assertEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
+        self::assertNotEmpty($subscriber->getEvents()->getEvents());
+        self::assertNotEmpty($subscriber->getEvents()->getScheduledTaskEvents());
+        self::assertEmpty($subscriber->getEvents()->getFailedTaskEvents());
+        self::assertEmpty($subscriber->getEvents()->getExecutedTaskEvents());
+        self::assertEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
     }
 
     public function testExecutedTaskCanBeRetrieved(): void
@@ -55,7 +62,7 @@ final class TaskLoggerSubscriberTest extends TestCase
         $subscriber = new TaskLoggerSubscriber();
         $subscriber->onTask($event);
 
-        static::assertNotEmpty($subscriber->getEvents()->getEvents());
+        self::assertNotEmpty($subscriber->getEvents()->getEvents());
     }
 
     public function testFailedTaskCanBeRetrieved(): void
@@ -69,6 +76,6 @@ final class TaskLoggerSubscriberTest extends TestCase
         $subscriber = new TaskLoggerSubscriber();
         $subscriber->onTask($event);
 
-        static::assertNotEmpty($subscriber->getEvents()->getEvents());
+        self::assertNotEmpty($subscriber->getEvents()->getEvents());
     }
 }

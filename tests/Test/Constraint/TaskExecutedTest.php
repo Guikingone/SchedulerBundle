@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Test\Constraint;
 
@@ -29,7 +22,7 @@ final class TaskExecutedTest extends TestCase
 
         $constraint = new TaskExecuted(1);
 
-        static::assertFalse($constraint->evaluate($taskEventList, '', true));
+        self::assertFalse($constraint->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCannotMatchWithoutValidEvent(): void
@@ -42,7 +35,7 @@ final class TaskExecutedTest extends TestCase
 
         $constraint = new TaskExecuted(1);
 
-        static::assertFalse($constraint->evaluate($taskEventList, '', true));
+        self::assertFalse($constraint->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
@@ -56,6 +49,6 @@ final class TaskExecutedTest extends TestCase
 
         $constraint = new TaskExecuted(1);
 
-        static::assertTrue($constraint->evaluate($taskEventList, '', true));
+        self::assertTrue($constraint->evaluate($taskEventList, '', true));
     }
 }

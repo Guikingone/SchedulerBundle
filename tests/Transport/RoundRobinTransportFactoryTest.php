@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
@@ -28,9 +21,9 @@ final class RoundRobinTransportFactoryTest extends TestCase
     {
         $factory = new RoundRobinTransportFactory([]);
 
-        static::assertFalse($factory->support('test://'));
-        static::assertTrue($factory->support('roundrobin://'));
-        static::assertTrue($factory->support('rr://'));
+        self::assertFalse($factory->support('test://'));
+        self::assertTrue($factory->support('roundrobin://'));
+        self::assertTrue($factory->support('rr://'));
     }
 
     /**
@@ -43,8 +36,8 @@ final class RoundRobinTransportFactoryTest extends TestCase
         $factory = new RoundRobinTransportFactory([]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        static::assertInstanceOf(TransportInterface::class, $transport);
-        static::assertInstanceOf(RoundRobinTransport::class, $transport);
+        self::assertInstanceOf(TransportInterface::class, $transport);
+        self::assertInstanceOf(RoundRobinTransport::class, $transport);
     }
 
     public function provideDsn(): \Generator

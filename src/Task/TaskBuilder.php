@@ -46,6 +46,6 @@ final class TaskBuilder implements TaskBuilderInterface
             return $builder->build($this->propertyAccessor, $options);
         }
 
-        throw new InvalidArgumentException(sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
+        throw new InvalidArgumentException(\sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
     }
 }

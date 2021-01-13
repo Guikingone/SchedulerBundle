@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -26,8 +19,8 @@ final class MessengerTaskRunnerTest extends TestCase
     public function testRunnerSupport(): void
     {
         $runner = new MessengerTaskRunner();
-        static::assertFalse($runner->support(new BarTask('test')));
-        static::assertTrue($runner->support(new MessengerTask('foo', new FooMessage())));
+        self::assertFalse($runner->support(new BarTask('test')));
+        self::assertTrue($runner->support(new MessengerTask('foo', new FooMessage())));
     }
 
     public function testRunnerCanReturnOutputWithoutBus(): void
@@ -36,9 +29,9 @@ final class MessengerTaskRunnerTest extends TestCase
         $task = new MessengerTask('foo', new FooMessage());
 
         $output = $runner->run($task);
-        static::assertSame('The task cannot be handled as the bus is not defined', $output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame('The task cannot be handled as the bus is not defined', $output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnOutputWithBusAndException(): void
@@ -51,9 +44,9 @@ final class MessengerTaskRunnerTest extends TestCase
 
         $output = $runner->run($task);
 
-        static::assertSame('An error occurred', $output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame('An error occurred', $output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnOutputWithBus(): void
@@ -68,9 +61,9 @@ final class MessengerTaskRunnerTest extends TestCase
 
         $output = $runner->run($task);
 
-        static::assertNull($output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }
 

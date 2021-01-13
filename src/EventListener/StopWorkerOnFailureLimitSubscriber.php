@@ -46,7 +46,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         if ($event->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
             $this->failedTasks = 0;
             $worker->stop();
-            $this->logger->info(sprintf('Worker has stopped due to the failure limit of %d exceeded', $this->maximumFailedTasks));
+            $this->logger->info(\sprintf('Worker has stopped due to the failure limit of %d exceeded', $this->maximumFailedTasks));
         }
     }
 

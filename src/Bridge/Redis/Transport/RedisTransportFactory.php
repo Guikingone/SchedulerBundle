@@ -1,27 +1,24 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use Redis;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_merge;
+use function class_exists;
+use function phpversion;
+use function strpos;
+use function version_compare;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class RedisTransportFactory implements TransportFactoryInterface
 {
@@ -30,7 +27,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        if (!class_exists(\Redis::class)) {
+        if (!class_exists(Redis::class)) {
             throw new LogicException('The Redis extension must be installed.');
         }
 

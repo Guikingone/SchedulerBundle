@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Tests\Event;
 
@@ -25,6 +18,6 @@ final class WorkerStoppedEventTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $event = new WorkerStoppedEvent($worker);
-        static::assertSame($worker, $event->getWorker());
+        self::assertSame($worker, $event->getWorker());
     }
 }

@@ -1,24 +1,19 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
+use function reset;
+use function usort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class LongTailTransport extends AbstractTransport
 {
@@ -114,7 +109,7 @@ final class LongTailTransport extends AbstractTransport
         });
     }
 
-    private function execute(\Closure $func)
+    private function execute(Closure $func)
     {
         if (empty($this->transports)) {
             throw new TransportException('No transport found');
@@ -128,7 +123,7 @@ final class LongTailTransport extends AbstractTransport
 
         try {
             return $func($transport);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException('The transport failed to execute the requested action');
         }
     }

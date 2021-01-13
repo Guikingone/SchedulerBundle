@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
@@ -28,9 +21,9 @@ final class FailoverTransportFactoryTest extends TestCase
     {
         $factory = new FailoverTransportFactory([]);
 
-        static::assertFalse($factory->support('test://'));
-        static::assertTrue($factory->support('failover://'));
-        static::assertTrue($factory->support('fo://'));
+        self::assertFalse($factory->support('test://'));
+        self::assertTrue($factory->support('failover://'));
+        self::assertTrue($factory->support('fo://'));
     }
 
     /**
@@ -43,8 +36,8 @@ final class FailoverTransportFactoryTest extends TestCase
         $factory = new FailoverTransportFactory([]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        static::assertInstanceOf(TransportInterface::class, $transport);
-        static::assertInstanceOf(FailoverTransport::class, $transport);
+        self::assertInstanceOf(TransportInterface::class, $transport);
+        self::assertInstanceOf(FailoverTransport::class, $transport);
     }
 
     /**
@@ -57,10 +50,10 @@ final class FailoverTransportFactoryTest extends TestCase
         $factory = new FailoverTransportFactory([]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        static::assertInstanceOf(TransportInterface::class, $transport);
-        static::assertInstanceOf(FailoverTransport::class, $transport);
-        static::assertArrayHasKey('mode', $transport->getOptions());
-        static::assertSame('normal', $transport->getOptions()['mode']);
+        self::assertInstanceOf(TransportInterface::class, $transport);
+        self::assertInstanceOf(FailoverTransport::class, $transport);
+        self::assertArrayHasKey('mode', $transport->getOptions());
+        self::assertSame('normal', $transport->getOptions()['mode']);
     }
 
     public function provideDsn(): \Generator

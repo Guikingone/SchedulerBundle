@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
@@ -43,24 +36,26 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
 
-        static::assertSame('scheduler:consume', $command->getName());
-        static::assertSame('Consumes due tasks', $command->getDescription());
-        static::assertSame(0, $command->getDefinition()->getArgumentCount());
-        static::assertCount(4, $command->getDefinition()->getOptions());
-        static::assertTrue($command->getDefinition()->hasOption('limit'));
-        static::assertSame('Limit the number of tasks consumed', $command->getDefinition()->getOption('limit')->getDescription());
-        static::assertSame('l', $command->getDefinition()->getOption('limit')->getShortcut());
-        static::assertTrue($command->getDefinition()->hasOption('time-limit'));
-        static::assertSame('Limit the time in seconds the worker can run', $command->getDefinition()->getOption('time-limit')->getDescription());
-        static::assertSame('t', $command->getDefinition()->getOption('time-limit')->getShortcut());
-        static::assertTrue($command->getDefinition()->hasOption('failure-limit'));
-        static::assertSame('Limit the amount of task allowed to fail', $command->getDefinition()->getOption('failure-limit')->getDescription());
-        static::assertSame('f', $command->getDefinition()->getOption('failure-limit')->getShortcut());
-        static::assertTrue($command->getDefinition()->hasOption('wait'));
-        static::assertFalse($command->getDefinition()->getOption('wait')->acceptValue());
-        static::assertSame('Set the worker to wait for tasks every minutes', $command->getDefinition()->getOption('wait')->getDescription());
-        static::assertSame('w', $command->getDefinition()->getOption('wait')->getShortcut());
-        static::assertSame($command->getHelp(), <<<'EOF'
+        self::assertSame('scheduler:consume', $command->getName());
+        self::assertSame('Consumes due tasks', $command->getDescription());
+        self::assertSame(0, $command->getDefinition()->getArgumentCount());
+        self::assertCount(4, $command->getDefinition()->getOptions());
+        self::assertTrue($command->getDefinition()->hasOption('limit'));
+        self::assertSame('Limit the number of tasks consumed', $command->getDefinition()->getOption('limit')->getDescription());
+        self::assertSame('l', $command->getDefinition()->getOption('limit')->getShortcut());
+        self::assertTrue($command->getDefinition()->hasOption('time-limit'));
+        self::assertSame('Limit the time in seconds the worker can run', $command->getDefinition()->getOption('time-limit')->getDescription());
+        self::assertSame('t', $command->getDefinition()->getOption('time-limit')->getShortcut());
+        self::assertTrue($command->getDefinition()->hasOption('failure-limit'));
+        self::assertSame('Limit the amount of task allowed to fail', $command->getDefinition()->getOption('failure-limit')->getDescription());
+        self::assertSame('f', $command->getDefinition()->getOption('failure-limit')->getShortcut());
+        self::assertTrue($command->getDefinition()->hasOption('wait'));
+        self::assertFalse($command->getDefinition()->getOption('wait')->acceptValue());
+        self::assertSame('Set the worker to wait for tasks every minutes', $command->getDefinition()->getOption('wait')->getDescription());
+        self::assertSame('w', $command->getDefinition()->getOption('wait')->getShortcut());
+        self::assertSame(
+            $command->getHelp(),
+            <<<'EOF'
 The <info>%command.name%</info> command consumes due tasks.
 
     <info>php %command.full_name%</info>
@@ -100,8 +95,8 @@ EOF
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('No due tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('No due tasks found', $tester->getDisplay());
     }
 
     public function testCommandCanConsumeTasks(): void
@@ -126,9 +121,9 @@ EOF
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
-        static::assertStringContainsString('The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+        self::assertStringContainsString('The task output can be displayed if the -vv option is used', $tester->getDisplay());
     }
 
     public function testCommandCannotConsumeTasksWithError(): void
@@ -155,10 +150,10 @@ EOF
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
-        static::assertSame(Command::FAILURE, $tester->getStatusCode());
-        static::assertStringContainsString('An error occurred when executing the tasks', $tester->getDisplay());
-        static::assertStringContainsString('The task output can be displayed if the -vv option is used', $tester->getDisplay());
-        static::assertStringContainsString('Random error occurred', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('An error occurred when executing the tasks', $tester->getDisplay());
+        self::assertStringContainsString('The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Random error occurred', $tester->getDisplay());
     }
 
     public function testCommandCanConsumeSchedulersWithTaskLimit(): void
@@ -189,10 +184,10 @@ EOF
             '--limit' => 10,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('The worker will automatically exit once 10 tasks has been consumed', $tester->getDisplay());
-        static::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
-        static::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once 10 tasks has been consumed', $tester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
     public function testCommandCanConsumeSchedulersWithTimeLimit(): void
@@ -223,10 +218,10 @@ EOF
             '--time-limit' => 10,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('The worker will automatically exit once it has been running for 10 seconds', $tester->getDisplay());
-        static::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
-        static::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once it has been running for 10 seconds', $tester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
     public function testCommandCanConsumeSchedulersWithFailureLimit(): void
@@ -257,10 +252,10 @@ EOF
             '--failure-limit' => 10,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('The worker will automatically exit once 10 tasks have failed', $tester->getDisplay());
-        static::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
-        static::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once 10 tasks have failed', $tester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
     public function testCommandCanConsumeSchedulersWithWait(): void
@@ -293,10 +288,10 @@ EOF
             '--wait' => true,
         ]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('The worker will wait for tasks every minutes', $tester->getDisplay());
-        static::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
-        static::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will wait for tasks every minutes', $tester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
     public function testCommandCanDisplayTaskOutput(): void
@@ -332,13 +327,13 @@ EOF
             '--limit' => 1,
         ], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
 
-        static::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        static::assertStringContainsString('The worker will automatically exit once 1 tasks has been consumed.', $tester->getDisplay());
-        static::assertStringContainsString('Output for task "foo":', $tester->getDisplay());
-        static::assertStringContainsString('Success output', $tester->getDisplay());
-        static::assertStringContainsString('Task "foo" succeed', $tester->getDisplay());
-        static::assertStringContainsString('Duration: < 1 sec', $tester->getDisplay());
-        static::assertStringContainsString('Memory used: 9.1 MiB', $tester->getDisplay());
-        static::assertStringNotContainsString('Task failed: "foo"', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once 1 tasks has been consumed.', $tester->getDisplay());
+        self::assertStringContainsString('Output for task "foo":', $tester->getDisplay());
+        self::assertStringContainsString('Success output', $tester->getDisplay());
+        self::assertStringContainsString('Task "foo" succeed', $tester->getDisplay());
+        self::assertStringContainsString('Duration: < 1 sec', $tester->getDisplay());
+        self::assertStringContainsString('Memory used: 9.1 MiB', $tester->getDisplay());
+        self::assertStringNotContainsString('Task failed: "foo"', $tester->getDisplay());
     }
 }

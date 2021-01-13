@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Messenger;
 
@@ -26,8 +19,9 @@ final class TaskMessageTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('app.messenger');
 
         $message = new TaskMessage($task);
-        static::assertSame($task, $message->getTask());
-        static::assertSame('app.messenger', $message->getTask()->getName());
+        self::assertSame(1, $message->getWorkerTimeout());
+        self::assertSame($task, $message->getTask());
+        self::assertSame('app.messenger', $message->getTask()->getName());
     }
 
     public function testWorkerTimeoutCanBeSet(): void
@@ -36,8 +30,8 @@ final class TaskMessageTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('app.messenger');
 
         $message = new TaskMessage($task, 2);
-        static::assertSame($task, $message->getTask());
-        static::assertSame('app.messenger', $message->getTask()->getName());
-        static::assertSame(2, $message->getWorkerTimeout());
+        self::assertSame($task, $message->getTask());
+        self::assertSame('app.messenger', $message->getTask()->getName());
+        self::assertSame(2, $message->getWorkerTimeout());
     }
 }

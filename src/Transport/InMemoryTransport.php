@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
@@ -17,11 +10,11 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use function array_key_exists;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class InMemoryTransport extends AbstractTransport
 {
@@ -56,7 +49,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function create(TaskInterface $task): void
     {
-        if (\array_key_exists($task->getName(), $this->tasks)) {
+        if (array_key_exists($task->getName(), $this->tasks)) {
             return;
         }
 

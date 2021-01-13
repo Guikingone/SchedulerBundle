@@ -34,7 +34,7 @@ final class TaskFailed extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('%s %s failed', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
+        return \sprintf('%s %s failed', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
     }
 
     /**

@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Worker;
 
@@ -41,9 +34,29 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [], $watcher, $eventDispatcher, $logger);
 
-        static::expectException(UndefinedRunnerException::class);
-        static::expectExceptionMessage('No runner found');
+        self::expectException(UndefinedRunnerException::class);
+        self::expectExceptionMessage('No runner found');
+        self::expectExceptionCode(0);
         $worker->execute();
+    }
+
+    public function testWorkerCanBeConfigured(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, $eventDispatcher, $logger);
+        $worker->stop();
+
+        $worker->execute([
+            'sleepDurationDelay' => 5,
+        ]);
+
+        self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
+        self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
     }
 
     public function testTaskCannotBeExecutedWithoutSupportingRunner(): void
@@ -60,6 +73,7 @@ final class WorkerTest extends TestCase
 
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->willReturn(false);
+        $runner->expects(self::never())->method('run');
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
@@ -67,7 +81,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $watcher, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertNull($worker->getLastExecutedTask());
+        self::assertNull($worker->getLastExecutedTask());
     }
 
     public function testTaskCannotBeExecutedWhileWorkerIsStopped(): void
@@ -89,14 +103,15 @@ final class WorkerTest extends TestCase
         $worker->stop();
         $worker->execute();
 
-        static::assertNull($worker->getLastExecutedTask());
+        self::assertNull($worker->getLastExecutedTask());
     }
 
     public function testTaskCannotBeExecutedWhilePaused(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(
-            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'), [
+            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
+            [
                 'name' => 'foo',
                 'expression' => '* * * * *',
                 'state' => TaskInterface::PAUSED,
@@ -135,7 +150,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertSame($secondTask, $worker->getLastExecutedTask());
+        self::assertSame($secondTask, $worker->getLastExecutedTask());
     }
 
     /**
@@ -174,7 +189,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     public function testTaskCanBeExecutedWithRunner(): void
@@ -209,7 +224,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
@@ -244,7 +259,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
@@ -275,7 +290,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, $eventDispatcher, $logger, $store);
         $worker->execute();
 
-        static::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     public function testWorkerCanHandleFailedTask(): void
@@ -303,9 +318,9 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
         $worker->execute();
 
-        static::assertSame($task, $worker->getLastExecutedTask());
-        static::assertNotEmpty($worker->getFailedTasks());
-        static::assertCount(1, $worker->getFailedTasks());
-        static::assertSame('Random error occurred', $worker->getFailedTasks()->get('failed.failed')->getReason());
+        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertNotEmpty($worker->getFailedTasks());
+        self::assertCount(1, $worker->getFailedTasks());
+        self::assertSame('Random error occurred', $worker->getFailedTasks()->get('failed.failed')->getReason());
     }
 }

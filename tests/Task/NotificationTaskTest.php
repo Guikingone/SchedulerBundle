@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -28,9 +21,9 @@ final class NotificationTaskTest extends TestCase
 
         $task = new NotificationTask('foo', $notification, $recipient);
 
-        static::assertSame('foo', $task->getName());
-        static::assertSame($notification, $task->getNotification());
-        static::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $task->getName());
+        self::assertSame($notification, $task->getNotification());
+        self::assertNotEmpty($task->getRecipients());
     }
 
     public function testTaskCanBeCreatedAndNotificationChangedLater(): void
@@ -40,14 +33,14 @@ final class NotificationTaskTest extends TestCase
 
         $task = new NotificationTask('foo', $notification, $recipient);
 
-        static::assertSame('foo', $task->getName());
-        static::assertSame($notification, $task->getNotification());
-        static::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $task->getName());
+        self::assertSame($notification, $task->getNotification());
+        self::assertNotEmpty($task->getRecipients());
 
         $secondNotification = $this->createMock(Notification::class);
 
         $task->setNotification($secondNotification);
-        static::assertSame($secondNotification, $task->getNotification());
+        self::assertSame($secondNotification, $task->getNotification());
     }
 
     public function testTaskCanBeCreatedAndRecipientsChangedLater(): void
@@ -57,14 +50,14 @@ final class NotificationTaskTest extends TestCase
 
         $task = new NotificationTask('foo', $notification, $recipient);
 
-        static::assertSame('foo', $task->getName());
-        static::assertSame($notification, $task->getNotification());
-        static::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $task->getName());
+        self::assertSame($notification, $task->getNotification());
+        self::assertNotEmpty($task->getRecipients());
 
         $secondRecipient = $this->createMock(Recipient::class);
 
         $task->setRecipients($recipient, $secondRecipient);
-        static::assertCount(2, $task->getRecipients());
+        self::assertCount(2, $task->getRecipients());
     }
 
     public function testTaskCanBeCreatedAndRecipientAddedLater(): void
@@ -74,13 +67,13 @@ final class NotificationTaskTest extends TestCase
 
         $task = new NotificationTask('foo', $notification, $recipient);
 
-        static::assertSame('foo', $task->getName());
-        static::assertSame($notification, $task->getNotification());
-        static::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $task->getName());
+        self::assertSame($notification, $task->getNotification());
+        self::assertNotEmpty($task->getRecipients());
 
         $secondRecipient = $this->createMock(Recipient::class);
 
         $task->addRecipient($secondRecipient);
-        static::assertCount(2, $task->getRecipients());
+        self::assertCount(2, $task->getRecipients());
     }
 }

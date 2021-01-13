@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
@@ -17,15 +10,13 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
     public function onWorkerStarted(WorkerStartedEvent $event): void
     {
         foreach ([\SIGTERM, \SIGINT, \SIGQUIT] as $signal) {
-            pcntl_signal($signal, static function () use ($event): void {
+            \pcntl_signal($signal, static function () use ($event): void {
                 $event->getWorker()->stop();
             });
         }
@@ -33,7 +24,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
     {
-        pcntl_signal(\SIGHUP, static function () use ($event): void {
+        \pcntl_signal(\SIGHUP, static function () use ($event): void {
             $event->getWorker()->restart();
         });
     }

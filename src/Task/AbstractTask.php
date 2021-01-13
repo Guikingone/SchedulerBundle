@@ -1,25 +1,23 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
 use Cron\CronExpression;
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
+use function array_key_exists;
+use function in_array;
+use function sprintf;
+use function strtotime;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 abstract class AbstractTask implements TaskInterface
 {
@@ -69,32 +67,32 @@ abstract class AbstractTask implements TaskInterface
             'type' => null,
         ]);
 
-        $resolver->setAllowedTypes('arrival_time', [\DateTimeImmutable::class, 'null']);
+        $resolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('background', ['bool']);
         $resolver->setAllowedTypes('description', ['string', 'null']);
         $resolver->setAllowedTypes('expression', ['string']);
-        $resolver->setAllowedTypes('execution_absolute_deadline', [\DateInterval::class, 'null']);
+        $resolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
         $resolver->setAllowedTypes('execution_computation_time', ['float', 'null']);
         $resolver->setAllowedTypes('execution_delay', ['int', 'null']);
         $resolver->setAllowedTypes('execution_memory_usage', ['int', 'null']);
-        $resolver->setAllowedTypes('execution_relative_deadline', [\DateInterval::class, 'null']);
+        $resolver->setAllowedTypes('execution_relative_deadline', [DateInterval::class, 'null']);
         $resolver->setAllowedTypes('execution_start_date', ['string', 'null']);
         $resolver->setAllowedTypes('execution_end_date', ['string', 'null']);
-        $resolver->setAllowedTypes('execution_start_time', [\DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('execution_end_time', [\DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('last_execution', [\DateTimeImmutable::class, 'null']);
+        $resolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
+        $resolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
+        $resolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('max_duration', ['float', 'null']);
         $resolver->setAllowedTypes('nice', ['int', 'null']);
         $resolver->setAllowedTypes('output', ['bool']);
         $resolver->setAllowedTypes('priority', ['int']);
         $resolver->setAllowedTypes('queued', ['bool']);
-        $resolver->setAllowedTypes('scheduled_at', [\DateTimeImmutable::class, 'null']);
+        $resolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('single_run', ['bool']);
         $resolver->setAllowedTypes('state', ['string']);
         $resolver->setAllowedTypes('execution_state', ['null', 'string']);
         $resolver->setAllowedTypes('tags', ['string[]']);
         $resolver->setAllowedTypes('tracked', ['bool']);
-        $resolver->setAllowedTypes('timezone', [\DateTimeZone::class, 'null']);
+        $resolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
         $resolver->setAllowedValues('expression', function (string $expression): bool {
             return $this->validateExpression($expression);
@@ -166,14 +164,14 @@ abstract class AbstractTask implements TaskInterface
         return $this->name;
     }
 
-    public function setArrivalTime(\DateTimeImmutable $arrivalTime = null): TaskInterface
+    public function setArrivalTime(DateTimeImmutable $arrivalTime = null): TaskInterface
     {
         $this->options['arrival_time'] = $arrivalTime;
 
         return $this;
     }
 
-    public function getArrivalTime(): ?\DateTimeImmutable
+    public function getArrivalTime(): ?DateTimeImmutable
     {
         return $this->options['arrival_time'];
     }
@@ -222,14 +220,14 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['expression'];
     }
 
-    public function setExecutionAbsoluteDeadline(\DateInterval $executionAbsoluteDeadline = null): TaskInterface
+    public function setExecutionAbsoluteDeadline(DateInterval $executionAbsoluteDeadline = null): TaskInterface
     {
         $this->options['execution_absolute_deadline'] = $executionAbsoluteDeadline;
 
         return $this;
     }
 
-    public function getExecutionAbsoluteDeadline(): ?\DateInterval
+    public function getExecutionAbsoluteDeadline(): ?DateInterval
     {
         return $this->options['execution_absolute_deadline'];
     }
@@ -285,12 +283,12 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function getExecutionRelativeDeadline(): ?\DateInterval
+    public function getExecutionRelativeDeadline(): ?DateInterval
     {
         return $this->options['execution_relative_deadline'];
     }
 
-    public function setExecutionRelativeDeadline(\DateInterval $executionRelativeDeadline = null): TaskInterface
+    public function setExecutionRelativeDeadline(DateInterval $executionRelativeDeadline = null): TaskInterface
     {
         $this->options['execution_relative_deadline'] = $executionRelativeDeadline;
 
@@ -303,12 +301,12 @@ abstract class AbstractTask implements TaskInterface
             throw new InvalidArgumentException('The date could not be created');
         }
 
-        $this->options['execution_start_date'] = null !== $executionStartDate ? new \DateTimeImmutable($executionStartDate) : null;
+        $this->options['execution_start_date'] = null !== $executionStartDate ? new DateTimeImmutable($executionStartDate) : null;
 
         return $this;
     }
 
-    public function getExecutionStartDate(): ?\DateTimeImmutable
+    public function getExecutionStartDate(): ?DateTimeImmutable
     {
         return $this->options['execution_start_date'];
     }
@@ -319,48 +317,48 @@ abstract class AbstractTask implements TaskInterface
             throw new InvalidArgumentException('The date could not be created');
         }
 
-        $this->options['execution_end_date'] = null !== $executionEndDate ? new \DateTimeImmutable($executionEndDate) : null;
+        $this->options['execution_end_date'] = null !== $executionEndDate ? new DateTimeImmutable($executionEndDate) : null;
 
         return $this;
     }
 
-    public function getExecutionEndDate(): ?\DateTimeImmutable
+    public function getExecutionEndDate(): ?DateTimeImmutable
     {
         return $this->options['execution_end_date'];
     }
 
-    public function setExecutionStartTime(\DateTimeImmutable $executionStartTime = null): TaskInterface
+    public function setExecutionStartTime(DateTimeImmutable $executionStartTime = null): TaskInterface
     {
         $this->options['execution_start_time'] = $executionStartTime;
 
         return $this;
     }
 
-    public function getExecutionStartTime(): ?\DateTimeImmutable
+    public function getExecutionStartTime(): ?DateTimeImmutable
     {
         return $this->options['execution_start_time'];
     }
 
-    public function setExecutionEndTime(\DateTimeImmutable $executionStartTime = null): TaskInterface
+    public function setExecutionEndTime(DateTimeImmutable $executionStartTime = null): TaskInterface
     {
         $this->options['execution_end_time'] = $executionStartTime;
 
         return $this;
     }
 
-    public function getExecutionEndTime(): ?\DateTimeImmutable
+    public function getExecutionEndTime(): ?DateTimeImmutable
     {
         return $this->options['execution_end_time'];
     }
 
-    public function setLastExecution(\DateTimeImmutable $lastExecution = null): TaskInterface
+    public function setLastExecution(DateTimeImmutable $lastExecution = null): TaskInterface
     {
         $this->options['last_execution'] = $lastExecution;
 
         return $this;
     }
 
-    public function getLastExecution(): ?\DateTimeImmutable
+    public function getLastExecution(): ?DateTimeImmutable
     {
         return $this->options['last_execution'];
     }
@@ -398,7 +396,7 @@ abstract class AbstractTask implements TaskInterface
      */
     public function get(string $key, $default = null)
     {
-        return \array_key_exists($key, $this->options) ? $this->options[$key] : $default;
+        return array_key_exists($key, $this->options) ? $this->options[$key] : $default;
     }
 
     public function getState(): string
@@ -473,14 +471,14 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function setScheduledAt(\DateTimeImmutable $scheduledAt = null): TaskInterface
+    public function setScheduledAt(DateTimeImmutable $scheduledAt = null): TaskInterface
     {
         $this->options['scheduled_at'] = $scheduledAt;
 
         return $this;
     }
 
-    public function getScheduledAt(): ?\DateTimeImmutable
+    public function getScheduledAt(): ?DateTimeImmutable
     {
         return $this->options['scheduled_at'];
     }
@@ -516,12 +514,12 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function getTimezone(): ?\DateTimeZone
+    public function getTimezone(): ?DateTimeZone
     {
         return $this->options['timezone'];
     }
 
-    public function setTimezone(\DateTimeZone $timezone = null): TaskInterface
+    public function setTimezone(DateTimeZone $timezone = null): TaskInterface
     {
         $this->options['timezone'] = $timezone;
 
@@ -561,12 +559,12 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateState(string $state): bool
     {
-        return \in_array($state, TaskInterface::ALLOWED_STATES);
+        return in_array($state, TaskInterface::ALLOWED_STATES);
     }
 
     private function validateExecutionState(string $executionState = null): bool
     {
-        return null === $executionState ? true : \in_array($executionState, TaskInterface::EXECUTION_STATES);
+        return null === $executionState ? true : in_array($executionState, TaskInterface::EXECUTION_STATES);
     }
 
     private function validateDate(?string $date = null): bool
@@ -579,7 +577,7 @@ abstract class AbstractTask implements TaskInterface
             return false;
         }
 
-        if (new \DateTimeImmutable('now', $this->getTimezone()) > new \DateTimeImmutable($date)) {
+        if (new DateTimeImmutable('now', $this->getTimezone()) > new DateTimeImmutable($date)) {
             throw new LogicException('The date cannot be previous to the current date');
         }
 

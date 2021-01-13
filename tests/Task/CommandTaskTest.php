@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -22,8 +15,8 @@ final class CommandTaskTest extends TestCase
 {
     public function testCommandCantBeCreatedWithInvalidArguments(): void
     {
-        static::expectException(InvalidArgumentException::class);
-        static::expectExceptionMessage('The command argument must be a valid command FQCN|string, empty string given');
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The command argument must be a valid command FQCN|string, empty string given');
         new CommandTask('test', '', [], ['--env' => 'test']);
     }
 
@@ -31,8 +24,8 @@ final class CommandTaskTest extends TestCase
     {
         $task = new CommandTask('test', 'app:foo', ['test'], ['--env' => 'test']);
 
-        static::assertSame('app:foo', $task->getCommand());
-        static::assertContainsEquals('test', $task->getArguments());
-        static::assertSame(['--env' => 'test'], $task->getOptions());
+        self::assertSame('app:foo', $task->getCommand());
+        self::assertContainsEquals('test', $task->getArguments());
+        self::assertSame(['--env' => 'test'], $task->getOptions());
     }
 }

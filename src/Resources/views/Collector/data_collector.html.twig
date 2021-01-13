@@ -1,0 +1,187 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% import _self as helper %}
+
+{% block toolbar %}
+    {% set events = collector.events %}
+
+    {% if events|length > 0 %}
+        {% set scheduled_tasks = events.scheduledTaskEvents %}
+
+        {% set icon %}
+            {{ include('@Scheduler/Collector/scheduler.svg') }}
+            <span class="sf-toolbar-value">
+                {{- scheduled_tasks|length -}}
+            </span>
+        {% endset %}
+
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Scheduled tasks' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- scheduled_tasks|length -}}
+                </span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Unscheduled tasks' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- events.unscheduledTaskEvents|length -}}
+                </span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Executed tasks' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- events.executedTaskEvents|length -}}
+                </span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Failed tasks' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- events.failedTaskEvents|length -}}
+                </span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Queued tasks' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- events.queuedTaskEvents|length -}}
+                </span>
+            </div>
+        {% endset %}
+
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', {link: true}) }}
+    {% endif %}
+{% endblock %}
+
+{% block menu %}
+    <span class="label {{ collector.events.scheduledTaskEvents is not empty ? '' : 'disabled' }}">
+        <span class="icon">
+            {{ include('@Scheduler/Collector/scheduler.svg') }}
+        </span>
+        <strong>{{- 'Tasks' -}}</strong>
+    </span>
+{% endblock %}
+
+{% block panel %}
+    {% import _self as helper %}
+
+    {% set scheduled_tasks = collector.events.scheduledTaskEvents %}
+    {% set unscheduled_tasks = collector.events.unscheduledTaskEvents %}
+    {% set executed_tasks = collector.events.executedTaskEvents %}
+    {% set failed_tasks = collector.events.failedTaskEvents %}
+    {% set queued_tasks = collector.events.queuedTaskEvents %}
+
+    <h2>{{- 'Tasks' -}}</h2>
+
+    {% if scheduled_tasks is empty %}
+        <div class="empty">
+            <p>{{ 'No tasks have been scheduled' }}</p>
+        </div>
+    {% else %}
+        <div class="sf-tabs tasks-scheduler">
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'Scheduled tasks' -}}<span class="badge">{{- scheduled_tasks|length -}}</span>
+                </h3>
+
+                <div class="tab-content">
+                    {{ helper.render_tasks_list(scheduled_tasks, true) }}
+                </div>
+            </div>
+
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'Unscheduled tasks' -}}<span class="badge">{{- unscheduled_tasks|length -}}</span>
+                </h3>
+
+                <div class="tab-content">
+                    {% if unscheduled_tasks is empty %}
+                        <div class="empty">
+                            <p>{{ 'No tasks have been unscheduled' }}</p>
+                        </div>
+                        {% else %}
+                            {{ helper.render_tasks_list(unscheduled_tasks, true) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'Executed tasks' -}}<span class="badge">{{- executed_tasks|length -}}</span>
+                </h3>
+
+                <div class="tab-content">
+                    {% if unscheduled_tasks is empty %}
+                        <div class="empty">
+                            <p>{{ 'No tasks have been executed' }}</p>
+                        </div>
+                    {% else %}
+                        {{ helper.render_tasks_list(executed_tasks, true) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'Failed tasks' -}}<span class="badge">{{- failed_tasks|length -}}</span>
+                </h3>
+
+                <div class="tab-content">
+                    {% if unscheduled_tasks is empty %}
+                        <div class="empty">
+                            <p>{{ 'No tasks have failed' }}</p>
+                        </div>
+                    {% else %}
+                        {{ helper.render_tasks_list(failed_tasks, true) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'Queued tasks' -}}<span class="badge">{{- queued_tasks|length -}}</span>
+                </h3>
+
+                <div class="tab-content">
+                    {% if unscheduled_tasks is empty %}
+                        <div class="empty">
+                            <p>{{ 'No tasks have been queued' }}</p>
+                        </div>
+                    {% else %}
+                        {{ helper.render_tasks_list(queued_tasks, true) }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% macro render_tasks_list(events) %}
+    <table class="{{ class|default('') }}">
+        <thead>
+            <tr>
+                <th scope="col" class="key">{{- 'Name' -}}</th>
+                <th scope="col" class="key">{{- 'Description' -}}</th>
+                <th scope="col" class="key">{{- 'Expression' -}}</th>
+                <th scope="col" class="key">{{- 'Scheduled at' -}}</th>
+                <th scope="col" class="key">{{- 'State' -}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+                {% set task = event.task %}
+
+               <tr>
+                   <th class="colored font-normal">{{- task.name -}}</th>
+                   <th>{{ task.description ?? 'No description set' }}</th>
+                   <th>{{- task.expression -}}</th>
+                   <th class="colored font-normal">{{ task.scheduledAt|date }}</th>
+                   <th>{{- task.state -}}</th>
+               </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}

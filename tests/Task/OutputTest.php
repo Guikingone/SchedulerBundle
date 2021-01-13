@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
@@ -26,9 +19,9 @@ final class OutputTest extends TestCase
 
         $output = new Output($task);
 
-        static::assertSame('undefined', $output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame('success', $output->getType());
+        self::assertSame('undefined', $output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame('success', $output->getType());
     }
 
     public function testOutputCanBeCreatedForError(): void
@@ -37,8 +30,8 @@ final class OutputTest extends TestCase
 
         $output = new Output($task, null, Output::ERROR);
 
-        static::assertNull($output->getOutput());
-        static::assertSame($task, $output->getTask());
-        static::assertSame('error', $output->getType());
+        self::assertNull($output->getOutput());
+        self::assertSame($task, $output->getTask());
+        self::assertSame('error', $output->getType());
     }
 }

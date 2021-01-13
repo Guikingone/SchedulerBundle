@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -24,6 +17,7 @@ use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -36,8 +30,8 @@ final class CommandTaskRunnerTest extends TestCase
 
         $runner = new CommandTaskRunner($application);
 
-        static::assertFalse($runner->support(new NullTask('foo')));
-        static::assertTrue($runner->support(new CommandTask('foo', 'app:foo')));
+        self::assertFalse($runner->support(new NullTask('foo')));
+        self::assertTrue($runner->support(new CommandTask('foo', 'app:foo')));
     }
 
     public function testCommandCannotBeCalledWithoutBeingRegistered(): void
@@ -46,15 +40,17 @@ final class CommandTaskRunnerTest extends TestCase
         $task = new CommandTask('foo', 'app:foo');
 
         $runner = new CommandTaskRunner($application);
-        static::assertTrue($runner->support($task));
-        static::expectException(UnrecognizedCommandException::class);
-        static::expectExceptionMessage('The given command "app:foo" cannot be found!');
-        static::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
+        self::assertTrue($runner->support($task));
+        self::expectException(UnrecognizedCommandException::class);
+        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
+        self::expectExceptionCode(0);
+        self::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
 
         $task = new CommandTask('foo', FooCommand::class);
-        static::expectException(UnrecognizedCommandException::class);
-        static::expectExceptionMessage('The given command "app:foo" cannot be found!');
-        static::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
+        self::expectException(UnrecognizedCommandException::class);
+        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
+        self::expectExceptionCode(0);
+        self::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
     }
 
     public function testCommandCanBeCalledWhenRegistered(): void
@@ -67,8 +63,8 @@ final class CommandTaskRunnerTest extends TestCase
         $runner = new CommandTaskRunner($application);
         $output = $runner->run($task);
 
-        static::assertSame('This command is executed in "" env', $output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertSame('This command is executed in "" env', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testCommandCanBeCalledWithOptions(): void
@@ -81,8 +77,36 @@ final class CommandTaskRunnerTest extends TestCase
         $runner = new CommandTaskRunner($application);
         $output = $runner->run($task);
 
-        static::assertStringContainsString('This command is executed in "test" env', $output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertStringContainsString('This command is executed in "test" env', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+    }
+
+    public function testCommandCanBeCalledWithEmptyOptions(): void
+    {
+        $application = new Application();
+        $application->add(new FooCommand());
+
+        $task = new CommandTask('foo', 'app:foo', [], ['--wait']);
+
+        $runner = new CommandTaskRunner($application);
+        $output = $runner->run($task);
+
+        self::assertStringContainsString('This command will wait', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+    }
+
+    public function testCommandCanBeCalledWithOptionsButWithoutDashes(): void
+    {
+        $application = new Application();
+        $application->add(new BarCommand());
+
+        $task = new CommandTask('foo', 'app:bar', ['name' => 'bar'], ['env' => 'test']);
+
+        $runner = new CommandTaskRunner($application);
+        $output = $runner->run($task);
+
+        self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testCommandCanBeCalledWithArgument(): void
@@ -95,8 +119,8 @@ final class CommandTaskRunnerTest extends TestCase
         $runner = new CommandTaskRunner($application);
         $output = $runner->run($task);
 
-        static::assertStringContainsString('This command has the "bar" name', $output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }
 
@@ -111,6 +135,7 @@ final class FooCommand extends Command
     {
         $this
             ->addOption('env', 'e', InputOption::VALUE_OPTIONAL)
+            ->addOption('wait', 'w', InputOption::VALUE_NONE)
         ;
     }
 
@@ -119,10 +144,12 @@ final class FooCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($input->hasOption('env')) {
+        if ('' !== $input->getOption('env')) {
             $output->write(sprintf('This command is executed in "%s" env', $input->getOption('env')));
+        }
 
-            return self::SUCCESS;
+        if (true === $input->getOption('wait')) {
+            $output->write('This command will wait');
         }
 
         return self::SUCCESS;

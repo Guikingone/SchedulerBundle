@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
@@ -27,27 +20,27 @@ final class CallBackTaskRunnerTest extends TestCase
         $runner = new CallbackTaskRunner();
 
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        static::assertFalse($runner->support($task));
+        self::assertFalse($runner->support($task));
 
-        $task = new CallbackTask('foo', function () {
+        $task = new CallbackTask('foo', function (): int {
             return 1 + 1;
         });
 
-        static::assertTrue($runner->support($task));
+        self::assertTrue($runner->support($task));
     }
 
     public function testRunnerCanExecuteValidTask(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', function () {
+        $task = new CallbackTask('foo', function (): int {
             return 1 + 1;
         });
 
         $output = $runner->run($task);
 
-        static::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
-        static::assertSame('2', $output->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame('2', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithCallable(): void
@@ -57,37 +50,37 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $runner->run($task);
 
-        static::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
-        static::assertSame('Symfony', $runner->run($task)->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame('Symfony', $runner->run($task)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithArguments(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', function ($a, $b) {
+        $task = new CallbackTask('foo', function ($a, $b): int {
             return $a * $b;
         }, [1, 2]);
 
         $output = $runner->run($task);
 
-        static::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
-        static::assertSame('2', $runner->run($task)->getOutput());
-        static::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame('2', $runner->run($task)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteInValidTask(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', function ($a, $b) {
+        $task = new CallbackTask('foo', function ($a, $b): int {
             return $a * $b;
         }, [1]);
 
         $output = $runner->run($task);
 
-        static::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
-        static::assertNull($output->getOutput());
-        static::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 }
 

@@ -89,7 +89,7 @@ final class TaskList implements TaskListInterface
      */
     public function filter(\Closure $filter): TaskListInterface
     {
-        return new static(array_filter($this->tasks, $filter, \ARRAY_FILTER_USE_BOTH));
+        return new static(\array_filter($this->tasks, $filter, \ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -161,6 +161,6 @@ final class TaskList implements TaskListInterface
      */
     public function toArray(bool $keepKeys = true): array
     {
-        return $keepKeys ? $this->tasks : array_values($this->tasks);
+        return $keepKeys ? $this->tasks : \array_values($this->tasks);
     }
 }
