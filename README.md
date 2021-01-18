@@ -47,7 +47,7 @@ Once transport is configured, time to create a simple task:
 # config/packages/scheduler.yaml
 scheduler_bundle:
     transport:
-        dsn: 'memory://first_in_first_out'
+        dsn: 'filesystem://first_in_first_out'
     tasks:
         foo:
             type: 'command'
