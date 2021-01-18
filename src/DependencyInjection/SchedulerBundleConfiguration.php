@@ -6,6 +6,9 @@ namespace SchedulerBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use function array_key_exists;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -18,6 +21,15 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
 
         $treeBuilder
             ->getRootNode()
+                ->beforeNormalization()
+                    ->always(function (array $configuration): array {
+                        if ((array_key_exists('tasks', $configuration)) && 0 !== count($configuration['tasks']) && !array_key_exists('transport', $configuration)) {
+                            throw new InvalidConfigurationException('The transport must be configured to schedule tasks');
+                        }
+
+                        return $configuration;
+                    })
+                ->end()
                 ->children()
                     ->scalarNode('path')
                         ->info('The path used to trigger tasks using http request, default to "/_tasks"')
@@ -31,7 +43,6 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('dsn')
                                 ->info('The transport DSN used by the scheduler')
-                                ->cannotBeEmpty()->isRequired()
                             ->end()
                             ->arrayNode('options')
                             ->info('Configure the transport, every options handling is configured in each transport')
