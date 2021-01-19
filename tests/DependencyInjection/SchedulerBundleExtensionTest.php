@@ -43,6 +43,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
 use SchedulerBundle\Task\Builder\NullBuilder;
@@ -395,6 +396,12 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('container.preload'));
         self::assertSame(ShellBuilder::class, $container->getDefinition(ShellBuilder::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(ChainedBuilder::class));
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('scheduler.task_builder'));
+        self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('container.preload'));
+        self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testRunnersAreRegistered(): void

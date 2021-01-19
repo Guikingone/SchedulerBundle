@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Test\Constraint;
 
@@ -15,11 +8,10 @@ use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Task\TaskInterface;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskExecuted extends Constraint
 {
@@ -35,7 +27,7 @@ final class TaskExecuted extends Constraint
      */
     public function toString(): string
     {
-        return \sprintf('%s %s been executed', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
+        return sprintf('%s %s been executed', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
     }
 
     /**

@@ -1,20 +1,14 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use Closure;
+use Throwable;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
 {
@@ -23,8 +17,8 @@ interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
      *
      * @param TaskInterface ...$tasks
      *
-     * @throws \Throwable if a task cannot be added|created in a local or remote transport,
-     *                    the task is removed from the list and the exception thrown
+     * @throws Throwable if a task cannot be added|created in a local or remote transport,
+     *                   the task is removed from the list and the exception thrown
      */
     public function add(TaskInterface ...$tasks): void;
 
@@ -41,14 +35,14 @@ interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
     /**
      * Return a new list which contain the desired tasks using the names.
      *
-     * @param array<int,string> $names
+     * @param array<int, string> $names
      */
     public function findByName(array $names): self;
 
     /**
      * Allow to filter the list using a custom filter, the $filter receive the task name and the TaskInterface object (in this order).
      */
-    public function filter(\Closure $filter): self;
+    public function filter(Closure $filter): self;
 
     /**
      * Remove the task in the actual list if the name is a valid one.
@@ -58,7 +52,7 @@ interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
     /**
      * Return the list as an array (using tasks name's as keys), if $keepKeys is false, the array is returned with indexed keys.
      *
-     * @return array<string|int,TaskInterface>
+     * @return array<string|int, TaskInterface>
      */
     public function toArray(bool $keepKeys = true): array;
 }

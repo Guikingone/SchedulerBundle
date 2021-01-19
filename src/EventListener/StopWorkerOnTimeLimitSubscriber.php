@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
@@ -17,11 +10,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Task\TaskInterface;
+use function microtime;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
 {
@@ -37,23 +30,23 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
 
     public function onWorkerStarted(): void
     {
-        $this->endTime = \microtime(true) + $this->timeLimitInSeconds;
+        $this->endTime = microtime(true) + $this->timeLimitInSeconds;
     }
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
     {
-        if ($this->endTime < \microtime(true)) {
+        if ($this->endTime < microtime(true)) {
             $worker = $event->getWorker();
             $worker->stop();
 
-            $this->logger->info(\sprintf('Worker stopped due to time limit of %d seconds exceeded', $this->timeLimitInSeconds), [
+            $this->logger->info(sprintf('Worker stopped due to time limit of %d seconds exceeded', $this->timeLimitInSeconds), [
                 'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
             ]);
         }
     }
 
     /**
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public static function getSubscribedEvents(): array
     {

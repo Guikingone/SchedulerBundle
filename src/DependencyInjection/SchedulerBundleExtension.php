@@ -44,6 +44,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
 use SchedulerBundle\Task\Builder\NullBuilder;
@@ -403,6 +404,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => ShellBuilder::class,
+            ])
+        ;
+
+        $container->register(ChainedBuilder::class, ChainedBuilder::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.task_builder'),
+            ])
+            ->addTag('scheduler.task_builder')
+            ->addTag('container.preload', [
+                'class' => ChainedBuilder::class,
             ])
         ;
     }

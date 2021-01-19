@@ -1,23 +1,15 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskBuilder implements TaskBuilderInterface
 {
@@ -46,6 +38,6 @@ final class TaskBuilder implements TaskBuilderInterface
             return $builder->build($this->propertyAccessor, $options);
         }
 
-        throw new InvalidArgumentException(\sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
+        throw new InvalidArgumentException(sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
     }
 }

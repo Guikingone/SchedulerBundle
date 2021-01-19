@@ -1,13 +1,6 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
@@ -16,11 +9,10 @@ use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterface
 {
@@ -46,7 +38,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         if ($event->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
             $this->failedTasks = 0;
             $worker->stop();
-            $this->logger->info(\sprintf('Worker has stopped due to the failure limit of %d exceeded', $this->maximumFailedTasks));
+            $this->logger->info(sprintf('Worker has stopped due to the failure limit of %d exceeded', $this->maximumFailedTasks));
         }
     }
 

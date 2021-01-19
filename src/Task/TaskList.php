@@ -1,20 +1,23 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use ArrayIterator;
+use Closure;
+use InvalidArgumentException;
+use Throwable;
+use function array_filter;
+use function array_map;
+use function array_values;
+use function count;
+use function gettype;
+use function in_array;
+use const ARRAY_FILTER_USE_BOTH;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskList implements TaskListInterface
 {
@@ -23,7 +26,7 @@ final class TaskList implements TaskListInterface
     /**
      * @param TaskInterface[] $tasks
      *
-     * @throws \Throwable {@see TaskList::add()}
+     * @throws Throwable {@see TaskList::add()}
      */
     public function __construct(array $tasks = [])
     {
@@ -41,15 +44,15 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        foreach ($tasks as $task) {
+        array_map(function (TaskInterface $task): void {
             try {
                 $this->tasks[$task->getName()] = $task;
-            } catch (\Throwable $throwable) {
+            } catch (Throwable $throwable) {
                 $this->remove($task->getName());
 
                 throw $throwable;
             }
-        }
+        }, $tasks);
     }
 
     /**
@@ -76,7 +79,7 @@ final class TaskList implements TaskListInterface
         $tasks = [];
 
         foreach ($this->tasks as $task) {
-            if (\in_array($task->getName(), $names, true)) {
+            if (in_array($task->getName(), $names, true)) {
                 $tasks[] = $task;
             }
         }
@@ -87,9 +90,9 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(\Closure $filter): TaskListInterface
+    public function filter(Closure $filter): TaskListInterface
     {
-        return new static(\array_filter($this->tasks, $filter, \ARRAY_FILTER_USE_BOTH));
+        return new static(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -126,7 +129,7 @@ final class TaskList implements TaskListInterface
     public function offsetSet($offset, $value)
     {
         if (!$value instanceof TaskInterface) {
-            throw new \InvalidArgumentException('A task must be given, received %s', \gettype($value));
+            throw new InvalidArgumentException('A task must be given, received %s', gettype($value));
         }
 
         null === $offset ? $this->add($value) : $this->tasks[$offset] = $value;
@@ -145,15 +148,15 @@ final class TaskList implements TaskListInterface
      */
     public function count(): int
     {
-        return \count($this->tasks);
+        return count($this->tasks);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->tasks);
+        return new ArrayIterator($this->tasks);
     }
 
     /**
@@ -161,6 +164,6 @@ final class TaskList implements TaskListInterface
      */
     public function toArray(bool $keepKeys = true): array
     {
-        return $keepKeys ? $this->tasks : \array_values($this->tasks);
+        return $keepKeys ? $this->tasks : array_values($this->tasks);
     }
 }

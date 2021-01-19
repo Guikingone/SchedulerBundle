@@ -7,6 +7,12 @@ namespace SchedulerBundle\EventListener;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
+use function function_exists;
+use function pcntl_signal;
+use const SIGHUP;
+use const SIGINT;
+use const SIGQUIT;
+use const SIGTERM;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -15,8 +21,8 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
     public function onWorkerStarted(WorkerStartedEvent $event): void
     {
-        foreach ([\SIGTERM, \SIGINT, \SIGQUIT] as $signal) {
-            \pcntl_signal($signal, static function () use ($event): void {
+        foreach ([SIGTERM, SIGINT, SIGQUIT] as $signal) {
+            pcntl_signal($signal, static function () use ($event): void {
                 $event->getWorker()->stop();
             });
         }
@@ -24,17 +30,17 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
     {
-        \pcntl_signal(\SIGHUP, static function () use ($event): void {
+        pcntl_signal(SIGHUP, static function () use ($event): void {
             $event->getWorker()->restart();
         });
     }
 
     /**
-     * @return array<string,array<int,string|int>>
+     * @return array<string, array<int, string|int>>
      */
     public static function getSubscribedEvents(): array
     {
-        if (!\function_exists('pcntl_signal')) {
+        if (!function_exists('pcntl_signal')) {
             return [];
         }
 

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_walk;
+use function array_map;
 use function explode;
 use function sprintf;
 
@@ -23,19 +24,16 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
             throw new LogicException(sprintf('The %s transport factory cannot create a transport', static::class));
         }
 
-        $transportsDsn = explode($delimiter, $dsnList);
-
-        $transports = [];
-        array_walk($transportsDsn, function (string $dsn) use ($transportFactories, &$transports, $options, $serializer, $schedulePolicyOrchestrator): void {
+        return array_map(function (string $transportDsn) use ($transportFactories, $options, $serializer, $schedulePolicyOrchestrator): TransportInterface {
             foreach ($transportFactories as $transportFactory) {
-                if (!$transportFactory->support($dsn)) {
+                if (!$transportFactory->support($transportDsn)) {
                     continue;
                 }
 
-                $transports[] = $transportFactory->createTransport(Dsn::fromString($dsn), $options, $serializer, $schedulePolicyOrchestrator);
+                return $transportFactory->createTransport(Dsn::fromString($transportDsn), $options, $serializer, $schedulePolicyOrchestrator);
             }
-        });
 
-        return $transports;
+            throw new InvalidArgumentException('The given dsn cannot be used to create a transport');
+        }, explode($delimiter, $dsnList));
     }
 }

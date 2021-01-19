@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
+use DateTimeZone;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\TaskInterface;
 
@@ -20,7 +21,7 @@ trait TaskBuilderTrait
             }
 
             if ('timezone' === $option && $propertyAccessor->isWritable($task, $option)) {
-                $propertyAccessor->setValue($task, $option, new \DateTimeZone($value));
+                $propertyAccessor->setValue($task, $option, new DateTimeZone($value));
 
                 continue;
             }

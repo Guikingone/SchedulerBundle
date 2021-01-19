@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Dsn;
+use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\RoundRobinTransport;
 use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportInterface;
@@ -33,14 +35,16 @@ final class RoundRobinTransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new RoundRobinTransportFactory([]);
+        $factory = new RoundRobinTransportFactory([
+            new InMemoryTransportFactory(),
+        ]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
         self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(RoundRobinTransport::class, $transport);
     }
 
-    public function provideDsn(): \Generator
+    public function provideDsn(): Generator
     {
         yield ['roundrobin://(memory://first_in_first_out && memory://last_in_first_out)'];
         yield ['rr://(memory://first_in_first_out && memory://last_in_first_out)'];

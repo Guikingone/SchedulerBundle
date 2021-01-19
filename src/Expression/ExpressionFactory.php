@@ -1,23 +1,19 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Expression;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\InvalidExpressionException;
+use function array_key_exists;
+use function explode;
+use function implode;
+use function sprintf;
+use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class ExpressionFactory
 {
@@ -49,7 +45,7 @@ final class ExpressionFactory
 
     public function setExpression(string $expression): void
     {
-        if (0 === \strpos($expression, '@')) {
+        if (0 === strpos($expression, '@')) {
             $this->setMacro($expression);
 
             return;
@@ -153,7 +149,7 @@ final class ExpressionFactory
 
     public function at(string $time): string
     {
-        $fields = \explode(':', $time);
+        $fields = explode(':', $time);
 
         $this->changeExpression(0, 2 === \count($fields) ? $fields[1] : '0');
         $this->changeExpression(1, $fields[0]);
@@ -163,8 +159,8 @@ final class ExpressionFactory
 
     public function setMacro(string $macro): string
     {
-        if (!\array_key_exists($macro, self::ALLOWED_MACROS)) {
-            throw new InvalidExpressionException(\sprintf('The desired macro "%s" is not supported!', $macro));
+        if (!array_key_exists($macro, self::ALLOWED_MACROS)) {
+            throw new InvalidExpressionException(sprintf('The desired macro "%s" is not supported!', $macro));
         }
 
         $this->expression = $macro;
@@ -180,13 +176,13 @@ final class ExpressionFactory
      */
     private function changeExpression(int $position, string $value): string
     {
-        $fields = \explode(' ', $this->expression);
-        if (!\array_key_exists($position, $fields)) {
+        $fields = explode(' ', $this->expression);
+        if (!array_key_exists($position, $fields)) {
             throw new InvalidArgumentException('The desired position is not valid');
         }
 
         $fields[$position] = $value;
 
-        return $this->expression = \implode(' ', $fields);
+        return $this->expression = implode(' ', $fields);
     }
 }

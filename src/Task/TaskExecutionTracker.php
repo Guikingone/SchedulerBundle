@@ -1,22 +1,15 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
 use Symfony\Component\Stopwatch\Stopwatch;
+use function memory_get_usage;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskExecutionTracker implements TaskExecutionTrackerInterface
 {
@@ -36,7 +29,7 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
             return;
         }
 
-        $this->watch->start(\sprintf('task_execution.%s', $task->getName()));
+        $this->watch->start(sprintf('task_execution.%s', $task->getName()));
     }
 
     /**
@@ -48,13 +41,13 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
             return;
         }
 
-        $task->setExecutionMemoryUsage(\memory_get_usage());
+        $task->setExecutionMemoryUsage(memory_get_usage());
 
-        if (!$this->watch->isStarted(\sprintf('task_execution.%s', $task->getName()))) {
+        if (!$this->watch->isStarted(sprintf('task_execution.%s', $task->getName()))) {
             return;
         }
 
-        $event = $this->watch->stop(\sprintf('task_execution.%s', $task->getName()));
+        $event = $this->watch->stop(sprintf('task_execution.%s', $task->getName()));
         $task->setExecutionComputationTime($event->getDuration());
     }
 }

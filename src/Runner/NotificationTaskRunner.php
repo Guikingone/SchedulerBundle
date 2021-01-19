@@ -8,6 +8,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use SchedulerBundle\Task\NotificationTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -40,7 +41,7 @@ final class NotificationTaskRunner implements RunnerInterface
             $task->setExecutionState(TaskInterface::SUCCEED);
 
             return new Output($task, null);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
             return new Output($task, $throwable->getMessage(), Output::ERROR);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\SchedulePolicy;
 
+use DateTimeImmutable;
 use SchedulerBundle\Task\TaskInterface;
 use function uasort;
 
@@ -31,7 +32,7 @@ final class DeadlinePolicy implements PolicyInterface
         }
 
         uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
-            $currentDate = new \DateTimeImmutable();
+            $currentDate = new DateTimeImmutable();
 
             return $currentDate->add($task->getExecutionAbsoluteDeadline()) < $currentDate->add($nextTask->getExecutionAbsoluteDeadline());
         });

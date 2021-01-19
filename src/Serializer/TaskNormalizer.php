@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace SchedulerBundle\Serializer;
 
 use Closure;
+use DateInterval;
+use DatetimeInterface;
+use DateTimeZone;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -235,11 +238,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private function handleDateAttributes(): array
     {
         $dateAttributesCallback = function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-            return $innerObject instanceof \DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, $context) : null;
+            return $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, $context) : null;
         };
 
         $dateIntervalAttributesCallback = function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-            return $innerObject instanceof \DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
+            return $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
         };
 
         return [
@@ -252,7 +255,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'lastExecution' => $dateAttributesCallback,
                 'scheduledAt' => $dateAttributesCallback,
                 'timezone' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-                    return $innerObject instanceof \DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
+                    return $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
                 },
             ],
         ];

@@ -2,24 +2,14 @@
 
 declare(strict_types=1);
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace SchedulerBundle;
 
+use DateTimeZone;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 interface SchedulerInterface
 {
@@ -51,19 +41,19 @@ interface SchedulerInterface
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
-     * @return TaskListInterface<string|int,TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getDueTasks(): TaskListInterface;
 
     /**
      * Return the timezone used by the actual scheduler, each scheduler can use a different timezone.
      */
-    public function getTimezone(): \DateTimeZone;
+    public function getTimezone(): DateTimeZone;
 
     /**
      * Return every tasks scheduled.
      *
-     * @return TaskListInterface<string|int,TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getTasks(): TaskListInterface;
 

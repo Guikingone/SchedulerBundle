@@ -6,6 +6,9 @@ namespace SchedulerBundle\Task;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function array_key_exists;
+use function array_walk;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -53,7 +56,7 @@ final class HttpTask extends AbstractTask
     }
 
     /**
-     * @return array<string,mixed>
+     * @return array<string, mixed>
      */
     public function getClientOptions(): array
     {
@@ -61,7 +64,7 @@ final class HttpTask extends AbstractTask
     }
 
     /**
-     * @param array<string,mixed> $clientOptions
+     * @param array<string, mixed> $clientOptions
      */
     public function setClientOptions(array $clientOptions): TaskInterface
     {
@@ -79,9 +82,9 @@ final class HttpTask extends AbstractTask
             return;
         }
 
-        \array_walk($clientOptions, function ($_, $key): void {
-            if (!\array_key_exists($key, HttpClientInterface::OPTIONS_DEFAULTS)) {
-                throw new InvalidArgumentException(\sprintf('The following option: "%s" is not supported', $key));
+        array_walk($clientOptions, function ($_, $key): void {
+            if (!array_key_exists($key, HttpClientInterface::OPTIONS_DEFAULTS)) {
+                throw new InvalidArgumentException(sprintf('The following option: "%s" is not supported', $key));
             }
         });
     }
