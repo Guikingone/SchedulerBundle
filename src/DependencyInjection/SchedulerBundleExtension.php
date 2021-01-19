@@ -105,6 +105,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerWorker($container, $config);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container);
+        $this->registerRedisBridge($container);
         $this->registerDataCollector($container);
     }
 
@@ -165,16 +166,6 @@ final class SchedulerBundleExtension extends Extension
                 'class' => RoundRobinTransportFactory::class,
             ])
         ;
-
-        if (class_exists(Redis::class)) {
-            $container->register(RedisTransportFactory::class, RedisTransportFactory::class)
-                ->setPublic(false)
-                ->addTag('scheduler.transport_factory')
-                ->addTag('container.preload', [
-                    'class' => RedisTransportFactory::class,
-                ])
-            ;
-        }
     }
 
     private function registerTransport(ContainerBuilder $container, array $configuration): void
@@ -651,6 +642,21 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
                 'class' => DoctrineTransportFactory::class,
+            ])
+        ;
+    }
+
+    private function registerRedisBridge(ContainerBuilder $container): void
+    {
+        if (!class_exists(Redis::class)) {
+            return;
+        }
+
+        $container->register(RedisTransportFactory::class, RedisTransportFactory::class)
+            ->setPublic(false)
+            ->addTag('scheduler.transport_factory')
+            ->addTag('container.preload', [
+                'class' => RedisTransportFactory::class,
             ])
         ;
     }

@@ -26,7 +26,15 @@ final class InMemoryTransportTest extends TestCase
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "execution_mode" with value 350 is expected to be of type "string" or "null", but is of type "int"');
         self::expectExceptionCode(0);
-        $transport = new InMemoryTransport(['execution_mode' => 350], new SchedulePolicyOrchestrator([]));
+        new InMemoryTransport(['execution_mode' => 350], new SchedulePolicyOrchestrator([]));
+    }
+
+    public function testTransportCannotBeConfiguredWithInvalidOptionTypeOnPath(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "path" with value 350 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new InMemoryTransport(['path' => 350], new SchedulePolicyOrchestrator([]));
     }
 
     /**
