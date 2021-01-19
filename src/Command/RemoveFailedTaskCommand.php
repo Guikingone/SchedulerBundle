@@ -13,6 +13,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -70,7 +72,7 @@ EOF
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
-            $style->error(\sprintf('The task "%s" does not fails', $name));
+            $style->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
@@ -78,7 +80,7 @@ EOF
         if ($input->getOption('force') || $style->confirm('Do you want to permanently remove this task?', true)) {
             try {
                 $this->scheduler->unschedule($toRemoveTask->getName());
-            } catch (\Throwable $throwable) {
+            } catch (Throwable $throwable) {
                 $style->error([
                     'An error occurred when trying to unschedule the task:',
                     $throwable->getMessage(),
@@ -87,11 +89,11 @@ EOF
                 return self::FAILURE;
             }
 
-            $style->success(\sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $style->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
         } else {
-            $style->note(\sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+            $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
 
             return self::FAILURE;
         }

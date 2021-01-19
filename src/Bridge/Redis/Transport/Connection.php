@@ -12,6 +12,7 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 use function sprintf;
 use function strpos;
 
@@ -143,7 +144,7 @@ final class Connection implements ConnectionInterface
 
         try {
             $this->update($taskName, $task);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName));
         }
     }
@@ -162,7 +163,7 @@ final class Connection implements ConnectionInterface
 
         try {
             $this->update($taskName, $task);
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName));
         }
     }

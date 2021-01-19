@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle;
 
 use Exception;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
@@ -19,6 +22,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,6 +35,95 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setScheduledAt');
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCannotScheduleTasksWithErroredBeforeCallback(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('setScheduledAt');
+        $task->expects(self::never())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(function (): bool {
+            return false;
+        });
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task cannot be scheduled');
+        self::expectExceptionCode(0);
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithBeforeCallback(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(function (): int {
+            return 1 + 1;
+        });
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCannotScheduleTasksWithErroredAfterCallback(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(function (): bool {
+            return false;
+        });
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::exactly(2))->method('dispatch')->withConsecutive(
+            [new TaskScheduledEvent($task)],
+            [new TaskUnscheduledEvent('foo')]
+        );
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task has encounter an error after scheduling, it has been unscheduled');
+        self::expectExceptionCode(0);
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithAfterCallback(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(function (): bool {
+            return true;
+        });
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -197,7 +290,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->update($task->getName(), $task);
         $updatedTask = $scheduler->getTasks()->filter(function (TaskInterface $task): bool {
-            return \in_array('new_tag', $task->getTags());
+            return in_array('new_tag', $task->getTags());
         });
         self::assertNotEmpty($updatedTask);
     }
@@ -297,7 +390,7 @@ final class SchedulerTest extends TestCase
         self::assertNotEmpty($dueTasks);
     }
 
-    public function provideTasks(): \Generator
+    public function provideTasks(): Generator
     {
         yield 'Shell tasks' => [
             new ShellTask('Bar', ['echo', 'Symfony']),

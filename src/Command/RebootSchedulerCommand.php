@@ -17,6 +17,9 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function get_class;
+use function implode;
+use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -84,7 +87,7 @@ EOF
             $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
 
             foreach ($tasks as $task) {
-                $table->addRow([$task->getName(), \get_class($task), $task->getState(), \implode(', ', $task->getTags())]);
+                $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);
             }
 
             $io->success('The following tasks will be executed when the scheduler will reboot:');
@@ -108,7 +111,7 @@ EOF
         while ($this->worker->isRunning()) {
             $io->warning('The scheduler cannot be rebooted as the worker is not available, retrying to access it');
 
-            \sleep(1);
+            sleep(1);
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));
@@ -121,7 +124,7 @@ EOF
         $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
 
         foreach ($tasks as $task) {
-            $table->addRow([$task->getName(), \get_class($task), $task->getState(), \implode(', ', $task->getTags())]);
+            $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);
         }
 
         $table->render();

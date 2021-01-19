@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -16,13 +17,13 @@ final class FailedTaskTest extends TestCase
     public function testTaskReceiveValidName(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getName')->willReturn('bar');
+        $task->expects(self::once())->method('getName')->willReturn('bar');
 
         $failedTask = new FailedTask($task, 'foo');
 
         self::assertSame('bar.failed', $failedTask->getName());
         self::assertSame($task, $failedTask->getTask());
         self::assertSame('foo', $failedTask->getReason());
-        self::assertInstanceOf(\DateTimeInterface::class, $failedTask->getFailedAt());
+        self::assertInstanceOf(DateTimeInterface::class, $failedTask->getFailedAt());
     }
 }

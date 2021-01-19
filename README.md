@@ -5,9 +5,11 @@ A Symfony bundle built to schedule/consume tasks.
 ## Main features
 
 - External transports (Doctrine, Redis, etc)
+- External configuration storage (Doctrine, Redis, etc)
 - Retry / Remove tasks if failed
 - Can wait until tasks are dues
-- Messenger integration
+- [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
+- Sort policies
 
 ## Installation
 

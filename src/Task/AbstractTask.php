@@ -39,6 +39,10 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setDefaults([
             'arrival_time' => null,
             'background' => false,
+            'before_scheduling' => null,
+            'after_scheduling' => null,
+            'before_executing' => null,
+            'after_executing' => null,
             'description' => null,
             'expression' => '* * * * *',
             'execution_absolute_deadline' => null,
@@ -69,6 +73,10 @@ abstract class AbstractTask implements TaskInterface
 
         $resolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('background', ['bool']);
+        $resolver->setAllowedTypes('before_scheduling', ['callable', 'array', 'null']);
+        $resolver->setAllowedTypes('after_scheduling', ['callable', 'array', 'null']);
+        $resolver->setAllowedTypes('before_executing', ['callable', 'array', 'null']);
+        $resolver->setAllowedTypes('after_executing', ['callable', 'array', 'null']);
         $resolver->setAllowedTypes('description', ['string', 'null']);
         $resolver->setAllowedTypes('expression', ['string']);
         $resolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
@@ -190,6 +198,54 @@ abstract class AbstractTask implements TaskInterface
     public function mustRunInBackground(): bool
     {
         return $this->options['background'];
+    }
+
+    public function beforeScheduling($beforeSchedulingCallable = null): TaskInterface
+    {
+        $this->options['before_scheduling'] = $beforeSchedulingCallable;
+
+        return $this;
+    }
+
+    public function getBeforeScheduling()
+    {
+        return $this->options['before_scheduling'];
+    }
+
+    public function afterScheduling($afterSchedulingCallable = null): TaskInterface
+    {
+        $this->options['after_scheduling'] = $afterSchedulingCallable;
+
+        return $this;
+    }
+
+    public function getAfterScheduling()
+    {
+        return $this->options['after_scheduling'];
+    }
+
+    public function beforeExecuting($beforeExecutingCallable = null): TaskInterface
+    {
+        $this->options['before_executing'] = $beforeExecutingCallable;
+
+        return $this;
+    }
+
+    public function getBeforeExecuting()
+    {
+        return $this->options['before_executing'];
+    }
+
+    public function afterExecuting($afterExecutingCallable = null): TaskInterface
+    {
+        $this->options['after_executing'] = $afterExecutingCallable;
+
+        return $this;
+    }
+
+    public function getAfterExecuting()
+    {
+        return $this->options['after_executing'];
     }
 
     public function setDescription(string $description = null): TaskInterface

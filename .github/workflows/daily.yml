@@ -71,7 +71,7 @@ jobs:
       - name: PHPUnit
         run: php vendor/bin/phpunit tests
         env:
-          SCHEDULER_REDIS_DSN: redis://127.0.0.1:7006/_symfony_scheduler_tasks
+          SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection

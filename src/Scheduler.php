@@ -19,6 +19,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function call_user_func;
 use function sprintf;
 
 /**
@@ -49,9 +50,11 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
-        $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
+        if (null !== $task->getBeforeScheduling() && false === call_user_func($task->getBeforeScheduling(), $task)) {
+            throw new RuntimeException('The task cannot be scheduled');
+        }
 
-        $task->setScheduledAt($synchronizedCurrentDate);
+        $task->setScheduledAt($this->getSynchronizedCurrentDate());
         $task->setTimezone($this->timezone);
 
         if (null !== $this->bus && $task->isQueued()) {
@@ -64,6 +67,12 @@ final class Scheduler implements SchedulerInterface
         $this->transport->create($task);
 
         $this->dispatch(new TaskScheduledEvent($task));
+
+        if (null !== $task->getAfterScheduling() && false === call_user_func($task->getAfterScheduling(), $task)) {
+            $this->unschedule($task->getName());
+
+            throw new RuntimeException('The task has encounter an error after scheduling, it has been unscheduled');
+        }
     }
 
     /**

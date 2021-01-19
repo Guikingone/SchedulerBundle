@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -39,13 +43,29 @@ interface TaskInterface
 
     public function setName(string $name): self;
 
-    public function setArrivalTime(\DateTimeImmutable $arrivalTime = null): self;
+    public function setArrivalTime(DateTimeImmutable $arrivalTime = null): self;
 
-    public function getArrivalTime(): ?\DateTimeImmutable;
+    public function getArrivalTime(): ?DateTimeImmutable;
 
     public function setBackground(bool $background): self;
 
     public function mustRunInBackground(): bool;
+
+    public function beforeScheduling(callable $beforeSchedulingCallable = null): TaskInterface;
+
+    public function getBeforeScheduling();
+
+    public function afterScheduling($afterSchedulingCallable = null): TaskInterface;
+
+    public function getAfterScheduling();
+
+    public function beforeExecuting($beforeExecutingCallable = null): TaskInterface;
+
+    public function getBeforeExecuting();
+
+    public function afterExecuting($afterExecutingCallable = null): TaskInterface;
+
+    public function getAfterExecuting();
 
     public function setDescription(string $description = null): self;
 
@@ -55,9 +75,9 @@ interface TaskInterface
 
     public function getExpression(): string;
 
-    public function setExecutionAbsoluteDeadline(\DateInterval $executionAbsoluteDeadline = null): self;
+    public function setExecutionAbsoluteDeadline(DateInterval $executionAbsoluteDeadline = null): self;
 
-    public function getExecutionAbsoluteDeadline(): ?\DateInterval;
+    public function getExecutionAbsoluteDeadline(): ?DateInterval;
 
     public function getExecutionComputationTime(): ?float;
 
@@ -75,29 +95,29 @@ interface TaskInterface
 
     public function setExecutionPeriod(float $executionPeriod = null): self;
 
-    public function getExecutionRelativeDeadline(): ?\DateInterval;
+    public function getExecutionRelativeDeadline(): ?DateInterval;
 
-    public function setExecutionRelativeDeadline(\DateInterval $executionRelativeDeadline = null): self;
+    public function setExecutionRelativeDeadline(DateInterval $executionRelativeDeadline = null): self;
 
     public function setExecutionStartDate(string $executionStartDate = null): self;
 
-    public function getExecutionStartDate(): ?\DateTimeImmutable;
+    public function getExecutionStartDate(): ?DateTimeImmutable;
 
     public function setExecutionEndDate(string $executionEndDate = null): self;
 
-    public function getExecutionEndDate(): ?\DateTimeImmutable;
+    public function getExecutionEndDate(): ?DateTimeImmutable;
 
-    public function setExecutionStartTime(\DateTimeImmutable $executionStartTime = null): self;
+    public function setExecutionStartTime(DateTimeImmutable $executionStartTime = null): self;
 
-    public function getExecutionStartTime(): ?\DateTimeImmutable;
+    public function getExecutionStartTime(): ?DateTimeImmutable;
 
-    public function setExecutionEndTime(\DateTimeImmutable $executionStartTime = null): self;
+    public function setExecutionEndTime(DateTimeImmutable $executionStartTime = null): self;
 
-    public function getExecutionEndTime(): ?\DateTimeImmutable;
+    public function getExecutionEndTime(): ?DateTimeImmutable;
 
-    public function setLastExecution(\DateTimeImmutable $lastExecution = null): self;
+    public function setLastExecution(DateTimeImmutable $lastExecution = null): self;
 
-    public function getLastExecution(): ?\DateTimeImmutable;
+    public function getLastExecution(): ?DateTimeImmutable;
 
     public function setMaxDuration(float $maxDuration = null): self;
 
@@ -127,9 +147,9 @@ interface TaskInterface
 
     public function setQueued(bool $queued): self;
 
-    public function setScheduledAt(\DateTimeImmutable $scheduledAt): self;
+    public function setScheduledAt(DateTimeImmutable $scheduledAt): self;
 
-    public function getScheduledAt(): ?\DateTimeImmutable;
+    public function getScheduledAt(): ?DateTimeImmutable;
 
     public function isSingleRun(): bool;
 
@@ -141,9 +161,9 @@ interface TaskInterface
 
     public function addTag(string $tag): self;
 
-    public function getTimezone(): ?\DateTimeZone;
+    public function getTimezone(): ?DateTimeZone;
 
-    public function setTimezone(\DateTimeZone $timezone = null): self;
+    public function setTimezone(DateTimeZone $timezone = null): self;
 
     public function isTracked(): bool;
 

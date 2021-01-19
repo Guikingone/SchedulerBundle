@@ -19,6 +19,7 @@ final class ChainedTaskTest extends TestCase
 
         $chainedTask = new ChainedTask('foo', $task);
 
+        self::assertSame('* * * * *', $chainedTask->getExpression());
         self::assertNotEmpty($chainedTask->getTasks());
         self::assertSame($task, $chainedTask->getTasks()[0]);
         self::assertSame($task, $chainedTask->getTask(0));

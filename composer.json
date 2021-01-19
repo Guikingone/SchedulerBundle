@@ -35,6 +35,7 @@
             "SchedulerBundle\\Test\\": "src/Test/",
             "SchedulerBundle\\Test\\Constraint\\": "src/Test/Constraint/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
+            "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
             "SchedulerBundle\\Worker\\": "src/Worker/"
         }
     },
@@ -63,6 +64,7 @@
             "Tests\\SchedulerBundle\\Test\\": "tests/Test/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\": "tests/Test/Constraint/",
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
+            "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
             "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/"
         }
     },

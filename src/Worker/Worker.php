@@ -34,6 +34,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
+use function call_user_func;
 use function count;
 use function in_array;
 use function is_array;
@@ -67,8 +68,14 @@ final class Worker implements WorkerInterface
      * @param iterable|RunnerInterface[]                      $runners
      * @param BlockingStoreInterface|PersistingStoreInterface $store
      */
-    public function __construct(SchedulerInterface $scheduler, iterable $runners, TaskExecutionTrackerInterface $tracker, EventDispatcherInterface $eventDispatcher = null, LoggerInterface $logger = null, $store = null)
-    {
+    public function __construct(
+        SchedulerInterface $scheduler,
+        iterable $runners,
+        TaskExecutionTrackerInterface $tracker,
+        EventDispatcherInterface $eventDispatcher = null,
+        LoggerInterface $logger = null,
+        $store = null
+    ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
         $this->tracker = $tracker;
@@ -117,6 +124,10 @@ final class Worker implements WorkerInterface
                         usleep($task->getExecutionDelay());
                     }
 
+                    if (null !== $task->getBeforeExecuting() && false === call_user_func($task->getBeforeExecuting(), $task)) {
+                        continue 2;
+                    }
+
                     try {
                         if ($lockedTask->acquire() && !$this->isRunning()) {
                             $this->running = true;
@@ -128,6 +139,10 @@ final class Worker implements WorkerInterface
                         $this->failedTasks->add($failedTask);
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
+                        if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
+                            $this->failedTasks->add(new FailedTask($task, sprintf('The after scheduling callback failed')));
+                        }
+
                         $lockedTask->release();
                         $this->running = false;
                         $this->lastExecutedTask = $task;

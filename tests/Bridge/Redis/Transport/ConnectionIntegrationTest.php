@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
@@ -20,6 +21,8 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Throwable;
+use function getenv;
 use function sprintf;
 
 /**
@@ -39,11 +42,11 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!\getenv('SCHEDULER_REDIS_DSN')) {
+        if (!getenv('SCHEDULER_REDIS_DSN')) {
             $this->markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
         }
 
-        $dsn = Dsn::fromString(\getenv('SCHEDULER_REDIS_DSN'));
+        $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
@@ -64,7 +67,7 @@ final class ConnectionIntegrationTest extends TestCase
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             ], $serializer, $this->redis);
             $this->connection->clean();
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             self::markTestSkipped($throwable->getMessage());
         }
     }
@@ -276,7 +279,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->get($task->getName());
     }
 
-    public function provideTasks(): \Generator
+    public function provideTasks(): Generator
     {
         yield 'NullTask' => [
             new NullTask('foo'),
@@ -289,7 +292,7 @@ final class ConnectionIntegrationTest extends TestCase
         ];
     }
 
-    public function provideCreateTasks(): \Generator
+    public function provideCreateTasks(): Generator
     {
         yield 'NullTask' => [
             new NullTask('foo'),
