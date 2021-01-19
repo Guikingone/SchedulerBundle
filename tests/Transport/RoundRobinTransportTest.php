@@ -20,8 +20,10 @@ final class RoundRobinTransportTest extends TestCase
     {
         $transport = new RoundRobinTransport([]);
 
+        self::assertCount(3, $transport->getOptions());
         self::assertArrayHasKey('quantum', $transport->getOptions());
         self::assertSame(2, $transport->getOptions()['quantum']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
