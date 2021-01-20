@@ -24,6 +24,7 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Runner\CallbackTaskRunner;
+use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Runner\MessengerTaskRunner;
@@ -496,6 +497,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.runner')
             ->addTag('container.preload', [
                 'class' => NullTaskRunner::class,
+            ])
+        ;
+
+        $container->register(ChainedTaskRunner::class, ChainedTaskRunner::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.runner'),
+            ])
+            ->addTag('scheduler.runner')
+            ->addTag('container.preload', [
+                'class' => ChainedTaskRunner::class,
             ])
         ;
     }

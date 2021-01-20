@@ -104,7 +104,9 @@
         "symfony/http-kernel": "^5.2",
         "symfony/messenger": "^5.2",
         "symfony/notifier": "^5.2",
-        "phpstan/phpstan": "^0.12.68",
+        "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan-phpunit": "^0.12",
+        "phpstan/phpstan-doctrine": "^0.12",
         "phpunit/phpunit": "^8.5"
     },
     "suggest": {

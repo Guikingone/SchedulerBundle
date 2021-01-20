@@ -127,6 +127,14 @@ interface TaskInterface
 
     public function setNice(int $nice = null): self;
 
+    /**
+     * @param string     $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public function get(string $key, $default = null);
+
     public function getState(): string;
 
     public function setState(string $state): self;

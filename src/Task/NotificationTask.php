@@ -8,7 +8,7 @@ use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 
 /**
- * @author Guillaume Loulier <contact@guillaumeloulier.fr>-
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class NotificationTask extends AbstractTask
 {

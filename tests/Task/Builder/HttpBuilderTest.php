@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task\Builder;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\HttpBuilder;
@@ -44,7 +45,7 @@ final class HttpBuilderTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
-    public function provideTaskData(): \Generator
+    public function provideTaskData(): Generator
     {
         yield [
             [

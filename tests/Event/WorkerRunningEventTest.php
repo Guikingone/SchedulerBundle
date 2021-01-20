@@ -10,8 +10,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class WorkerRunningEventTest extends TestCase
 {

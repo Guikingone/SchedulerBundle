@@ -23,6 +23,7 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Runner\CallbackTaskRunner;
+use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Runner\MessengerTaskRunner;
@@ -459,6 +460,12 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(NullTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(NullTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(NullTaskRunner::class, $container->getDefinition(NullTaskRunner::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(ChainedTaskRunner::class));
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedTaskRunner::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('scheduler.runner'));
+        self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('container.preload'));
+        self::assertSame(ChainedTaskRunner::class, $container->getDefinition(ChainedTaskRunner::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testNormalizerIsRegistered(): void

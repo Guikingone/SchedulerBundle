@@ -9,11 +9,10 @@ use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class HttpTaskRunner implements RunnerInterface
 {
@@ -29,6 +28,12 @@ final class HttpTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
+        if (!$task instanceof HttpTask) {
+            $task->setExecutionState(TaskInterface::ERRORED);
+
+            return new Output($task, null, Output::ERROR);
+        }
+
         $task->setExecutionState(TaskInterface::RUNNING);
 
         try {
@@ -36,7 +41,7 @@ final class HttpTaskRunner implements RunnerInterface
             $task->setExecutionState(TaskInterface::SUCCEED);
 
             return new Output($task, $response->getContent());
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
             return new Output($task, $exception->getMessage(), Output::ERROR);

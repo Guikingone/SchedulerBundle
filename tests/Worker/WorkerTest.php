@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Worker;
 
+use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\BlockingStoreInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -184,7 +186,7 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::exactly(2))->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
+        $scheduler->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
 
         $eventDispatcher = new EventDispatcher();
@@ -457,7 +459,7 @@ final class WorkerTest extends TestCase
     {
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->willReturn(true);
-        $runner->expects(self::once())->method('run')->willThrowException(new \RuntimeException('Random error occurred'));
+        $runner->expects(self::once())->method('run')->willThrowException(new RuntimeException('Random error occurred'));
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $tracker->expects(self::once())->method('startTracking');

@@ -43,7 +43,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
     }
 
     /**
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public static function getSubscribedEvents(): array
     {

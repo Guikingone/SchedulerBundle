@@ -8,6 +8,7 @@ use Symfony\Component\Process\Process;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use function trim;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -39,7 +40,7 @@ final class ShellTaskRunner implements RunnerInterface
 
         $exitCode = $process->run(null, $task->getEnvironmentVariables());
 
-        $output = $task->isOutput() ? \trim($process->getOutput()) : null;
+        $output = $task->isOutput() ? trim($process->getOutput()) : null;
         if (0 !== $exitCode) {
             $task->setExecutionState(TaskInterface::ERRORED);
 

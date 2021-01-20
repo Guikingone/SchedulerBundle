@@ -6,8 +6,6 @@ namespace SchedulerBundle\Task;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 interface TaskBuilderInterface
 {

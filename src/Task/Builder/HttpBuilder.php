@@ -10,8 +10,6 @@ use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class HttpBuilder implements BuilderInterface
 {

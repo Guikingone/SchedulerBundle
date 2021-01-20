@@ -8,7 +8,7 @@ This bundle provides multiple type of tasks:
 - [CallbackTask](tasks.md#CallbackTask)
 - HttpTask
 - MessengerTask
-- NotificationTask
+- [NotificationTask](tasks.md#NotificationTask)
 - [NullTask](tasks.md#NullTask)
 
 ## Extra
@@ -110,6 +110,22 @@ $task = new CallbackTask('foo', [new Foo(), 'echo']);
 This type of command cannot be configured via the configuration.
 
 _Note: This type of task can use closures but cannot be sent to external transports or filesystem one if so._
+
+## NotificationTask
+
+A [NotificationTask](../src/Task/NotificationTask.php) represent an [Symfony/Notifier](https://symfony.com/doc/current/notifier.html) notification:
+
+```php
+<?php
+
+use SchedulerBundle\Task\NotificationTask;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\Recipient\Recipient;
+
+$task = new NotificationTask('bar', new Notification(...), new Recipient(...));
+```
+
+This type of command cannot be configured via the configuration.
 
 ## NullTask
 

@@ -26,6 +26,9 @@ use function strpos;
  */
 final class CommandTaskRunner implements RunnerInterface
 {
+    /**
+     * @var Application
+     */
     private $application;
 
     public function __construct(Application $application)
@@ -38,6 +41,10 @@ final class CommandTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
+        if (!$task instanceof CommandTask) {
+            return new Output($task, null, Output::ERROR);
+        }
+
         $input = $this->buildInput($task);
         $output = new BufferedOutput();
 

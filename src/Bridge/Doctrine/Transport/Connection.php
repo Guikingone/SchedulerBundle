@@ -86,7 +86,7 @@ final class Connection implements ConnectionInterface
             );
 
             $data = $statement instanceof Result ? $statement->fetchAssociative() : $statement->fetch();
-            if (empty($data) || false === $data) {
+            if (empty($data)) {
                 throw new LogicException('The desired task cannot be found.');
             }
 

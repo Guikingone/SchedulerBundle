@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use function array_key_exists;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -27,7 +29,11 @@ final class InMemoryConfiguration implements ConfigurationInterface
      */
     public function update(string $key, $newValue): void
     {
-        $this->options[$key] = $newValue;
+        if (!array_key_exists($key, $this->options)) {
+            return;
+        }
+
+        $this->set($key, $newValue);
     }
 
     /**

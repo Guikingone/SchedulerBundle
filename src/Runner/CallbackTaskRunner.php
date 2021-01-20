@@ -21,6 +21,12 @@ final class CallbackTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
+        if (!$task instanceof CallbackTask) {
+            $task->setExecutionState(TaskInterface::ERRORED);
+
+            return new Output($task, null, Output::ERROR);
+        }
+
         $task->setExecutionState(TaskInterface::RUNNING);
 
         try {

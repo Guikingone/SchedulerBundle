@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -70,10 +68,8 @@ final class ShellTaskTest extends TestCase
     public function testTaskCanDefineBeforeSchedulingCallable(): void
     {
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->beforeScheduling(function (TaskInterface $task): void {
-            if (!$task->getExpression() === '* * * * *') {
-                throw new InvalidArgumentException('The task is not valid');
-            }
+        $task->beforeScheduling(function (): bool {
+            return false;
         });
 
         self::assertNotNull($task->getBeforeScheduling());
@@ -82,10 +78,8 @@ final class ShellTaskTest extends TestCase
     public function testTaskCanDefineAfterSchedulingCallable(): void
     {
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->afterScheduling(function (TaskInterface $task): void {
-            if (!$task->getExpression() === '* * * * *') {
-                throw new InvalidArgumentException('The task is not valid');
-            }
+        $task->afterScheduling(function (): bool {
+            return false;
         });
 
         self::assertNotNull($task->getAfterScheduling());

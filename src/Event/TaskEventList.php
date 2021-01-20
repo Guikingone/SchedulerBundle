@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Event;
 
+use Countable;
+use function array_filter;
+use function count;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskEventList implements \Countable
+final class TaskEventList implements Countable
 {
     /**
      * @var TaskEventInterface[]
@@ -28,51 +32,51 @@ final class TaskEventList implements \Countable
     }
 
     /**
-     * @return array<int,TaskScheduledEvent>
+     * @return array<int, TaskScheduledEvent>
      */
     public function getScheduledTaskEvents(): array
     {
-        return \array_filter($this->events, function (TaskEventInterface $event): bool {
+        return array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskScheduledEvent;
         });
     }
 
     /**
-     * @return array<int,TaskUnscheduledEvent>
+     * @return array<int, TaskUnscheduledEvent>
      */
     public function getUnscheduledTaskEvents(): array
     {
-        return \array_filter($this->events, function (TaskEventInterface $event): bool {
+        return array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskUnscheduledEvent;
         });
     }
 
     /**
-     * @return array<int,TaskExecutedEvent>
+     * @return array<int, TaskExecutedEvent>
      */
     public function getExecutedTaskEvents(): array
     {
-        return \array_filter($this->events, function (TaskEventInterface $event): bool {
+        return array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskExecutedEvent;
         });
     }
 
     /**
-     * @return array<int,TaskFailedEvent>
+     * @return array<int, TaskFailedEvent>
      */
     public function getFailedTaskEvents(): array
     {
-        return \array_filter($this->events, function (TaskEventInterface $event): bool {
+        return array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskFailedEvent;
         });
     }
 
     /**
-     * @return array<int,TaskScheduledEvent>
+     * @return array<int, TaskScheduledEvent>
      */
     public function getQueuedTaskEvents(): array
     {
-        return \array_filter($this->events, function (TaskEventInterface $event): bool {
+        return array_filter($this->events, function (TaskEventInterface $event): bool {
             return $event instanceof TaskScheduledEvent && $event->getTask()->isQueued();
         });
     }
@@ -82,6 +86,6 @@ final class TaskEventList implements \Countable
      */
     public function count(): int
     {
-        return \count($this->events);
+        return count($this->events);
     }
 }

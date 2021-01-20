@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -30,6 +31,7 @@ final class TaskBuilderTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task cannot be created as no builder has been defined for "test"');
+        self::expectExceptionCode(0);
         $builder->create([
             'type' => 'test',
         ]);
@@ -83,7 +85,7 @@ final class TaskBuilderTest extends TestCase
         self::assertInstanceOf(HttpTask::class, $builder->create($options));
     }
 
-    public function provideNullTaskData(): \Generator
+    public function provideNullTaskData(): Generator
     {
         yield [
             [
@@ -113,7 +115,7 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
-    public function provideShellTaskData(): \Generator
+    public function provideShellTaskData(): Generator
     {
         yield [
             [
@@ -143,7 +145,7 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
-    public function provideCommandTaskData(): \Generator
+    public function provideCommandTaskData(): Generator
     {
         yield [
             [
@@ -171,7 +173,7 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
-    public function provideHttpTaskData(): \Generator
+    public function provideHttpTaskData(): Generator
     {
         yield [
             [

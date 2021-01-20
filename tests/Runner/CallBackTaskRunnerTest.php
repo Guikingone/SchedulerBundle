@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Runner;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Task\CallbackTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 
@@ -27,6 +28,18 @@ final class CallBackTaskRunnerTest extends TestCase
         });
 
         self::assertTrue($runner->support($task));
+    }
+
+    public function testRunnerCannotExecuteInvalidTask(): void
+    {
+        $runner = new CallbackTaskRunner();
+        $secondTask = new ShellTask('foo', ['echo', 'Symfony!']);
+
+        $output = $runner->run($secondTask);
+        self::assertSame(Output::ERROR, $output->getType());
+        self::assertSame(TaskInterface::ERRORED, $secondTask->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame($secondTask, $output->getTask());
     }
 
     public function testRunnerCanExecuteValidTask(): void

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Exception;
 
+use Throwable;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
-interface ExceptionInterface extends \Throwable
+interface ExceptionInterface extends Throwable
 {
 }

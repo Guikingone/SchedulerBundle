@@ -40,8 +40,12 @@ final class ConsumeTasksCommand extends Command
      */
     protected static $defaultName = 'scheduler:consume';
 
-    public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        SchedulerInterface $scheduler,
+        WorkerInterface $worker,
+        EventDispatcherInterface $eventDispatcher,
+        LoggerInterface $logger = null
+    ) {
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
@@ -103,17 +107,17 @@ EOF
 
         if (null !== $limit = $input->getOption('limit')) {
             $stopOptions[] = sprintf('%s tasks has been consumed', $limit);
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($limit, $this->logger));
+            $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber((int) $limit, $this->logger));
         }
 
         if (null !== $timeLimit = $input->getOption('time-limit')) {
             $stopOptions[] = sprintf('it has been running for %d seconds', $timeLimit);
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnTimeLimitSubscriber($timeLimit, $this->logger));
+            $this->eventDispatcher->addSubscriber(new StopWorkerOnTimeLimitSubscriber((int) $timeLimit, $this->logger));
         }
 
         if (null !== $failureLimit = $input->getOption('failure-limit')) {
-            $stopOptions[] = sprintf('%d task%s have failed', $failureLimit, $failureLimit > 1 ? 's' : '');
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber($failureLimit, $this->logger));
+            $stopOptions[] = sprintf('%d task%s have failed', $failureLimit, (int) $failureLimit > 1 ? 's' : '');
+            $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
         }
 
         if ($stopOptions) {
