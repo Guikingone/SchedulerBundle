@@ -73,6 +73,46 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidBeforeExecuting(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "before_executing" with value "foo" is expected to be of type "callable" or "array" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'before_executing' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidAfterExecuting(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "after_executing" with value "foo" is expected to be of type "callable" or "array" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'after_executing' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidDescription(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "description" with value 354 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'description' => 354,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExpression(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "expression" with value 354 is expected to be of type "string", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'expression' => 354,
+        ]);
+    }
+
     public function testTaskCannotBeCreatedWithBackgroundOption(): void
     {
         $task = new NullTask('foo');
