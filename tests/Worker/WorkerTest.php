@@ -75,10 +75,14 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(false);
         $runner->expects(self::never())->method('run');
 
+        $secondRunner = $this->createMock(RunnerInterface::class);
+        $secondRunner->expects(self::once())->method('support')->willReturn(false);
+        $secondRunner->expects(self::never())->method('run');
+
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $watcher, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner, $secondRunner], $watcher, $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());

@@ -38,6 +38,8 @@ final class InMemoryTransportFactoryTest extends TestCase
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertNotNull($transport->getOptions()['execution_mode']);
+        self::assertNotNull($transport->getExecutionMode());
     }
 
     /**
@@ -53,6 +55,10 @@ final class InMemoryTransportFactoryTest extends TestCase
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('normal', $transport->getOptions()['execution_mode']);
+        self::assertNotNull($transport->getExecutionMode());
+        self::assertArrayHasKey('path', $transport->getOptions());
+        self::assertSame('/srv/app', $transport->getOptions()['path']);
         self::assertCount(2, $transport->getOptions());
     }
 
