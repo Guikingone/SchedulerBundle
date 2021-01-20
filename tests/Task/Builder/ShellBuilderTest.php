@@ -37,8 +37,9 @@ final class ShellBuilderTest extends TestCase
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertSame($options['command'], $task->getCommand());
-        self::assertNull($task->getCwd());
+        self::assertSame($options['cwd'] ?? null, $task->getCwd());
         self::assertNotEmpty($task->getEnvironmentVariables());
+        self::assertEquals($options['environment_variables'], $task->getEnvironmentVariables());
         self::assertSame((float) $options['timeout'], $task->getTimeout());
         self::assertSame($options['description'], $task->getDescription());
         self::assertFalse($task->isQueued());
@@ -80,6 +81,20 @@ final class ShellBuilderTest extends TestCase
                 'timeout' => 50,
                 'expression' => '* * * * *',
                 'description' => 'A second ls command',
+            ],
+        ];
+        yield [
+            [
+                'name' => 'bar',
+                'type' => 'shell',
+                'command' => ['ls',  '-l'],
+                'environment_variables' => [
+                    'APP_ENV' => 'test',
+                ],
+                'timeout' => 50,
+                'expression' => '* * * * *',
+                'description' => 'A second ls command',
+                'cwd' => __DIR__,
             ],
         ];
     }

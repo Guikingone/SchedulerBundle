@@ -9,9 +9,9 @@ namespace SchedulerBundle\Task;
  */
 final class NullTask extends AbstractTask
 {
-    public function __construct(string $name)
+    public function __construct(string $name, array $options = [])
     {
-        $this->defineOptions();
+        $this->defineOptions($options);
 
         parent::__construct($name);
     }

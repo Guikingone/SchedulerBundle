@@ -9,14 +9,14 @@ namespace SchedulerBundle\Task;
  */
 final class ShellTask extends AbstractTask
 {
-    public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60)
+    public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60, array $options = [])
     {
-        $this->defineOptions([
+        $this->defineOptions(array_merge([
             'command' => $command,
             'cwd' => $cwd,
             'environment_variables' => $environmentVariables,
             'timeout' => $timeout,
-        ], [
+        ], $options), [
             'command' => ['string[]', 'array'],
             'cwd' => ['string', 'null'],
             'environment_variables' => ['string[]', 'array'],

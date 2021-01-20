@@ -721,11 +721,59 @@ final class SchedulerBundleExtensionTest extends TestCase
             'options' => [
                 'env' => 'test',
             ],
-            'queued' => false,
-            'timezone' => 'UTC',
-            'environment_variables' => [],
-            'arguments' => [],
-            'client_options' => [],
+        ], $container->getDefinition('scheduler.foo_task')->getArgument(0));
+        self::assertFalse($container->getDefinition('scheduler.foo_task')->isPublic());
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.foo_task')->getFactory()[0]);
+        self::assertSame('create', $container->getDefinition('scheduler.foo_task')->getFactory()[1]);
+        self::assertTrue($container->getDefinition('scheduler.foo_task')->hasTag('scheduler.task'));
+        self::assertTrue($container->getDefinition(Scheduler::class)->hasMethodCall('schedule'));
+        self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);
+    }
+
+    public function testChainedTaskCanBeRegistered(): void
+    {
+        $extension = new SchedulerBundleExtension();
+
+        $container = new ContainerBuilder();
+        $extension->load([
+            'scheduler_bundle' => [
+                'path' => '/_foo',
+                'timezone' => 'Europe/Paris',
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'chained',
+                        'tasks' => [
+                            'bar' => [
+                                'type' => 'shell',
+                                'expression' => '* * * * *',
+                            ],
+                            'random' => [
+                                'type' => 'shell',
+                                'expression' => '*/5 * * * *',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], $container);
+
+        self::assertTrue($container->hasDefinition('scheduler.foo_task'));
+        self::assertEquals([
+            'name' => 'foo',
+            'type' => 'chained',
+            'tasks' => [
+                'bar' => [
+                    'type' => 'shell',
+                    'expression' => '* * * * *',
+                ],
+                'random' => [
+                    'type' => 'shell',
+                    'expression' => '*/5 * * * *',
+                ],
+            ],
         ], $container->getDefinition('scheduler.foo_task')->getArgument(0));
         self::assertFalse($container->getDefinition('scheduler.foo_task')->isPublic());
         self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.foo_task')->getFactory()[0]);
