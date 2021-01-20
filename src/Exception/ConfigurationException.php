@@ -7,6 +7,6 @@ namespace SchedulerBundle\Exception;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TransportException extends RuntimeException
+final class ConfigurationException extends RuntimeException
 {
 }
