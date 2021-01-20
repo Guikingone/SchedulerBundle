@@ -30,6 +30,7 @@ use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Runner\MessengerTaskRunner;
 use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
+use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -39,6 +40,7 @@ use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
 use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
+use SchedulerBundle\SchedulePolicy\PolicyInterface;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -93,6 +95,7 @@ final class SchedulerBundleExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $this->registerParameters($container, $config);
+        $this->registerAutoConfigure($container);
         $this->registerTransportFactories($container);
         $this->registerTransport($container, $config);
         $this->registerScheduler($container);
@@ -115,6 +118,15 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->setParameter('scheduler.timezone', $configuration['timezone']);
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
+    }
+
+    public function registerAutoConfigure(ContainerBuilder $container): void
+    {
+        $container->registerForAutoconfiguration(RunnerInterface::class)->addTag('scheduler.runner');
+        $container->registerForAutoconfiguration(TransportInterface::class)->addTag('scheduler.transport');
+        $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag('scheduler.transport_factory');
+        $container->registerForAutoconfiguration(PolicyInterface::class)->addTag('scheduler.schedule_policy');
+        $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
     }
 
     private function registerTransportFactories(ContainerBuilder $container): void
@@ -611,6 +623,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 null !== $configuration['lock_store'] && 0 !== \strpos('@', $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null
             ])
+            ->addTag('scheduler.worker')
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
             ])

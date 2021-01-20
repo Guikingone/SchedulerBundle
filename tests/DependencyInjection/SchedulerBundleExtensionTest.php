@@ -29,6 +29,7 @@ use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Runner\MessengerTaskRunner;
 use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
+use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -38,6 +39,7 @@ use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
 use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
+use SchedulerBundle\SchedulePolicy\PolicyInterface;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -87,8 +89,6 @@ final class SchedulerBundleExtensionTest extends TestCase
                 'transport' => [
                     'dsn' => 'memory://first_in_first_out',
                 ],
-                'tasks' => [],
-                'lock_store' => null,
             ],
         ], $container);
 
@@ -96,6 +96,35 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
         self::assertTrue($container->hasParameter('scheduler.trigger_path'));
         self::assertSame('/_foo', $container->getParameter('scheduler.trigger_path'));
+    }
+
+    public function testInterfacesForAutoconfigureAreRegistered(): void
+    {
+        $extension = new SchedulerBundleExtension();
+
+        $container = new ContainerBuilder();
+        $extension->load([
+            'scheduler_bundle' => [
+                'path' => '/_foo',
+                'timezone' => 'Europe/Paris',
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+            ],
+        ], $container);
+
+        $autoconfigurationInterfaces = $container->getAutoconfiguredInstanceof();
+
+        self::assertArrayHasKey(RunnerInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[RunnerInterface::class]->hasTag('scheduler.runner'));
+        self::assertArrayHasKey(TransportInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[TransportInterface::class]->hasTag('scheduler.transport'));
+        self::assertArrayHasKey(TransportFactoryInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[TransportFactoryInterface::class]->hasTag('scheduler.transport_factory'));
+        self::assertArrayHasKey(PolicyInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[PolicyInterface::class]->hasTag('scheduler.schedule_policy'));
+        self::assertArrayHasKey(WorkerInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[WorkerInterface::class]->hasTag('scheduler.worker'));
     }
 
     public function testTransportFactoriesAreRegistered(): void
@@ -648,6 +677,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(3));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(4));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(5));
+        self::assertTrue($container->getDefinition(Worker::class)->hasTag('scheduler.worker'));
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Worker::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.preload'));
