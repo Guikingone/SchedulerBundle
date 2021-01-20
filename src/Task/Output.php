@@ -12,8 +12,19 @@ final class Output
     public const SUCCESS = 'success';
     public const ERROR = 'error';
 
+    /**
+     * @var string|null
+     */
     private $output;
+
+    /**
+     * @var TaskInterface
+     */
     private $task;
+
+    /**
+     * @var string
+     */
     private $type;
 
     public function __construct(TaskInterface $task, ?string $output = 'undefined', string $type = self::SUCCESS)

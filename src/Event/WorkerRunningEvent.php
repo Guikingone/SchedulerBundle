@@ -9,12 +9,17 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class WorkerRunningEvent extends Event
 {
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
+
+    /**
+     * @var bool
+     */
     private $idle;
 
     public function __construct(WorkerInterface $worker, bool $idle = false)

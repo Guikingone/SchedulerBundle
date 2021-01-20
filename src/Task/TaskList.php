@@ -14,6 +14,7 @@ use function array_values;
 use function count;
 use function gettype;
 use function in_array;
+use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
@@ -129,7 +130,7 @@ final class TaskList implements TaskListInterface
     public function offsetSet($offset, $value)
     {
         if (!$value instanceof TaskInterface) {
-            throw new InvalidArgumentException('A task must be given, received %s', gettype($value));
+            throw new InvalidArgumentException(sprintf('A task must be given, received %s', gettype($value)));
         }
 
         null === $offset ? $this->add($value) : $this->tasks[$offset] = $value;

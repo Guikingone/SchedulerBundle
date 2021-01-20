@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -71,11 +72,11 @@ final class InMemoryTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::any())->method('getName')->willReturn('bar');
-        $task->expects(self::any())->method('getScheduledAt')->willReturn(new \DateTimeImmutable());
+        $task->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable());
 
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::any())->method('getName')->willReturn('foo');
-        $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 1 minute'));
+        $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
         $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -107,6 +108,7 @@ final class InMemoryTransportTest extends TestCase
 
         $transport->update($task->getName(), $task);
         self::assertCount(1, $transport->list());
+        self::assertContains('test', $task->getTags());
     }
 
     /**
@@ -155,6 +157,7 @@ final class InMemoryTransportTest extends TestCase
 
         self::expectException(LogicException::class);
         self::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
+        self::expectExceptionCode(0);
         $transport->pause($task->getName());
     }
 
@@ -215,8 +218,8 @@ final class InMemoryTransportTest extends TestCase
     public function provideTasks(): Generator
     {
         yield [
-            (new ShellTask('ShellTask - Hello', ['echo', 'Symfony']))->setScheduledAt(new \DateTimeImmutable()),
-            (new ShellTask('ShellTask - Test', ['echo', 'Symfony']))->setScheduledAt(new \DateTimeImmutable()),
+            (new ShellTask('ShellTask - Hello', ['echo', 'Symfony']))->setScheduledAt(new DateTimeImmutable()),
+            (new ShellTask('ShellTask - Test', ['echo', 'Symfony']))->setScheduledAt(new DateTimeImmutable()),
         ];
     }
 }

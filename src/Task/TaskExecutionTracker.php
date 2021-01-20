@@ -13,6 +13,9 @@ use function sprintf;
  */
 final class TaskExecutionTracker implements TaskExecutionTrackerInterface
 {
+    /**
+     * @var Stopwatch
+     */
     private $watch;
 
     public function __construct(Stopwatch $watch)

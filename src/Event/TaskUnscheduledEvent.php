@@ -8,11 +8,12 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskUnscheduledEvent extends Event implements TaskEventInterface
 {
+    /**
+     * @var string
+     */
     private $task;
 
     public function __construct(string $task)

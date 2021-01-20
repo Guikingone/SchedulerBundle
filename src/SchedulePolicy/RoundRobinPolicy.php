@@ -19,8 +19,8 @@ final class RoundRobinPolicy implements PolicyInterface
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
-            return $task->getExecutionComputationTime() >= $task->getMaxDuration() && $task->getExecutionComputationTime() < $nextTask->getExecutionComputationTime();
+        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
+            return $task->getExecutionComputationTime() >= $task->getMaxDuration() && $task->getExecutionComputationTime() < $nextTask->getExecutionComputationTime() ? 1 : -1;
         });
 
         return $tasks;

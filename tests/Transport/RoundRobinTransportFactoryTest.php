@@ -42,6 +42,10 @@ final class RoundRobinTransportFactoryTest extends TestCase
 
         self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(RoundRobinTransport::class, $transport);
+        self::assertNotNull($transport->getExecutionMode());
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertArrayHasKey('quantum', $transport->getOptions());
+        self::assertSame(2, $transport->getOptions()['quantum']);
     }
 
     public function provideDsn(): Generator

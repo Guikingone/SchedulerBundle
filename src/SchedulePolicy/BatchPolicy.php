@@ -25,8 +25,8 @@ final class BatchPolicy implements PolicyInterface
             $task->setPriority(--$priority);
         });
 
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
-            return $task->getPriority() < $nextTask->getPriority();
+        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
+            return $task->getPriority() < $nextTask->getPriority() ? 1 : -1;
         });
 
         return $tasks;

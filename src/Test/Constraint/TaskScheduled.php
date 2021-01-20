@@ -14,6 +14,9 @@ use function sprintf;
  */
 final class TaskScheduled extends Constraint
 {
+    /**
+     * @var int
+     */
     private $expectedCount;
 
     public function __construct(int $expectedCount)

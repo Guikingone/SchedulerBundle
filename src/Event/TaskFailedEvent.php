@@ -9,11 +9,12 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskFailedEvent extends Event implements TaskEventInterface
 {
+    /**
+     * @var FailedTask
+     */
     private $task;
 
     public function __construct(FailedTask $task)

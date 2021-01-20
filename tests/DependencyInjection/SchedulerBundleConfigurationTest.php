@@ -31,7 +31,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage('The transport must be configured to schedule tasks');
         self::expectExceptionCode(0);
-        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
             'scheduler_bundle' => [
                 'tasks' => [
                     'foo' => [

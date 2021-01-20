@@ -24,6 +24,17 @@ final class FailOverConfigurationTest extends TestCase
         $transport->set('foo', 'bar');
     }
 
+    public function testTransportCanSetValue(): void
+    {
+        $transport = new FailOverConfiguration([
+            new InMemoryConfiguration(),
+        ]);
+
+        $transport->set('foo', 'bar');
+
+        self::assertSame('bar', $transport->get('foo'));
+    }
+
     public function testTransportCannotRetrieveValueWithoutConfigurations(): void
     {
         $transport = new FailOverConfiguration([]);

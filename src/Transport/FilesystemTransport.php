@@ -24,8 +24,19 @@ use function sys_get_temp_dir;
  */
 final class FilesystemTransport extends AbstractTransport
 {
+    /**
+     * @var Filesystem
+     */
     private $filesystem;
+
+    /**
+     * @var SchedulePolicyOrchestratorInterface|null
+     */
     private $orchestrator;
+
+    /**
+     * @var SerializerInterface|null
+     */
     private $serializer;
 
     public function __construct(string $path = null, array $options = [], SerializerInterface $serializer = null, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)

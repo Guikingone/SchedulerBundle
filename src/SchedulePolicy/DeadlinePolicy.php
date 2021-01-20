@@ -31,10 +31,10 @@ final class DeadlinePolicy implements PolicyInterface
             $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
         }
 
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
+        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
             $currentDate = new DateTimeImmutable();
 
-            return $currentDate->add($task->getExecutionAbsoluteDeadline()) < $currentDate->add($nextTask->getExecutionAbsoluteDeadline());
+            return $currentDate->add($task->getExecutionAbsoluteDeadline()) < $currentDate->add($nextTask->getExecutionAbsoluteDeadline()) ? 1 : -1;
         });
 
         return $tasks;

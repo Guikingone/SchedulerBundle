@@ -6,8 +6,6 @@ namespace SchedulerBundle\Event;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskEventList implements \Countable
 {

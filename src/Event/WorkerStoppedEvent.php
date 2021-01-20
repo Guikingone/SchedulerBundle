@@ -12,6 +12,9 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerStoppedEvent extends Event
 {
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
 
     public function __construct(WorkerInterface $worker)

@@ -12,6 +12,9 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class SingleRunTaskExecutedEvent extends Event implements TaskEventInterface
 {
+    /**
+     * @var TaskInterface
+     */
     private $task;
 
     public function __construct(TaskInterface $task)

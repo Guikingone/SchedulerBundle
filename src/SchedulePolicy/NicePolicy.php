@@ -19,12 +19,12 @@ final class NicePolicy implements PolicyInterface
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
+        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
             if ($task->getPriority() > 0 || $nextTask->getPriority() > 0) {
-                return false;
+                return 1;
             }
 
-            return $task->getNice() > $nextTask->getNice();
+            return $task->getNice() > $nextTask->getNice() ? 1 : -1;
         });
 
         return $tasks;

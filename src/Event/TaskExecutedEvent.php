@@ -10,12 +10,17 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
- *
- * @experimental in 5.3
  */
 final class TaskExecutedEvent extends Event implements TaskEventInterface
 {
+    /**
+     * @var TaskInterface
+     */
     private $task;
+
+    /**
+     * @var Output|null
+     */
     private $output;
 
     public function __construct(TaskInterface $task, Output $output = null)
@@ -29,7 +34,7 @@ final class TaskExecutedEvent extends Event implements TaskEventInterface
         return $this->task;
     }
 
-    public function getOutput(): Output
+    public function getOutput(): ?Output
     {
         return $this->output;
     }

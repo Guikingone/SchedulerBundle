@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use ArrayAccess;
 use Closure;
+use Countable;
+use IteratorAggregate;
 use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
+interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 {
     /**
      * Add a new task|a set of tasks in the list, by default, the name of the task is used as the key.
@@ -36,11 +39,15 @@ interface TaskListInterface extends \Countable, \ArrayAccess, \IteratorAggregate
      * Return a new list which contain the desired tasks using the names.
      *
      * @param array<int, string> $names
+     *
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function findByName(array $names): self;
 
     /**
      * Allow to filter the list using a custom filter, the $filter receive the task name and the TaskInterface object (in this order).
+     *
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function filter(Closure $filter): self;
 

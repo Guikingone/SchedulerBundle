@@ -17,7 +17,14 @@ use function array_merge;
  */
 final class FailoverTransport extends AbstractTransport
 {
+    /**
+     * @var SplObjectStorage
+     */
     private $failedTransports;
+
+    /**
+     * @var iterable|TransportInterface[]
+     */
     private $transports;
 
     /**

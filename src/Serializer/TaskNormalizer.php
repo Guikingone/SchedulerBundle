@@ -43,9 +43,24 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
 {
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
+    /**
+     * @var DateTimeNormalizer
+     */
     private $dateTimeNormalizer;
+
+    /**
+     * @var DateIntervalNormalizer
+     */
     private $dateIntervalNormalizer;
+
+    /**
+     * @var ObjectNormalizer
+     */
     private $objectNormalizer;
+
+    /**
+     * @var DateTimeZoneNormalizer
+     */
     private $dateTimeZoneNormalizer;
 
     public function __construct(

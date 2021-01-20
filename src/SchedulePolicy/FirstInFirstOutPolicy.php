@@ -19,8 +19,8 @@ final class FirstInFirstOutPolicy implements PolicyInterface
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): bool {
-            return $task->getScheduledAt() < $nextTask->getScheduledAt();
+        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
+            return $task->getScheduledAt() < $nextTask->getScheduledAt() ? 1 : -1;
         });
 
         return $tasks;

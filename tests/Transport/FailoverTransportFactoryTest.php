@@ -7,7 +7,7 @@ namespace Tests\SchedulerBundle\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailoverTransport;
 use SchedulerBundle\Transport\FailoverTransportFactory;
@@ -35,13 +35,14 @@ final class FailoverTransportFactoryTest extends TestCase
     public function testFactoryCannotCreateUnsupportedTransport(string $dsn): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $factory = new FailoverTransportFactory([]);
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given dsn cannot be used to create a transport');
         self::expectExceptionCode(0);
-        $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
     }
 
     /**
@@ -50,14 +51,17 @@ final class FailoverTransportFactoryTest extends TestCase
     public function testFactoryCanCreateTransport(string $dsn): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $factory = new FailoverTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FailoverTransport::class, $transport);
+        self::assertArrayHasKey('mode', $transport->getOptions());
+        self::assertSame('normal', $transport->getOptions()['mode']);
     }
 
     /**
@@ -66,11 +70,12 @@ final class FailoverTransportFactoryTest extends TestCase
     public function testFactoryCanCreateTransportWithSpecificMode(string $dsn): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $factory = new FailoverTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FailoverTransport::class, $transport);
