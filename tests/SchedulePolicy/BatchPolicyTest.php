@@ -25,9 +25,11 @@ final class BatchPolicyTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $task->method('setPriority')->withConsecutive([1], [0]);
 
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $secondTask->method('setPriority')->withConsecutive([1], [0]);
 
         $policy = new BatchPolicy();
 
