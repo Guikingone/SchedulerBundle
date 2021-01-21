@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeImmutable;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -113,7 +115,17 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
-    public function testTaskCannotBeCreatedWithBackgroundOption(): void
+    public function testTaskCannotBeCreatedWithInvalidPriority(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "priority" with value "foo" is expected to be of type "int", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'priority' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidBackgroundOption(): void
     {
         $task = new NullTask('foo');
 
@@ -152,11 +164,11 @@ final class NullTaskTest extends TestCase
         $task->setExecutionStartDate('+ 10 minutes');
         $task->setExecutionEndDate('+ 20 minutes');
 
-        self::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionStartDate());
-        self::assertInstanceOf(\DateTimeImmutable::class, $task->getExecutionEndDate());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartDate());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndDate());
     }
 
-    public function provideNice(): \Generator
+    public function provideNice(): Generator
     {
         yield [20];
         yield [-25];

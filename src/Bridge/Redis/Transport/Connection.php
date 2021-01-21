@@ -189,9 +189,4 @@ final class Connection implements ConnectionInterface
             throw new TransportException('The list cannot be emptied');
         }
     }
-
-    public function clean(): void
-    {
-        $this->connection->unlink($this->list);
-    }
 }

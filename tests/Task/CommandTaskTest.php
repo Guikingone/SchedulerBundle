@@ -17,6 +17,7 @@ final class CommandTaskTest extends TestCase
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The command argument must be a valid command FQCN|string, empty string given');
+        self::expectExceptionCode(0);
         new CommandTask('test', '', [], ['--env' => 'test']);
     }
 

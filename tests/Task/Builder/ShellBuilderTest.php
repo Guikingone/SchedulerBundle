@@ -94,7 +94,7 @@ final class ShellBuilderTest extends TestCase
                 'timeout' => 50,
                 'expression' => '* * * * *',
                 'description' => 'A second ls command',
-                'cwd' => __DIR__,
+                'cwd' => 'foo',
             ],
         ];
     }

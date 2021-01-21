@@ -1,0 +1,9 @@
+php_version: 7.2
+
+global_exclude_dirs:
+  - .github
+  - assets
+
+rules:
+  php.use_php_sleep_function:
+    enabled: true

@@ -66,7 +66,7 @@ final class ConnectionIntegrationTest extends TestCase
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             ], $serializer, $this->redis);
-            $this->connection->clean();
+            $this->connection->empty();
         } catch (Throwable $throwable) {
             self::markTestSkipped($throwable->getMessage());
         }

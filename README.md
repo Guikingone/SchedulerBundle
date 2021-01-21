@@ -1,11 +1,11 @@
 ![SchedulerBundleHero](assets/SchedulerBundle.png)
 
-<div style="text-align: center;">
+<div align="center">
     <img src="https://github.com/Guikingone/SchedulerBundle/workflows/SchedulerBundle%20-%20Daily/badge.svg" alt="CI" />
     <img src="https://insight.symfony.com/projects/825be328-29f8-44f7-a750-f82818ae9111/mini.svg"  alt="hero"/>
 </div>
 
-<p style="text-align: center; font-weight: bold;">A Symfony bundle built to schedule/consume repetitive tasks</p>
+<h4 align="center">A Symfony bundle built to schedule/consume repetitive tasks</h4>
 
 ## Main features
 

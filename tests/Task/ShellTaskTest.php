@@ -22,6 +22,7 @@ final class ShellTaskTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony!', $task->getCommand());
         self::assertSame(60.0, $task->getTimeout());
+        self::assertSame(0, $task->getPriority());
     }
 
     public function testTaskCanBeCreatedWithSpecificCwd(): void

@@ -45,11 +45,11 @@ final class CommandTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        $input = $this->buildInput($task);
-        $output = new BufferedOutput();
-
         $this->application->setCatchExceptions(false);
         $this->application->setAutoExit(false);
+
+        $input = $this->buildInput($task);
+        $output = new BufferedOutput();
 
         $task->setExecutionState(TaskInterface::RUNNING);
 

@@ -34,6 +34,26 @@ final class CommandTaskRunnerTest extends TestCase
         self::assertTrue($runner->support(new CommandTask('foo', 'app:foo')));
     }
 
+    public function testApplicationIsUsed(): void
+    {
+        $task = new CommandTask('foo', 'app:foo');
+
+        $application = $this->createMock(Application::class);
+        $application->expects(self::once())->method('setCatchExceptions')->with(self::equalTo(false));
+        $application->expects(self::once())->method('setAutoExit')->with(self::equalTo(false));
+        $application->expects(self::once())->method('all')->willReturn([
+            'app:foo' => new FooCommand(),
+        ]);
+        $application->expects(self::once())->method('run')->willReturn(0);
+
+        $runner = new CommandTaskRunner($application);
+
+        $output = $runner->run($task);
+
+        self::assertSame($task, $output->getTask());
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+    }
+
     public function testCommandCannotBeCalledWithoutBeingRegistered(): void
     {
         $application = new Application();
