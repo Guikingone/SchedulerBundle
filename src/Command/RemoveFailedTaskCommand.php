@@ -77,7 +77,7 @@ EOF
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $style->confirm('Do you want to permanently remove this task?', true)) {
+        if ($input->getOption('force') || $style->confirm('Do you want to permanently remove this task?', false)) {
             try {
                 $this->scheduler->unschedule($toRemoveTask->getName());
             } catch (Throwable $throwable) {

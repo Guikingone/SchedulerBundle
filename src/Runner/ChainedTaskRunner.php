@@ -39,11 +39,11 @@ final class ChainedTaskRunner implements RunnerInterface
 
         try {
             foreach ($task->getTasks() as $chainedTask) {
-                array_walk($this->runners, function (RunnerInterface $runner) use ($chainedTask): void {
+                foreach ($this->runners as $runner) {
                     if ($runner->support($chainedTask)) {
                         $runner->run($chainedTask);
                     }
-                });
+                }
             }
         } catch (Throwable $exception) {
             $task->setExecutionState(TaskInterface::ERRORED);

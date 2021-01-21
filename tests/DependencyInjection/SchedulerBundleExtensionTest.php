@@ -451,6 +451,9 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container);
 
+        self::assertTrue($container->hasDefinition('scheduler.application'));
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.application')->getArgument(0));
+
         self::assertTrue($container->hasDefinition(ShellTaskRunner::class));
         self::assertTrue($container->getDefinition(ShellTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ShellTaskRunner::class)->hasTag('container.preload'));
@@ -765,11 +768,13 @@ final class SchedulerBundleExtensionTest extends TestCase
             'name' => 'foo',
             'type' => 'chained',
             'tasks' => [
-                'bar' => [
+                [
+                    'name' => 'bar',
                     'type' => 'shell',
                     'expression' => '* * * * *',
                 ],
-                'random' => [
+                [
+                    'name' => 'random',
                     'type' => 'shell',
                     'expression' => '*/5 * * * *',
                 ],

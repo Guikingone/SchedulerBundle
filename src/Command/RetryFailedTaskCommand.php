@@ -81,7 +81,7 @@ EOF
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $style->confirm('Do you want to retry this task?', true)) {
+        if ($input->getOption('force') || $style->confirm('Do you want to retry this task?', false)) {
             $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(1, $this->logger));
 
             try {

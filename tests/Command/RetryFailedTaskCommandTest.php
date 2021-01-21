@@ -95,6 +95,31 @@ EOF
         self::assertStringContainsString('Random execution error', $tester->getDisplay());
     }
 
+    public function testCommandCannotRetryTaskWithoutConfirmationOrForceOption(): void
+    {
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('get')->willReturn($task);
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::never())->method('execute');
+
+        $command = new RetryFailedTaskCommand($worker, $eventDispatcher);
+        $tester = new CommandTester($command);
+        $tester->execute([
+            'name' => 'foo',
+        ]);
+
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('[WARNING] The task "foo" has not been retried', $tester->getDisplay());
+    }
+
     public function testCommandCanRetryTaskWithForceOption(): void
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);

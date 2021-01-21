@@ -94,6 +94,30 @@ EOF
         self::assertStringContainsString('Random error', $tester->getDisplay());
     }
 
+    public function testCommandCannotRemoveWithoutConfirmationOrForceOption(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('unschedule');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('get')->willReturn($task);
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+
+        $command = new RemoveFailedTaskCommand($scheduler, $worker);
+        $tester = new CommandTester($command);
+        $tester->execute([
+            'name' => 'foo',
+        ]);
+
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('[NOTE] The task "foo" has not been unscheduled', $tester->getDisplay());
+    }
+
     public function testCommandCanRemoveTaskWithForceOption(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
