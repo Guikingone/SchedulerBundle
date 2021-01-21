@@ -54,8 +54,9 @@ _Note: Keep in mind that this directory could be versioned if required_
 
 ## Failover
 
-The [FailoverTransport](../src/Transport/FailoverTransport.php) allows to use multiple transports,
-this transport is useful if you use a transport that can fail during an operation (like network-related, etc).
+The [FailoverTransport](../src/Transport/FailoverTransport.php) allows to use multiple transports and "prevent" errors
+when trying to schedule a task, this approach is also known as ["High-Availability"](https://en.wikipedia.org/wiki/High_availability),
+it is particularly useful if you use a transport that can fail during an operation (like network-related, etc).
 
 ### Usage
 
@@ -67,9 +68,9 @@ scheduler_bundle:
 
 ## LongTail
 
-The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transports,
-the main idea behind is to use the transport which contains fewer tasks than the other(s):
-
+The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transport and it specifically designed
+to maximize the transport usage by always trying to use the transport with the lowest amount of tasks, 
+this approach can help when you're scheduling tasks in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
 ### Usage
 
 ```yaml
@@ -81,7 +82,8 @@ scheduler_bundle:
 ## RoundRobin
 
 The [RoundRobin](../src/Transport/RoundRobinTransport.php) allows to use multiple transports,
-this transport is useful if you use a transport that can fail during an operation (like network-related, etc).
+the main advantages of this transport is to distribute the work load around multiple transports, 
+think of it as a ["load-balancer"](https://en.wikipedia.org/wiki/Load_balancing_(computing)) transport.
 
 ### Usage
 
