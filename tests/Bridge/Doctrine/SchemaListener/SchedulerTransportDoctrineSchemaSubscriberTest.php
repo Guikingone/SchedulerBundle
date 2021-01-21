@@ -53,6 +53,25 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
         $subscriber->postGenerateSchema($event);
     }
 
+    public function testPostGenerateSchemaWithSingleInvalidTransport(): void
+    {
+        $otherTransport = $this->createMock(TransportInterface::class);
+
+        $schema = new Schema();
+        $connection = $this->createMock(Connection::class);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('getConnection')->willReturn($connection);
+
+        $event = new GenerateSchemaEventArgs($entityManager, $schema);
+
+        $doctrineTransport = $this->createMock(DoctrineTransport::class);
+        $doctrineTransport->expects(self::once())->method('configureSchema')->with($schema, $connection);
+
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport]);
+        $subscriber->postGenerateSchema($event);
+    }
+
     public function testPostGenerateSchema(): void
     {
         $schema = new Schema();

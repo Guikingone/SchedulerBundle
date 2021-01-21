@@ -281,7 +281,8 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('create');
+        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
+        $transport->expects(self::once())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
 
         $scheduler = new Scheduler('UTC', $transport);
 
