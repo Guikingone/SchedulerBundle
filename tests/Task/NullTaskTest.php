@@ -125,6 +125,36 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidExecutionAbsoluteDeadline(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_absolute_deadline" with value "foo" is expected to be of type "DateInterval" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_absolute_deadline' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionComputationTime(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_computation_time" with value "foo" is expected to be of type "float" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_computation_time' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionDelay(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_delay" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_delay' => 'foo',
+        ]);
+    }
+
     public function testTaskCannotBeCreatedWithInvalidBackgroundOption(): void
     {
         $task = new NullTask('foo');
