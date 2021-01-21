@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
+use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -106,7 +110,6 @@ EOF
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
-        //$taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn($taskList);
@@ -158,8 +161,10 @@ EOF
 
     public function testCommandCanConsumeSchedulersWithTaskLimit(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber');
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(10, $logger));
 
         $logger = $this->createMock(LoggerInterface::class);
 
@@ -192,8 +197,10 @@ EOF
 
     public function testCommandCanConsumeSchedulersWithTimeLimit(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber');
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTimeLimitSubscriber(10, $logger));
 
         $logger = $this->createMock(LoggerInterface::class);
 
@@ -226,10 +233,10 @@ EOF
 
     public function testCommandCanConsumeSchedulersWithFailureLimit(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber');
-
         $logger = $this->createMock(LoggerInterface::class);
+
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber(10, $logger));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
@@ -305,7 +312,7 @@ EOF
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([$task]));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn($taskList);
@@ -314,7 +321,7 @@ EOF
 
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->willReturn(true);
-        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, 'Success output'));
+        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
         $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher);
 

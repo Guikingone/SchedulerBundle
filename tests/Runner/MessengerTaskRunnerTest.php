@@ -10,6 +10,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Runner\MessengerTaskRunner;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\TaskInterface;
+use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

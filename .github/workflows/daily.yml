@@ -67,6 +67,10 @@ jobs:
         with:
           args: --dry-run .
 
+      # —— Rector ————————————————————————————————————————————————————————
+      - name: Rector
+        run: php vendor/bin/rector process --dry-run --clear-cache
+
 #      # —— PHPStan ———————————————————————————————————————————————————————
 #      - name: PHPStan
 #        run: php vendor/bin/phpstan analyze

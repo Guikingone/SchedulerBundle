@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SchedulerBundle\Tests\Event;
+namespace Tests\SchedulerBundle\Event;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\WorkerStoppedEvent;

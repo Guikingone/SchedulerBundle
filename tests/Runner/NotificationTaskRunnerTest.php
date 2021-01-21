@@ -12,6 +12,7 @@ use Symfony\Component\Notifier\Recipient\Recipient;
 use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Task\NotificationTask;
 use SchedulerBundle\Task\TaskInterface;
+use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

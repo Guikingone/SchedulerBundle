@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use function array_merge;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */

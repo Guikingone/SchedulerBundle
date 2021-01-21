@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SchedulerBundle\Tests\EventListener;
+namespace Tests\SchedulerBundle\EventListener;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
@@ -11,6 +12,8 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use function sleep;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -77,7 +80,7 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
         $subscriber->onWorkerRunning($event);
     }
 
-    public function provideTimeLimit(): \Generator
+    public function provideTimeLimit(): Generator
     {
         yield [1];
         yield [2];

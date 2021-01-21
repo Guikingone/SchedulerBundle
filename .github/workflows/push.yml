@@ -1,4 +1,4 @@
-name: SchedulerBundle - Daily
+name: SchedulerBundle - Push
 on: [push]
 jobs:
   scheduler_bundle:
@@ -64,6 +64,10 @@ jobs:
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
           args: --dry-run .
+
+      # —— Rector ————————————————————————————————————————————————————————
+      - name: Rector
+        run: php vendor/bin/rector process --dry-run --clear-cache
 
 #      # —— PHPStan ———————————————————————————————————————————————————————
 #      - name: PHPStan

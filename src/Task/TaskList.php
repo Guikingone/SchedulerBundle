@@ -77,15 +77,9 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        $tasks = [];
-
-        foreach ($this->tasks as $task) {
-            if (in_array($task->getName(), $names, true)) {
-                $tasks[] = $task;
-            }
-        }
-
-        return new static($tasks);
+        return new static(array_filter($this->tasks, function (TaskInterface $task) use ($names): bool {
+            return in_array($task->getName(), $names, true);
+        }));
     }
 
     /**

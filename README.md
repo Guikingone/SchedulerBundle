@@ -1,15 +1,19 @@
-# Scheduler Bundle
+![SchedulerBundleHero](assets/SchedulerBundle.png)
 
-A Symfony bundle built to schedule/consume tasks.
+<div style="text-align: center;">
+    <img src="https://github.com/Guikingone/SchedulerBundle/workflows/SchedulerBundle%20-%20Daily/badge.svg" alt="CI" />
+    <img src="https://insight.symfony.com/projects/825be328-29f8-44f7-a750-f82818ae9111/mini.svg"  alt="hero"/>
+</div>
+
+<p style="text-align: center; font-weight: bold;">A Symfony bundle built to schedule/consume repetitive tasks</p>
 
 ## Main features
 
 - External transports (Doctrine, Redis, etc)
 - External configuration storage (Doctrine, Redis, etc)
-- Retry / Remove tasks if failed
-- Can wait until tasks are dues
+- Retry / Remove / Sort policies
+- Background worker
 - [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
-- Sort policies
 
 ## Installation
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 use Generator;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +36,23 @@ final class SchedulerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('setScheduledAt');
         $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithCustomTimezone(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone')->with(new DateTimeZone('Europe/Paris'));
+        $task->expects(self::once())->method('getTimezone')->willReturn(new DateTimeZone('Europe/Paris'));
         $task->expects(self::never())->method('isQueued');
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -328,10 +347,10 @@ final class SchedulerTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(1))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
-        $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new \DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new \DateTimeImmutable('+ 10 minutes'));
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
+        $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$task->getName() => $task]);
@@ -350,10 +369,10 @@ final class SchedulerTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(1))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
-        $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new \DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(1))->method('getExecutionEndDate')->willReturn(null);
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
+        $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::once())->method('getExecutionEndDate')->willReturn(null);
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$task->getName() => $task]);
@@ -372,10 +391,10 @@ final class SchedulerTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(1))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getTimezone')->willReturn(new \DateTimeZone('UTC'));
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new \DateTimeImmutable('+ 10 minutes'));
+        $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$task->getName() => $task]);

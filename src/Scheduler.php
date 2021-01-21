@@ -55,7 +55,7 @@ final class Scheduler implements SchedulerInterface
         }
 
         $task->setScheduledAt($this->getSynchronizedCurrentDate());
-        $task->setTimezone($this->timezone);
+        $task->setTimezone($task->getTimezone() ?? $this->timezone);
 
         if (null !== $this->bus && $task->isQueued()) {
             $this->bus->dispatch(new TaskMessage($task));
