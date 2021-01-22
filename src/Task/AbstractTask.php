@@ -8,6 +8,7 @@ use Cron\CronExpression;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -47,6 +48,10 @@ abstract class AbstractTask implements TaskInterface
             'arrival_time' => null,
             'background' => false,
             'before_scheduling' => null,
+            'before_scheduling_notification' => null,
+            'after_scheduling_notification' => null,
+            'before_executing_notification' => null,
+            'after_executing_notification' => null,
             'after_scheduling' => null,
             'before_executing' => null,
             'after_executing' => null,
@@ -81,6 +86,10 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('background', ['bool']);
         $resolver->setAllowedTypes('before_scheduling', ['callable', 'array', 'null']);
+        $resolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
+        $resolver->setAllowedTypes('after_scheduling_notification', [NotificationTaskBag::class, 'null']);
+        $resolver->setAllowedTypes('before_executing_notification', [NotificationTaskBag::class, 'null']);
+        $resolver->setAllowedTypes('after_executing_notification', [NotificationTaskBag::class, 'null']);
         $resolver->setAllowedTypes('after_scheduling', ['callable', 'array', 'null']);
         $resolver->setAllowedTypes('before_executing', ['callable', 'array', 'null']);
         $resolver->setAllowedTypes('after_executing', ['callable', 'array', 'null']);
@@ -217,6 +226,54 @@ abstract class AbstractTask implements TaskInterface
     public function getBeforeScheduling()
     {
         return $this->options['before_scheduling'];
+    }
+
+    public function beforeSchedulingNotificationBag(NotificationTaskBag $beforeSchedulingNotificationBag = null): TaskInterface
+    {
+        $this->options['before_scheduling_notification'] = $beforeSchedulingNotificationBag;
+
+        return $this;
+    }
+
+    public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag
+    {
+        return $this->options['before_scheduling_notification'];
+    }
+
+    public function afterSchedulingNotificationBag(NotificationTaskBag $afterSchedulingNotificationBag = null): TaskInterface
+    {
+        $this->options['after_scheduling_notification'] = $afterSchedulingNotificationBag;
+
+        return $this;
+    }
+
+    public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag
+    {
+        return $this->options['after_scheduling_notification'];
+    }
+
+    public function beforeExecutingNotificationBag(NotificationTaskBag $beforeExecutingNotificationBag = null): TaskInterface
+    {
+        $this->options['before_executing_notification'] = $beforeExecutingNotificationBag;
+
+        return $this;
+    }
+
+    public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag
+    {
+        return $this->options['before_executing_notification'];
+    }
+
+    public function afterExecutingNotificationBag(NotificationTaskBag $afterExecutingNotificationBag = null): TaskInterface
+    {
+        $this->options['after_executing_notification'] = $afterExecutingNotificationBag;
+
+        return $this;
+    }
+
+    public function getAfterExecutingNotificationBag(): ?NotificationTaskBag
+    {
+        return $this->options['after_executing_notification'];
     }
 
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface

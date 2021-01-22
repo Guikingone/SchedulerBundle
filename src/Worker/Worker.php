@@ -31,6 +31,9 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
@@ -112,6 +115,11 @@ final class Worker implements WorkerInterface
     private $lastExecutedTask;
 
     /**
+     * @var NotifierInterface|null
+     */
+    private $notifier;
+
+    /**
      * @param iterable|RunnerInterface[] $runners
      */
     public function __construct(
@@ -120,7 +128,8 @@ final class Worker implements WorkerInterface
         TaskExecutionTrackerInterface $tracker,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        BlockingStoreInterface $store = null
+        BlockingStoreInterface $store = null,
+        NotifierInterface $notifier = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
@@ -128,6 +137,7 @@ final class Worker implements WorkerInterface
         $this->store = $store;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?: new NullLogger();
+        $this->notifier = $notifier;
         $this->failedTasks = new TaskList();
     }
 
@@ -174,6 +184,11 @@ final class Worker implements WorkerInterface
                         continue 2;
                     }
 
+                    if (null !== $task->getBeforeExecutingNotificationBag()) {
+                        $bag = $task->getBeforeExecutingNotificationBag();
+                        $this->notify($bag->getNotification(), $bag->getRecipients());
+                    }
+
                     try {
                         if ($lockedTask->acquire() && !$this->running) {
                             $this->running = true;
@@ -183,6 +198,11 @@ final class Worker implements WorkerInterface
 
                         if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
                             throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
+                        }
+
+                        if (null !== $task->getAfterExecutingNotificationBag()) {
+                            $bag = $task->getAfterExecutingNotificationBag();
+                            $this->notify($bag->getNotification(), $bag->getRecipients());
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
@@ -341,5 +361,18 @@ final class Worker implements WorkerInterface
         }
 
         $this->eventDispatcher->dispatch($event);
+    }
+
+    /**
+     * @param Notification $notification
+     * @param Recipient[]  $recipients
+     */
+    private function notify(Notification $notification, array $recipients): void
+    {
+        if (null === $this->notifier) {
+            return;
+        }
+
+        $this->notifier->send($notification, ...$recipients);
     }
 }

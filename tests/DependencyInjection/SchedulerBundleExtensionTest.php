@@ -245,6 +245,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(3));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(4));
         self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
@@ -649,6 +650,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(3));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(4));
         self::assertNull($container->getDefinition(Worker::class)->getArgument(5));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(6));
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Worker::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.preload'));

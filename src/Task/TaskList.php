@@ -106,7 +106,9 @@ final class TaskList implements TaskListInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $offset
+     *
+     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -114,7 +116,9 @@ final class TaskList implements TaskListInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $offset
+     *
+     * @return TaskInterface|null
      */
     public function offsetGet($offset): ?TaskInterface
     {
@@ -122,7 +126,10 @@ final class TaskList implements TaskListInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param string|null   $offset
+     * @param TaskInterface $value
+     *
+     * @throws Throwable
      */
     public function offsetSet($offset, $value): void
     {
@@ -134,7 +141,7 @@ final class TaskList implements TaskListInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $offset
      */
     public function offsetUnset($offset): void
     {

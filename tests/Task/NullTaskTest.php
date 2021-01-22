@@ -12,6 +12,9 @@ use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use function sprintf;
 
@@ -62,6 +65,46 @@ final class NullTaskTest extends TestCase
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'before_scheduling' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidBeforeSchedulingNotification(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "before_scheduling_notification" with value "foo" is expected to be of type "SchedulerBundle\TaskBag\NotificationTaskBag" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'before_scheduling_notification' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidAfterSchedulingNotification(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "after_scheduling_notification" with value "foo" is expected to be of type "SchedulerBundle\TaskBag\NotificationTaskBag" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'after_scheduling_notification' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidBeforeExecutingNotification(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "before_executing_notification" with value "foo" is expected to be of type "SchedulerBundle\TaskBag\NotificationTaskBag" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'before_executing_notification' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidAfterExecutingNotification(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "after_executing_notification" with value "foo" is expected to be of type "SchedulerBundle\TaskBag\NotificationTaskBag" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'after_executing_notification' => 'foo',
         ]);
     }
 
@@ -196,6 +239,82 @@ final class NullTaskTest extends TestCase
 
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartDate());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndDate());
+    }
+
+    public function testTaskCanBeCreatedWithBeforeSchedulingNotification(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $bag = new NotificationTaskBag($notification, $recipient);
+
+        $task = new NullTask('foo', [
+            'before_scheduling_notification' => $bag,
+        ]);
+
+        self::assertSame($bag, $task->getBeforeSchedulingNotificationBag());
+        self::assertSame($notification, $task->getBeforeSchedulingNotificationBag()->getNotification());
+        self::assertContains($recipient, $task->getBeforeSchedulingNotificationBag()->getRecipients());
+
+        $task->beforeSchedulingNotificationBag();
+        self::assertNull($task->getBeforeSchedulingNotificationBag());
+    }
+
+    public function testTaskCanBeCreatedWithAfterSchedulingNotification(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $bag = new NotificationTaskBag($notification, $recipient);
+
+        $task = new NullTask('foo', [
+            'after_scheduling_notification' => $bag,
+        ]);
+
+        self::assertSame($bag, $task->getAfterSchedulingNotificationBag());
+        self::assertSame($notification, $task->getAfterSchedulingNotificationBag()->getNotification());
+        self::assertContains($recipient, $task->getAfterSchedulingNotificationBag()->getRecipients());
+
+        $task->afterSchedulingNotificationBag();
+        self::assertNull($task->getAfterSchedulingNotificationBag());
+    }
+
+    public function testTaskCanBeCreatedWithBeforeExecutingNotification(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $bag = new NotificationTaskBag($notification, $recipient);
+
+        $task = new NullTask('foo', [
+            'before_executing_notification' => $bag,
+        ]);
+
+        self::assertSame($bag, $task->getBeforeExecutingNotificationBag());
+        self::assertSame($notification, $task->getBeforeExecutingNotificationBag()->getNotification());
+        self::assertContains($recipient, $task->getBeforeExecutingNotificationBag()->getRecipients());
+
+        $task->beforeExecutingNotificationBag();
+        self::assertNull($task->getBeforeExecutingNotificationBag());
+    }
+
+    public function testTaskCanBeCreatedWithAfterExecutingNotification(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $bag = new NotificationTaskBag($notification, $recipient);
+
+        $task = new NullTask('foo', [
+            'after_executing_notification' => $bag,
+        ]);
+
+        self::assertSame($bag, $task->getAfterExecutingNotificationBag());
+        self::assertSame($notification, $task->getAfterExecutingNotificationBag()->getNotification());
+        self::assertContains($recipient, $task->getAfterExecutingNotificationBag()->getRecipients());
+
+        $task->afterExecutingNotificationBag();
+        self::assertNull($task->getAfterExecutingNotificationBag());
     }
 
     public function provideNice(): Generator

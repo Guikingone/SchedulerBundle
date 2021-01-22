@@ -13,6 +13,7 @@ use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Messenger\TaskMessage;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
 use Symfony\Component\Messenger\Envelope;
@@ -23,6 +24,9 @@ use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function in_array;
 
@@ -101,6 +105,114 @@ final class SchedulerTest extends TestCase
 
         $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
         $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithBeforeSchedulingNotificationAndWithoutNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::never())->method('send');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithBeforeSchedulingNotificationAndWithNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher, null, $notifier);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithAfterSchedulingNotificationAndWithoutNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::never())->method('send');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher);
+
+        $scheduler->schedule($task);
+    }
+
+    public function testSchedulerCanScheduleTasksWithAfterSchedulingNotificationAndWithNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = $this->createMock(Recipient::class);
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('setScheduledAt');
+        $task->expects(self::once())->method('setTimezone');
+        $task->expects(self::never())->method('isQueued');
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
+        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
+
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
+        $scheduler = new Scheduler('UTC', $transport, $eventDispatcher, null, $notifier);
 
         $scheduler->schedule($task);
     }

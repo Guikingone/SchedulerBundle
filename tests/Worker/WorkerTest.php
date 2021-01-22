@@ -8,6 +8,7 @@ use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\BlockingStoreInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -20,6 +21,9 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\Worker;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -548,5 +552,171 @@ final class WorkerTest extends TestCase
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertCount(1, $worker->getFailedTasks());
         self::assertSame('Random error occurred', $worker->getFailedTasks()->get('failed.failed')->getReason());
+    }
+
+    public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::never())->method('send');
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $tracker->expects(self::once())->method('startTracking');
+        $tracker->expects(self::once())->method('endTracking');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
+        $task->expects(self::once())->method('getBeforeExecutingNotificationBag')->willReturn(null);
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::once())->method('setArrivalTime');
+        $task->expects(self::once())->method('setExecutionStartTime');
+        $task->expects(self::once())->method('setExecutionEndTime');
+        $task->expects(self::once())->method('setLastExecution');
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
+        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
+    }
+
+    public function testTaskCanBeExecutedWithBeforeExecutionNotificationAndNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = new Recipient('test@test.fr', '');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $tracker->expects(self::once())->method('startTracking');
+        $tracker->expects(self::once())->method('endTracking');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getBeforeExecutingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::once())->method('setArrivalTime');
+        $task->expects(self::once())->method('setExecutionStartTime');
+        $task->expects(self::once())->method('setExecutionEndTime');
+        $task->expects(self::once())->method('setLastExecution');
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
+        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
+    }
+
+    public function testTaskCanBeExecutedWithoutAfterExecutionNotificationAndNotifier(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::never())->method('send');
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $tracker->expects(self::once())->method('startTracking');
+        $tracker->expects(self::once())->method('endTracking');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
+        $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(null);
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::once())->method('setArrivalTime');
+        $task->expects(self::once())->method('setExecutionStartTime');
+        $task->expects(self::once())->method('setExecutionEndTime');
+        $task->expects(self::once())->method('setLastExecution');
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
+        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
+    }
+
+    public function testTaskCanBeExecutedWithAfterExecutionNotificationAndNotifier(): void
+    {
+        $notification = $this->createMock(Notification::class);
+        $recipient = new Recipient('test@test.fr', '');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $notifier = $this->createMock(NotifierInterface::class);
+        $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $tracker->expects(self::once())->method('startTracking');
+        $tracker->expects(self::once())->method('endTracking');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getAfterExecutingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::once())->method('setArrivalTime');
+        $task->expects(self::once())->method('setExecutionStartTime');
+        $task->expects(self::once())->method('setExecutionEndTime');
+        $task->expects(self::once())->method('setLastExecution');
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
+        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 }

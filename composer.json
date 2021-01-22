@@ -31,6 +31,7 @@
             "SchedulerBundle\\SchedulePolicy\\": "src/SchedulePolicy/",
             "SchedulerBundle\\Serializer\\": "src/Serializer/",
             "SchedulerBundle\\Task\\": "src/Task/",
+            "SchedulerBundle\\TaskBag\\": "src/TaskBag/",
             "SchedulerBundle\\Task\\Builder\\": "src/Task/Builder/",
             "SchedulerBundle\\Test\\": "src/Test/",
             "SchedulerBundle\\Test\\Constraint\\": "src/Test/Constraint/",
