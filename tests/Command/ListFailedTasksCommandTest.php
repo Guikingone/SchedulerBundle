@@ -41,6 +41,7 @@ final class ListFailedTasksCommandTest extends TestCase
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list:failed'));
         $tester->execute([]);
 
@@ -66,6 +67,7 @@ final class ListFailedTasksCommandTest extends TestCase
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list:failed'));
         $tester->execute([]);
 

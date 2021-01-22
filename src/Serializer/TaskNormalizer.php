@@ -41,6 +41,9 @@ use function sprintf;
  */
 final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
 {
+    /**
+     * @var string
+     */
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
     /**

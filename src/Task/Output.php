@@ -9,7 +9,14 @@ namespace SchedulerBundle\Task;
  */
 final class Output
 {
+    /**
+     * @var string
+     */
     public const SUCCESS = 'success';
+
+    /**
+     * @var string
+     */
     public const ERROR = 'error';
 
     /**

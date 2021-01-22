@@ -33,7 +33,7 @@ final class ShellTask extends AbstractTask
         return $this->options['command'];
     }
 
-    public function setCommand(array $command): TaskInterface
+    public function setCommand(array $command): self
     {
         $this->options['command'] = $command;
 
@@ -45,7 +45,7 @@ final class ShellTask extends AbstractTask
         return $this->options['cwd'];
     }
 
-    public function setCwd(?string $cwd): TaskInterface
+    public function setCwd(?string $cwd): self
     {
         $this->options['cwd'] = $cwd;
 
@@ -57,7 +57,7 @@ final class ShellTask extends AbstractTask
         return $this->options['environment_variables'];
     }
 
-    public function setEnvironmentVariables(array $environmentVariables): TaskInterface
+    public function setEnvironmentVariables(array $environmentVariables): self
     {
         $this->options['environment_variables'] = $environmentVariables;
 
@@ -69,7 +69,7 @@ final class ShellTask extends AbstractTask
         return $this->options['timeout'];
     }
 
-    public function setTimeout(float $timeout): TaskInterface
+    public function setTimeout(float $timeout): self
     {
         $this->options['timeout'] = $timeout;
 

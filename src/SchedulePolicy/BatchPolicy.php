@@ -13,10 +13,13 @@ use function uasort;
  */
 final class BatchPolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'batch';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

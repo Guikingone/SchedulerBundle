@@ -13,10 +13,13 @@ use function uasort;
  */
 final class DeadlinePolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'deadline';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
+use stdClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use SchedulerBundle\DependencyInjection\SchedulerPass;
@@ -30,7 +31,7 @@ final class SchedulerPassTest extends TestCase
     public function testSchedulerExtraCanBeRegisteredWithDependency(): void
     {
         $container = new ContainerBuilder();
-        $container->register('scheduler.task_builder', \stdClass::class);
+        $container->register('scheduler.task_builder', stdClass::class);
         $container->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
             'require' => 'scheduler.task_builder',
             'tag' => 'scheduler.tag',

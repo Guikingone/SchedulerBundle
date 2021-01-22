@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -67,7 +68,7 @@ final class TaskSubscriberTest extends TestCase
 
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
-        self::expectException(\InvalidArgumentException::class);
+        self::expectException(InvalidArgumentException::class);
         $subscriber->onKernelRequest($event);
     }
 

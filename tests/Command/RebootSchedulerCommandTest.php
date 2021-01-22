@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -52,7 +53,7 @@ EOF
         $eventDispatcher = $this->createMock(EventDispatcher::class);
 
         $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([]));
+        $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([]));
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
         $taskList->expects(self::once())->method('count')->willReturn(0);
 
@@ -66,6 +67,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:reboot'));
         $tester->execute([]);
 
@@ -84,7 +86,7 @@ EOF
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
         $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::exactly(2))->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::exactly(2))->method('getIterator')->willReturn(new ArrayIterator([$task]));
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
         $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
 
@@ -99,6 +101,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:reboot'));
         $tester->execute([]);
 
@@ -124,7 +127,7 @@ EOF
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
         $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new \ArrayIterator([$task]));
+        $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([$task]));
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -139,6 +142,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:reboot'));
         $tester->execute([
             '--dry-run' => true,

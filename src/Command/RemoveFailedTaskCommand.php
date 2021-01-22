@@ -21,9 +21,19 @@ use function sprintf;
  */
 final class RemoveFailedTaskCommand extends Command
 {
+    /**
+     * @var SchedulerInterface
+     */
     private $scheduler;
+
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
 
+    /**
+     * @var string
+     */
     protected static $defaultName = 'scheduler:remove:failed';
 
     public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker)

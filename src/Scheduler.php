@@ -27,13 +27,39 @@ use function sprintf;
  */
 final class Scheduler implements SchedulerInterface
 {
+    /**
+     * @var int
+     */
     private const MIN_SYNCHRONIZATION_DELAY = 1000000;
+
+    /**
+     * @var int
+     */
     private const MAX_SYNCHRONIZATION_DELAY = 86400000000;
 
+    /**
+     * @var DateTimeImmutable
+     */
     private $initializationDate;
+
+    /**
+     * @var DateTimeZone
+     */
     private $timezone;
+
+    /**
+     * @var TransportInterface
+     */
     private $transport;
+
+    /**
+     * @var EventDispatcherInterface|null
+     */
     private $eventDispatcher;
+
+    /**
+     * @var MessageBusInterface|null
+     */
     private $bus;
 
     public function __construct(string $timezone, TransportInterface $transport, EventDispatcherInterface $eventDispatcher = null, MessageBusInterface $bus = null)

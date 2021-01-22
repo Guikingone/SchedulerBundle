@@ -20,6 +20,9 @@ use function strpos;
  */
 final class DoctrineTransportFactory implements TransportFactoryInterface
 {
+    /**
+     * @var ConnectionRegistry
+     */
     private $registry;
 
     public function __construct(ConnectionRegistry $registry)
@@ -41,7 +44,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
 
         try {
             $doctrineConnection = $this->registry->getConnection($connectionOptions['connection']);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $invalidArgumentException) {
             throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()));
         }
 

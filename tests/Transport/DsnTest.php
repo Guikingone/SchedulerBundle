@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Transport\Dsn;
 
@@ -20,7 +21,7 @@ final class DsnTest extends TestCase
         self::assertEquals($dsn, Dsn::fromString($input));
     }
 
-    public function provideDsn(): \Generator
+    public function provideDsn(): Generator
     {
         yield 'Redis transport DSN' => [
             'redis://127.0.0.1:6379/_symfony_scheduler_tasks?dbindex=1',

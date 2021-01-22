@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -72,7 +73,7 @@ EOF
     public function testCommandCannotRemoveTaskWithException(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('unschedule')->willThrowException(new \Exception('Random error'));
+        $scheduler->expects(self::once())->method('unschedule')->willThrowException(new Exception('Random error'));
 
         $task = $this->createMock(TaskInterface::class);
 

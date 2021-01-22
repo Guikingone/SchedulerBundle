@@ -36,7 +36,7 @@ final class HttpTask extends AbstractTask
         return $this->options['url'];
     }
 
-    public function setUrl(string $url): TaskInterface
+    public function setUrl(string $url): self
     {
         $this->options['url'] = $url;
 
@@ -48,7 +48,7 @@ final class HttpTask extends AbstractTask
         return $this->options['method'];
     }
 
-    public function setMethod(string $method): TaskInterface
+    public function setMethod(string $method): self
     {
         $this->options['method'] = $method;
 
@@ -66,7 +66,7 @@ final class HttpTask extends AbstractTask
     /**
      * @param array<string, mixed> $clientOptions
      */
-    public function setClientOptions(array $clientOptions): TaskInterface
+    public function setClientOptions(array $clientOptions): self
     {
         $this->options['client_options'] = $clientOptions;
 

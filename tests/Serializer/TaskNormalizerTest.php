@@ -83,7 +83,7 @@ final class TaskNormalizerTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
         self::expectExceptionCode(0);
-        $normalizer->normalize(new CallbackTask('foo', function () {
+        $normalizer->normalize(new CallbackTask('foo', function (): void {
             echo 'Symfony!';
         }));
     }
@@ -462,6 +462,9 @@ final class FooTask
 
 final class FooMessage
 {
+    /**
+     * @var int
+     */
     private $id;
 
     public function __construct(int $id = 1)

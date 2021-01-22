@@ -11,6 +11,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class AbstractTransport implements TransportInterface
 {
+    /**
+     * @var mixed[]|string[]|null
+     */
     protected $options;
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
@@ -44,13 +47,16 @@ abstract class AbstractTransport implements TransportInterface
         return $this->options['execution_mode'];
     }
 
-    public function setExecutionMode(string $executionMode): TransportInterface
+    public function setExecutionMode(string $executionMode): self
     {
         $this->options['execution_mode'] = $executionMode;
 
         return $this;
     }
 
+    /**
+     * @return mixed[]|string[]|null
+     */
     public function getOptions(): array
     {
         return $this->options;

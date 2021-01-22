@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
+use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
@@ -18,6 +19,10 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use function file_exists;
+use function sprintf;
+use function sys_get_temp_dir;
+use function unlink;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -26,8 +31,19 @@ use Symfony\Component\Serializer\Serializer;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
+    /**
+     * @var Connection|null
+     */
     private $connection;
+
+    /**
+     * @var DbalConnection|null
+     */
     private $driverConnection;
+
+    /**
+     * @var string|null
+     */
     private $sqliteFile;
 
     /**
@@ -40,8 +56,8 @@ final class ConnectionIntegrationTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $this->sqliteFile = \sys_get_temp_dir().'/symfony.scheduler.sqlite';
-        $this->driverConnection = DriverManager::getConnection(['url' => \sprintf('sqlite:///%s', $this->sqliteFile)]);
+        $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';
+        $this->driverConnection = DriverManager::getConnection(['url' => sprintf('sqlite:///%s', $this->sqliteFile)]);
         $this->connection = new Connection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -54,8 +70,8 @@ final class ConnectionIntegrationTest extends TestCase
     protected function tearDown(): void
     {
         $this->driverConnection->close();
-        if (\file_exists($this->sqliteFile)) {
-            \unlink($this->sqliteFile);
+        if (file_exists($this->sqliteFile)) {
+            unlink($this->sqliteFile);
         }
     }
 
@@ -149,6 +165,7 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
         $task->setExpression('0 * * * *');
+
         $this->connection->update('foo', $task);
 
         $task = $this->connection->get('foo');

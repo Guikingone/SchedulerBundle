@@ -14,8 +14,19 @@ use SchedulerBundle\Event\WorkerRunningEvent;
  */
 final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var int
+     */
     private $consumedTasks = 0;
+
+    /**
+     * @var int
+     */
     private $maximumTasks;
+
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     public function __construct(int $maximumTasks, LoggerInterface $logger = null)

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use function array_merge;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class CallbackTask extends AbstractTask
 {
-    public function __construct(string $name, $callback, array $arguments = [])
+    public function __construct(string $name, $callback, array $arguments = [], array $options = [])
     {
-        $this->defineOptions([
+        $this->defineOptions(array_merge([
             'callback' => $callback,
             'arguments' => $arguments,
-        ], [
+        ], $options), [
             'callback' => ['callable', 'string'],
             'arguments' => ['array', 'string[]'],
         ]);
@@ -27,7 +29,7 @@ final class CallbackTask extends AbstractTask
         return $this->options['callback'];
     }
 
-    public function setCallback($callback): TaskInterface
+    public function setCallback($callback): self
     {
         $this->options['callback'] = $callback;
 
@@ -45,7 +47,7 @@ final class CallbackTask extends AbstractTask
     /**
      * @param array<string, mixed> $arguments
      */
-    public function setArguments(array $arguments): TaskInterface
+    public function setArguments(array $arguments): self
     {
         $this->options['arguments'] = $arguments;
 

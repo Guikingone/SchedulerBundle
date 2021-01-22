@@ -25,8 +25,14 @@ use const DATE_ATOM;
  */
 final class ListTasksCommand extends Command
 {
+    /**
+     * @var SchedulerInterface
+     */
     private $scheduler;
 
+    /**
+     * @var string
+     */
     protected static $defaultName = 'scheduler:list';
 
     /**

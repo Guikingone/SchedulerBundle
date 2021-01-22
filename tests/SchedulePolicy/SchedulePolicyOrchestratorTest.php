@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
+use RuntimeException;
+use InvalidArgumentException;
+use DateInterval;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -26,7 +30,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     {
         $orchestrator = new SchedulePolicyOrchestrator([]);
 
-        self::expectException(\RuntimeException::class);
+        self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The tasks cannot be sorted as no policies have been defined');
         $orchestrator->sort('deadline', []);
     }
@@ -48,7 +52,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             new BatchPolicy(),
         ]);
 
-        self::expectException(\InvalidArgumentException::class);
+        self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The policy "test" cannot be used');
         $orchestrator->sort('test', [$task]);
     }
@@ -75,10 +79,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new \DateInterval('P3D'));
+        $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new \DateInterval('P2D'));
+        $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
 
         self::assertSame([
             'bar' => $task,
@@ -111,10 +115,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 1 minute'));
+        $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 2 minute'));
+        $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
         self::assertSame([
             'foo' => $secondTask,
@@ -129,10 +133,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 1 minute'));
+        $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getScheduledAt')->willReturn(new \DateTimeImmutable('+ 2 minute'));
+        $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
         self::assertSame([
             'app' => $task,

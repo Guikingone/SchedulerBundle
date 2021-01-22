@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use Symfony\Component\Console\Command\Command;
@@ -81,7 +82,7 @@ EOF
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
-        $worker->expects(self::once())->method('execute')->willThrowException(new \Exception('Random execution error'));
+        $worker->expects(self::once())->method('execute')->willThrowException(new Exception('Random execution error'));
 
         $command = new RetryFailedTaskCommand($worker, $eventDispatcher);
         $tester = new CommandTester($command);

@@ -36,7 +36,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, array<int, string|int>>
+     * @return array<string, array<int|string>>
      */
     public static function getSubscribedEvents(): array
     {

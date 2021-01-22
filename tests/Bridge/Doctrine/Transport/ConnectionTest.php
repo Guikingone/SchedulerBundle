@@ -28,6 +28,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function json_encode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -54,7 +55,7 @@ final class ConnectionTest extends TestCase
             [
                 'id' => 1,
                 'task_name' => 'foo',
-                'body' => \json_encode([
+                'body' => json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 1,
@@ -66,7 +67,7 @@ final class ConnectionTest extends TestCase
             [
                 'id' => 2,
                 'task_name' => 'bar',
-                'body' => \json_encode([
+                'body' => json_encode([
                     'body' => [
                         'expression' => '* * * * *',
                         'priority' => 2,
@@ -155,7 +156,7 @@ final class ConnectionTest extends TestCase
         $statement = $this->getStatementMock([
             'id' => 1,
             'task_name' => 'foo',
-            'body' => \json_encode([
+            'body' => json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
             ]),
@@ -533,6 +534,9 @@ final class ConnectionTest extends TestCase
         return $queryBuilder;
     }
 
+    /**
+     * @return \Doctrine\DBAL\Driver\Result&\PHPUnit\Framework\MockObject\MockObject|Statement&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function getStatementMock($expectedResult, bool $list = false)
     {
         $statement = $this->createMock(\interface_exists(Result::class) ? Result::class : Statement::class);

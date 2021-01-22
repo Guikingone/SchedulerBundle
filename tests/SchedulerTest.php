@@ -225,6 +225,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport);
 
         $scheduler->schedule($task);
+
         $dueTasks = $scheduler->getDueTasks();
 
         self::assertNotEmpty($dueTasks);
@@ -360,6 +361,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport);
 
         $scheduler->schedule($task);
+
         $dueTasks = $scheduler->getDueTasks();
 
         self::assertInstanceOf(TaskListInterface::class, $dueTasks);
@@ -382,6 +384,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport);
 
         $scheduler->schedule($task);
+
         $dueTasks = $scheduler->getDueTasks();
 
         self::assertInstanceOf(TaskListInterface::class, $dueTasks);
@@ -404,6 +407,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport);
 
         $scheduler->schedule($task);
+
         $dueTasks = $scheduler->getDueTasks();
 
         self::assertInstanceOf(TaskListInterface::class, $dueTasks);

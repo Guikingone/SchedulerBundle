@@ -12,10 +12,13 @@ use function uasort;
  */
 final class IdlePolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'idle';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

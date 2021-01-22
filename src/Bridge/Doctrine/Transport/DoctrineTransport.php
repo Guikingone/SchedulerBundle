@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\DBAL\Connection as DbalConnection;
+use Doctrine\DBAL\Driver\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -17,9 +17,12 @@ use function array_merge;
  */
 class DoctrineTransport extends AbstractTransport
 {
+    /**
+     * @var Connection
+     */
     private $connection;
 
-    public function __construct(array $options, DBALConnection $driverConnection, SerializerInterface $serializer)
+    public function __construct(array $options, DbalConnection $driverConnection, SerializerInterface $serializer)
     {
         $this->defineOptions(array_merge([
             'auto_setup' => true,

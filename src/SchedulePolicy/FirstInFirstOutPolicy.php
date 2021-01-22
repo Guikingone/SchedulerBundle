@@ -12,10 +12,13 @@ use function uasort;
  */
 final class FirstInFirstOutPolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'first_in_first_out';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

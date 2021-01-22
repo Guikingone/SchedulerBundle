@@ -45,9 +45,9 @@ final class ChainedTaskRunner implements RunnerInterface
                     }
                 }
             }
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
-            return new Output($task, $exception->getMessage(), Output::ERROR);
+            return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
 
         $task->setExecutionState(TaskInterface::SUCCEED);

@@ -21,7 +21,14 @@ use function strtotime;
  */
 abstract class AbstractTask implements TaskInterface
 {
+    /**
+     * @var string
+     */
     private $name;
+
+    /**
+     * @var mixed[]|DateTimeImmutable[]|bool[]|string[]|DateInterval[]|null[]|float[]|int[]|mixed[][]|DateTimeZone[]
+     */
     protected $options;
 
     public function __construct(string $name)

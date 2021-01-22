@@ -22,6 +22,9 @@ use const ARRAY_FILTER_USE_BOTH;
  */
 final class TaskList implements TaskListInterface
 {
+    /**
+     * @var TaskInterface[]
+     */
     private $tasks = [];
 
     /**
@@ -41,7 +44,7 @@ final class TaskList implements TaskListInterface
      */
     public function add(TaskInterface ...$tasks): void
     {
-        if (!$tasks) {
+        if ($tasks === []) {
             return;
         }
 
@@ -77,7 +80,7 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        return new static(array_filter($this->tasks, function (TaskInterface $task) use ($names): bool {
+        return new self(array_filter($this->tasks, function (TaskInterface $task) use ($names): bool {
             return in_array($task->getName(), $names, true);
         }));
     }
@@ -87,7 +90,7 @@ final class TaskList implements TaskListInterface
      */
     public function filter(Closure $filter): TaskListInterface
     {
-        return new static(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
+        return new self(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -105,7 +108,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }
@@ -113,7 +116,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): ?TaskInterface
     {
         return $this->get($offset);
     }
@@ -121,7 +124,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (!$value instanceof TaskInterface) {
             throw new InvalidArgumentException(sprintf('A task must be given, received %s', gettype($value)));
@@ -133,7 +136,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $this->remove($offset);
     }
@@ -156,6 +159,7 @@ final class TaskList implements TaskListInterface
 
     /**
      * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function toArray(bool $keepKeys = true): array
     {

@@ -14,7 +14,7 @@ final class InMemoryConfiguration implements ConfigurationInterface
     /**
      * @var array<string, mixed>
      */
-    private $options;
+    private $options = [];
 
     /**
      * {@inheritdoc}
@@ -53,7 +53,7 @@ final class InMemoryConfiguration implements ConfigurationInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, mixed>
      */
     public function getOptions(): array
     {

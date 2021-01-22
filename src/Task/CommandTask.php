@@ -33,7 +33,7 @@ final class CommandTask extends AbstractTask
         return $this->options['command'];
     }
 
-    public function setCommand(string $command): TaskInterface
+    public function setCommand(string $command): self
     {
         $this->validateCommand($command);
 
@@ -47,7 +47,7 @@ final class CommandTask extends AbstractTask
         return $this->options['arguments'];
     }
 
-    public function setArguments(array $arguments): TaskInterface
+    public function setArguments(array $arguments): self
     {
         $this->options['arguments'] = $arguments;
 
@@ -59,7 +59,7 @@ final class CommandTask extends AbstractTask
         return $this->options['options'];
     }
 
-    public function setOptions(array $options): TaskInterface
+    public function setOptions(array $options): self
     {
         $this->options['options'] = $options;
 

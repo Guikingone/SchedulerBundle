@@ -17,6 +17,9 @@ use SchedulerBundle\Transport\TransportInterface;
  */
 final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscriber
 {
+    /**
+     * @var string
+     */
     private const PROCESSING_TABLE_FLAG = self::class.':processing';
 
     /**
@@ -68,7 +71,7 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
     }
 
     /**
-     * {@inheritdoc}
+     * @return string[]
      */
     public function getSubscribedEvents(): array
     {

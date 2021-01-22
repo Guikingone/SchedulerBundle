@@ -25,11 +25,34 @@ use function rawurldecode;
  */
 final class TaskSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var SchedulerInterface
+     */
     private $scheduler;
+
+    /**
+     * @var string
+     */
     private $tasksPath;
+
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
+
+    /**
+     * @var EventDispatcherInterface
+     */
     private $eventDispatcher;
+
+    /**
+     * @var SerializerInterface
+     */
     private $serializer;
+
+    /**
+     * @var LoggerInterface|null
+     */
     private $logger;
 
     /**
@@ -96,7 +119,7 @@ final class TaskSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, array<int[]|string[]>>
      */
     public static function getSubscribedEvents(): array
     {

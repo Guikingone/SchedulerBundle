@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
+use DateInterval;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
 use SchedulerBundle\Task\TaskInterface;
@@ -24,10 +25,10 @@ final class DeadlinePolicyTest extends TestCase
     public function testTasksCanBeSorted(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new \DateInterval('P3D'));
+        $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new \DateInterval('P2D'));
+        $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
 
         $policy = new DeadlinePolicy();
 

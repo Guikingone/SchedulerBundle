@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
+use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\DBALException;
@@ -30,13 +32,35 @@ use function sprintf;
  */
 final class Connection implements ConnectionInterface
 {
+    /**
+     * @var bool
+     */
     private $autoSetup;
-    private $configuration;
+
+    /**
+     * @var mixed[]
+     */
+    private $configuration = [];
+
+    /**
+     * @var DBALConnection
+     */
     private $driverConnection;
+
+    /**
+     * @var SingleDatabaseSynchronizer
+     */
     private $schemaSynchronizer;
+
+    /**
+     * @var SerializerInterface
+     */
     private $serializer;
 
-    public function __construct(array $configuration, DBALConnection $driverConnection, SerializerInterface $serializer)
+    /**
+     * @param mixed[] $configuration
+     */
+    public function __construct(array $configuration, DoctrineConnection $driverConnection, SerializerInterface $serializer)
     {
         $this->configuration = $configuration;
         $this->driverConnection = $driverConnection;
@@ -210,8 +234,8 @@ final class Connection implements ConnectionInterface
                     throw new InvalidArgumentException('The given identifier is invalid.');
                 }
             });
-        } catch (Throwable $exception) {
-            throw new TransportException($exception->getMessage());
+        } catch (Throwable $throwable) {
+            throw new TransportException($throwable->getMessage());
         }
     }
 
@@ -286,7 +310,7 @@ final class Connection implements ConnectionInterface
         ;
     }
 
-    private function executeQuery(string $sql, array $parameters = [], array $types = [])
+    private function executeQuery(string $sql, array $parameters = [], array $types = []): ResultStatement
     {
         try {
             $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);

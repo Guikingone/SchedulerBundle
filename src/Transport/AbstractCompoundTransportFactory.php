@@ -17,6 +17,9 @@ use function sprintf;
  */
 abstract class AbstractCompoundTransportFactory implements TransportFactoryInterface
 {
+    /**
+     * @return TransportInterface[]
+     */
     protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
     {
         $dsnList = $dsn->getOptions()[0] ?? [];

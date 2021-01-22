@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
@@ -44,7 +45,7 @@ final class TaskExecutionTrackerTest extends TestCase
         self::assertNotNull($task->getExecutionMemoryUsage());
     }
 
-    public function provideTrackedTasks(): \Generator
+    public function provideTrackedTasks(): Generator
     {
         yield [
             new ShellTask('Http AbstractTask - Hello', ['echo', 'Symfony']),
@@ -52,7 +53,7 @@ final class TaskExecutionTrackerTest extends TestCase
         ];
     }
 
-    public function provideUnTrackedTasks(): \Generator
+    public function provideUnTrackedTasks(): Generator
     {
         yield [
             (new ShellTask('Http AbstractTask - Hello', ['echo', 'Symfony']))->setTracked(false),

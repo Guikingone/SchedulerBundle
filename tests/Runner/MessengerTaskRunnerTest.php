@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -38,7 +39,7 @@ final class MessengerTaskRunnerTest extends TestCase
     public function testRunnerCanReturnOutputWithBusAndException(): void
     {
         $bus = $this->createMock(MessageBusInterface::class);
-        $bus->expects(self::once())->method('dispatch')->willThrowException(new \RuntimeException('An error occurred'));
+        $bus->expects(self::once())->method('dispatch')->willThrowException(new RuntimeException('An error occurred'));
 
         $runner = new MessengerTaskRunner($bus);
         $task = new MessengerTask('foo', new FooMessage());

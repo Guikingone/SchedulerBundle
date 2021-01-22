@@ -794,6 +794,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         $container = new ContainerBuilder();
         $container->register('doctrine', stdClass::class);
+
         $extension->load([
             'scheduler_bundle' => [
                 'path' => '/_foo',

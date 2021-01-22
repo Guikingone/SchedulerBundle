@@ -12,10 +12,13 @@ use function uasort;
  */
 final class RoundRobinPolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'round_robin';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

@@ -18,12 +18,39 @@ use function urldecode;
  */
 final class Dsn
 {
+    /**
+     * @var string
+     */
     private $scheme;
+
+    /**
+     * @var string
+     */
     private $host;
+
+    /**
+     * @var string|null
+     */
     private $user;
+
+    /**
+     * @var string|null
+     */
     private $password;
+
+    /**
+     * @var int|null
+     */
     private $port;
-    private $options;
+
+    /**
+     * @var mixed[]
+     */
+    private $options = [];
+
+    /**
+     * @var string|null
+     */
     private $path;
 
     public function __construct(string $scheme, string $host, ?string $path = null, ?string $user = null, ?string $password = null, ?int $port = null, array $options = [])
@@ -98,11 +125,17 @@ final class Dsn
         return $this->options[$key] ?? $default;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getOptions(): array
     {
         return $this->options;
     }
 
+    /**
+     * @return string[]
+     */
     private static function handleEmbeddedDsn(string $dsn): array
     {
         preg_match('#\(([^()]|(?R))*\)#', $dsn, $matches);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use Exception;
 use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -96,6 +97,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
@@ -121,6 +123,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
@@ -144,12 +147,13 @@ EOF
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->willThrowException(new \Exception('Random error occurred'));
+        $worker->expects(self::once())->method('execute')->willThrowException(new Exception('Random error occurred'));
 
         $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([]);
 
@@ -184,6 +188,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([
             '--limit' => 10,
@@ -220,6 +225,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([
             '--time-limit' => 10,
@@ -254,6 +260,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([
             '--failure-limit' => 10,
@@ -290,6 +297,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([
             '--wait' => true,
@@ -329,6 +337,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:consume'));
         $tester->execute([
             '--limit' => 1,

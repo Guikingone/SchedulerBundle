@@ -17,12 +17,15 @@ use function usort;
  */
 final class LongTailTransport extends AbstractTransport
 {
-    private $transports;
+    /**
+     * @var TransportInterface[]
+     */
+    private $transports = [];
 
     /**
      * @param iterable|TransportInterface[] $transports
      */
-    public function __construct($transports, array $options = [])
+    public function __construct(iterable $transports, array $options = [])
     {
         $this->defineOptions($options);
 
@@ -109,6 +112,9 @@ final class LongTailTransport extends AbstractTransport
         });
     }
 
+    /**
+     * @return mixed|void
+     */
     private function execute(Closure $func)
     {
         if (empty($this->transports)) {

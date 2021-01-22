@@ -12,10 +12,13 @@ use function uasort;
  */
 final class NicePolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'nice';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

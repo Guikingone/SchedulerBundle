@@ -11,7 +11,14 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class TaskMessage
 {
+    /**
+     * @var TaskInterface
+     */
     private $task;
+
+    /**
+     * @var int
+     */
     private $workerTimeout;
 
     public function __construct(TaskInterface $task, int $workerTimeout = 1)

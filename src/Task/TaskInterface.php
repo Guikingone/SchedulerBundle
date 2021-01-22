@@ -13,10 +13,29 @@ use DateTimeZone;
  */
 interface TaskInterface
 {
+    /**
+     * @var string
+     */
     public const ENABLED = 'enabled';
+
+    /**
+     * @var string
+     */
     public const PAUSED = 'paused';
+
+    /**
+     * @var string
+     */
     public const DISABLED = 'disabled';
+
+    /**
+     * @var string
+     */
     public const UNDEFINED = 'undefined';
+
+    /**
+     * @var string[]
+     */
     public const ALLOWED_STATES = [
         self::ENABLED,
         self::PAUSED,
@@ -24,12 +43,39 @@ interface TaskInterface
         self::UNDEFINED,
     ];
 
+    /**
+     * @var string
+     */
     public const SUCCEED = 'succeed';
+
+    /**
+     * @var string
+     */
     public const RUNNING = 'running';
+
+    /**
+     * @var string
+     */
     public const DONE = 'done';
+
+    /**
+     * @var string
+     */
     public const INCOMPLETE = 'incomplete';
+
+    /**
+     * @var string
+     */
     public const ERRORED = 'errored';
+
+    /**
+     * @var string
+     */
     public const TO_RETRY = 'to_retry';
+
+    /**
+     * @var string[]
+     */
     public const EXECUTION_STATES = [
         self::SUCCEED,
         self::RUNNING,

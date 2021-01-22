@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\CallbackTask;
 
@@ -14,7 +15,7 @@ final class CallbackTaskTest extends TestCase
 {
     public function testTaskCannotBeCreatedWithInvalidCallback(): void
     {
-        self::expectException(\InvalidArgumentException::class);
+        self::expectException(InvalidArgumentException::class);
         new CallbackTask('foo', [$this, 'test']);
     }
 
@@ -28,7 +29,7 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallback(): void
     {
-        $task = new CallbackTask('foo', function () {
+        $task = new CallbackTask('foo', function (): void {
             echo 'test';
         });
 
@@ -37,20 +38,20 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithCallbackAndChangeCallbackLater(): void
     {
-        $task = new CallbackTask('foo', function () {
+        $task = new CallbackTask('foo', function (): void {
             echo 'test';
         });
 
         self::assertEmpty($task->getArguments());
 
-        $task->setCallback(function () {
+        $task->setCallback(function (): void {
             echo 'Symfony';
         });
     }
 
     public function testTaskCanBeCreatedWithValidCallbackAndArguments(): void
     {
-        $task = new CallbackTask('foo', function ($value) {
+        $task = new CallbackTask('foo', function ($value): void {
             echo $value;
         }, ['value' => 'test']);
 
@@ -59,7 +60,7 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallbackAndSetArgumentsLater(): void
     {
-        $task = new CallbackTask('foo', function ($value) {
+        $task = new CallbackTask('foo', function ($value): void {
             echo $value;
         });
         $task->setArguments(['value' => 'test']);

@@ -26,15 +26,37 @@ use function sleep;
  */
 final class RebootSchedulerCommand extends Command
 {
+    /**
+     * @var SchedulerInterface
+     */
     private $scheduler;
+
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
+
+    /**
+     * @var EventDispatcherInterface
+     */
     private $eventDispatcher;
+
+    /**
+     * @var LoggerInterface|null
+     */
     private $logger;
 
+    /**
+     * @var string
+     */
     protected static $defaultName = 'scheduler:reboot';
 
-    public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        SchedulerInterface $scheduler,
+        WorkerInterface $worker,
+        EventDispatcherInterface $eventDispatcher,
+        LoggerInterface $logger = null
+    ) {
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;

@@ -12,10 +12,13 @@ use function uasort;
  */
 final class MemoryUsagePolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'memory_usage';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

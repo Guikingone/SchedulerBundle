@@ -16,6 +16,9 @@ use function sleep;
  */
 final class TaskMessageHandler implements MessageHandlerInterface
 {
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
 
     public function __construct(WorkerInterface $worker)

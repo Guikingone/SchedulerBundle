@@ -12,10 +12,13 @@ use function uasort;
  */
 final class ExecutionDurationPolicy implements PolicyInterface
 {
+    /**
+     * @var string
+     */
     private const POLICY = 'execution_duration';
 
     /**
-     * {@inheritdoc}
+     * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {

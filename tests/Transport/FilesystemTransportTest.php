@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -31,6 +32,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class FilesystemTransportTest extends TestCase
 {
+    /**
+     * @var Filesystem|null
+     */
     private $filesystem;
 
     /**
@@ -61,7 +65,7 @@ final class FilesystemTransportTest extends TestCase
         $transport = new FilesystemTransport(__DIR__.'/assets', [], $serializer);
 
         $task = new NullTask('bar');
-        $task->setScheduledAt(new \DateTimeImmutable());
+        $task->setScheduledAt(new DateTimeImmutable());
 
         $transport->create($task);
         self::assertTrue($this->filesystem->exists(__DIR__.'/assets/_symfony_scheduler_/bar.json'));

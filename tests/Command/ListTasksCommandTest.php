@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use DateTimeImmutable;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -60,6 +62,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([]);
 
@@ -76,7 +79,7 @@ EOF
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new \DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -91,6 +94,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             $stateOption => TaskInterface::ENABLED,
@@ -117,7 +121,7 @@ EOF
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new \DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -132,6 +136,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             $expressionOption => '* * * * *',
@@ -155,7 +160,7 @@ EOF
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new \DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -170,6 +175,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([]);
 
@@ -194,7 +200,7 @@ EOF
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new \DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -202,7 +208,7 @@ EOF
         $secondTasks->expects(self::once())->method('getName')->willReturn('bar');
         $secondTasks->expects(self::once())->method('getDescription')->willReturn('A second random task');
         $secondTasks->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $secondTasks->expects(self::exactly(2))->method('getLastExecution')->willReturn(new \DateTimeImmutable());
+        $secondTasks->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $secondTasks->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $secondTasks->expects(self::once())->method('getTags')->willReturn(['app', 'fast']);
 
@@ -217,6 +223,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             $expressionOption => '* * * * *',
@@ -261,6 +268,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             '--expression' => '0 * * * *',
@@ -285,6 +293,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             '--state' => 'test',
@@ -309,6 +318,7 @@ EOF
 
         $application = new Application();
         $application->add($command);
+
         $tester = new CommandTester($application->get('scheduler:list'));
         $tester->execute([
             '--expression' => '0 * * * *',
@@ -319,18 +329,18 @@ EOF
         self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
     }
 
-    public function provideStateOption(): \Generator
+    public function provideStateOption(): Generator
     {
         yield ['--state'];
         yield ['-s'];
     }
 
-    public function provideExpressionOption(): \Generator
+    public function provideExpressionOption(): Generator
     {
         yield ['--expression'];
     }
 
-    public function provideOptions(): \Generator
+    public function provideOptions(): Generator
     {
         yield ['--expression', '--state'];
     }

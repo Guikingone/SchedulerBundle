@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
@@ -476,7 +477,7 @@ final class ConnectionTest extends TestCase
         $connection->empty();
     }
 
-    public function provideList(): \Generator
+    public function provideList(): Generator
     {
         yield ['_random'];
         yield ['_symfony_scheduler_task'];

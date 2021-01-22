@@ -25,7 +25,7 @@ final class MessengerTask extends AbstractTask
         return $this->options['message'];
     }
 
-    public function setMessage(object $message): TaskInterface
+    public function setMessage(object $message): self
     {
         $this->options['message'] = $message;
 

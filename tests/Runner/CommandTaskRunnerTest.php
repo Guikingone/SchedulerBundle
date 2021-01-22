@@ -146,6 +146,9 @@ final class CommandTaskRunnerTest extends TestCase
 
 final class FooCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'app:foo';
 
     /**
@@ -178,6 +181,9 @@ final class FooCommand extends Command
 
 final class BarCommand extends Command
 {
+    /**
+     * @var string
+     */
     protected static $defaultName = 'app:bar';
 
     /**

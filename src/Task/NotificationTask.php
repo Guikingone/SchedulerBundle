@@ -30,7 +30,7 @@ final class NotificationTask extends AbstractTask
         return $this->options['notification'];
     }
 
-    public function setNotification(Notification $notification): TaskInterface
+    public function setNotification(Notification $notification): self
     {
         $this->options['notification'] = $notification;
 
@@ -45,14 +45,14 @@ final class NotificationTask extends AbstractTask
         return $this->options['recipients'];
     }
 
-    public function addRecipient(Recipient $recipient): TaskInterface
+    public function addRecipient(Recipient $recipient): self
     {
         $this->options['recipients'][] = $recipient;
 
         return $this;
     }
 
-    public function setRecipients(Recipient ...$recipients): TaskInterface
+    public function setRecipients(Recipient ...$recipients): self
     {
         $this->options['recipients'] = $recipients;
 

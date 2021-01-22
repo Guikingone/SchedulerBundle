@@ -16,6 +16,9 @@ use Throwable;
  */
 final class HttpTaskRunner implements RunnerInterface
 {
+    /**
+     * @var HttpClientInterface
+     */
     private $httpClient;
 
     public function __construct(HttpClientInterface $httpClient = null)
@@ -41,10 +44,10 @@ final class HttpTaskRunner implements RunnerInterface
             $task->setExecutionState(TaskInterface::SUCCEED);
 
             return new Output($task, $response->getContent());
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
-            return new Output($task, $exception->getMessage(), Output::ERROR);
+            return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
     }
 

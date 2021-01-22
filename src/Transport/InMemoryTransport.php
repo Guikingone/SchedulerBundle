@@ -18,7 +18,14 @@ use function sprintf;
  */
 final class InMemoryTransport extends AbstractTransport
 {
+    /**
+     * @var TaskInterface[]|mixed[]
+     */
     private $tasks = [];
+
+    /**
+     * @var SchedulePolicyOrchestratorInterface|null
+     */
     private $orchestrator;
 
     public function __construct(array $options = [], SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)

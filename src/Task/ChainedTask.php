@@ -20,14 +20,14 @@ final class ChainedTask extends AbstractTask
         parent::__construct($name);
     }
 
-    public function addTask(TaskInterface $task): TaskInterface
+    public function addTask(TaskInterface $task): self
     {
         $this->options['tasks'][] = $task;
 
         return $this;
     }
 
-    public function setTasks(TaskInterface ...$tasks): TaskInterface
+    public function setTasks(TaskInterface ...$tasks): self
     {
         $this->options['tasks'] = $tasks;
 

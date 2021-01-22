@@ -139,4 +139,13 @@ final class ExpressionFactoryTest extends TestCase
         self::assertSame('*/45 * * * *', $factory->getExpression());
         self::assertSame('*/45 * * * *', (string) $factory);
     }
+
+    public function testMacroCanBePassed(): void
+    {
+        $factory = new ExpressionFactory();
+        $factory->setExpression('@reboot');
+
+        self::assertSame('@reboot', $factory->getExpression());
+        self::assertSame('@reboot', (string) $factory);
+    }
 }

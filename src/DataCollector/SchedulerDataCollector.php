@@ -17,6 +17,9 @@ use Throwable;
  */
 final class SchedulerDataCollector extends DataCollector implements LateDataCollectorInterface
 {
+    /**
+     * @var string
+     */
     public const NAME = 'scheduler';
 
     /**

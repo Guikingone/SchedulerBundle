@@ -17,11 +17,34 @@ use function strpos;
  */
 final class ExpressionFactory
 {
+    /**
+     * @var string
+     */
     public const ANNUALLY_MACRO = '@annually';
+
+    /**
+     * @var string
+     */
     public const YEARLY_MACRO = '@yearly';
+
+    /**
+     * @var string
+     */
     public const REBOOT_MACRO = '@reboot';
+
+    /**
+     * @var string
+     */
     public const DAILY_MACRO = '@daily';
+
+    /**
+     * @var string
+     */
     public const WEEKLY_MACRO = '@weekly';
+
+    /**
+     * @var string
+     */
     public const MONTHLY_MACRO = '@monthly';
 
     private const ALLOWED_MACROS = [

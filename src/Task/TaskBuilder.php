@@ -13,7 +13,14 @@ use function sprintf;
  */
 final class TaskBuilder implements TaskBuilderInterface
 {
+    /**
+     * @var TaskBuilderInterface[]|mixed[]
+     */
     private $builders;
+
+    /**
+     * @var PropertyAccessorInterface
+     */
     private $propertyAccessor;
 
     /**

@@ -23,10 +23,24 @@ use function sprintf;
  */
 final class RetryFailedTaskCommand extends Command
 {
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
+
+    /**
+     * @var EventDispatcherInterface
+     */
     private $eventDispatcher;
+
+    /**
+     * @var LoggerInterface|null
+     */
     private $logger;
 
+    /**
+     * @var string
+     */
     protected static $defaultName = 'scheduler:retry:failed';
 
     public function __construct(WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)

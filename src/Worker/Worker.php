@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Component\Lock\BlockingStoreInterface;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
@@ -47,26 +48,71 @@ use function usleep;
  */
 final class Worker implements WorkerInterface
 {
+    /**
+     * @var array<string, int|bool>
+     */
     private const DEFAULT_OPTIONS = [
         'sleepDurationDelay' => 1,
         'sleepUntilNextMinute' => false,
     ];
 
+    /**
+     * @var RunnerInterface[]|mixed[]
+     */
     private $runners;
+
+    /**
+     * @var TaskExecutionTrackerInterface
+     */
     private $tracker;
+
+    /**
+     * @var EventDispatcherInterface|null
+     */
     private $eventDispatcher;
+
+    /**
+     * @var TaskListInterface|TaskList
+     */
     private $failedTasks;
+
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
+
+    /**
+     * @var bool
+     */
     private $running = false;
+
+    /**
+     * @var bool
+     */
     private $shouldStop = false;
+
+    /**
+     * @var FlockStore|PersistingStoreInterface|null
+     */
     private $store;
+
+    /**
+     * @var SchedulerInterface
+     */
     private $scheduler;
+
+    /**
+     * @var mixed[]|null
+     */
     private $options;
+
+    /**
+     * @var TaskInterface|null
+     */
     private $lastExecutedTask;
 
     /**
-     * @param iterable|RunnerInterface[]                      $runners
-     * @param BlockingStoreInterface|PersistingStoreInterface $store
+     * @param iterable|RunnerInterface[] $runners
      */
     public function __construct(
         SchedulerInterface $scheduler,
@@ -74,7 +120,7 @@ final class Worker implements WorkerInterface
         TaskExecutionTrackerInterface $tracker,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        $store = null
+        BlockingStoreInterface $store = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
@@ -129,20 +175,20 @@ final class Worker implements WorkerInterface
                     }
 
                     try {
-                        if ($lockedTask->acquire() && !$this->isRunning()) {
+                        if ($lockedTask->acquire() && !$this->running) {
                             $this->running = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
+                        }
+
+                        if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
+                            throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
-                        if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
-                            $this->failedTasks->add(new FailedTask($task, sprintf('The after scheduling callback failed')));
-                        }
-
                         $lockedTask->release();
                         $this->running = false;
                         $this->lastExecutedTask = $task;
@@ -218,6 +264,7 @@ final class Worker implements WorkerInterface
 
     /**
      * {@inheritdoc}
+     * @return mixed[]|null
      */
     public function getOptions(): array
     {
@@ -249,6 +296,7 @@ final class Worker implements WorkerInterface
 
         $task->setArrivalTime(new DateTimeImmutable());
         $task->setExecutionStartTime(new DateTimeImmutable());
+
         $this->tracker->startTracking($task);
         $output = $runner->run($task);
         $this->tracker->endTracking($task);

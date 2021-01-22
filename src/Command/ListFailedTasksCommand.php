@@ -10,14 +10,23 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\Worker\WorkerInterface;
+use function count;
+use function sprintf;
+use const DATE_ATOM;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class ListFailedTasksCommand extends Command
 {
+    /**
+     * @var WorkerInterface
+     */
     private $worker;
 
+    /**
+     * @var string
+     */
     protected static $defaultName = 'scheduler:list:failed';
 
     public function __construct(WorkerInterface $worker)
@@ -56,12 +65,12 @@ final class ListFailedTasksCommand extends Command
 
         $failedTasks = [];
         foreach ($failedTasksList as $task) {
-            $failedTasks[] = [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(\DATE_ATOM)];
+            $failedTasks[] = [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)];
         }
 
         $table->addRows($failedTasks);
 
-        $style->success(\sprintf('%d task%s found', \count($failedTasks), \count($failedTasks) > 1 ? 's' : ''));
+        $style->success(sprintf('%d task%s found', count($failedTasks), count($failedTasks) > 1 ? 's' : ''));
         $table->render();
 
         return self::SUCCESS;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
@@ -41,12 +42,12 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'));
+            ->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'));
+            ->willThrowException(new RuntimeException('Task list not found'));
 
         $transport = new RoundRobinTransport([
             $firstTransport,
@@ -66,7 +67,7 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task not found'));
+            ->willThrowException(new RuntimeException('Task not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('get')
@@ -96,7 +97,7 @@ final class RoundRobinTransportTest extends TestCase
         $taskList = $this->createMock(TaskListInterface::class);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('list')->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('list')->willReturn($taskList);
@@ -126,10 +127,10 @@ final class RoundRobinTransportTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('create')->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->method('create')->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->method('create')->with($task)->willThrowException(new \RuntimeException('Task list not found'));
+        $secondTransport->method('create')->with($task)->willThrowException(new RuntimeException('Task list not found'));
 
         $transport = new RoundRobinTransport([
             $firstTransport,
@@ -148,7 +149,7 @@ final class RoundRobinTransportTest extends TestCase
         $task->expects(self::never())->method('getName');
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('create')->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->expects(self::once())->method('create')->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('create')->with($task);
@@ -178,10 +179,10 @@ final class RoundRobinTransportTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new \RuntimeException('Task list not found'));
+        $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new RuntimeException('Task list not found'));
 
         $transport = new RoundRobinTransport([
             $firstTransport,
@@ -200,7 +201,7 @@ final class RoundRobinTransportTest extends TestCase
         $task->expects(self::never())->method('getName');
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task);
@@ -226,10 +227,10 @@ final class RoundRobinTransportTest extends TestCase
     public function testTransportCannotDeleteWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new \RuntimeException('Task list not found'));
+        $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new RuntimeException('Task list not found'));
 
         $transport = new RoundRobinTransport([
             $firstTransport,
@@ -245,7 +246,7 @@ final class RoundRobinTransportTest extends TestCase
     public function testTransportCanDeleteTask(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new \RuntimeException('Task list not found'));
+        $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new RuntimeException('Task list not found'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
@@ -273,13 +274,13 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('pause')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('pause')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $transport = new RoundRobinTransport([
@@ -298,7 +299,7 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('pause')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -329,13 +330,13 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('resume')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('resume')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $transport = new RoundRobinTransport([
@@ -354,7 +355,7 @@ final class RoundRobinTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('resume')
             ->with(self::equalTo('foo'))
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -384,12 +385,12 @@ final class RoundRobinTransportTest extends TestCase
     {
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('clear')
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('clear')
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $transport = new RoundRobinTransport([
@@ -407,7 +408,7 @@ final class RoundRobinTransportTest extends TestCase
     {
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('clear')
-            ->willThrowException(new \RuntimeException('Task list not found'))
+            ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);

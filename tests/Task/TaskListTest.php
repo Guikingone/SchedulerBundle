@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -139,7 +140,7 @@ final class TaskListTest extends TestCase
 
         $task->expects(self::any())->method('getName')->willReturn('foo');
 
-        $tasks = $list->filter(function (TaskInterface $task) {
+        $tasks = $list->filter(function (TaskInterface $task): bool {
             return 'foo' === $task->getName();
         });
 
@@ -187,7 +188,7 @@ final class TaskListTest extends TestCase
 
         $list = new TaskList([$task]);
 
-        self::assertInstanceOf(\ArrayIterator::class, $list->getIterator());
+        self::assertInstanceOf(ArrayIterator::class, $list->getIterator());
     }
 
     public function testArrayCanBeReturned(): void
