@@ -310,7 +310,7 @@ final class Connection implements ConnectionInterface
         ;
     }
 
-    private function executeQuery(string $sql, array $parameters = [], array $types = []): ResultStatement
+    private function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
         try {
             $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
