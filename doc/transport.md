@@ -1,6 +1,41 @@
 # Transport
 
-This bundle provides multiple transports to store and handle tasks.
+Transports are the foundations behind the storage of tasks, once tasks are defined in the configuration
+or scheduled via the [Scheduler](../src/Scheduler.php), every task is stored via transports.
+
+Think of transports like the transports used by the following components in Symfony:
+
+- Mailer
+- Messenger
+- Notifier
+
+This bundle defines a set of transports, each transport has its own configuration and can be overridden if required.
+
+## Informations
+
+Once created, the transport is injected into the `Scheduler`, 
+you will probably never need to interact with it without using the Scheduler, otherwise, 
+the transport is injected using the [TransportInterface](../src/Transport/TransportInterface.php) 
+and the `scheduler.transport` identifier.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use SchedulerBundle\Transport\TransportInterface;
+use Symfony\Component\HttpFoundation\Request;
+
+final class FooController
+{
+    public function __invoke(Request $request, TransportInterface $transport)
+    {
+        // ...
+    }
+}
+```
+
+_Note: Using the transport without the scheduler can lead to edge issues as the scheduler is synchronized with it_
 
 ## Configuration
 
@@ -22,6 +57,9 @@ scheduler_bundle:
         dsn: 'memory://first_in_first_out'
 ```
 
+**Configuration**: This transport requires that you provide an `execution_mode` as the first parameter,
+this value is used to sort every new task and improve performances/resources consumption.
+
 ## Filesystem
 
 The [FilesystemTransport](../src/Transport/FilesystemTransport.php) stores every task in files,
@@ -35,11 +73,25 @@ scheduler_bundle:
         dsn: 'filesystem://first_in_first_out' # OR 'fs://first_in_first_out' OR 'file://first_in_first_out'
 ```
 
+**Configuration**:
+
+- This transport requires that you provide an `execution_mode` as the first parameter,
+this value is used to sort every new task and improve performances/resources consumption.
+  
+- The second and optional key is the `path` where every task is stored (using `json` format):
+
+```yaml
+scheduler_bundle:
+    transport:
+        dsn: 'filesystem://first_in_first_out?path=/srv/app'
+```
+
+_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration_
+
 ### Extra configuration
 
-This transport can configure the following keys:
+This transport can be configured using the following keys:
 
-- `path`: Define the path where tasks are stored.
 - `filename_mask`: The filename mask is used to define the stored file name (default to `%s/_symfony_scheduler_/%s.json`).
 
 ```yaml
@@ -49,6 +101,8 @@ scheduler_bundle:
         options:
             path: '%kernel.project_dir%/_foo'
 ```
+
+**Extra**: The options key is an extra way of configuring the parameters without using the dsn.
 
 _Note: Keep in mind that this directory could be versioned if required_
 
@@ -66,11 +120,14 @@ scheduler_bundle:
         dsn: 'failover://(memory://first_in_first_out || memory://last_in_first_out)' # Or 'fo://(memory://first_in_first_out || memory://last_in_first_out)'
 ```
 
+**configuration**: This transport requires at least 2 transports to be used (each one can be configured as usual).
+
 ## LongTail
 
-The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transport and it specifically designed
+The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transport, it's specifically designed
 to maximize the transport usage by always trying to use the transport with the lowest amount of tasks, 
 this approach can help when you're scheduling tasks in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
+
 ### Usage
 
 ```yaml
@@ -78,6 +135,8 @@ scheduler_bundle:
     transport:
         dsn: 'longtail://(memory://first_in_first_out <> memory://last_in_first_out)' # Or 'lt://(memory://first_in_first_out <> memory://last_in_first_out)'
 ```
+
+**configuration**: This transport requires at least 2 transports to be used (each one can be configured as usual).
 
 ## RoundRobin
 
@@ -93,18 +152,29 @@ scheduler_bundle:
         dsn: 'roundrobin://(memory://first_in_first_out && memory://last_in_first_out)' # Or 'rr://(memory://first_in_first_out && memory://last_in_first_out)'
 ```
 
+**configuration**: This transport requires at least 2 transports to be used (each one can be configured as usual).
+
 ## Redis
 
-The [RedisTransport](../src/Bridge/Redis/Transport/RedisTransport.php) allows to use Redis as tasks storage.
-This transport is useful if you need to share tasks between multiple projects/instances.
+The [RedisTransport](../src/Bridge/Redis/Transport/RedisTransport.php) allows to use Redis 
+as tasks storage, this transport is useful if you need to share tasks between multiple projects/instances.
+
+**Requirements**: The `Redis` transport requires redis >= 4.3 at least.
 
 ### Usage
 
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'redis://first_in_first_out'
+        dsn: 'redis://user:password@host:port'
 ```
+
+**configuration**: This transport requires multiple options:
+
+- The `user` of the Redis instance
+- The `password` related
+- The `host` of the Redis instance
+- The optional `port` of the Redis instance
 
 ### Extra configuration
 
@@ -116,7 +186,7 @@ This transport can configure multiple options:
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'redis://default?execution_mode=first_in_first_out&table_name=foo&auto_setup=false'
+        dsn: 'redis://user:password@127.0.0.1:6543?execution_mode=first_in_first_out&list=foo'
 ```
 
 ## Doctrine
@@ -133,13 +203,17 @@ scheduler_bundle:
         dsn: 'doctrine://default?execution_mode=first_in_first_out' # Or 'dbal://default?execution_mode=first_in_first_out'
 ```
 
+**Configuration**: This transports requires the following configuration keys:
+
+- The `connection` name as the "host"
+- The optional `table_name` where the tasks must be stored (default to `_symfony_scheduler_tasks`)
+- The optional `auto_setup` to define if the connection should configure the table if it does not exist
+
 ### Extra configuration
 
 This transport can configure multiple options:
 
 - `execution_mode`: Relates to default configuration keys.
-- `auto_setup`:
-- `table_name`: Define the name of the table used to store tasks.
 
 ```yaml
 scheduler_bundle:
