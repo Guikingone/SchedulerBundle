@@ -84,7 +84,7 @@ final class Connection implements ConnectionInterface
                 return $this->serializer->deserialize($task['body'], TaskInterface::class, 'json');
             }, $tasks));
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -112,7 +112,7 @@ final class Connection implements ConnectionInterface
 
             return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -159,7 +159,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -185,7 +185,7 @@ final class Connection implements ConnectionInterface
             $task->setState(AbstractTask::PAUSED);
             $this->update($name, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -203,7 +203,7 @@ final class Connection implements ConnectionInterface
             $task->setState(AbstractTask::ENABLED);
             $this->update($name, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -231,7 +231,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -247,7 +247,7 @@ final class Connection implements ConnectionInterface
                 $connection->executeQuery($deleteQuery->getSQL());
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -294,7 +294,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 

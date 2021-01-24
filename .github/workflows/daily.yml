@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.2', '7.3', '7.4']
+        php-versions: ['7.2', '7.3', '7.4', '8.0']
         composer-dependencies: ['', 'lowest']
     services:
       redis:
@@ -70,10 +70,6 @@ jobs:
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
         run: php vendor/bin/rector process --dry-run --clear-cache
-
-#      # —— PHPStan ———————————————————————————————————————————————————————
-#      - name: PHPStan
-#        run: php vendor/bin/phpstan analyze
 
       # —— PHPUnit ———————————————————————————————————————————————————————
       - name: PHPUnit

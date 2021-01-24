@@ -142,7 +142,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName));
+            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), $throwable->getCode(), $throwable);
         }
     }
 
@@ -161,7 +161,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName));
+            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), $throwable->getCode(), $throwable);
         }
     }
 
