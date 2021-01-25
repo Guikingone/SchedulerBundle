@@ -38,7 +38,7 @@ return [
 ];
 ```
 
-Once done, just add a `config/packages/scheduler.yaml`:
+Then [configure a transport](doc/transport.md) in `config/packages/scheduler.yaml`:
 
 ```yaml
 # config/packages/scheduler.yaml
@@ -47,7 +47,7 @@ scheduler_bundle:
         dsn: 'filesystem://first_in_first_out'
 ```
 
-Once transport is configured, time to create a simple task:
+Finally, it's time to [create a simple task](doc/tasks.md):
 
 ```yaml
 # config/packages/scheduler.yaml
@@ -61,14 +61,21 @@ scheduler_bundle:
             expression: '*/5 * * * *'
             description: 'A simple cache clear task'
             options:
-              env: test
+                env: test
 ```
 
-Once a task is configured, time to execute it, two approaches can be used:
+When a task is configured, time to execute it, two approaches can be used:
 
 - Adding a cron entry `* * * * * cd /path-to-your-project && php bin/console scheduler:consume >> /dev/null 2>&1`
 - Launching the command `scheduler:consume --wait` in a background command
 
 ## Documentation
 
-For a full breakdown of each feature, please head to the [documentation](doc)
+* [Usage](doc/usage.md)
+* [Tasks](doc/tasks.md)
+* [Transports](doc/transport.md)
+* [Commands](doc/command.md)
+* [Events](doc/events.md)
+* [Messenger](doc/messenger.md)
+* [HTTP entrypoint](doc/http.md)
+* [Policies](doc/policies.md)
