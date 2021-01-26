@@ -137,9 +137,9 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function update(string $name, TaskInterface $task): void
+    public function update(string $taskName, TaskInterface $task): void
     {
-        $this->transport->update($name, $task);
+        $this->transport->update($taskName, $task);
     }
 
     /**

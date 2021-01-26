@@ -67,9 +67,9 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function update(string $taskName, TaskInterface $updatedTask): void
+    public function update(string $name, TaskInterface $updatedTask): void
     {
-        $this->list()->offsetSet($taskName, $updatedTask);
+        $this->list()->offsetSet($name, $updatedTask);
     }
 
     /**

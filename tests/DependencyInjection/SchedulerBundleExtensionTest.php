@@ -18,8 +18,10 @@ use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskExecutionSubscriber;
+use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
+use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -597,6 +599,18 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(StopWorkerOnSignalSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(StopWorkerOnSignalSubscriber::class)->hasTag('container.preload'));
         self::assertSame(StopWorkerOnSignalSubscriber::class, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TaskLifecycleSubscriber::class));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLifecycleSubscriber::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(TaskLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
+        self::assertTrue($container->getDefinition(TaskLifecycleSubscriber::class)->hasTag('container.preload'));
+        self::assertSame(TaskLifecycleSubscriber::class, $container->getDefinition(TaskLifecycleSubscriber::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(WorkerLifecycleSubscriber::class));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(WorkerLifecycleSubscriber::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
+        self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('container.preload'));
+        self::assertSame(WorkerLifecycleSubscriber::class, $container->getDefinition(WorkerLifecycleSubscriber::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testTrackerIsRegistered(): void

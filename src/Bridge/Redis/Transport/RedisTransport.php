@@ -77,9 +77,9 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function update(string $taskName, TaskInterface $updatedTask): void
+    public function update(string $name, TaskInterface $updatedTask): void
     {
-        $this->connection->update($taskName, $updatedTask);
+        $this->connection->update($name, $updatedTask);
     }
 
     /**

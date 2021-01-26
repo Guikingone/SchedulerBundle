@@ -61,6 +61,7 @@
             "Tests\\SchedulerBundle\\SchedulePolicy\\": "tests/SchedulePolicy/",
             "Tests\\SchedulerBundle\\Serializer\\": "tests/Serializer/",
             "Tests\\SchedulerBundle\\Task\\": "tests/Task/",
+            "Tests\\SchedulerBundle\\TaskBag\\": "tests/TaskBag/",
             "Tests\\SchedulerBundle\\Task\\Builder\\": "tests/Task/Builder/",
             "Tests\\SchedulerBundle\\Test\\": "tests/Test/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\": "tests/Test/Constraint/",
@@ -108,7 +109,9 @@
         "phpstan/phpstan": "^0.12",
         "phpstan/phpstan-phpunit": "^0.12",
         "phpstan/phpstan-doctrine": "^0.12",
-        "phpunit/phpunit": "^8.5"
+        "phpunit/phpunit": "^8.5",
+        "vimeo/psalm": "^4.4",
+        "psalm/plugin-phpunit": "^0.15"
     },
     "suggest": {
         "symfony/http-client": "For dispatching http tasks",
