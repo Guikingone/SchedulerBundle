@@ -14,6 +14,7 @@ This bundle provides multiple type of tasks:
 ## Extra
 
 - [Task callbacks](tasks.md#Callbacks)
+- [Task notifications](tasks.md#Notifications)
 - [Options](tasks.md#Options)
 
 ## ShellTask
@@ -164,6 +165,17 @@ Each task can define a set of callback:
 **Keep in mind that due to internal limitations, a `Closure` instance cannot be passed as callback if your tasks are stored in external transports or the filesystem one.** 
 
 _Note: Each callback receives a current task instance as the first argument._
+
+## Notifications
+
+_Introduced in `0.2`_
+
+Each task can define a set of notification:
+
+- **beforeScheduling**: This notification will be sent before scheduling the task (and after the `beforeScheduling` callback if defined)
+- **afterScheduling**: This notification will be sent after scheduling the task (and after the `afterScheduling` callback if defined)
+- **beforeExecuting**: This notification will be sent before executing the task (and after the `beforeExecuting` callback if defined)
+- **afterExecuting**: This notification will be sent after executing the task (and after the `beforeExecuting` callback if defined and if this one does not failed)
 
 ## Options
 

@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 abstract class AbstractTransport implements TransportInterface
 {
     /**
-     * @var mixed[]|string[]|null
+     * @var mixed[]|string[]
      */
     protected $options;
 
@@ -55,7 +55,7 @@ abstract class AbstractTransport implements TransportInterface
     }
 
     /**
-     * @return mixed[]|string[]|null
+     * @return mixed[]|string[]
      */
     public function getOptions(): array
     {

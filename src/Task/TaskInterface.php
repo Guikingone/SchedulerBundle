@@ -7,6 +7,7 @@ namespace SchedulerBundle\Task;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -100,6 +101,22 @@ interface TaskInterface
     public function beforeScheduling(callable $beforeSchedulingCallable = null): TaskInterface;
 
     public function getBeforeScheduling();
+
+    public function beforeSchedulingNotificationBag(NotificationTaskBag $beforeSchedulingNotificationBag = null): TaskInterface;
+
+    public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag;
+
+    public function afterSchedulingNotificationBag(NotificationTaskBag $afterSchedulingNotificationBag = null): TaskInterface;
+
+    public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag;
+
+    public function beforeExecutingNotificationBag(NotificationTaskBag $beforeExecutingNotificationBag = null): TaskInterface;
+
+    public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag;
+
+    public function afterExecutingNotificationBag(NotificationTaskBag $afterExecutingNotificationBag = null): TaskInterface;
+
+    public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface;
 

@@ -17,6 +17,9 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function call_user_func;
@@ -62,13 +65,24 @@ final class Scheduler implements SchedulerInterface
      */
     private $bus;
 
-    public function __construct(string $timezone, TransportInterface $transport, EventDispatcherInterface $eventDispatcher = null, MessageBusInterface $bus = null)
-    {
+    /**
+     * @var NotifierInterface|null
+     */
+    private $notifier;
+
+    public function __construct(
+        string $timezone,
+        TransportInterface $transport,
+        EventDispatcherInterface $eventDispatcher = null,
+        MessageBusInterface $bus = null,
+        NotifierInterface $notifier = null
+    ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
         $this->transport = $transport;
         $this->eventDispatcher = $eventDispatcher;
         $this->bus = $bus;
+        $this->notifier = $notifier;
     }
 
     /**
@@ -78,6 +92,11 @@ final class Scheduler implements SchedulerInterface
     {
         if (null !== $task->getBeforeScheduling() && false === call_user_func($task->getBeforeScheduling(), $task)) {
             throw new RuntimeException('The task cannot be scheduled');
+        }
+
+        if (null !== $task->getBeforeSchedulingNotificationBag()) {
+            $bag = $task->getBeforeSchedulingNotificationBag();
+            $this->notify($bag->getNotification(), $bag->getRecipients());
         }
 
         $task->setScheduledAt($this->getSynchronizedCurrentDate());
@@ -98,6 +117,11 @@ final class Scheduler implements SchedulerInterface
             $this->unschedule($task->getName());
 
             throw new RuntimeException('The task has encounter an error after scheduling, it has been unscheduled');
+        }
+
+        if (null !== $task->getAfterSchedulingNotificationBag()) {
+            $bag = $task->getAfterSchedulingNotificationBag();
+            $this->notify($bag->getNotification(), $bag->getRecipients());
         }
     }
 
@@ -200,6 +224,19 @@ final class Scheduler implements SchedulerInterface
         }
 
         $this->eventDispatcher->dispatch($event);
+    }
+
+    /**
+     * @param Notification $notification
+     * @param Recipient[]  $recipients
+     */
+    private function notify(Notification $notification, array $recipients): void
+    {
+        if (null === $this->notifier) {
+            return;
+        }
+
+        $this->notifier->send($notification, ...$recipients);
     }
 
     private function getSynchronizedCurrentDate(): DateTimeImmutable
