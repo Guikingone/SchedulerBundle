@@ -83,6 +83,6 @@ jobs:
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
-        run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=70 --show-mutations
+        run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=75 --show-mutations
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks

@@ -19,8 +19,10 @@ use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskExecutionSubscriber;
+use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
+use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -594,6 +596,26 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => StopWorkerOnSignalSubscriber::class,
+            ])
+        ;
+
+        $container->register(TaskLifecycleSubscriber::class, TaskLifecycleSubscriber::class)
+            ->setArguments([
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => TaskLifecycleSubscriber::class,
+            ])
+        ;
+
+        $container->register(WorkerLifecycleSubscriber::class, WorkerLifecycleSubscriber::class)
+            ->setArguments([
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => WorkerLifecycleSubscriber::class,
             ])
         ;
     }

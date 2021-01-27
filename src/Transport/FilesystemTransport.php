@@ -99,15 +99,15 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function update(string $taskName, TaskInterface $updatedTask): void
+    public function update(string $name, TaskInterface $updatedTask): void
     {
-        if (!$this->fileExist($taskName)) {
+        if (!$this->fileExist($name)) {
             $this->create($updatedTask);
 
             return;
         }
 
-        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $taskName));
+        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $name));
         $this->create($updatedTask);
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
-use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\DBALException;
@@ -25,6 +24,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+use function class_exists;
 use function sprintf;
 
 /**
@@ -170,9 +170,9 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function update(string $name, TaskInterface $updatedTask): void
+    public function update(string $taskName, TaskInterface $updatedTask): void
     {
-        $this->prepareUpdate($name, $updatedTask);
+        $this->prepareUpdate($taskName, $updatedTask);
     }
 
     /**
