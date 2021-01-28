@@ -30,7 +30,11 @@ final class MessengerTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
-        $task->setExecutionState(TaskInterface::RUNNING);
+        if (!$task instanceof MessengerTask) {
+            $task->setExecutionState(TaskInterface::ERRORED);
+
+            return new Output($task, null, Output::ERROR);
+        }
 
         try {
             if (null === $this->bus) {

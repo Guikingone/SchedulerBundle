@@ -48,6 +48,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
@@ -122,7 +123,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
     }
 
-    public function registerAutoConfigure(ContainerBuilder $container): void
+    private function registerAutoConfigure(ContainerBuilder $container): void
     {
         $container->registerForAutoconfiguration(RunnerInterface::class)->addTag('scheduler.runner');
         $container->registerForAutoconfiguration(TransportInterface::class)->addTag('scheduler.transport');
@@ -534,10 +535,21 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('serializer.normalizer.datetimezone'),
                 new Reference('serializer.normalizer.dateinterval'),
                 new Reference('serializer.normalizer.object'),
+                new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
                 'class' => TaskNormalizer::class,
+            ])
+        ;
+
+        $container->register(NotificationTaskBagNormalizer::class, NotificationTaskBagNormalizer::class)
+            ->setArguments([
+                new Reference('serializer.normalizer.object'),
+            ])
+            ->addTag('serializer.normalizer')
+            ->addTag('container.preload', [
+                'class' => NotificationTaskBagNormalizer::class,
             ])
         ;
     }

@@ -21,6 +21,14 @@ final class CommandTaskTest extends TestCase
         new CommandTask('test', '', [], ['--env' => 'test']);
     }
 
+    public function testCommandCanBeCreatedWithoutArgumentsAndOptions(): void
+    {
+        $task = new CommandTask('test', 'app:foo');
+
+        self::assertEmpty($task->getArguments());
+        self::assertEmpty($task->getOptions());
+    }
+
     public function testCommandCanBeCreatedWithValidArguments(): void
     {
         $task = new CommandTask('test', 'app:foo', ['test'], ['--env' => 'test']);

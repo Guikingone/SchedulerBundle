@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Task;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\CallbackTask;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -15,8 +16,10 @@ final class CallbackTaskTest extends TestCase
 {
     public function testTaskCannotBeCreatedWithInvalidCallback(): void
     {
-        self::expectException(InvalidArgumentException::class);
-        new CallbackTask('foo', [$this, 'test']);
+        self::expectException(InvalidOptionsException::class);
+        self::expectDeprecationMessage('The option "callback" with value 135 is expected to be of type "callable" or "string" or "array", but is of type "int"');
+        self::expectExceptionCode(0);
+        new CallbackTask('foo', 135);
     }
 
     public function testTaskCanBeCreatedWithValidCallable(): void

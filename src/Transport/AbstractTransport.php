@@ -30,7 +30,7 @@ abstract class AbstractTransport implements TransportInterface
         $resolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
         $resolver->setInfo('path', 'The path used to store the task (mainly used by FilesystemTransport)');
 
-        if (empty($additionalOptions)) {
+        if ($additionalOptions === []) {
             $this->options = $resolver->resolve($options);
         }
 

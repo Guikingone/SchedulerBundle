@@ -34,16 +34,12 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
     public function testPostGenerateSchemaCannotBeCalledWithoutValidTransport(): void
     {
         $secondTransport = $this->createMock(TransportInterface::class);
-        $connection = $this->createMock(Connection::class);
 
         $transport = $this->createMock(DoctrineTransport::class);
         $transport->expects(self::never())->method('configureSchema');
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects(self::once())->method('getConnection')->willReturn($connection);
-
         $event = $this->createMock(GenerateSchemaEventArgs::class);
-        $event->expects(self::once())->method('getEntityManager')->willReturn($entityManager);
+        $event->expects(self::never())->method('getEntityManager');
         $event->expects(self::never())->method('getSchema');
 
         $otherTransport = $this->createMock(TransportInterface::class);

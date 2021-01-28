@@ -20,6 +20,12 @@ final class ShellTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
+        if (!$task instanceof ShellTask) {
+            $task->setExecutionState(TaskInterface::ERRORED);
+
+            return new Output($task, null, Output::ERROR);
+        }
+
         $process = new Process(
             $task->getCommand(),
             $task->getCwd(),
@@ -27,8 +33,6 @@ final class ShellTaskRunner implements RunnerInterface
             null,
             $task->getTimeout()
         );
-
-        $task->setExecutionState(TaskInterface::RUNNING);
 
         if ($task->mustRunInBackground()) {
             $process->run(null, $task->getEnvironmentVariables());

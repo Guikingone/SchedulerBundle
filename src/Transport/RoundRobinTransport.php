@@ -35,9 +35,9 @@ final class RoundRobinTransport extends AbstractTransport
      */
     public function __construct(iterable $transports, array $options = [])
     {
-        $this->defineOptions(array_merge($options, [
+        $this->defineOptions(array_merge([
             'quantum' => 2,
-        ]), [
+        ], $options), [
             'quantum' => ['int'],
         ]);
 
@@ -125,6 +125,11 @@ final class RoundRobinTransport extends AbstractTransport
         });
     }
 
+    /**
+     * @param Closure $func
+     *
+     * @return mixed
+     */
     private function execute(Closure $func)
     {
         if (empty($this->transports)) {

@@ -34,8 +34,11 @@ final class Output
      */
     private $type;
 
-    public function __construct(TaskInterface $task, ?string $output = 'undefined', string $type = self::SUCCESS)
-    {
+    public function __construct(
+        TaskInterface $task,
+        ?string $output = 'undefined',
+        string $type = self::SUCCESS
+    ) {
         $this->task = $task;
         $this->output = $output;
         $this->type = $type;

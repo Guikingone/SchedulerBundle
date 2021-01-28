@@ -19,7 +19,7 @@ use function sprintf;
 final class InMemoryTransport extends AbstractTransport
 {
     /**
-     * @var TaskInterface[]|mixed[]
+     * @var array<string, TaskInterface>
      */
     private $tasks = [];
 
@@ -40,7 +40,11 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function get(string $taskName): TaskInterface
     {
-        return $this->list()->get($taskName);
+        if (!array_key_exists($taskName, $this->tasks)) {
+            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $taskName));
+        }
+
+        return $this->tasks[$taskName];
     }
 
     /**
@@ -69,7 +73,13 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function update(string $name, TaskInterface $updatedTask): void
     {
-        $this->list()->offsetSet($name, $updatedTask);
+        if (!array_key_exists($name, $this->tasks)) {
+            $this->create($updatedTask);
+
+            return;
+        }
+
+        $this->tasks[$name] = $updatedTask;
     }
 
     /**
@@ -85,11 +95,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function pause(string $taskName): void
     {
-        $task = $this->list()->get($taskName);
-        if (!$task instanceof TaskInterface) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $taskName));
-        }
-
+        $task = $this->get($taskName);
         if (TaskInterface::PAUSED === $task->getState()) {
             throw new LogicException(sprintf('The task "%s" is already paused', $task->getName()));
         }
@@ -103,8 +109,8 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function resume(string $taskName): void
     {
-        $task = $this->list()->get($taskName);
-        if (!$task instanceof TaskInterface || TaskInterface::ENABLED === $task->getState()) {
+        $task = $this->get($taskName);
+        if (TaskInterface::ENABLED === $task->getState()) {
             return;
         }
 

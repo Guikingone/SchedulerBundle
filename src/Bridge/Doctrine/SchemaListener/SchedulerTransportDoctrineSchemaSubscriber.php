@@ -37,13 +37,12 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
 
     public function postGenerateSchema(GenerateSchemaEventArgs $event): void
     {
-        $connection = $event->getEntityManager()->getConnection();
         foreach ($this->transports as $transport) {
             if (!$transport instanceof DoctrineTransport) {
                 continue;
             }
 
-            $transport->configureSchema($event->getSchema(), $connection);
+            $transport->configureSchema($event->getSchema(), $event->getEntityManager()->getConnection());
         }
     }
 

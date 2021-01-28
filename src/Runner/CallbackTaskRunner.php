@@ -9,6 +9,7 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use Throwable;
 use function call_user_func_array;
+use function is_string;
 use function trim;
 
 /**
@@ -27,8 +28,6 @@ final class CallbackTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        $task->setExecutionState(TaskInterface::RUNNING);
-
         try {
             $output = call_user_func_array($task->getCallback(), $task->getArguments());
 
@@ -40,7 +39,7 @@ final class CallbackTaskRunner implements RunnerInterface
 
             $task->setExecutionState(TaskInterface::SUCCEED);
 
-            return new Output($task, trim((string) $output));
+            return new Output($task, trim(!is_string($output) ? (string) $output : $output));
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 

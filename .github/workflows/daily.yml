@@ -33,7 +33,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: zip, xdebug
+          extensions: zip, xdebug, redis
           coverage: xdebug
         env:
           update: true
@@ -55,11 +55,11 @@ jobs:
 
       - name: Install Composer dependencies
         if: matrix.composer-dependencies == ''
-        run: composer update
+        run: composer update --no-suggest
 
       - name: Install Composer dependencies - Lowest
         if: matrix.composer-dependencies == 'lowest'
-        run: composer update --prefer-lowest
+        run: composer update --no-suggest --prefer-lowest
 
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER

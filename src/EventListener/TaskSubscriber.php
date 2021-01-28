@@ -6,6 +6,7 @@ namespace SchedulerBundle\EventListener;
 
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,20 +52,26 @@ final class TaskSubscriber implements EventSubscriberInterface
     private $serializer;
 
     /**
-     * @var LoggerInterface|null
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * @param string $tasksPath The path that trigger this listener
      */
-    public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, SerializerInterface $serializer, LoggerInterface $logger = null, string $tasksPath = '/_tasks')
-    {
+    public function __construct(
+        SchedulerInterface $scheduler,
+        WorkerInterface $worker,
+        EventDispatcherInterface $eventDispatcher,
+        SerializerInterface $serializer,
+        LoggerInterface $logger = null,
+        string $tasksPath = '/_tasks'
+    ) {
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
-        $this->logger = $logger;
+        $this->logger = $logger ?: new NullLogger();
         $this->tasksPath = $tasksPath;
     }
 

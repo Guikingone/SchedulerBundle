@@ -41,10 +41,10 @@ final class FilesystemTransport extends AbstractTransport
 
     public function __construct(string $path = null, array $options = [], SerializerInterface $serializer = null, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
     {
-        $this->defineOptions(array_merge($options, [
+        $this->defineOptions(array_merge([
             'path' => $path ?? sys_get_temp_dir(),
             'filename_mask' => '%s/_symfony_scheduler_/%s.json',
-        ]), [
+        ], $options), [
             'path' => ['string'],
             'filename_mask' => ['string'],
         ]);

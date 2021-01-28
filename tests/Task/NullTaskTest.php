@@ -61,7 +61,7 @@ final class NullTaskTest extends TestCase
     public function testTaskCannotBeCreatedWithInvalidBeforeScheduling(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "before_scheduling" with value "foo" is expected to be of type "callable" or "array" or "null", but is of type "string"');
+        self::expectExceptionMessage('The option "before_scheduling" with value "foo" is expected to be of type "callable" or "null", but is of type "string"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'before_scheduling' => 'foo',
@@ -208,6 +208,26 @@ final class NullTaskTest extends TestCase
         $task->setBackground(true);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidExecutionMemoryUsage(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_memory_usage" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_memory_usage' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidTrackedOption(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "tracked" with value 135 is expected to be of type "bool", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'tracked' => 135,
+        ]);
+    }
+
     /**
      * @dataProvider provideNice
      */
@@ -229,6 +249,27 @@ final class NullTaskTest extends TestCase
         self::expectExceptionMessage('The date cannot be previous to the current date');
         self::expectExceptionCode(0);
         $task->setExecutionStartDate('- 10 minutes');
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidOutputToStoreOption(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "output_to_store" with value 123 is expected to be of type "bool", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'output_to_store' => 123,
+        ]);
+    }
+
+    public function testTaskCanDefineToStoreOutput(): void
+    {
+        $task = new NullTask('foo');
+        $task->storeOutput(true);
+
+        self::assertTrue($task->mustStoreOutput());
+
+        $task->storeOutput(false);
+        self::assertFalse($task->mustStoreOutput());
     }
 
     public function testTaskCanBeCreatedWithDate(): void

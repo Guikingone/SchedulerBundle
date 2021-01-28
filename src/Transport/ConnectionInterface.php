@@ -15,7 +15,7 @@ interface ConnectionInterface
     public function create(TaskInterface $task): void;
 
     /**
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function list(): TaskListInterface;
 

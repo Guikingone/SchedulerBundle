@@ -22,10 +22,55 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnFailureLimitSubscriber::getSubscribedEvents());
     }
 
+    public function testSubscriberCannotStopWorkerWhenIdle(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('stop');
+
+        $workerStartedEvent = new WorkerRunningEvent($worker, false);
+
+        $subscriber = new StopWorkerOnFailureLimitSubscriber(0, $logger);
+        $subscriber->onTaskFailedEvent();
+        $subscriber->onWorkerStarted($workerStartedEvent);
+    }
+
+    public function testSubscriberCannotStopWorkerWhenLimitNotReached(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('stop');
+
+        $workerStartedEvent = new WorkerRunningEvent($worker, true);
+
+        $subscriber = new StopWorkerOnFailureLimitSubscriber(2, $logger);
+        $subscriber->onTaskFailedEvent();
+        $subscriber->onWorkerStarted($workerStartedEvent);
+    }
+
+    public function testSubscriberCannotStopWorkerWhenWorkerIsNotIdleButLimitIsReached(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('stop');
+
+        $workerStartedEvent = new WorkerRunningEvent($worker, false);
+
+        $subscriber = new StopWorkerOnFailureLimitSubscriber(0, $logger);
+        $subscriber->onTaskFailedEvent();
+        $subscriber->onWorkerStarted($workerStartedEvent);
+    }
+
     public function testSubscriberCanStopWorker(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info');
+        $logger->expects(self::once())->method('info')->with(self::equalTo('Worker has stopped due to the failure limit of 0 exceeded'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');

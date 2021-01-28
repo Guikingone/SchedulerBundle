@@ -85,7 +85,7 @@ final class Dsn
 
         parse_str($parsedDsn['query'] ?? '', $query);
 
-        $embeddedDsn = static::handleEmbeddedDsn($dsn);
+        $embeddedDsn = self::handleEmbeddedDsn($dsn);
 
         return new self($parsedDsn['scheme'], $parsedDsn['host'], $path, $user, $password, $port, array_merge($query, $embeddedDsn));
     }

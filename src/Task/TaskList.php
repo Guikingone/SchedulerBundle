@@ -9,6 +9,7 @@ use Closure;
 use InvalidArgumentException;
 use Throwable;
 use function array_filter;
+use function array_key_exists;
 use function array_map;
 use function array_values;
 use function count;
@@ -64,7 +65,7 @@ final class TaskList implements TaskListInterface
      */
     public function has(string $taskName): bool
     {
-        return isset($this->tasks[$taskName]);
+        return array_key_exists($taskName, $this->tasks);
     }
 
     /**
@@ -166,7 +167,6 @@ final class TaskList implements TaskListInterface
 
     /**
      * {@inheritdoc}
-     * @return TaskInterface[]
      */
     public function toArray(bool $keepKeys = true): array
     {
