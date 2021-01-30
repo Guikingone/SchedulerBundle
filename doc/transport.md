@@ -35,7 +35,7 @@ final class FooController
 }
 ```
 
-_Note: Using the transport without the scheduler can lead to edge issues as the scheduler is synchronized with it_
+_Note: Using the transport without the scheduler can lead to edge issues as the scheduler is synchronized with it._
 
 ## Configuration
 
@@ -86,7 +86,7 @@ scheduler_bundle:
         dsn: 'filesystem://first_in_first_out?path=/srv/app'
 ```
 
-_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration_
+_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration._
 
 ### Extra configuration
 
@@ -124,9 +124,9 @@ scheduler_bundle:
 
 ## LongTail
 
-The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transport, it's specifically designed
-to maximize the transport usage by always trying to use the transport with the lowest amount of tasks, 
-this approach can help when you're scheduling tasks in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
+The [LongTail](../src/Transport/LongTailTransport.php) allows to use multiple transports. It's specifically designed
+to maximize the transport usage by always trying to use the transport with the lowest amount of tasks. 
+This approach can help when you're scheduling tasks in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
 
 ### Usage
 
@@ -159,7 +159,7 @@ scheduler_bundle:
 The [RedisTransport](../src/Bridge/Redis/Transport/RedisTransport.php) allows to use Redis 
 as tasks storage, this transport is useful if you need to share tasks between multiple projects/instances.
 
-**Requirements**: The `Redis` transport requires redis >= 4.3 at least.
+**Requirements**: The `Redis` transport requires at least redis >= 4.3.
 
 ### Usage
 
@@ -172,13 +172,13 @@ scheduler_bundle:
 **configuration**: This transport requires multiple options:
 
 - The `user` of the Redis instance
-- The `password` related
+- The related `password`
 - The `host` of the Redis instance
 - The optional `port` of the Redis instance
 
 ### Extra configuration
 
-This transport can configure multiple options:
+This transport can be configured using multiple options:
 
 - `execution_mode`: Relates to default configuration keys.
 - `list`: Define the name of the list that store tasks.

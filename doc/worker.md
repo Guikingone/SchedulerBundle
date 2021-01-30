@@ -14,9 +14,9 @@ The worker uses a very simple approach and can act in two ways:
 
 The worker has been built to be able to "wait" due tasks, the approach is simple:
 
-- Once launched, the worker ask the scheduler to returns due tasks
-- If there's no due tasks, the worker use the current time and determine the "wait" period until the next minute.
-- If there are due tasks, the worker will call the registered runners to execute each task, once every task
+- Once launched, the worker asks the scheduler to return due tasks
+- If there are no due tasks, the worker uses the current time and determines the "wait" period until the next minute.
+- If there are due tasks, the worker will call the registered runners to execute each task. Once every task
 has been executed, the worker will determine the "wait" period until the next minute and "wait".
 
 ## Loop
