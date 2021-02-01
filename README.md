@@ -79,3 +79,5 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Messenger](doc/messenger.md)
 * [HTTP entrypoint](doc/http.md)
 * [Policies](doc/policies.md)
+* [Runners](doc/runners.md)
+* [Worker](doc/worker.md)
