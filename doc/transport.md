@@ -1,6 +1,6 @@
 # Transport
 
-Transports are the foundations behind the storage of tasks, once tasks are defined in the configuration
+Transports are the foundations behind the storage of tasks: once tasks are defined in the configuration
 or scheduled via the [Scheduler](../src/Scheduler.php), every task is stored via transports.
 
 Think of transports like the transports used by the following components in Symfony:
