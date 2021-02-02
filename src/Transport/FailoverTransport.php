@@ -18,7 +18,7 @@ use function array_merge;
 final class FailoverTransport extends AbstractTransport
 {
     /**
-     * @var SplObjectStorage
+     * @var SplObjectStorage<TransportInterface>
      */
     private $failedTransports;
 
@@ -32,9 +32,9 @@ final class FailoverTransport extends AbstractTransport
      */
     public function __construct(iterable $transports, array $options = [])
     {
-        $this->defineOptions(array_merge($options, [
+        $this->defineOptions(array_merge([
             'mode' => 'normal',
-        ]), [
+        ], $options), [
             'mode' => ['string'],
         ]);
 

@@ -11,7 +11,7 @@ use function array_merge;
  */
 final class ShellTask extends AbstractTask
 {
-    public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60, array $options = [])
+    public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60.0, array $options = [])
     {
         $this->defineOptions(array_merge([
             'command' => $command,

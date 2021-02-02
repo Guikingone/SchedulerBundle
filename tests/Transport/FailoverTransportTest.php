@@ -11,6 +11,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\FailoverTransport;
 use SchedulerBundle\Transport\TransportInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -25,6 +26,16 @@ final class FailoverTransportTest extends TestCase
 
         self::assertArrayHasKey('mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['mode']);
+    }
+
+    public function testTransportCannotBeCreatedWithInvalidConfiguration(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "mode" with value 135 is expected to be of type "string", but is of type "int"');
+        self::expectExceptionCode(0);
+        new FailoverTransport([], [
+            'mode' => 135,
+        ]);
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void

@@ -47,6 +47,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
@@ -503,7 +504,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ChainedTaskRunner::class, $container->getDefinition(ChainedTaskRunner::class)->getTag('container.preload')[0]['class']);
     }
 
-    public function testNormalizerIsRegistered(): void
+    public function testNormalizersAreRegistered(): void
     {
         $extension = new SchedulerBundleExtension();
 
@@ -525,9 +526,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(3));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(4));
         self::assertTrue($container->getDefinition(TaskNormalizer::class)->hasTag('serializer.normalizer'));
         self::assertTrue($container->getDefinition(TaskNormalizer::class)->hasTag('container.preload'));
         self::assertSame(TaskNormalizer::class, $container->getDefinition(TaskNormalizer::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(NotificationTaskBagNormalizer::class));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(NotificationTaskBagNormalizer::class)->hasTag('serializer.normalizer'));
+        self::assertTrue($container->getDefinition(NotificationTaskBagNormalizer::class)->hasTag('container.preload'));
+        self::assertSame(NotificationTaskBagNormalizer::class, $container->getDefinition(NotificationTaskBagNormalizer::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testMessengerToolsAreRegistered(): void

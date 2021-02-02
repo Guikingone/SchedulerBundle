@@ -27,11 +27,19 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * Return if the task exist in the list using its name.
+     *
+     * @param string $taskName
+     *
+     * @return bool
      */
     public function has(string $taskName): bool;
 
     /**
      * Return the desired task if found using its name, otherwise, null.
+     *
+     * @param string $taskName
+     *
+     * @return TaskInterface|null
      */
     public function get(string $taskName): ?TaskInterface;
 
@@ -47,17 +55,23 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     /**
      * Allow to filter the list using a custom filter, the $filter receive the task name and the TaskInterface object (in this order).
      *
+     * @param Closure $filter
+     *
      * @return TaskListInterface<string, TaskInterface>
      */
     public function filter(Closure $filter): self;
 
     /**
      * Remove the task in the actual list if the name is a valid one.
+     *
+     * @param string $taskName
      */
     public function remove(string $taskName): void;
 
     /**
      * Return the list as an array (using tasks name's as keys), if $keepKeys is false, the array is returned with indexed keys.
+     *
+     * @param bool $keepKeys
      *
      * @return array<string|int, TaskInterface>
      */

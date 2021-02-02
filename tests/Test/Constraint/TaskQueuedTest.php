@@ -42,8 +42,12 @@ final class TaskQueuedTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('isQueued')->willReturn(true);
 
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::never())->method('isQueued')->willReturn(false);
+
         $list = new TaskEventList();
         $list->addEvent(new TaskExecutedEvent($task));
+        $list->addEvent(new TaskExecutedEvent($secondTask));
         $list->addEvent(new TaskScheduledEvent($task));
 
         $constraint = new TaskQueued(1);

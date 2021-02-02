@@ -60,9 +60,9 @@ final class Worker implements WorkerInterface
     ];
 
     /**
-     * @var RunnerInterface[]|mixed[]
+     * @var RunnerInterface[]
      */
-    private $runners;
+    private $runners = [];
 
     /**
      * @var TaskExecutionTrackerInterface
@@ -349,7 +349,7 @@ final class Worker implements WorkerInterface
     private function getSleepDuration(): int
     {
         $nextExecutionDate = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $nextExecutionDate->setTime((int) $nextExecutionDate->format('H'), (int) $nextExecutionDate->format('i'), 0);
+        $updatedNextExecutionDate = $nextExecutionDate->setTime((int) $nextExecutionDate->format('H'), (int) $nextExecutionDate->format('i'));
 
         return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
     }

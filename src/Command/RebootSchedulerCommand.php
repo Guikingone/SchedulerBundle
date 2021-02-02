@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,7 +43,7 @@ final class RebootSchedulerCommand extends Command
     private $eventDispatcher;
 
     /**
-     * @var LoggerInterface|null
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -60,7 +61,7 @@ final class RebootSchedulerCommand extends Command
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger;
+        $this->logger = $logger ?: new NullLogger();
 
         parent::__construct();
     }

@@ -6,10 +6,13 @@ namespace Tests\SchedulerBundle\EventListener;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
+use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -21,6 +24,7 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function json_decode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -166,11 +170,13 @@ final class TaskSubscriberTest extends TestCase
 
     public function testResponseIsSetWhenWorkerSucceed(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $task = $this->createMock(TaskInterface::class);
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
+        $taskList->expects(self::once())->method('toArray')->with(self::equalTo(false))->willReturn([$task]);
         $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -184,16 +190,20 @@ final class TaskSubscriberTest extends TestCase
         $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
-        $eventSubscriber->expects(self::once())->method('addSubscriber');
+        $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
 
         $serializer = $this->createMock(Serializer::class);
-        $serializer->expects(self::once())->method('normalize')->with([$task], self::equalTo('json'));
+        $serializer->expects(self::once())->method('normalize')->with([$task], self::equalTo('json'))->willReturn([]);
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer, $logger);
         $subscriber->onKernelRequest($event);
 
         self::assertTrue($event->hasResponse());
         self::assertInstanceOf(JsonResponse::class, $event->getResponse());
         self::assertSame(JsonResponse::HTTP_OK, $event->getResponse()->getStatusCode());
+        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true));
+        self::assertSame(Response::HTTP_OK, json_decode($event->getResponse()->getContent(), true)['code']);
+        self::assertArrayHasKey('tasks', json_decode($event->getResponse()->getContent(), true));
+        self::assertEmpty(json_decode($event->getResponse()->getContent(), true)['tasks']);
     }
 }

@@ -33,6 +33,9 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
+     * @param array           $options
+     * @param TaskInterface[] $tasks
+     *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void;

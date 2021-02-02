@@ -30,7 +30,11 @@ final class NotificationTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task): Output
     {
-        $task->setExecutionState(TaskInterface::RUNNING);
+        if (!$task instanceof NotificationTask) {
+            $task->setExecutionState(TaskInterface::ERRORED);
+
+            return new Output($task, null, Output::ERROR);
+        }
 
         try {
             if (null === $this->notifier) {

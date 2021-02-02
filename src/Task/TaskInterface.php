@@ -210,6 +210,10 @@ interface TaskInterface
 
     public function setOutput(bool $output): self;
 
+    public function storeOutput(bool $storeOutput = false): TaskInterface;
+
+    public function mustStoreOutput(): bool;
+
     public function getPriority(): int;
 
     public function setPriority(int $priority): self;

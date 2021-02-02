@@ -13,11 +13,11 @@ final class CallbackTask extends AbstractTask
 {
     public function __construct(string $name, $callback, array $arguments = [], array $options = [])
     {
-        $this->defineOptions(array_merge([
+        $this->defineOptions(array_merge($options, [
             'callback' => $callback,
             'arguments' => $arguments,
-        ], $options), [
-            'callback' => ['callable', 'string'],
+        ]), [
+            'callback' => ['callable', 'string', 'array'],
             'arguments' => ['array', 'string[]'],
         ]);
 

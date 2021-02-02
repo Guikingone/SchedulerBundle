@@ -42,6 +42,20 @@ final class CallBackTaskRunnerTest extends TestCase
         self::assertSame($secondTask, $output->getTask());
     }
 
+    public function testRunnerCanExecuteValidTaskWithExtraSpacedOutput(): void
+    {
+        $runner = new CallbackTaskRunner();
+        $task = new CallbackTask('foo', function (): string {
+            return '   hello';
+        });
+
+        $output = $runner->run($task);
+
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame('hello', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+    }
+
     public function testRunnerCanExecuteValidTask(): void
     {
         $runner = new CallbackTaskRunner();
@@ -82,7 +96,7 @@ final class CallBackTaskRunnerTest extends TestCase
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
-    public function testRunnerCanExecuteInValidTask(): void
+    public function testRunnerCanExecuteInvalidTask(): void
     {
         $runner = new CallbackTaskRunner();
         $task = new CallbackTask('foo', function ($a, $b): int {
@@ -94,6 +108,34 @@ final class CallBackTaskRunnerTest extends TestCase
         self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+    }
+
+    public function testRunnerCanExecuteTaskWithFalseReturn(): void
+    {
+        $runner = new CallbackTaskRunner();
+        $task = new CallbackTask('foo', function (): bool {
+            return false;
+        });
+
+        $output = $runner->run($task);
+
+        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+    }
+
+    public function testRunnerCanExecuteTaskWithTrueReturn(): void
+    {
+        $runner = new CallbackTaskRunner();
+        $task = new CallbackTask('foo', function (): bool {
+            return true;
+        });
+
+        $output = $runner->run($task);
+
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame('1', $output->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }
 

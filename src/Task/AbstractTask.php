@@ -71,6 +71,7 @@ abstract class AbstractTask implements TaskInterface
             'max_duration' => null,
             'nice' => null,
             'output' => false,
+            'output_to_store' => false,
             'priority' => 0,
             'queued' => false,
             'scheduled_at' => null,
@@ -85,7 +86,7 @@ abstract class AbstractTask implements TaskInterface
 
         $resolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('background', ['bool']);
-        $resolver->setAllowedTypes('before_scheduling', ['callable', 'array', 'null']);
+        $resolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
         $resolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
         $resolver->setAllowedTypes('after_scheduling_notification', [NotificationTaskBag::class, 'null']);
         $resolver->setAllowedTypes('before_executing_notification', [NotificationTaskBag::class, 'null']);
@@ -108,6 +109,7 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedTypes('max_duration', ['float', 'null']);
         $resolver->setAllowedTypes('nice', ['int', 'null']);
         $resolver->setAllowedTypes('output', ['bool']);
+        $resolver->setAllowedTypes('output_to_store', ['bool']);
         $resolver->setAllowedTypes('priority', ['int']);
         $resolver->setAllowedTypes('queued', ['bool']);
         $resolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
@@ -155,6 +157,7 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
         $resolver->setInfo('nice', 'Define a priority for this task inside a runner, a high value means a lower priority in the runner');
         $resolver->setInfo('output', 'Define if the output of the task must be returned by the worker');
+        $resolver->setInfo('output_to_store', 'Define if the output of the task must be stored');
         $resolver->setInfo('scheduled_at', 'Define the date where the task has been scheduled');
         $resolver->setInfo('single_run', 'Define if the task must run only once, if so, the task is unscheduled from the scheduler once executed');
         $resolver->setInfo('state', 'Define the state of the task, mainly used by the worker and transports to execute enabled tasks');
@@ -164,7 +167,7 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setInfo('tracked', 'Define if the task will be tracked during execution, this option enable the "duration" sort');
         $resolver->setInfo('timezone', 'Define the timezone used by the task, this value is set by the Scheduler and can be overridden');
 
-        if (empty($additionalOptions)) {
+        if ($additionalOptions === []) {
             $this->options = $resolver->resolve($options);
         }
 
@@ -561,6 +564,18 @@ abstract class AbstractTask implements TaskInterface
         $this->options['output'] = $output;
 
         return $this;
+    }
+
+    public function storeOutput(bool $storeOutput = false): TaskInterface
+    {
+        $this->options['output_to_store'] = $storeOutput;
+
+        return $this;
+    }
+
+    public function mustStoreOutput(): bool
+    {
+        return $this->options['output_to_store'];
     }
 
     public function getPriority(): int

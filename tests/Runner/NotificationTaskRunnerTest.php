@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\Output;
+use SchedulerBundle\Task\ShellTask;
 use Symfony\Component\Notifier\Exception\LogicException;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
@@ -31,6 +33,19 @@ final class NotificationTaskRunnerTest extends TestCase
 
         $task = new NotificationTask('test', $notification, $recipient);
         self::assertTrue($runner->support($task));
+    }
+
+    public function testRunnerCannotRunInvalidTask(): void
+    {
+        $task = new ShellTask('foo', ['ls', '-al']);
+
+        $runner = new NotificationTaskRunner();
+        $output = $runner->run($task);
+
+        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertNull($output->getOutput());
+        self::assertSame(Output::ERROR, $output->getType());
+        self::assertSame($task, $output->getTask());
     }
 
     public function testRunnerCanReturnOutputWithoutNotifier(): void

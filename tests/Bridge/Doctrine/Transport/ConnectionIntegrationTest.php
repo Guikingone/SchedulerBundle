@@ -9,6 +9,7 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -53,7 +54,7 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';

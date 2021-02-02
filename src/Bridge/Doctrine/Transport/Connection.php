@@ -24,7 +24,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
-use function class_exists;
+use function array_map;
 use function sprintf;
 
 /**
@@ -74,19 +74,15 @@ final class Connection implements ConnectionInterface
      */
     public function list(): TaskListInterface
     {
-        $taskList = new TaskList();
-
         try {
             $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
 
             $statement = $this->executeQuery($query->getSQL());
             $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
 
-            foreach ($tasks as $task) {
-                $taskList->add($this->serializer->deserialize($task['body'], TaskInterface::class, 'json'));
-            }
-
-            return $taskList;
+            return new TaskList(array_map(function (array $task): TaskInterface {
+                return $this->serializer->deserialize($task['body'], TaskInterface::class, 'json');
+            }, $tasks));
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }

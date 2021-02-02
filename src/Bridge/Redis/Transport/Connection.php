@@ -13,6 +13,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+use function array_map;
 use function sprintf;
 use function strpos;
 
@@ -70,22 +71,18 @@ final class Connection implements ConnectionInterface
      */
     public function list(): TaskListInterface
     {
-        $taskList = new TaskList();
         $listLength = $this->connection->hLen($this->list);
         if (false === $listLength) {
             throw new TransportException('The list is not initialized');
         }
 
         if (0 === $listLength) {
-            return $taskList;
+            return new TaskList();
         }
 
-        $keys = $this->connection->hKeys($this->list);
-        foreach ($keys as $key) {
-            $taskList->add($this->get($key));
-        }
-
-        return $taskList;
+        return new TaskList(array_map(function (string $name): TaskInterface {
+            return $this->get($name);
+        }, $this->connection->hKeys($this->list)));
     }
 
     /**
