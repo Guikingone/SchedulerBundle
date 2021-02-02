@@ -79,12 +79,12 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     {
         return [
             AbstractNormalizer::CALLBACKS => [
-                'recipients' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                'recipients' => function (array $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
                     return array_map(function (Recipient $recipient) use ($format, $context): array {
                         return $this->objectNormalizer->normalize($recipient, $format, $context);
                     }, $innerObject);
                 },
-                'notification' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                'notification' => function (Notification $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
                     return [
                         'subject' => $innerObject->getSubject(),
                         'content' => $innerObject->getContent(),
