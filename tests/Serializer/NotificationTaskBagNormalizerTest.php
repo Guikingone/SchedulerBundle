@@ -43,6 +43,13 @@ final class NotificationTaskBagNormalizerTest extends TestCase
         self::assertSame(NotificationTaskBag::class, $data['bag']);
         self::assertArrayHasKey('body', $data);
         self::assertArrayHasKey('notification', $data['body']);
+        self::assertArrayHasKey('subject', $data['body']['notification']);
+        self::assertArrayHasKey('content', $data['body']['notification']);
+        self::assertArrayHasKey('emoji', $data['body']['notification']);
+        self::assertArrayHasKey('channels', $data['body']['notification']);
+        self::assertCount(1, $data['body']['notification']['channels']);
+        self::assertContains('email', $data['body']['notification']['channels']);
+        self::assertArrayHasKey('importance', $data['body']['notification']);
         self::assertArrayHasKey('recipients', $data['body']);
         self::assertCount(1, $data['body']['recipients']);
         self::assertSame('test@test.fr', $data['body']['recipients'][0]['email']);
