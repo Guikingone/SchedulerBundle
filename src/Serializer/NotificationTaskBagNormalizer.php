@@ -36,7 +36,26 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     {
         return [
             'bag' => NotificationTaskBag::class,
-            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, $this->handleNormalizationCallbacks())),
+            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+                AbstractNormalizer::CALLBACKS => [
+                    'recipients' => function (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                        return array_map(function (Recipient $recipient) use ($format, $context): array {
+                            return $this->objectNormalizer->normalize($recipient, $format, $context);
+                        }, $innerObject);
+                    },
+                    'notification' => function (Notification $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                        return [
+                            'subject' => $innerObject->getSubject(),
+                            'content' => $innerObject->getContent(),
+                            'emoji' => $innerObject->getEmoji(),
+                            'channels' => array_merge(...array_map(function (Recipient $recipient) use ($innerObject): array {
+                                return $innerObject->getChannels($recipient);
+                            }, $outerObject->getRecipients())),
+                            'importance' => $innerObject->getImportance(),
+                        ];
+                    },
+                ],
+            ])),
         ];
     }
 
@@ -53,15 +72,13 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
      */
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
-        $body = $data['body'];
-
-        return $this->objectNormalizer->denormalize($body, $type, $format, [
+        return $this->objectNormalizer->denormalize($data['body'], $type, $format, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 NotificationTaskBag::class => [
-                    'notification' => $this->objectNormalizer->denormalize($body['notification'], Notification::class, $format, $context),
+                    'notification' => $this->objectNormalizer->denormalize($data['body']['notification'], Notification::class, $format, $context),
                     'recipients' => array_map(function (array $recipient) use ($format, $context): Recipient {
                         return $this->objectNormalizer->denormalize($recipient, Recipient::class, $format, $context);
-                    }, $body['recipients']),
+                    }, $data['body']['recipients']),
                 ],
             ],
         ]);
@@ -73,27 +90,5 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     public function supportsDenormalization($data, string $type, string $format = null)
     {
         return NotificationTaskBag::class === $type;
-    }
-
-    private function handleNormalizationCallbacks(): array
-    {
-        return [
-            AbstractNormalizer::CALLBACKS => [
-                'recipients' => function (array $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return array_map(function (Recipient $recipient) use ($format, $context): array {
-                        return $this->objectNormalizer->normalize($recipient, $format, $context);
-                    }, $innerObject);
-                },
-                'notification' => function (Notification $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return [
-                        'subject' => $innerObject->getSubject(),
-                        'content' => $innerObject->getContent(),
-                        'emoji' => $innerObject->getEmoji(),
-                        'channel' => $innerObject->getChannels(new Recipient('normalization', '')),
-                        'importance' => $innerObject->getImportance(),
-                    ];
-                },
-            ],
-        ];
     }
 }
