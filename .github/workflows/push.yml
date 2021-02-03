@@ -45,7 +45,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.composer-dependencies }}-${{ hashFiles('**/composer.json') }}
@@ -78,6 +78,13 @@ jobs:
         run: php vendor/bin/phpunit tests
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+
+      - name: Cache PHPUnit result
+        uses: actions/cache@v2
+        with:
+          path: ~/.phpunit.result.cache
+          key: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-${{ hashFiles('**/.phpunit.result.cache') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
