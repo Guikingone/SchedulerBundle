@@ -1,5 +1,5 @@
 name: SchedulerBundle - Push
-on: [push]
+on: [push, pull_request]
 jobs:
   scheduler_bundle:
     name: PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }}
