@@ -20,12 +20,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # https://github.com/azohra/shell-linter (community)
-      - name: Lint check
-        uses: azohra/shell-linter@v0.3.0
-        with:
-          path: "docker/php"
-
       # https://github.com/shivammathur/setup-php (community)
       - name: Setup PHP, extensions and composer with shivammathur/setup-php
         uses: shivammathur/setup-php@v2
@@ -53,11 +47,11 @@ jobs:
 
       - name: Install Composer dependencies
         if: matrix.composer-dependencies == ''
-        run: composer update --no-suggest
+        run: composer update
 
       - name: Install Composer dependencies - Lowest
         if: matrix.composer-dependencies == 'lowest'
-        run: composer update --no-suggest --prefer-lowest
+        run: composer update --prefer-lowest
 
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER
@@ -67,6 +61,7 @@ jobs:
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
+        if: matrix.php-versions != '8.0'
         run: php vendor/bin/rector process --dry-run --clear-cache
 
       # —— PHPUnit ———————————————————————————————————————————————————————
@@ -76,7 +71,7 @@ jobs:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
 
       - name: Cache PHPUnit result
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.phpunit.result.cache
           key: ${{ runner.os }}-phpunit-${{ matrix.php-versions }}-${{ hashFiles('**/.phpunit.result.cache') }}
