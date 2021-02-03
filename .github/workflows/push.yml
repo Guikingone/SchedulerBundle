@@ -9,6 +9,7 @@ jobs:
       fail-fast: true
       matrix:
         php-versions: ['7.2', '7.3', '7.4', '8.0']
+        phpunit-bridge-version: ['8.5', '8.5', '8.5', '9.5']
         composer-dependencies: ['', 'lowest']
     services:
       redis:
@@ -69,6 +70,7 @@ jobs:
         run: php vendor/bin/phpunit tests
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+          SYMFONY_PHPUNIT_VERSION: ${{ matrix.phpunit-bridge-version }}
 
       - name: Cache PHPUnit result
         uses: actions/cache@v2
@@ -82,3 +84,4 @@ jobs:
         run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=75 --show-mutations
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+          SYMFONY_PHPUNIT_VERSION: ${{ matrix.phpunit-bridge-version }}
