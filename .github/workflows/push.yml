@@ -45,11 +45,11 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ matrix.composer-dependencies }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-${{ matrix.composer-dependencies }}-
+          key: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-
 
       - name: Install Composer dependencies
         if: matrix.composer-dependencies == ''
@@ -61,9 +61,7 @@ jobs:
 
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER
-        uses: docker://oskarstark/php-cs-fixer-ga
-        with:
-          args: --dry-run .
+        run: php vendor/bin/php-cs-fixer fix .
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
@@ -74,6 +72,13 @@ jobs:
         run: php vendor/bin/phpunit tests
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+
+      - name: Cache PHPUnit result
+        uses: actions/cache@v1
+        with:
+          path: ~/.phpunit.result.cache
+          key: ${{ runner.os }}-phpunit-${{ matrix.php-versions }}-${{ hashFiles('**/.phpunit.result.cache') }}
+          restore-keys: ${{ runner.os }}-phpunit-${{ matrix.php-versions }}-
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
