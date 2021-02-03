@@ -17,7 +17,7 @@ final class CallbackTaskTest extends TestCase
     public function testTaskCannotBeCreatedWithInvalidCallback(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectDeprecationMessage('The option "callback" with value 135 is expected to be of type "callable" or "string" or "array", but is of type "int"');
+        self::expectExceptionMessage('The option "callback" with value 135 is expected to be of type "callable" or "string" or "array", but is of type "int"');
         self::expectExceptionCode(0);
         new CallbackTask('foo', 135);
     }
