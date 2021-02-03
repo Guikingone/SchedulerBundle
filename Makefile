@@ -52,7 +52,7 @@ rector: rector.php
 
 tests: ## Launch the PHPUnit tests
 tests: phpunit.xml.dist
-	$(PHP) vendor/bin/phpunit tests
+	$(PHP) vendor/bin/simple-phpunit tests
 
 infection: ## Launch Infection
 infection: infection.json.dist

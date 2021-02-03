@@ -2,14 +2,31 @@ name: SchedulerBundle - Push
 on: [push, pull_request]
 jobs:
   scheduler_bundle:
-    name: PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }}
+    name: PHP ${{ matrix.php-version }} - phpunit ${{ matrix.phpunit-version }} - ${{ matrix.composer-dependencies }}
     # https://hub.docker.com/_/ubuntu/
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.2', '7.3', '7.4']
-        composer-dependencies: ['', 'lowest']
+        include:
+          - php-version: '7.2'
+            composer-dependencies: ''
+            phpunit-version: '8.5'
+          - php-version: '7.2'
+            composer-dependencies: 'lowest'
+            phpunit-version: '8.5'
+          - php-version: '7.3'
+            composer-dependencies: ''
+            phpunit-version: '9.5'
+          - php-version: '7.3'
+            composer-dependencies: 'lowest'
+            phpunit-version: '9.5'
+          - php-version: '7.4'
+            composer-dependencies: ''
+            phpunit-version: '9.5'
+          - php-version: '7.4'
+            composer-dependencies: 'lowest'
+            phpunit-version: '9.5'
     services:
       redis:
         image: redis:6.0.0
@@ -30,7 +47,7 @@ jobs:
       - name: Setup PHP, extensions and composer with shivammathur/setup-php
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php-version }}
           extensions: zip, xdebug, redis
           coverage: xdebug
         env:
@@ -65,6 +82,20 @@ jobs:
         with:
           args: --dry-run .
 
+      # —— PHPUnit ———————————————————————————————————————————————————————
+      - name: PHPUnit
+        run: php vendor/bin/simple-phpunit tests
+        env:
+          SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+          SYMFONY_PHPUNIT_VERSION: ${{ matrix.phpunit-version }}
+
+      - name: Cache PHPUnit result
+        uses: actions/cache@v2
+        with:
+          path: ~/.phpunit.result.cache
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.composer-dependencies }}-${{ hashFiles('**/.phpunit.result.cache') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.composer-dependencies }}-
+
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
         run: php vendor/bin/rector process --dry-run --clear-cache
@@ -73,21 +104,9 @@ jobs:
 #      - name: PHPStan
 #        run: php vendor/bin/phpstan analyze
 
-      # —— PHPUnit ———————————————————————————————————————————————————————
-      - name: PHPUnit
-        run: php vendor/bin/phpunit tests
-        env:
-          SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
-
-      - name: Cache PHPUnit result
-        uses: actions/cache@v2
-        with:
-          path: ~/.phpunit.result.cache
-          key: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-${{ hashFiles('**/.phpunit.result.cache') }}
-          restore-keys: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-
-
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
         run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=75 --show-mutations --threads=4
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+          SYMFONY_PHPUNIT_VERSION: ${{ matrix.phpunit-version }}

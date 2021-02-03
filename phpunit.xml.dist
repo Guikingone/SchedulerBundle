@@ -10,6 +10,7 @@
 >
     <php>
         <ini name="error_reporting" value="-1" />
+        <server name="SYMFONY_DEPRECATIONS_HELPER" value="quiet[]=indirect" />
     </php>
 
     <testsuites>
