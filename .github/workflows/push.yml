@@ -61,7 +61,9 @@ jobs:
 
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER
-        run: php vendor/bin/php-cs-fixer fix .
+        uses: docker://oskarstark/php-cs-fixer-ga
+        with:
+          args: --dry-run .
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
