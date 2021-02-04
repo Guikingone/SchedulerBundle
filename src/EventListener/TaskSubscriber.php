@@ -73,12 +73,12 @@ final class TaskSubscriber implements EventSubscriberInterface
 
         if (array_key_exists('name', $query) && $name = $query['name']) {
             $request->attributes->set('task_filter', $name);
-            $tasks->filter(fn(TaskInterface $task): bool => $name === $task->getName());
+            $tasks->filter(fn (TaskInterface $task): bool => $name === $task->getName());
         }
 
         if (array_key_exists('expression', $query) && $expression = $query['expression']) {
             $request->attributes->set('task_filter', $expression);
-            $tasks->filter(fn(TaskInterface $task): bool => $expression === $task->getExpression());
+            $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));

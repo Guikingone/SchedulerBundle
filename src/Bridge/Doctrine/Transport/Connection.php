@@ -68,7 +68,7 @@ final class Connection implements ConnectionInterface
             $statement = $this->executeQuery($query->getSQL());
             $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
 
-            return new TaskList(array_map(fn(array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+            return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }

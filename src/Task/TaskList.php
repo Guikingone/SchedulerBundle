@@ -81,7 +81,7 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        return new self(array_filter($this->tasks, fn(TaskInterface $task): bool => in_array($task->getName(), $names, true)));
+        return new self(array_filter($this->tasks, fn (TaskInterface $task): bool => in_array($task->getName(), $names, true)));
     }
 
     /**

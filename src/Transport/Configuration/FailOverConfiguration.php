@@ -52,7 +52,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function get(string $key)
     {
-        return $this->execute(fn(ConfigurationInterface $configuration) => $configuration->get($key));
+        return $this->execute(fn (ConfigurationInterface $configuration) => $configuration->get($key));
     }
 
     /**
@@ -70,7 +70,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function getOptions(): array
     {
-        return $this->execute(fn(ConfigurationInterface $configuration): array => $configuration->getOptions());
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
     }
 
     private function execute(Closure $func)

@@ -44,7 +44,7 @@ final class FailoverTransport extends AbstractTransport
      */
     public function get(string $name): TaskInterface
     {
-        return $this->execute(fn(TransportInterface $transport): TaskInterface => $transport->get($name));
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
     }
 
     /**
@@ -52,7 +52,7 @@ final class FailoverTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->execute(fn(TransportInterface $transport): TaskListInterface => $transport->list());
+        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list());
     }
 
     /**

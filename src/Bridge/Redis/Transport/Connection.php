@@ -74,7 +74,7 @@ final class Connection implements ConnectionInterface
             return new TaskList();
         }
 
-        return new TaskList(array_map(fn(string $name): TaskInterface => $this->get($name), $this->connection->hKeys($this->list)));
+        return new TaskList(array_map(fn (string $name): TaskInterface => $this->get($name), $this->connection->hKeys($this->list)));
     }
 
     /**

@@ -84,11 +84,11 @@ EOF
         }
 
         if (null !== $state = $input->getOption('state')) {
-            $tasks = $tasks->filter(fn(TaskInterface $task): bool => $state === $task->getState());
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $state === $task->getState());
         }
 
         if (null !== $expression = $input->getOption('expression')) {
-            $tasks = $tasks->filter(fn(TaskInterface $task): bool => $expression === $task->getExpression());
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         $tasks = $tasks->toArray();

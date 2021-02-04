@@ -37,7 +37,7 @@ final class LongTailTransport extends AbstractTransport
      */
     public function get(string $name): TaskInterface
     {
-        return $this->execute(fn(TransportInterface $transport): TaskInterface => $transport->get($name));
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
     }
 
     /**
@@ -45,7 +45,7 @@ final class LongTailTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->execute(fn(TransportInterface $transport): TaskListInterface => $transport->list());
+        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list());
     }
 
     /**
@@ -117,7 +117,7 @@ final class LongTailTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        usort($this->transports, fn(TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() > $nextTransport->list()->count() ? 1 : -1);
+        usort($this->transports, fn (TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() > $nextTransport->list()->count() ? 1 : -1);
 
         $transport = reset($this->transports);
 

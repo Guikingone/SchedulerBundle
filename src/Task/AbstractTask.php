@@ -117,13 +117,13 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedTypes('tracked', ['bool']);
         $resolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
-        $resolver->setAllowedValues('expression', fn(string $expression): bool => $this->validateExpression($expression));
-        $resolver->setAllowedValues('execution_start_date', fn(string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
-        $resolver->setAllowedValues('execution_end_date', fn(string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
-        $resolver->setAllowedValues('nice', fn(int $nice = null): bool => $this->validateNice($nice));
-        $resolver->setAllowedValues('priority', fn(int $priority): bool => $this->validatePriority($priority));
-        $resolver->setAllowedValues('state', fn(string $state): bool => $this->validateState($state));
-        $resolver->setAllowedValues('execution_state', fn(string $executionState = null): bool => $this->validateExecutionState($executionState));
+        $resolver->setAllowedValues('expression', fn (string $expression): bool => $this->validateExpression($expression));
+        $resolver->setAllowedValues('execution_start_date', fn (string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
+        $resolver->setAllowedValues('execution_end_date', fn (string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
+        $resolver->setAllowedValues('nice', fn (int $nice = null): bool => $this->validateNice($nice));
+        $resolver->setAllowedValues('priority', fn (int $priority): bool => $this->validatePriority($priority));
+        $resolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
+        $resolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
 
         $resolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
         $resolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
