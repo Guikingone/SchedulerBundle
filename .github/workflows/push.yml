@@ -17,16 +17,16 @@ jobs:
             phpunit-version: '8.5'
           - php-version: '7.3'
             composer-dependencies: ''
-            phpunit-version: '9.5'
+            phpunit-version: '9.4'
           - php-version: '7.3'
             composer-dependencies: 'lowest'
-            phpunit-version: '9.5'
+            phpunit-version: '9.4'
           - php-version: '7.4'
             composer-dependencies: ''
-            phpunit-version: '9.5'
+            phpunit-version: '9.4'
           - php-version: '7.4'
             composer-dependencies: 'lowest'
-            phpunit-version: '9.5'
+            phpunit-version: '9.4'
     services:
       redis:
         image: redis:6.0.0
