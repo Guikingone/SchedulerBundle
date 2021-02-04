@@ -12,10 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskExecutingEvent extends Event implements TaskEventInterface
 {
-    /**
-     * @var TaskInterface
-     */
-    private $task;
+    private TaskInterface $task;
 
     public function __construct(TaskInterface $task)
     {

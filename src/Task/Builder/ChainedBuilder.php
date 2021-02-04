@@ -17,10 +17,7 @@ final class ChainedBuilder implements BuilderInterface
 {
     use TaskBuilderTrait;
 
-    /**
-     * @var iterable|BuilderInterface[]
-     */
-    private $builders;
+    private iterable $builders;
 
     /**
      * @param iterable|BuilderInterface[] $builders

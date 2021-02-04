@@ -21,15 +21,9 @@ use function sprintf;
  */
 final class RemoveFailedTaskCommand extends Command
 {
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
     /**
      * @var string
@@ -102,10 +96,8 @@ EOF
             $style->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
-        } else {
-            $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
-
-            return self::FAILURE;
         }
+        $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+        return self::FAILURE;
     }
 }

@@ -32,30 +32,18 @@ use function sprintf;
  */
 final class Connection implements ConnectionInterface
 {
-    /**
-     * @var bool
-     */
-    private $autoSetup;
+    private bool $autoSetup;
 
     /**
      * @var mixed[]
      */
-    private $configuration = [];
+    private array $configuration = [];
 
-    /**
-     * @var DBALConnection
-     */
-    private $driverConnection;
+    private DoctrineConnection $driverConnection;
 
-    /**
-     * @var SingleDatabaseSynchronizer
-     */
-    private $schemaSynchronizer;
+    private SingleDatabaseSynchronizer $schemaSynchronizer;
 
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
+    private SerializerInterface $serializer;
 
     /**
      * @param mixed[] $configuration
@@ -80,9 +68,7 @@ final class Connection implements ConnectionInterface
             $statement = $this->executeQuery($query->getSQL());
             $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
 
-            return new TaskList(array_map(function (array $task): TaskInterface {
-                return $this->serializer->deserialize($task['body'], TaskInterface::class, 'json');
-            }, $tasks));
+            return new TaskList(array_map(fn(array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage());
         }
@@ -264,10 +250,12 @@ final class Connection implements ConnectionInterface
 
     public function configureSchema(Schema $schema, DbalConnection $connection): void
     {
-        if ($connection !== $this->driverConnection || $schema->hasTable($this->configuration['table_name'])) {
+        if ($connection !== $this->driverConnection) {
             return;
         }
-
+        if ($schema->hasTable($this->configuration['table_name'])) {
+            return;
+        }
         $this->addTableToSchema($schema);
     }
 

@@ -656,7 +656,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                null !== $configuration['lock_store'] && 0 !== \strpos('@', $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
+                null !== $configuration['lock_store'] && 0 !== \strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.worker')

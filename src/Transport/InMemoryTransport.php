@@ -21,12 +21,9 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * @var array<string, TaskInterface>
      */
-    private $tasks = [];
+    private array $tasks = [];
 
-    /**
-     * @var SchedulePolicyOrchestratorInterface|null
-     */
-    private $orchestrator;
+    private ?SchedulePolicyOrchestratorInterface $orchestrator;
 
     public function __construct(array $options = [], SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
     {

@@ -12,15 +12,9 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerRunningEvent extends Event
 {
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
-    /**
-     * @var bool
-     */
-    private $idle;
+    private bool $idle;
 
     public function __construct(WorkerInterface $worker, bool $idle = false)
     {

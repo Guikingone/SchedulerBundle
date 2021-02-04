@@ -22,10 +22,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
      */
     public const NAME = 'scheduler';
 
-    /**
-     * @var TaskEventList
-     */
-    private $events;
+    private TaskEventList $events;
 
     public function __construct(TaskLoggerSubscriber $logger)
     {

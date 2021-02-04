@@ -27,25 +27,13 @@ use function sleep;
  */
 final class RebootSchedulerCommand extends Command
 {
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * @var string
@@ -97,9 +85,7 @@ EOF
         $io = new SymfonyStyle($input, $output);
 
         if ($input->getOption('dry-run')) {
-            $tasks = $this->scheduler->getTasks()->filter(function (TaskInterface $task): bool {
-                return ExpressionFactory::REBOOT_MACRO === $task->getExpression();
-            });
+            $tasks = $this->scheduler->getTasks()->filter(fn(TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
             if (empty($tasks)) {
                 $io->warning('The scheduler does not contain any tasks planned for the reboot process');
 
@@ -121,9 +107,7 @@ EOF
 
         $this->scheduler->reboot();
 
-        $tasks = $this->scheduler->getTasks()->filter(function (TaskInterface $task): bool {
-            return ExpressionFactory::REBOOT_MACRO === $task->getExpression();
-        });
+        $tasks = $this->scheduler->getTasks()->filter(fn(TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
 
         if (0 === $tasks->count()) {
             $io->success('The scheduler have been rebooted, no tasks have been executed');

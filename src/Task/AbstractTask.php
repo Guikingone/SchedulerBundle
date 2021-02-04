@@ -22,15 +22,12 @@ use function strtotime;
  */
 abstract class AbstractTask implements TaskInterface
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
     /**
      * @var mixed[]|DateTimeImmutable[]|bool[]|string[]|DateInterval[]|null[]|float[]|int[]|mixed[][]|DateTimeZone[]
      */
-    protected $options;
+    protected ?array $options;
 
     public function __construct(string $name)
     {
@@ -120,27 +117,13 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedTypes('tracked', ['bool']);
         $resolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
-        $resolver->setAllowedValues('expression', function (string $expression): bool {
-            return $this->validateExpression($expression);
-        });
-        $resolver->setAllowedValues('execution_start_date', function (string $executionStartDate = null): bool {
-            return $this->validateDate($executionStartDate);
-        });
-        $resolver->setAllowedValues('execution_end_date', function (string $executionEndDate = null): bool {
-            return $this->validateDate($executionEndDate);
-        });
-        $resolver->setAllowedValues('nice', function (int $nice = null): bool {
-            return $this->validateNice($nice);
-        });
-        $resolver->setAllowedValues('priority', function (int $priority): bool {
-            return $this->validatePriority($priority);
-        });
-        $resolver->setAllowedValues('state', function (string $state): bool {
-            return $this->validateState($state);
-        });
-        $resolver->setAllowedValues('execution_state', function (string $executionState = null): bool {
-            return $this->validateExecutionState($executionState);
-        });
+        $resolver->setAllowedValues('expression', fn(string $expression): bool => $this->validateExpression($expression));
+        $resolver->setAllowedValues('execution_start_date', fn(string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
+        $resolver->setAllowedValues('execution_end_date', fn(string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
+        $resolver->setAllowedValues('nice', fn(int $nice = null): bool => $this->validateNice($nice));
+        $resolver->setAllowedValues('priority', fn(int $priority): bool => $this->validatePriority($priority));
+        $resolver->setAllowedValues('state', fn(string $state): bool => $this->validateState($state));
+        $resolver->setAllowedValues('execution_state', fn(string $executionState = null): bool => $this->validateExecutionState($executionState));
 
         $resolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
         $resolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
@@ -683,13 +666,18 @@ abstract class AbstractTask implements TaskInterface
         if (null === $nice) {
             return true;
         }
-
-        return $nice <= 19 && $nice >= -20;
+        if (!($nice <= 19)) {
+            return false;
+        }
+        return $nice >= -20;
     }
 
     private function validatePriority(int $priority): bool
     {
-        return $priority <= 1000 && $priority >= -1000;
+        if (!($priority <= 1000)) {
+            return false;
+        }
+        return $priority >= -1000;
     }
 
     private function validateState(string $state): bool

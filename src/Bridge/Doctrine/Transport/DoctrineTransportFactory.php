@@ -20,10 +20,7 @@ use function strpos;
  */
 final class DoctrineTransportFactory implements TransportFactoryInterface
 {
-    /**
-     * @var ConnectionRegistry
-     */
-    private $registry;
+    private ConnectionRegistry $registry;
 
     public function __construct(ConnectionRegistry $registry)
     {

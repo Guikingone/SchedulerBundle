@@ -18,40 +18,22 @@ use function urldecode;
  */
 final class Dsn
 {
-    /**
-     * @var string
-     */
-    private $scheme;
+    private string $scheme;
 
-    /**
-     * @var string
-     */
-    private $host;
+    private string $host;
 
-    /**
-     * @var string|null
-     */
-    private $user;
+    private ?string $user;
 
-    /**
-     * @var string|null
-     */
-    private $password;
+    private ?string $password;
 
-    /**
-     * @var int|null
-     */
-    private $port;
+    private ?int $port;
 
     /**
      * @var mixed[]
      */
-    private $options = [];
+    private array $options = [];
 
-    /**
-     * @var string|null
-     */
-    private $path;
+    private ?string $path;
 
     public function __construct(string $scheme, string $host, ?string $path = null, ?string $user = null, ?string $password = null, ?int $port = null, array $options = [])
     {

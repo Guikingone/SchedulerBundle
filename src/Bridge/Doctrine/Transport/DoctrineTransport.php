@@ -17,10 +17,7 @@ use function array_merge;
  */
 class DoctrineTransport extends AbstractTransport
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
     public function __construct(array $options, DbalConnection $driverConnection, SerializerInterface $serializer)
     {

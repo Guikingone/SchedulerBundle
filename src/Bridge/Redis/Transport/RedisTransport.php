@@ -15,10 +15,7 @@ use function array_merge;
  */
 final class RedisTransport extends AbstractTransport
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
     /**
      * @param array<string, int|string> $options

@@ -12,10 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerStartedEvent extends Event
 {
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
     public function __construct(WorkerInterface $worker)
     {

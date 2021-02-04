@@ -14,10 +14,7 @@ use function sprintf;
  */
 final class TaskQueued extends Constraint
 {
-    /**
-     * @var int
-     */
-    private $expectedCount;
+    private int $expectedCount;
 
     public function __construct(int $expectedCount)
     {

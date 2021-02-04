@@ -14,7 +14,7 @@ final class InMemoryConfiguration implements ConfigurationInterface
     /**
      * @var array<string, mixed>
      */
-    private $options = [];
+    private array $options = [];
 
     /**
      * {@inheritdoc}

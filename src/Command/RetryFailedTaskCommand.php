@@ -23,20 +23,11 @@ use function sprintf;
  */
 final class RetryFailedTaskCommand extends Command
 {
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var LoggerInterface|null
-     */
-    private $logger;
+    private ?LoggerInterface $logger;
 
     /**
      * @var string
@@ -102,7 +93,7 @@ EOF
                 $this->worker->execute([], $task);
             } catch (Throwable $throwable) {
                 $style->error([
-                    sprintf('An error occurred when trying to retry the task:'),
+                    'An error occurred when trying to retry the task:',
                     $throwable->getMessage(),
                 ]);
 
@@ -112,10 +103,8 @@ EOF
             $style->success(sprintf('The task "%s" has been retried', $task->getName()));
 
             return self::SUCCESS;
-        } else {
-            $style->warning(sprintf('The task "%s" has not been retried', $task->getName()));
-
-            return self::FAILURE;
         }
+        $style->warning(sprintf('The task "%s" has not been retried', $task->getName()));
+        return self::FAILURE;
     }
 }

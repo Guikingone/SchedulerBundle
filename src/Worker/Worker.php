@@ -62,62 +62,32 @@ final class Worker implements WorkerInterface
     /**
      * @var RunnerInterface[]
      */
-    private $runners = [];
+    private iterable $runners = [];
 
-    /**
-     * @var TaskExecutionTrackerInterface
-     */
-    private $tracker;
+    private TaskExecutionTrackerInterface $tracker;
 
-    /**
-     * @var EventDispatcherInterface|null
-     */
-    private $eventDispatcher;
+    private ?EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var TaskListInterface|TaskList
-     */
-    private $failedTasks;
+    private TaskListInterface $failedTasks;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var bool
-     */
-    private $running = false;
+    private bool $running = false;
 
-    /**
-     * @var bool
-     */
-    private $shouldStop = false;
+    private bool $shouldStop = false;
 
     /**
      * @var FlockStore|PersistingStoreInterface|null
      */
     private $store;
 
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
-    /**
-     * @var mixed[]|null
-     */
-    private $options;
+    private ?array $options;
 
-    /**
-     * @var TaskInterface|null
-     */
-    private $lastExecutedTask;
+    private ?TaskInterface $lastExecutedTask;
 
-    /**
-     * @var NotifierInterface|null
-     */
-    private $notifier;
+    private ?NotifierInterface $notifier;
 
     /**
      * @param iterable|RunnerInterface[] $runners
@@ -222,7 +192,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === (is_array($tasks) || $tasks instanceof Countable ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === (is_countable($tasks) ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }

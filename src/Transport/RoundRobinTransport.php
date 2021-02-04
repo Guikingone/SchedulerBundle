@@ -20,15 +20,9 @@ use function is_array;
  */
 final class RoundRobinTransport extends AbstractTransport
 {
-    /**
-     * @var iterable|TransportInterface[]
-     */
-    private $transports;
+    private iterable $transports;
 
-    /**
-     * @var SplObjectStorage
-     */
-    private $sleepingTransports;
+    private SplObjectStorage $sleepingTransports;
 
     /**
      * @param iterable|TransportInterface[] $transports
@@ -50,9 +44,7 @@ final class RoundRobinTransport extends AbstractTransport
      */
     public function get(string $name): TaskInterface
     {
-        return $this->execute(function (TransportInterface $transport) use ($name): TaskInterface {
-            return $transport->get($name);
-        });
+        return $this->execute(fn(TransportInterface $transport): TaskInterface => $transport->get($name));
     }
 
     /**
@@ -60,9 +52,7 @@ final class RoundRobinTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->execute(function (TransportInterface $transport): TaskListInterface {
-            return $transport->list();
-        });
+        return $this->execute(fn(TransportInterface $transport): TaskListInterface => $transport->list());
     }
 
     /**

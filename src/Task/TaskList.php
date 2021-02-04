@@ -26,7 +26,7 @@ final class TaskList implements TaskListInterface
     /**
      * @var TaskInterface[]
      */
-    private $tasks = [];
+    private array $tasks = [];
 
     /**
      * @param TaskInterface[] $tasks
@@ -81,9 +81,7 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        return new self(array_filter($this->tasks, function (TaskInterface $task) use ($names): bool {
-            return in_array($task->getName(), $names, true);
-        }));
+        return new self(array_filter($this->tasks, fn(TaskInterface $task): bool => in_array($task->getName(), $names, true)));
     }
 
     /**

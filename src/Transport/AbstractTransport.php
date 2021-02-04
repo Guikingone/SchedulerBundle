@@ -11,10 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class AbstractTransport implements TransportInterface
 {
-    /**
-     * @var mixed[]|string[]
-     */
-    protected $options;
+    protected ?array $options;
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {

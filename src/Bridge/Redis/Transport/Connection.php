@@ -22,10 +22,7 @@ use function strpos;
  */
 final class Connection implements ConnectionInterface
 {
-    /**
-     * @var Redis
-     */
-    private $connection;
+    private Redis $connection;
 
     /**
      * @var int
@@ -37,10 +34,7 @@ final class Connection implements ConnectionInterface
      */
     private $list;
 
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
+    private SerializerInterface $serializer;
 
     /**
      * @param array<string, string|int> $options
@@ -80,9 +74,7 @@ final class Connection implements ConnectionInterface
             return new TaskList();
         }
 
-        return new TaskList(array_map(function (string $name): TaskInterface {
-            return $this->get($name);
-        }, $this->connection->hKeys($this->list)));
+        return new TaskList(array_map(fn(string $name): TaskInterface => $this->get($name), $this->connection->hKeys($this->list)));
     }
 
     /**
