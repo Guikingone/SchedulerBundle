@@ -112,13 +112,13 @@ final class ConnectionTest extends TestCase
             'options' => [],
             'state' => 'paused',
             'type' => 'null',
-        ]), json_encode([
+        ], JSON_THROW_ON_ERROR), json_encode([
             'name' => 'bar',
             'expression' => '* * * * *',
             'options' => [],
             'state' => 'enabled',
             'type' => 'null',
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
         $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
         $data = $connection->list();

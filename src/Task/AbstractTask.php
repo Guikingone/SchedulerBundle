@@ -27,7 +27,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * @var mixed[]|DateTimeImmutable[]|bool[]|string[]|DateInterval[]|null[]|float[]|int[]|mixed[][]|DateTimeZone[]
      */
-    protected ?array $options;
+    protected ?array $options = null;
 
     public function __construct(string $name)
     {
@@ -666,7 +666,7 @@ abstract class AbstractTask implements TaskInterface
         if (null === $nice) {
             return true;
         }
-        if (!($nice <= 19)) {
+        if ($nice > 19) {
             return false;
         }
         return $nice >= -20;
@@ -674,7 +674,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validatePriority(int $priority): bool
     {
-        if (!($priority <= 1000)) {
+        if ($priority > 1000) {
             return false;
         }
         return $priority >= -1000;

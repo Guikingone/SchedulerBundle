@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use Countable;
 use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -41,7 +40,6 @@ use function array_replace_recursive;
 use function call_user_func;
 use function count;
 use function in_array;
-use function is_array;
 use function sleep;
 use function sprintf;
 use function usleep;
@@ -59,34 +57,17 @@ final class Worker implements WorkerInterface
         'sleepUntilNextMinute' => false,
     ];
 
-    /**
-     * @var RunnerInterface[]
-     */
     private iterable $runners = [];
-
     private TaskExecutionTrackerInterface $tracker;
-
     private ?EventDispatcherInterface $eventDispatcher;
-
     private TaskListInterface $failedTasks;
-
     private LoggerInterface $logger;
-
     private bool $running = false;
-
     private bool $shouldStop = false;
-
-    /**
-     * @var FlockStore|PersistingStoreInterface|null
-     */
-    private $store;
-
+    private ?PersistingStoreInterface $store;
     private SchedulerInterface $scheduler;
-
-    private ?array $options;
-
-    private ?TaskInterface $lastExecutedTask;
-
+    private ?array $options = null;
+    private ?TaskInterface $lastExecutedTask = null;
     private ?NotifierInterface $notifier;
 
     /**

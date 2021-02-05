@@ -28,12 +28,7 @@ final class Connection implements ConnectionInterface
      * @var int
      */
     private $dbIndex;
-
-    /**
-     * @var string
-     */
-    private $list;
-
+    private string $list;
     private SerializerInterface $serializer;
 
     /**

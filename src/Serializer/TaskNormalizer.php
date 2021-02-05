@@ -47,30 +47,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
-    /**
-     * @var DateTimeNormalizer
-     */
-    private $dateTimeNormalizer;
-
-    /**
-     * @var DateIntervalNormalizer
-     */
-    private $dateIntervalNormalizer;
-
-    /**
-     * @var ObjectNormalizer
-     */
-    private $objectNormalizer;
-
-    /**
-     * @var DateTimeZoneNormalizer
-     */
-    private $dateTimeZoneNormalizer;
-
-    /**
-     * @var NotificationTaskBagNormalizer
-     */
-    private $notificationTaskBagNormalizer;
+    private DateTimeNormalizer $dateTimeNormalizer;
+    private DateIntervalNormalizer $dateIntervalNormalizer;
+    private ObjectNormalizer $objectNormalizer;
+    private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
+    private NotificationTaskBagNormalizer $notificationTaskBagNormalizer;
 
     public function __construct(
         DateTimeNormalizer $dateTimeNormalizer,
@@ -95,18 +76,9 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
-        $dateAttributesCallback = function (?DatetimeInterface $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-            return $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, $context) : null;
-        };
-
-        $dateIntervalAttributesCallback = function (?DateInterval $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-            return $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
-        };
-
-        $notificationTaskBagCallback = function (?NotificationTaskBag $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
-            return $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
-        };
-
+        $dateAttributesCallback = fn (?DatetimeInterface $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, $context) : null;
+        $dateIntervalAttributesCallback = fn (?DateInterval $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
+        $notificationTaskBagCallback = fn (?NotificationTaskBag $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
         $taskCallbacksAttributesCallback = function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
             if ($innerObject instanceof Closure) {
                 throw new InvalidArgumentException('The callback cannot be normalized as its a Closure instance');
@@ -128,9 +100,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'executionEndTime' => $dateAttributesCallback,
                 'lastExecution' => $dateAttributesCallback,
                 'scheduledAt' => $dateAttributesCallback,
-                'timezone' => function (?DateTimeZone $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-                    return $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
-                },
+                'timezone' => fn (?DateTimeZone $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null,
                 'beforeScheduling' => $taskCallbacksAttributesCallback,
                 'afterScheduling' => $taskCallbacksAttributesCallback,
                 'beforeExecuting' => $taskCallbacksAttributesCallback,
@@ -144,35 +114,25 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         return $this->objectNormalizer->normalize($recipient, $format, $context);
                     }, $innerObject);
                 },
-                'notification' => function (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return [
-                        'subject' => $innerObject->getSubject(),
-                        'content' => $innerObject->getContent(),
-                        'emoji' => $innerObject->getEmoji(),
-                        'channels' => array_merge(...array_map(function (Recipient $recipient) use ($innerObject): array {
-                            return $innerObject->getChannels($recipient);
-                        }, $outerObject->getRecipients())),
-                        'importance' => $innerObject->getImportance(),
-                    ];
-                },
-                'message' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return [
-                        'class' => get_class($innerObject),
-                        'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
-                    ];
-                },
-                'callback' => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return [
-                        'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
-                        'method' => $innerObject[1],
-                        'type' => get_class($innerObject[0]),
-                    ];
-                },
-                'tasks' => function (array $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return array_map(function (TaskInterface $task) use ($format, $context): array {
-                        return $this->normalize($task, $format, $context);
-                    }, $innerObject);
-                },
+                'notification' => fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
+                    'subject' => $innerObject->getSubject(),
+                    'content' => $innerObject->getContent(),
+                    'emoji' => $innerObject->getEmoji(),
+                    'channels' => array_merge(...array_map(fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
+                    'importance' => $innerObject->getImportance(),
+                ],
+                'message' => fn ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array => [
+                    'class' => get_class($innerObject),
+                    'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
+                ],
+                'callback' => fn ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array => [
+                    'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
+                    'method' => $innerObject[1],
+                    'type' => get_class($innerObject[0]),
+                ],
+                'tasks' => fn (array $innerObject, $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(function (TaskInterface $task) use ($format, $context): array {
+                    return $this->normalize($task, $format, $context);
+                }, $innerObject),
             ]
         ];
 

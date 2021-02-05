@@ -201,9 +201,9 @@ final class TaskSubscriberTest extends TestCase
         self::assertTrue($event->hasResponse());
         self::assertInstanceOf(JsonResponse::class, $event->getResponse());
         self::assertSame(JsonResponse::HTTP_OK, $event->getResponse()->getStatusCode());
-        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true));
-        self::assertSame(Response::HTTP_OK, json_decode($event->getResponse()->getContent(), true)['code']);
-        self::assertArrayHasKey('tasks', json_decode($event->getResponse()->getContent(), true));
-        self::assertEmpty(json_decode($event->getResponse()->getContent(), true)['tasks']);
+        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame(Response::HTTP_OK, json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['code']);
+        self::assertArrayHasKey('tasks', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertEmpty(json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['tasks']);
     }
 }

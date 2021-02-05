@@ -33,16 +33,9 @@ use function sprintf;
 final class Connection implements ConnectionInterface
 {
     private bool $autoSetup;
-
-    /**
-     * @var mixed[]
-     */
     private array $configuration = [];
-
     private DoctrineConnection $driverConnection;
-
     private SingleDatabaseSynchronizer $schemaSynchronizer;
-
     private SerializerInterface $serializer;
 
     /**

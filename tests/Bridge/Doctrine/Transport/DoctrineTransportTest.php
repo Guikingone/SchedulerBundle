@@ -71,7 +71,7 @@ final class DoctrineTransportTest extends TestCase
                         'tracked' => true,
                     ],
                     'taskInternalType' => NullTask::class,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'id' => 2,
@@ -83,7 +83,7 @@ final class DoctrineTransportTest extends TestCase
                         'tracked' => false,
                     ],
                     'taskInternalType' => NullTask::class,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
         ], true);
 
@@ -166,7 +166,7 @@ final class DoctrineTransportTest extends TestCase
             'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
-            ]),
+            ], JSON_THROW_ON_ERROR),
         ]);
 
         $connection = $this->getDBALConnectionMock();
@@ -234,7 +234,7 @@ final class DoctrineTransportTest extends TestCase
             'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
-            ]),
+            ], JSON_THROW_ON_ERROR),
         ]);
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
@@ -296,7 +296,7 @@ final class DoctrineTransportTest extends TestCase
             'body' => \json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
-            ]),
+            ], JSON_THROW_ON_ERROR),
         ]);
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
