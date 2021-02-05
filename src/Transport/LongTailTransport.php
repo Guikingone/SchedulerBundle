@@ -124,7 +124,7 @@ final class LongTailTransport extends AbstractTransport
         try {
             return $func($transport);
         } catch (Throwable $throwable) {
-            throw new TransportException('The transport failed to execute the requested action');
+            throw new TransportException('The transport failed to execute the requested action', $throwable->getCode(), $throwable);
         }
     }
 }

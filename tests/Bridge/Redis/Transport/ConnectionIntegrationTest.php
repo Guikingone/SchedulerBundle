@@ -35,9 +35,9 @@ use function sprintf;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private ?Redis $redis;
+    private ?Redis $redis = null;
 
-    private ?Connection $connection;
+    private ?Connection $connection = null;
 
     /**
      * {@inheritdoc}

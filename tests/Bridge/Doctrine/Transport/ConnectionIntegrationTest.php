@@ -32,11 +32,11 @@ use function unlink;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private ?Connection $connection;
+    private ?Connection $connection = null;
 
-    private ?DbalConnection $driverConnection;
+    private ?DbalConnection $driverConnection = null;
 
-    private ?string $sqliteFile;
+    private ?string $sqliteFile = null;
 
     /**
      * {@inheritdoc}
