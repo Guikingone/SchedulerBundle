@@ -16,5 +16,4 @@
         "@default": true
     },
     "testFramework": "phpunit",
-    "testFrameworkOptions": "-vvv"
 }
