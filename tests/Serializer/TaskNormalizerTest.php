@@ -175,7 +175,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeScheduling(fn(): int => 1 * 1);
+        $task->beforeScheduling(fn (): int => 1 * 1);
         $task->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -215,7 +215,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterScheduling(fn(): int => 1 * 1);
+        $task->afterScheduling(fn (): int => 1 * 1);
         $task->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -255,7 +255,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeExecuting(fn(): int => 1 * 1);
+        $task->beforeExecuting(fn (): int => 1 * 1);
         $task->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -295,7 +295,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterExecuting(fn(): int => 1 * 1);
+        $task->afterExecuting(fn (): int => 1 * 1);
         $task->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);

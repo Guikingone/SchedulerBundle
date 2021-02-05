@@ -23,7 +23,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
         self::assertFalse($runner->support($task));
 
-        $task = new CallbackTask('foo', fn(): int => 1 + 1);
+        $task = new CallbackTask('foo', fn (): int => 1 + 1);
 
         self::assertTrue($runner->support($task));
     }
@@ -43,7 +43,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteValidTaskWithExtraSpacedOutput(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn(): string => '   hello');
+        $task = new CallbackTask('foo', fn (): string => '   hello');
 
         $output = $runner->run($task);
 
@@ -55,7 +55,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteValidTask(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn(): int => 1 + 1);
+        $task = new CallbackTask('foo', fn (): int => 1 + 1);
 
         $output = $runner->run($task);
 
@@ -79,7 +79,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteValidTaskWithArguments(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn($a, $b): int => $a * $b, [1, 2]);
+        $task = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1, 2]);
 
         $output = $runner->run($task);
 
@@ -91,7 +91,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteInvalidTask(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn($a, $b): int => $a * $b, [1]);
+        $task = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1]);
 
         $output = $runner->run($task);
 
@@ -103,7 +103,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteTaskWithFalseReturn(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn(): bool => false);
+        $task = new CallbackTask('foo', fn (): bool => false);
 
         $output = $runner->run($task);
 
@@ -115,7 +115,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCanExecuteTaskWithTrueReturn(): void
     {
         $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn(): bool => true);
+        $task = new CallbackTask('foo', fn (): bool => true);
 
         $output = $runner->run($task);
 
