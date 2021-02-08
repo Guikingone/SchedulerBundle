@@ -22,6 +22,8 @@ final class SchedulerBundleConfigurationTest extends TestCase
 
         self::assertArrayHasKey('path', $configuration);
         self::assertArrayHasKey('timezone', $configuration);
+        self::assertArrayHasKey('configuration', $configuration);
+        self::assertSame('configuration://memory', $configuration['configuration']);
         self::assertArrayHasKey('tasks', $configuration);
         self::assertArrayNotHasKey('probe', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
@@ -454,5 +456,18 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('https://www.bar.com', $configuration['mercure']['update_url']);
         self::assertArrayHasKey('jwt_token', $configuration['mercure']);
         self::assertNull($configuration['mercure']['jwt_token']);
+    }
+
+    public function testConfigurationCanDefineConfigurationTransport(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'configuration' => 'configuration://fs',
+            ],
+        ]);
+
+        self::assertArrayHasKey('configuration', $configuration);
+        self::assertNotNull($configuration['configuration']);
+        self::assertSame('configuration://fs', $configuration['configuration']);
     }
 }

@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
 
@@ -30,11 +31,11 @@ final class TransportFactory
     /**
      * {@inheritdoc}
      */
-    public function createTransport(string $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
+    public function createTransport(string $dsn, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
         foreach ($this->factories as $factory) {
-            if ($factory->support($dsn, $options)) {
-                return $factory->createTransport(Dsn::fromString($dsn), $options, $serializer, $schedulePolicyOrchestrator);
+            if ($factory->support($dsn, $configuration)) {
+                return $factory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
             }
         }
 

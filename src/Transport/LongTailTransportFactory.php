@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function strpos;
 
@@ -29,15 +30,19 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
-    {
-        return new LongTailTransport($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
+    public function createTransport(
+        Dsn $dsn,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): LongTailTransport {
+        return new LongTailTransport($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function support(string $dsn, array $options = []): bool
+    public function support(string $dsn, ConfigurationInterface $configuration): bool
     {
         return 0 === strpos($dsn, 'longtail://') || 0 === strpos($dsn, 'lt://');
     }

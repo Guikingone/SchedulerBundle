@@ -10,13 +10,15 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CacheConfiguration implements ConfigurationInterface
+final class CacheConfiguration extends AbstractConfiguration
 {
     private CacheItemPoolInterface $pool;
 
-    public function __construct(CacheItemPoolInterface $cacheItemPool)
+    public function __construct(CacheItemPoolInterface $cacheItemPool, array $options = [])
     {
         $this->pool = $cacheItemPool;
+
+        $this->init($options);
     }
 
     /**
@@ -76,7 +78,7 @@ final class CacheConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function toArray(): array
     {
         return $this->pool->getItems();
     }

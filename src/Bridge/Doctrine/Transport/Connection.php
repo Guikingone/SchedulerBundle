@@ -8,13 +8,12 @@ use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Bridge\Doctrine\Connection\AbstractDoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
@@ -33,9 +32,8 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Connection implements ConnectionInterface
+final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
-    private array $configuration;
     private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
@@ -53,6 +51,8 @@ final class Connection implements ConnectionInterface
     ) {
         $this->configuration = $configuration;
         $this->driverConnection = $dbalConnection;
+        parent::__construct($configuration, $driverConnection);
+
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
         $this->logger = $logger ?? new NullLogger();

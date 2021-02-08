@@ -9,12 +9,17 @@ use function array_key_exists;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class InMemoryConfiguration implements ConfigurationInterface
+final class InMemoryConfiguration extends AbstractConfiguration
 {
     /**
      * @var array<string, mixed>
      */
     private array $options = [];
+
+    public function __construct(array $options = [], array $extraOptions = [])
+    {
+        $this->init($options, $extraOptions);
+    }
 
     /**
      * {@inheritdoc}
@@ -55,7 +60,7 @@ final class InMemoryConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function toArray(): array
     {
         return $this->options;
     }

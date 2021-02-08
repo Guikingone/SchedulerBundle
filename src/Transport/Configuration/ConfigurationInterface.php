@@ -9,6 +9,8 @@ namespace SchedulerBundle\Transport\Configuration;
  */
 interface ConfigurationInterface
 {
+    public function init(array $options, array $extraOptions = []): void;
+
     /**
      * @param mixed  $value
      */
@@ -25,10 +27,13 @@ interface ConfigurationInterface
      */
     public function get(string $key);
 
+    /**
+     * Remove the option stored under the @param string $key.
+     */
     public function remove(string $key): void;
 
     /**
      * @return array<string, mixed>
      */
-    public function getOptions(): iterable;
+    public function toArray(): array;
 }

@@ -82,6 +82,6 @@ final class CacheConfigurationTest extends TestCase
         $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
         $cacheConfiguration->set('foo', 'bar');
 
-        self::assertNotEmpty($cacheConfiguration->getOptions());
+        self::assertNotEmpty($cacheConfiguration->toArray());
     }
 }

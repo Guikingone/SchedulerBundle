@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use Closure;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -16,7 +17,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 use function file_get_contents;
 use function sprintf;
 use function strtr;
@@ -31,22 +31,15 @@ final class FilesystemTransport extends AbstractTransport
     private SerializerInterface $serializer;
 
     public function __construct(
-        string $path = null,
-        array $options,
+        ConfigurationInterface $configuration,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions(array_merge([
-            'path' => $path,
-            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
-        ], $options), [
-            'path' => 'string',
-            'filename_mask' => 'string',
-        ]);
-
         $this->filesystem = new Filesystem();
         $this->serializer = $serializer;
         $this->orchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($configuration);
     }
 
     /**
@@ -58,12 +51,12 @@ final class FilesystemTransport extends AbstractTransport
 
         $finder = new Finder();
 
-        $finder->files()->in($this->options['path'])->name('*.json');
+        $finder->files()->in($this->getOptions()->get('path'))->name('*.json');
         foreach ($finder as $singleFinder) {
             $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
         }
 
-        $list = new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
+        $list = new TaskList($this->orchestrator->sort($this->getOptions()->get('execution_mode'), $tasks));
 
         return $lazy ? new LazyTaskList($list) : $list;
     }
@@ -81,7 +74,7 @@ final class FilesystemTransport extends AbstractTransport
             throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        return $this->serializer->deserialize(file_get_contents(sprintf($this->options['filename_mask'], $this->options['path'], $name)), TaskInterface::class, 'json');
+        return $this->serializer->deserialize(file_get_contents(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name)), TaskInterface::class, 'json');
     }
 
     /**
@@ -94,7 +87,7 @@ final class FilesystemTransport extends AbstractTransport
         }
 
         $data = $this->serializer->serialize($task, 'json');
-        $this->filesystem->dumpFile(sprintf($this->options['filename_mask'], $this->options['path'], $task->getName()), $data);
+        $this->filesystem->dumpFile(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $task->getName()), $data);
     }
 
     /**
@@ -108,7 +101,7 @@ final class FilesystemTransport extends AbstractTransport
             return;
         }
 
-        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $name));
+        $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name));
         $this->create($updatedTask);
     }
 
@@ -153,7 +146,7 @@ final class FilesystemTransport extends AbstractTransport
      */
     public function delete(string $name): void
     {
-        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $name));
+        $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name));
     }
 
     /**
@@ -163,14 +156,14 @@ final class FilesystemTransport extends AbstractTransport
     {
         $finder = new Finder();
 
-        $finder->files()->in($this->options['path'])->name('*.json');
+        $finder->files()->in($this->getOptions()->get('path'))->name('*.json');
         foreach ($finder as $singleFinder) {
-            $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], strtr($singleFinder->getFilename(), ['.json' => ''])));
+            $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
     }
 
     private function fileExist(string $taskName): bool
     {
-        return $this->filesystem->exists(sprintf($this->options['filename_mask'], $this->options['path'], $taskName));
+        return $this->filesystem->exists(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $taskName));
     }
 }

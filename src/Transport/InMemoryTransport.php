@@ -13,6 +13,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use function array_key_exists;
 use function sprintf;
 
@@ -28,11 +29,12 @@ final class InMemoryTransport extends AbstractTransport
     private SchedulePolicyOrchestratorInterface $orchestrator;
 
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions($options);
         $this->orchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($configuration);
     }
 
     /**
@@ -56,7 +58,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
-        $list = new TaskList($this->orchestrator->sort($this->getExecutionMode(), $this->tasks));
+        $list = new TaskList($this->orchestrator->sort($this->getOptions()->get('execution_mode'), $this->tasks));
 
         return $lazy ? new LazyTaskList($list) : $list;
     }
@@ -71,7 +73,7 @@ final class InMemoryTransport extends AbstractTransport
         }
 
         $this->tasks[$task->getName()] = $task;
-        $this->tasks = $this->orchestrator->sort($this->getExecutionMode(), $this->tasks);
+        $this->tasks = $this->orchestrator->sort($this->getOptions()->get('execution_mode'), $this->tasks);
     }
 
     /**

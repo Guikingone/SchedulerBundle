@@ -12,10 +12,10 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailOverConfiguration implements ConfigurationInterface
+final class FailOverConfiguration extends AbstractConfiguration
 {
     /**
-     * @var iterable|ConfigurationInterface[]
+     * @var ConfigurationInterface[]
      */
     private iterable $configurationStorages;
 
@@ -25,7 +25,7 @@ final class FailOverConfiguration implements ConfigurationInterface
     private SplObjectStorage $failedConfigurations;
 
     /**
-     * @param iterable|ConfigurationInterface[] $configurationStorages
+     * @param ConfigurationInterface[] $configurationStorages
      */
     public function __construct(iterable $configurationStorages)
     {
@@ -74,9 +74,9 @@ final class FailOverConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function toArray(): array
     {
-        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->toArray());
     }
 
     private function execute(Closure $func)

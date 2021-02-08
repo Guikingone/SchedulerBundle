@@ -3,6 +3,7 @@
 - [Transports](#Transports)
 - [Using the probe](#using-the-probe)
 - [Lazy loading](#using-lazy-loading)
+- [Configuration](#Configuration)
 - [External ressources](#external-ressources)
 
 ## Transports
@@ -39,6 +40,10 @@ that does not require to have a fully initialized scheduler.
 When fetching tasks and/or tasks list, using the `$lazy` argument can help delay the actions until 
 the extreme end, even if the performances are not impacted and pushed to the extreme in this bundle,
 delaying heavy operations can help improve DX and final UX, do not hesitate to use lazy loading.
+
+## Configuration
+
+// TODO
 
 ## External ressources
 

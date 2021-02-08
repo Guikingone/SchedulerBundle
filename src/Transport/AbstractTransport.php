@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -19,6 +20,21 @@ abstract class AbstractTransport implements TransportInterface
         'path' => null,
     ];
 
+    protected ConfigurationInterface $configuration;
+
+    public function __construct(ConfigurationInterface $configuration)
+    {
+        $this->configuration = $configuration;
+    }
+
+    protected function setConfiguration(ConfigurationInterface $configuration, array $options = [], array $additionalOptions = []): void
+    {
+        $this->configuration = $configuration;
+        $this->configuration->init($options, $additionalOptions);
+
+        $this->defineOptions($options, $additionalOptions);
+    }
+
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
         $optionsResolver = new OptionsResolver();
@@ -27,13 +43,13 @@ abstract class AbstractTransport implements TransportInterface
             'path' => null,
         ]);
 
-        $optionsResolver->setAllowedTypes('execution_mode', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('execution_mode', 'string');
         $optionsResolver->setAllowedTypes('path', ['string', 'null']);
 
         $optionsResolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
         $optionsResolver->setInfo('path', 'The path used to store the task (mainly used by FilesystemTransport)');
 
-        if ($additionalOptions === []) {
+        if ([] === $additionalOptions) {
             $this->options = $optionsResolver->resolve($options);
         }
 
@@ -45,23 +61,11 @@ abstract class AbstractTransport implements TransportInterface
         $this->options = $optionsResolver->resolve($options);
     }
 
-    public function getExecutionMode(): string
-    {
-        return $this->options['execution_mode'];
-    }
-
-    public function setExecutionMode(string $executionMode): self
-    {
-        $this->options['execution_mode'] = $executionMode;
-
-        return $this;
-    }
-
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getOptions(): ConfigurationInterface
     {
-        return $this->options;
+        return $this->configuration;
     }
 }
