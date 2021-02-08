@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
 use function explode;
@@ -18,9 +19,11 @@ use function sprintf;
 abstract class AbstractCompoundTransportFactory implements TransportFactoryInterface
 {
     /**
+     * @param TransportFactoryInterface[] $transportFactories
+     *
      * @return TransportInterface[]
      */
-    protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
+    protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
     {
         if ('' === $delimiter) {
             throw new InvalidArgumentException('The delimiter must not be an empty string, consider using " && " or & " || " or similar');
@@ -31,13 +34,13 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
             throw new LogicException(sprintf('The %s transport factory cannot create a transport', static::class));
         }
 
-        return array_map(function (string $transportDsn) use ($transportFactories, $options, $serializer, $schedulePolicyOrchestrator): TransportInterface {
+        return array_map(function (string $transportDsn) use ($transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator): TransportInterface {
             foreach ($transportFactories as $transportFactory) {
-                if (!$transportFactory->support($transportDsn)) {
+                if (!$transportFactory->support($transportDsn, $configuration)) {
                     continue;
                 }
 
-                return $transportFactory->createTransport(Dsn::fromString($transportDsn), $options, $serializer, $schedulePolicyOrchestrator);
+                return $transportFactory->createTransport(Dsn::fromString($transportDsn), $configuration, $serializer, $schedulePolicyOrchestrator);
             }
 
             throw new InvalidArgumentException('The given dsn cannot be used to create a transport');

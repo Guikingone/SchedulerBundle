@@ -10,6 +10,11 @@ namespace SchedulerBundle;
 interface LazyInterface
 {
     /**
+     * Initialize the implementation.
+     */
+    public function initialize(): void;
+
+    /**
      * Define if the current implementation has been initialized, the implementation is up to the final class.
      */
     public function isInitialized(): bool;

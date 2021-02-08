@@ -39,7 +39,10 @@ final class LazyTask extends AbstractTask implements LazyInterface
         return $this->initialized;
     }
 
-    private function initialize(): void
+    /**
+     * {@inheritdoc}
+     */
+    public function initialize(): void
     {
         if ($this->initialized) {
             return;

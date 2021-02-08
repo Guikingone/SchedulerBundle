@@ -22,6 +22,10 @@ This bundle defines a set of transports, each transport has its own configuratio
 - [Redis](#redis)
 - [Doctrine](#doctrine)
 
+## Configuration
+
+- [Transport configuration storage](configuration_storage.md)
+
 ## Informations
 
 Once created, the transport is injected into the `Scheduler`, 
@@ -279,3 +283,68 @@ thanks to this one and when using `bin/console doctrine:migrations:diff`, the sc
 
 _**Note**_: An important thing to keep in mind is that if you don't use the DoctrineMigrationsBundle bundle 
 and the `auto_setup` option is set to `true`, the schema is generated when scheduling the tasks.
+
+# Storage
+
+_Introduced in `0.5`_
+
+Every transport defines a set of configuration keys, once defined, these keys can be stored outside the 
+transport for a better "failure handling", this way, a transport can use an external configuration that is 
+shared with other applications (think of it as a redundant configuration).
+
+This bundle provides the following configuration storage:
+
+- Redis
+- Cache
+- Doctrine
+- [InMemoryConfiguration](#inmemoryconfiguration)
+- Filesystem
+- FailOver
+- [Extending](#extending)
+
+_Note: By default, the memory configuration is used as storage if no configuration storage is defined._
+
+## Informations
+
+Once created, the configuration is injected into the `Transport`,
+you will probably never need to interact with it, otherwise, 
+the configuration is injected using the [ConfigurationInterface](../src/Transport/Configuration/ConfigurationInterface.php) alias
+and the `scheduler.configuration` identifier.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use Symfony\Component\HttpFoundation\Request;
+
+final class FooController
+{
+    public function __invoke(Request $request, ConfigurationInterface $transport)
+    {
+        // ...
+    }
+}
+```
+
+_Note: Using the configuration without the transport can lead to edge issues as the transport is synchronized with it._
+
+## InMemoryConfiguration
+
+The [InMemoryConfiguration](../src/Transport/Configuration/InMemoryConfiguration.php) 
+stores every configuration key / value in memory, 
+this configuration is perfect for `test` environnement or/and for POC applications.
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    configuration: 'configuration://memory'
+    transport:
+        dsn: 'memory://first_in_first_out'
+```
+
+## Extending
+
+// TODO

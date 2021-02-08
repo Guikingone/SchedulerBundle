@@ -14,6 +14,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -29,12 +30,12 @@ final class FailOverTransportTest extends TestCase
 {
     public function testTransportIsConfigured(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
-        self::assertArrayHasKey('mode', $failOverTransport->getOptions());
-        self::assertSame('normal', $failOverTransport->getOptions()['mode']);
-        self::assertArrayHasKey('execution_mode', $failOverTransport->getOptions());
-        self::assertSame('first_in_first_out', $failOverTransport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('mode', $failOverTransport->getConfiguration()->toArray());
+        self::assertSame('normal', $failOverTransport->getConfiguration()->get('mode'));
+        self::assertArrayHasKey('execution_mode', $failOverTransport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $failOverTransport->getConfiguration()->get('execution_mode'));
     }
 
     public function testTransportCannotBeCreatedWithInvalidConfiguration(): void
@@ -42,14 +43,16 @@ final class FailOverTransportTest extends TestCase
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "mode" with value 135 is expected to be of type "string", but is of type "int"');
         self::expectExceptionCode(0);
-        new FailOverTransport([], [
+        new FailOverTransport([], new InMemoryConfiguration([
             'mode' => 135,
-        ]);
+        ], [
+            'mode' => 'string',
+        ]));
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -74,7 +77,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -90,7 +93,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task not found'))
         ;
 
-        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $secondTransport->create(new NullTask('foo'));
@@ -98,7 +101,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $storedTask = $failOverTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $storedTask);
@@ -140,7 +143,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task not found'))
         ;
 
-        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $secondTransport->create(new NullTask('foo'));
@@ -148,7 +151,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $lazyTask = $failOverTransport->get('foo', true);
         self::assertInstanceOf(LazyTask::class, $lazyTask);
@@ -165,7 +168,7 @@ final class FailOverTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -178,7 +181,7 @@ final class FailOverTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -204,7 +207,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -234,7 +237,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -250,14 +253,14 @@ final class FailOverTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
 
-        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $list = $failOverTransport->list();
         self::assertInstanceOf(TaskList::class, $list);
@@ -272,14 +275,14 @@ final class FailOverTransportTest extends TestCase
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
 
-        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $lazyList = $failOverTransport->list(true);
         self::assertInstanceOf(LazyTaskList::class, $lazyList);
@@ -307,7 +310,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $list = $failOverTransport->list(true);
         self::assertInstanceOf(LazyTaskList::class, $list);
@@ -321,7 +324,7 @@ final class FailOverTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -342,7 +345,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -363,7 +366,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->create($task);
     }
@@ -372,7 +375,7 @@ final class FailOverTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -393,7 +396,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -415,14 +418,14 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->update('foo', $task);
     }
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -441,7 +444,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -460,14 +463,14 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->delete('foo');
     }
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -492,7 +495,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -516,14 +519,14 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->pause('foo');
     }
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -548,7 +551,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -572,14 +575,14 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->resume('foo');
     }
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $failOverTransport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -602,7 +605,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
@@ -623,7 +626,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $failOverTransport->clear();
     }

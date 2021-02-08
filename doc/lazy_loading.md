@@ -17,6 +17,7 @@ This bundle provides a small integration of this pattern via multiple usages:
 - [LazyTask](#lazytask)
 - [LazyScheduler](#lazyscheduler)
 - [LazyTransport](#lazytransport)
+- [LazyConfiguration](#lazyconfiguration)
 
 ## LazyTaskList
 
@@ -139,3 +140,7 @@ scheduler_bundle:
 
 # ...
 ```
+
+## LazyConfiguration
+
+// TODO

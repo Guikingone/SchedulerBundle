@@ -2,9 +2,13 @@
 
 This bundle provides a set of commands to interact with your tasks
 
+- [Transport](#transport)
+- [Configuration](#configuration)
 - [Probe](#probe)
 
-## Listing the tasks
+## Transport
+
+### Listing the tasks
 
 _Description: List every tasks scheduled_
 
@@ -12,7 +16,7 @@ _Description: List every tasks scheduled_
 $ bin/console scheduler:list
 ```
 
-## Listing the failed tasks
+### Listing the failed tasks
 
 _Description: List every task that have failed during execution_
 
@@ -20,7 +24,7 @@ _Description: List every task that have failed during execution_
 $ bin/console scheduler:list:failed
 ```
 
-## Consuming the tasks
+### Consuming the tasks
 
 _Description: Consume due tasks_
 
@@ -28,7 +32,7 @@ _Description: Consume due tasks_
 $ bin/console scheduler:consume
 ```
 
-### Options
+#### Options
 
 This command allows using multiple options to filter consumed tasks (each one can be combined):
 
@@ -40,7 +44,7 @@ This command allows using multiple options to filter consumed tasks (each one ca
 - `--lazy`: Force the scheduler to retrieve the tasks using lazy-loading.
 - `--strict`: Force the scheduler to check the date before retrieving the tasks.
 
-### Extra informations
+#### Extra informations
 
 - The scheduler will only return tasks that haven't been executed since the last minute.
 
@@ -84,7 +88,7 @@ This command allows using multiple options to filter consumed tasks (each one ca
 - Depending on `--due` option, the scheduler will execute the due tasks or each tasks that match the submitted options.
 - The worker is automatically stopped once each task has been consumed.
 
-## Rebooting the scheduler
+### Rebooting the scheduler
 
 _Description: Remove every task (except the ones using `@reboot` expression) and reboot the scheduler_
 
@@ -92,7 +96,7 @@ _Description: Remove every task (except the ones using `@reboot` expression) and
 $ bin/console scheduler:reboot
 ```
 
-## Removing failed task
+### Removing failed task
 
 _Description: Remove a task that has failed during execution_
 
@@ -100,7 +104,7 @@ _Description: Remove a task that has failed during execution_
 $ bin/console scheduler:remove:failed **taskname**
 ```
 
-## Retrying a failed task
+### Retrying a failed task
 
 _Description: Retry a task that has failed during execution_
 
@@ -108,7 +112,7 @@ _Description: Retry a task that has failed during execution_
 $ bin/console scheduler:retry:failed **taskname**
 ```
 
-## Yielding a task
+### Yielding a task
 
 _Introduced in `0.3`_
 
@@ -121,7 +125,7 @@ then immediately re-schedule it.
 $ bin/console scheduler:yield **task**
 ```
 
-### Example
+#### Example
 
 Using the `--force` option:
 
@@ -256,4 +260,30 @@ $ bin/console scheduler:debug:middleware
 | TaskUpdateMiddleware    | No           | Yes           | 10       | Yes      |
 | SingleRunTaskMiddleware | No           | Yes           | 15       | Yes      |
 +-------------------------+--------------+---------------+----------+----------+
+```
+
+## Configuration
+
+### Displaying the transport configuration
+
+_Introduced in `0.7`_
+
+_Description: Display the current configuration of the transport_
+
+```bash
+$ bin/console scheduler:debug:configuration
+```
+
+#### Example
+
+```bash
+$ bin/console scheduler:debug:configuration
+
+ [INFO] Found 1 configuration key                                                                                       \n
+
++----------------+--------------------+
+| Key            | Value              |
++----------------+--------------------+
+| execution_mode | first_in_first_out |
++----------------+--------------------+
 ```

@@ -240,7 +240,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
         return $this->initialized;
     }
 
-    private function initialize(): void
+    /**
+     * {@inheritdoc}
+     */
+    public function initialize(): void
     {
         if ($this->initialized) {
             return;

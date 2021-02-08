@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Transport;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Dsn;
@@ -22,8 +23,8 @@ final class InMemoryTransportFactoryTest extends TestCase
     {
         $inMemoryTransportFactory = new InMemoryTransportFactory();
 
-        self::assertFalse($inMemoryTransportFactory->support('test://'));
-        self::assertTrue($inMemoryTransportFactory->support('memory://'));
+        self::assertFalse($inMemoryTransportFactory->support('test://', new InMemoryConfiguration()));
+        self::assertTrue($inMemoryTransportFactory->support('memory://', new InMemoryConfiguration()));
     }
 
     /**
@@ -36,13 +37,13 @@ final class InMemoryTransportFactoryTest extends TestCase
         $finalDsn = Dsn::fromString($dsn);
 
         $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame($finalDsn->getHost(), $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame($finalDsn->getHost(), $transport->getConfiguration()->get('execution_mode'));
     }
 
     /**

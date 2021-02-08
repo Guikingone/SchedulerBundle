@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -12,13 +13,20 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 interface TransportFactoryInterface
 {
-    /**
-     * @param array<string, int|string|bool|array> $options
-     */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface;
+    public function createTransport(
+        Dsn $dsn,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): TransportInterface;
 
     /**
-     * @param array<string, int|string|bool|array> $options
+     * Define if the factory can create the transport using:
+     *
+     * - @param string $dsn
+     * - @param ConfigurationInterface $configuration
+     *
+     * {@internal Using $configuration->get() during this call can trigger network calls}
      */
-    public function support(string $dsn, array $options = []): bool;
+    public function support(string $dsn, ConfigurationInterface $configuration): bool;
 }

@@ -10,6 +10,8 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
+use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -64,11 +66,33 @@ final class ConfigurationFactoryTest extends TestCase
     }
 
     /**
-     * @return Generator<array<int, string>>
+     * @dataProvider provideDsn
+     */
+    public function testFactoryCanCreateConfiguration(string $dsn, string $expectedConfiguration): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $factory = new ConfigurationFactory([
+            new InMemoryConfigurationFactory(),
+            new FilesystemConfigurationFactory(),
+            new FailOverConfigurationFactory([
+                new InMemoryConfigurationFactory(),
+                new FilesystemConfigurationFactory(),
+            ]),
+        ]);
+
+        self::assertInstanceOf($expectedConfiguration, $factory->build($dsn, $serializer));
+    }
+
+    /**
+     * @return Generator<array<string, ConfigurationInterface>>
      */
     public function provideDsn(): Generator
     {
         yield 'InMemory' => ['configuration://memory', InMemoryConfiguration::class];
-        yield 'InMemory' => ['configuration://array', InMemoryConfiguration::class];
+        yield 'Filesystem - Short' => ['configuration://fs', FilesystemConfiguration::class];
+        yield 'Filesystem - Full' => ['configuration://filesystem', FilesystemConfiguration::class];
+        yield 'FailOver - Short' => ['configuration://failover', FailOverConfiguration::class];
+        yield 'FailOver - Full' => ['configuration://fo', FailOverConfiguration::class];
     }
 }

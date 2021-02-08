@@ -6,9 +6,11 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SplObjectStorage;
 use Throwable;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -21,16 +23,18 @@ final class FailOverTransport extends AbstractCompoundTransport
     private SplObjectStorage $failedTransports;
 
     /**
-     * @param TransportInterface[] $transports
-     * @param array<string, mixed> $options
+     * @var TransportInterface[]
      */
-    public function __construct(
-        iterable $transports,
-        array $options = []
-    ) {
-        $this->defineOptions(array_merge([
+    private iterable $transports;
+
+    /**
+     * @param TransportInterface[] $transports
+     */
+    public function __construct(iterable $transports, ConfigurationInterface $configuration)
+    {
+        $configuration->init([
             'mode' => 'normal',
-        ], $options), [
+        ], [
             'mode' => 'string',
         ]);
 

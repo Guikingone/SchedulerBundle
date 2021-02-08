@@ -25,7 +25,7 @@ final class FailOverConfiguration extends AbstractConfiguration
     private SplObjectStorage $failedConfigurations;
 
     /**
-     * @param ConfigurationInterface[] $configurationStorageList
+     * @param ConfigurationInterface[] $configurationStorages
      */
     public function __construct(iterable $configurationStorageList)
     {

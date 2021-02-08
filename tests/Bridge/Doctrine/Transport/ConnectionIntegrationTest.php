@@ -19,6 +19,7 @@ use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -75,11 +76,15 @@ final class ConnectionIntegrationTest extends TestCase
 
         $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';
         $this->driverConnection = DriverManager::getConnection(['url' => sprintf('sqlite:///%s', $this->sqliteFile)]);
-        $this->connection = new Connection([
+        $this->connection = new Connection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
             'execution_mode' => 'first_in_first_out',
-        ], $this->driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+            'execution_mode' => 'string',
+        ]), $this->driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
     }

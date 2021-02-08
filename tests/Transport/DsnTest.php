@@ -25,7 +25,15 @@ final class DsnTest extends TestCase
     /**
      * @dataProvider provideDsn
      */
-    public function testDsnCanBeCreated(string $input, Dsn $dsn): void
+    public function testTransportDsnCanBeCreated(string $input, Dsn $dsn): void
+    {
+        self::assertEquals($dsn, Dsn::fromString($input));
+    }
+
+    /**
+     * @dataProvider provideConfigurationDsn
+     */
+    public function testConfigurationDsnCanBeCreated(string $input, Dsn $dsn): void
     {
         self::assertEquals($dsn, Dsn::fromString($input));
     }
@@ -84,6 +92,30 @@ final class DsnTest extends TestCase
             new Dsn('failover', '(memory', '//first_in_first_out || memory://last_in_first_out)', null, null, null, [
                 'memory://first_in_first_out || memory://last_in_first_out',
             ], 'failover://(memory://first_in_first_out || memory://last_in_first_out)'),
+        ];
+    }
+
+    public function provideConfigurationDsn(): Generator
+    {
+        yield 'Memory configuration DSN' => [
+            'configuration://memory',
+            new Dsn('configuration', 'memory'),
+        ];
+        yield 'FailOver configuration DSN' => [
+            'configuration://failover(configuration://memory || configuration://memory)',
+            new Dsn('configuration', 'failover(configuration://memory || configuration://memory)'),
+        ];
+        yield 'FailOver configuration DSN - Short' => [
+            'configuration://fo(configuration://memory || configuration://memory)',
+            new Dsn('configuration', 'fo(configuration://memory || configuration://memory)'),
+        ];
+        yield 'Filesystem configuration DSN' => [
+            'configuration://filesystem',
+            new Dsn('configuration', 'filesystem'),
+        ];
+        yield 'Filesystem configuration DSN - Short' => [
+            'configuration://fs',
+            new Dsn('configuration', 'fs'),
         ];
     }
 }

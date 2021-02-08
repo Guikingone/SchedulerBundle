@@ -14,6 +14,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
 use function array_search;
@@ -33,16 +34,16 @@ final class CacheTransport extends AbstractTransport
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         CacheItemPoolInterface $cacheItemPool,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions($options);
         $this->pool = $cacheItemPool;
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
 
+        parent::__construct($configuration);
         $this->boot();
     }
 
@@ -87,7 +88,7 @@ final class CacheTransport extends AbstractTransport
 
         $storedTasks = new TaskList(array_map(fn (string $task): TaskInterface => $this->get($task), $listItem->get()));
 
-        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $storedTasks);
+        $list = $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $storedTasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
@@ -32,7 +33,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
+    public function createTransport(Dsn $dsn, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
         try {
             $doctrineConnection = $this->registry->getConnection($dsn->getHost());
@@ -44,17 +45,24 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             throw new RuntimeException('The connection is not a valid one');
         }
 
-        return new DoctrineTransport([
+        $configuration->init([
             'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
-        ], $doctrineConnection, $serializer, $schedulePolicyOrchestrator);
+        ], [
+            'auto_setup' => 'bool',
+            'connection' => 'string',
+            'execution_mode' => 'string',
+            'table_name' => 'string',
+        ]);
+
+        return new DoctrineTransport($configuration, $doctrineConnection, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function support(string $dsn, array $options = []): bool
+    public function support(string $dsn, ConfigurationInterface $configuration): bool
     {
         return 0 === strpos($dsn, 'doctrine://') || 0 === strpos($dsn, 'dbal://');
     }

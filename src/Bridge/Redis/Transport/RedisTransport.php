@@ -6,8 +6,14 @@ namespace SchedulerBundle\Bridge\Redis\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\AbstractExternalTransport;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\AbstractTransport;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -18,7 +24,7 @@ final class RedisTransport extends AbstractExternalTransport
      * @param array<string, mixed|int|float|string|bool|array|null> $options
      */
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {

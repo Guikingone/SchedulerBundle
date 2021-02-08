@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
@@ -21,10 +22,10 @@ final class FilesystemTransportFactoryTest extends TestCase
     {
         $filesystemTransportFactory = new FilesystemTransportFactory();
 
-        self::assertFalse($filesystemTransportFactory->support('test://'));
-        self::assertTrue($filesystemTransportFactory->support('fs://'));
-        self::assertTrue($filesystemTransportFactory->support('file://'));
-        self::assertTrue($filesystemTransportFactory->support('filesystem://'));
+        self::assertFalse($filesystemTransportFactory->support('configuration://test', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://fs', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://file', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://filesystem', new InMemoryConfiguration()));
     }
 
     public function testFactoryCanCreateTransport(): void
@@ -33,16 +34,16 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
-        self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame(sys_get_temp_dir(), $transport->getOptions()['path']);
-        self::assertArrayHasKey('filename_mask', $transport->getOptions());
-        self::assertSame('%s/_symfony_scheduler_/%s.json', $transport->getOptions()['filename_mask']);
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame(sys_get_temp_dir(), $transport->getConfiguration()->get('path'));
+        self::assertArrayHasKey('filename_mask', $transport->getConfiguration()->toArray());
+        self::assertSame('%s/_symfony_scheduler_/%s.json', $transport->getConfiguration()->get('filename_mask'));
     }
 
     public function testFactoryCanCreateTransportWithSpecificPath(): void
@@ -51,13 +52,13 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/app', $transport->getOptions()['path']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame('/srv/app', $transport->getConfiguration()->get('path'));
     }
 
     public function testFactoryCanCreateTransportWithSpecificPathFromOptions(): void
@@ -66,15 +67,17 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
-            'path' => '/srv/foo',
-        ], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/foo', $transport->getOptions()['path']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame('/srv/app', $transport->getConfiguration()->get('path'));
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame('/srv/foo', $transport->getConfiguration()->get('path'));
     }
 
     public function testFactoryCanCreateTransportWithSpecificPathFromExtraOptions(): void
@@ -83,15 +86,17 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), new InMemoryConfiguration([
             'path' => sys_get_temp_dir(),
-        ], $serializer, $schedulerPolicyOrchestrator);
+        ], [
+            'path' => 'string',
+        ]), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame(sys_get_temp_dir(), $transport->getOptions()['path']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame(sys_get_temp_dir(), $transport->getConfiguration()->get('path'));
     }
 
     public function testFactoryCanCreateTransportWithSpecificExecutionMode(): void
@@ -100,12 +105,17 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://batch?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(
+            Dsn::fromString('fs://batch?path=/srv/app'),
+            new InMemoryConfiguration(),
+            $serializer,
+            $schedulerPolicyOrchestrator
+        );
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('batch', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/app', $transport->getOptions()['path']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('batch', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame('/srv/app', $transport->getConfiguration()->get('path'));
     }
 }

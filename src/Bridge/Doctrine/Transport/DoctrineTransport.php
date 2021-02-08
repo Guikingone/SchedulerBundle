@@ -10,6 +10,8 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractExternalTransport;
+use SchedulerBundle\Transport\AbstractTransport;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -21,22 +23,22 @@ class DoctrineTransport extends AbstractExternalTransport
      * @param array<string, bool|int|string|null> $options
      */
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         DbalConnection $dbalConnection,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions([
-            'auto_setup' => $options['auto_setup'],
-            'table_name' => $options['table_name'],
-            'execution_mode' => $options['execution_mode'],
-        ], [
+        $this->defineOptions(array_merge([
+            'auto_setup' => $configuration->get('auto_setup') ?? true,
+            'connection' => $configuration->get('connection') ?? null,
+            'table_name' => '_symfony_scheduler_tasks',
+        ], $configuration->toArray()), [
             'auto_setup' => 'bool',
             'table_name' => 'string',
         ]);
 
         parent::__construct(new Connection(
-            $this->getOptions(),
+            $configuration,
             $dbalConnection,
             $serializer,
             $schedulePolicyOrchestrator

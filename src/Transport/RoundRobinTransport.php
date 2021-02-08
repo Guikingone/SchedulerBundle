@@ -6,6 +6,9 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SplObjectStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
@@ -24,12 +27,10 @@ final class RoundRobinTransport extends AbstractCompoundTransport
     /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(
-        iterable $transports,
-        array $options = []
-    ) {
-        $this->defineOptions([
-            'quantum' => $options['quantum'],
+    public function __construct(iterable $transports, ConfigurationInterface $configuration)
+    {
+        $configuration->init([
+            'quantum' => 2,
         ], [
             'quantum' => 'int',
         ]);

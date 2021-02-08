@@ -4,6 +4,7 @@
 - [Using the probe](#using-the-probe)
 - [Lazy loading](#using-lazy-loading)
 - [Lock store](#external-lock-store)
+- [Configuration](#Configuration)
 - [External ressources](#external-ressources)
 
 ## Transports
@@ -49,6 +50,10 @@ by default (and if no store is specified), a `FlockStore` is used.
 Even if this approach still valid in most of the cases, we highly recommend using
 an external store (like Redis, PDO, etc) to improve performances, lock access 
 and ease the debug phase.
+
+## Configuration
+
+// TODO
 
 ## External ressources
 

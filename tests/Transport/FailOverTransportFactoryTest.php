@@ -8,6 +8,8 @@ use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\FailOverTransportFactory;
@@ -21,11 +23,13 @@ final class FailOverTransportFactoryTest extends TestCase
 {
     public function testFactoryCanSupportTransport(): void
     {
+        $configuration = $this->createMock(ConfigurationInterface::class);
+
         $failOverTransportFactory = new FailOverTransportFactory([]);
 
-        self::assertFalse($failOverTransportFactory->support('test://'));
-        self::assertTrue($failOverTransportFactory->support('failover://'));
-        self::assertTrue($failOverTransportFactory->support('fo://'));
+        self::assertFalse($failOverTransportFactory->support('test://', $configuration));
+        self::assertTrue($failOverTransportFactory->support('failover://', $configuration));
+        self::assertTrue($failOverTransportFactory->support('fo://', $configuration));
     }
 
     /**
@@ -33,6 +37,7 @@ final class FailOverTransportFactoryTest extends TestCase
      */
     public function testFactoryCannotCreateUnsupportedTransport(string $dsn): void
     {
+        $configuration = $this->createMock(ConfigurationInterface::class);
         $serializer = $this->createMock(SerializerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
@@ -41,7 +46,7 @@ final class FailOverTransportFactoryTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given dsn cannot be used to create a transport');
         self::expectExceptionCode(0);
-        $failOverTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $failOverTransportFactory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**
@@ -52,14 +57,16 @@ final class FailOverTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
+        $configuration = new InMemoryConfiguration();
+
         $failOverTransportFactory = new FailOverTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(FailOverTransport::class, $transport);
-        self::assertArrayHasKey('mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['mode']);
+        self::assertArrayHasKey('mode', $transport->getConfiguration()->toArray());
+        self::assertSame('normal', $transport->getConfiguration()->get('mode'));
     }
 
     /**
@@ -70,14 +77,16 @@ final class FailOverTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
+        $configuration = new InMemoryConfiguration();
+
         $failOverTransportFactory = new FailOverTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(FailOverTransport::class, $transport);
-        self::assertArrayHasKey('mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['mode']);
+        self::assertArrayHasKey('mode', $transport->getConfiguration()->toArray());
+        self::assertSame('normal', $transport->getConfiguration()->get('mode'));
     }
 
     /**

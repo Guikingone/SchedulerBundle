@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LongTailTransport;
@@ -22,9 +23,9 @@ final class LongTailTransportFactoryTest extends TestCase
     {
         $longTailTransportFactory = new LongTailTransportFactory([]);
 
-        self::assertFalse($longTailTransportFactory->support('test://'));
-        self::assertTrue($longTailTransportFactory->support('longtail://'));
-        self::assertTrue($longTailTransportFactory->support('lt://'));
+        self::assertFalse($longTailTransportFactory->support('test://', new InMemoryConfiguration()));
+        self::assertTrue($longTailTransportFactory->support('longtail://', new InMemoryConfiguration()));
+        self::assertTrue($longTailTransportFactory->support('lt://', new InMemoryConfiguration()));
     }
 
     /**
@@ -37,7 +38,7 @@ final class LongTailTransportFactoryTest extends TestCase
         $longTailTransportFactory = new LongTailTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $longTailTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $longTailTransportFactory->createTransport(Dsn::fromString($dsn), new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
 
         self::assertInstanceOf(LongTailTransport::class, $transport);
     }

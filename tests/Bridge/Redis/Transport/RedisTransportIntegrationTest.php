@@ -19,6 +19,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -69,7 +70,7 @@ final class RedisTransportIntegrationTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         try {
-            $this->transport = new RedisTransport([
+            $this->transport = new RedisTransport(new InMemoryConfiguration([
                 'host' => $dsn->getHost(),
                 'password' => $dsn->getPassword(),
                 'port' => $dsn->getPort(),
@@ -80,7 +81,18 @@ final class RedisTransportIntegrationTest extends TestCase
                 'dbindex' => $dsn->getOption('dbindex', 0),
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
-            ], $serializer, new SchedulePolicyOrchestrator([
+            ], [
+                'host' => ['string', 'null'],
+                'password' => ['string', 'null'],
+                'port' => ['int', 'null'],
+                'scheme' => 'string',
+                'timeout' => 'int',
+                'auth' => ['string', 'null'],
+                'list' => ['string', 'null'],
+                'dbindex' => 'int',
+                'transaction_mode' => ['string', 'null'],
+                'execution_mode' => 'string',
+            ]), $serializer, new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ]));
 
