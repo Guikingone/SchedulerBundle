@@ -140,9 +140,7 @@ final class TaskListTest extends TestCase
 
         $task->expects(self::any())->method('getName')->willReturn('foo');
 
-        $tasks = $list->filter(function (TaskInterface $task): bool {
-            return 'foo' === $task->getName();
-        });
+        $tasks = $list->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
 
         self::assertNotEmpty($tasks);
         self::assertInstanceOf(TaskList::class, $tasks);

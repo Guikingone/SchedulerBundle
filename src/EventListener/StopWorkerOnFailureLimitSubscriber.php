@@ -16,20 +16,11 @@ use function sprintf;
  */
 final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var int
-     */
-    private $maximumFailedTasks;
+    private int $maximumFailedTasks;
 
-    /**
-     * @var int|null
-     */
-    private $failedTasks;
+    private ?int $failedTasks = null;
 
     public function __construct(int $maximumFailedTasks, LoggerInterface $logger = null)
     {

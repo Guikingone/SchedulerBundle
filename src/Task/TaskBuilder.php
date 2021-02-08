@@ -13,15 +13,9 @@ use function sprintf;
  */
 final class TaskBuilder implements TaskBuilderInterface
 {
-    /**
-     * @var TaskBuilderInterface[]|mixed[]
-     */
-    private $builders;
+    private iterable $builders;
 
-    /**
-     * @var PropertyAccessorInterface
-     */
-    private $propertyAccessor;
+    private PropertyAccessorInterface $propertyAccessor;
 
     /**
      * @param iterable|TaskBuilderInterface[] $builders

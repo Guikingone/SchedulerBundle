@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use Countable;
 use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -41,7 +40,6 @@ use function array_replace_recursive;
 use function call_user_func;
 use function count;
 use function in_array;
-use function is_array;
 use function sleep;
 use function sprintf;
 use function usleep;
@@ -59,65 +57,18 @@ final class Worker implements WorkerInterface
         'sleepUntilNextMinute' => false,
     ];
 
-    /**
-     * @var RunnerInterface[]
-     */
-    private $runners = [];
-
-    /**
-     * @var TaskExecutionTrackerInterface
-     */
-    private $tracker;
-
-    /**
-     * @var EventDispatcherInterface|null
-     */
-    private $eventDispatcher;
-
-    /**
-     * @var TaskListInterface|TaskList
-     */
-    private $failedTasks;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var bool
-     */
-    private $running = false;
-
-    /**
-     * @var bool
-     */
-    private $shouldStop = false;
-
-    /**
-     * @var FlockStore|PersistingStoreInterface|null
-     */
-    private $store;
-
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
-
-    /**
-     * @var mixed[]|null
-     */
-    private $options;
-
-    /**
-     * @var TaskInterface|null
-     */
-    private $lastExecutedTask;
-
-    /**
-     * @var NotifierInterface|null
-     */
-    private $notifier;
+    private iterable $runners = [];
+    private TaskExecutionTrackerInterface $tracker;
+    private ?EventDispatcherInterface $eventDispatcher;
+    private TaskListInterface $failedTasks;
+    private LoggerInterface $logger;
+    private bool $running = false;
+    private bool $shouldStop = false;
+    private ?PersistingStoreInterface $store;
+    private SchedulerInterface $scheduler;
+    private ?array $options = null;
+    private ?TaskInterface $lastExecutedTask = null;
+    private ?NotifierInterface $notifier;
 
     /**
      * @param iterable|RunnerInterface[] $runners
@@ -222,7 +173,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === (is_array($tasks) || $tasks instanceof Countable ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === (is_countable($tasks) ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }

@@ -69,9 +69,7 @@ final class ShellTaskTest extends TestCase
     public function testTaskCanDefineBeforeSchedulingCallable(): void
     {
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->beforeScheduling(function (): bool {
-            return false;
-        });
+        $task->beforeScheduling(fn (): bool => false);
 
         self::assertNotNull($task->getBeforeScheduling());
     }
@@ -79,9 +77,7 @@ final class ShellTaskTest extends TestCase
     public function testTaskCanDefineAfterSchedulingCallable(): void
     {
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->afterScheduling(function (): bool {
-            return false;
-        });
+        $task->afterScheduling(fn (): bool => false);
 
         self::assertNotNull($task->getAfterScheduling());
     }

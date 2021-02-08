@@ -26,10 +26,7 @@ use function strpos;
  */
 final class CommandTaskRunner implements RunnerInterface
 {
-    /**
-     * @var Application
-     */
-    private $application;
+    private Application $application;
 
     public function __construct(Application $application)
     {

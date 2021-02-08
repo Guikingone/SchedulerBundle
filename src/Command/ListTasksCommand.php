@@ -25,10 +25,7 @@ use const DATE_ATOM;
  */
 final class ListTasksCommand extends Command
 {
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
     /**
      * @var string
@@ -87,15 +84,11 @@ EOF
         }
 
         if (null !== $state = $input->getOption('state')) {
-            $tasks = $tasks->filter(function (TaskInterface $task) use ($state): bool {
-                return $state === $task->getState();
-            });
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $state === $task->getState());
         }
 
         if (null !== $expression = $input->getOption('expression')) {
-            $tasks = $tasks->filter(function (TaskInterface $task) use ($expression): bool {
-                return $expression === $task->getExpression();
-            });
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         $tasks = $tasks->toArray();

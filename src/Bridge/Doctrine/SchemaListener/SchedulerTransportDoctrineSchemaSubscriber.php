@@ -22,10 +22,7 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
      */
     private const PROCESSING_TABLE_FLAG = self::class.':processing';
 
-    /**
-     * @var iterable|TransportInterface[]
-     */
-    private $transports;
+    private iterable $transports;
 
     /**
      * @param iterable|TransportInterface[] $transports

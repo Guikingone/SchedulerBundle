@@ -14,10 +14,7 @@ use SchedulerBundle\SchedulerInterface;
  */
 final class TaskExecutionSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
     public function __construct(SchedulerInterface $scheduler)
     {

@@ -74,9 +74,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('setScheduledAt');
         $task->expects(self::never())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
-        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(function (): bool {
-            return false;
-        });
+        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): bool => false);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
@@ -96,9 +94,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setScheduledAt');
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
-        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(function (): int {
-            return 1 + 1;
-        });
+        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): int => 1 + 1);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -225,9 +221,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(function (): bool {
-            return false;
-        });
+        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => false);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(2))->method('dispatch')->withConsecutive(
@@ -252,9 +246,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(function (): bool {
-            return true;
-        });
+        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => true);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -358,9 +350,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport);
         $scheduler->schedule($task);
 
-        $dueTasks = $scheduler->getTasks()->filter(function (TaskInterface $task): bool {
-            return null !== $task->getTimezone() && 0 === $task->getPriority();
-        });
+        $dueTasks = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
 
         self::assertNotEmpty($dueTasks);
     }
@@ -422,9 +412,7 @@ final class SchedulerTest extends TestCase
         $task->addTag('new_tag');
 
         $scheduler->update($task->getName(), $task);
-        $updatedTask = $scheduler->getTasks()->filter(function (TaskInterface $task): bool {
-            return in_array('new_tag', $task->getTags());
-        });
+        $updatedTask = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags()));
         self::assertNotEmpty($updatedTask);
     }
 
@@ -445,15 +433,11 @@ final class SchedulerTest extends TestCase
         self::assertNotEmpty($scheduler->getTasks());
 
         $scheduler->pause($task->getName());
-        $pausedTasks = $scheduler->getTasks()->filter(function (TaskInterface $storedTask) use ($task): bool {
-            return $task->getName() === $storedTask->getName() && TaskInterface::PAUSED === $task->getState();
-        });
+        $pausedTasks = $scheduler->getTasks()->filter(fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::PAUSED === $task->getState());
         self::assertNotEmpty($pausedTasks);
 
         $scheduler->resume($task->getName());
-        $resumedTasks = $scheduler->getTasks()->filter(function (TaskInterface $storedTask) use ($task): bool {
-            return $task->getName() === $storedTask->getName() && TaskInterface::ENABLED === $task->getState();
-        });
+        $resumedTasks = $scheduler->getTasks()->filter(fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::ENABLED === $task->getState());
         self::assertNotEmpty($resumedTasks);
     }
 

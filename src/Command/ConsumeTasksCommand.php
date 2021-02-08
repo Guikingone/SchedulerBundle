@@ -30,25 +30,10 @@ use function sprintf;
  */
 final class ConsumeTasksCommand extends Command
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
-
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private EventDispatcherInterface $eventDispatcher;
+    private LoggerInterface $logger;
+    private SchedulerInterface $scheduler;
+    private WorkerInterface $worker;
 
     /**
      * @var string|mixed

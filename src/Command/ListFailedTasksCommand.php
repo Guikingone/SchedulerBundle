@@ -19,10 +19,7 @@ use const DATE_ATOM;
  */
 final class ListFailedTasksCommand extends Command
 {
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
     /**
      * @var string

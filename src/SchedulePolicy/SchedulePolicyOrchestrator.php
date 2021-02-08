@@ -14,10 +14,7 @@ use function sprintf;
  */
 final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInterface
 {
-    /**
-     * @var iterable|PolicyInterface[]
-     */
-    private $policies;
+    private iterable $policies;
 
     /**
      * @param iterable|PolicyInterface[] $policies

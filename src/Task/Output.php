@@ -19,20 +19,11 @@ final class Output
      */
     public const ERROR = 'error';
 
-    /**
-     * @var string|null
-     */
-    private $output;
+    private ?string $output;
 
-    /**
-     * @var TaskInterface
-     */
-    private $task;
+    private TaskInterface $task;
 
-    /**
-     * @var string
-     */
-    private $type;
+    private string $type;
 
     public function __construct(
         TaskInterface $task,

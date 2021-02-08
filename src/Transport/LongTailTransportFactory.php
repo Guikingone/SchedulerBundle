@@ -13,10 +13,7 @@ use function strpos;
  */
 final class LongTailTransportFactory extends AbstractCompoundTransportFactory
 {
-    /**
-     * @var iterable|TransportFactoryInterface[]
-     */
-    private $transportFactories;
+    private iterable $transportFactories;
 
     /**
      * @param iterable|TransportFactoryInterface[] $transportFactories

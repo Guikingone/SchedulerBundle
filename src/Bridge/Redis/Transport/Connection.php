@@ -22,25 +22,14 @@ use function strpos;
  */
 final class Connection implements ConnectionInterface
 {
-    /**
-     * @var Redis
-     */
-    private $connection;
+    private Redis $connection;
 
     /**
      * @var int
      */
     private $dbIndex;
-
-    /**
-     * @var string
-     */
-    private $list;
-
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
+    private string $list;
+    private SerializerInterface $serializer;
 
     /**
      * @param array<string, string|int> $options
@@ -80,9 +69,7 @@ final class Connection implements ConnectionInterface
             return new TaskList();
         }
 
-        return new TaskList(array_map(function (string $name): TaskInterface {
-            return $this->get($name);
-        }, $this->connection->hKeys($this->list)));
+        return new TaskList(array_map(fn (string $name): TaskInterface => $this->get($name), $this->connection->hKeys($this->list)));
     }
 
     /**
@@ -142,7 +129,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName));
+            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), $throwable->getCode(), $throwable);
         }
     }
 
@@ -161,7 +148,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName));
+            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), $throwable->getCode(), $throwable);
         }
     }
 

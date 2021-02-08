@@ -33,42 +33,19 @@ final class Scheduler implements SchedulerInterface
     /**
      * @var int
      */
-    private const MIN_SYNCHRONIZATION_DELAY = 1000000;
+    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000;
 
     /**
      * @var int
      */
-    private const MAX_SYNCHRONIZATION_DELAY = 86400000000;
+    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000;
 
-    /**
-     * @var DateTimeImmutable
-     */
-    private $initializationDate;
-
-    /**
-     * @var DateTimeZone
-     */
-    private $timezone;
-
-    /**
-     * @var TransportInterface
-     */
-    private $transport;
-
-    /**
-     * @var EventDispatcherInterface|null
-     */
-    private $eventDispatcher;
-
-    /**
-     * @var MessageBusInterface|null
-     */
-    private $bus;
-
-    /**
-     * @var NotifierInterface|null
-     */
-    private $notifier;
+    private DateTimeImmutable $initializationDate;
+    private DateTimeZone $timezone;
+    private TransportInterface $transport;
+    private ?EventDispatcherInterface $eventDispatcher;
+    private ?MessageBusInterface $bus;
+    private ?NotifierInterface $notifier;
 
     public function __construct(
         string $timezone,
@@ -165,14 +142,15 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->transport->list()->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
-            return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName());
-        });
+        $dueTasks = $this->transport->list()->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()));
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             switch ($task) {
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable:
-                    return ($task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate) && $task->getExecutionEndDate() > $synchronizedCurrentDate;
+                    if ($task->getExecutionStartDate() !== $synchronizedCurrentDate && $task->getExecutionStartDate() >= $synchronizedCurrentDate) {
+                        return false;
+                    }
+                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable:
                     return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
                 case $task->getExecutionEndDate() instanceof DateTimeImmutable:
@@ -204,9 +182,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(function (TaskInterface $task): bool {
-            return ExpressionFactory::REBOOT_MACRO === $task->getExpression();
-        });
+        $rebootTasks = $this->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 

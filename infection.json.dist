@@ -15,6 +15,5 @@
     "mutators": {
         "@default": true
     },
-    "testFramework": "phpunit",
-    "testFrameworkOptions": "-vvv"
+    "testFramework": "phpunit"
 }

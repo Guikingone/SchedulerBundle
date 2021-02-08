@@ -39,7 +39,7 @@ final class CallbackTaskRunner implements RunnerInterface
 
             $task->setExecutionState(TaskInterface::SUCCEED);
 
-            return new Output($task, trim(!is_string($output) ? (string) $output : $output));
+            return new Output($task, trim((string) $output));
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 

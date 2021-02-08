@@ -26,35 +26,17 @@ use function rawurldecode;
  */
 final class TaskSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var SchedulerInterface
-     */
-    private $scheduler;
+    private SchedulerInterface $scheduler;
 
-    /**
-     * @var string
-     */
-    private $tasksPath;
+    private string $tasksPath;
 
-    /**
-     * @var WorkerInterface
-     */
-    private $worker;
+    private WorkerInterface $worker;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
+    private SerializerInterface $serializer;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * @param string $tasksPath The path that trigger this listener
@@ -91,16 +73,12 @@ final class TaskSubscriber implements EventSubscriberInterface
 
         if (array_key_exists('name', $query) && $name = $query['name']) {
             $request->attributes->set('task_filter', $name);
-            $tasks->filter(function (TaskInterface $task) use ($name): bool {
-                return $name === $task->getName();
-            });
+            $tasks->filter(fn (TaskInterface $task): bool => $name === $task->getName());
         }
 
         if (array_key_exists('expression', $query) && $expression = $query['expression']) {
             $request->attributes->set('task_filter', $expression);
-            $tasks->filter(function (TaskInterface $task) use ($expression): bool {
-                return $expression === $task->getExpression();
-            });
+            $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));

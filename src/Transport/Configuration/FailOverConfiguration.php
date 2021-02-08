@@ -14,15 +14,9 @@ use Throwable;
  */
 final class FailOverConfiguration implements ConfigurationInterface
 {
-    /**
-     * @var iterable|ConfigurationInterface[]
-     */
-    private $configurations;
+    private iterable $configurations;
 
-    /**
-     * @var SplObjectStorage
-     */
-    private $failedConfigurations;
+    private SplObjectStorage $failedConfigurations;
 
     /**
      * @param iterable|ConfigurationInterface[] $configurations
@@ -58,9 +52,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function get(string $key)
     {
-        return $this->execute(function (ConfigurationInterface $configuration) use ($key) {
-            return $configuration->get($key);
-        });
+        return $this->execute(fn (ConfigurationInterface $configuration) => $configuration->get($key));
     }
 
     /**
@@ -78,9 +70,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function getOptions(): array
     {
-        return $this->execute(function (ConfigurationInterface $configuration): array {
-            return $configuration->getOptions();
-        });
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
     }
 
     private function execute(Closure $func)

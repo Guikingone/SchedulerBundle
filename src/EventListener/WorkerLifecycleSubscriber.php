@@ -17,10 +17,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger = null)
     {

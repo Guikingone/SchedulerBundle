@@ -32,30 +32,11 @@ use function sprintf;
  */
 final class Connection implements ConnectionInterface
 {
-    /**
-     * @var bool
-     */
-    private $autoSetup;
-
-    /**
-     * @var mixed[]
-     */
-    private $configuration = [];
-
-    /**
-     * @var DBALConnection
-     */
-    private $driverConnection;
-
-    /**
-     * @var SingleDatabaseSynchronizer
-     */
-    private $schemaSynchronizer;
-
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
+    private bool $autoSetup;
+    private array $configuration = [];
+    private DoctrineConnection $driverConnection;
+    private SingleDatabaseSynchronizer $schemaSynchronizer;
+    private SerializerInterface $serializer;
 
     /**
      * @param mixed[] $configuration
@@ -80,11 +61,9 @@ final class Connection implements ConnectionInterface
             $statement = $this->executeQuery($query->getSQL());
             $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
 
-            return new TaskList(array_map(function (array $task): TaskInterface {
-                return $this->serializer->deserialize($task['body'], TaskInterface::class, 'json');
-            }, $tasks));
+            return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -112,7 +91,7 @@ final class Connection implements ConnectionInterface
 
             return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -159,7 +138,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -185,7 +164,7 @@ final class Connection implements ConnectionInterface
             $task->setState(AbstractTask::PAUSED);
             $this->update($name, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -203,7 +182,7 @@ final class Connection implements ConnectionInterface
             $task->setState(AbstractTask::ENABLED);
             $this->update($name, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -231,7 +210,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -247,7 +226,7 @@ final class Connection implements ConnectionInterface
                 $connection->executeQuery($deleteQuery->getSQL());
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 
@@ -264,10 +243,12 @@ final class Connection implements ConnectionInterface
 
     public function configureSchema(Schema $schema, DbalConnection $connection): void
     {
-        if ($connection !== $this->driverConnection || $schema->hasTable($this->configuration['table_name'])) {
+        if ($connection !== $this->driverConnection) {
             return;
         }
-
+        if ($schema->hasTable($this->configuration['table_name'])) {
+            return;
+        }
         $this->addTableToSchema($schema);
     }
 
@@ -294,7 +275,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage());
+            throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
     }
 

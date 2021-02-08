@@ -18,20 +18,11 @@ use function sprintf;
  */
 final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var float|null
-     */
-    private $endTime;
+    private ?float $endTime = null;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var int
-     */
-    private $timeLimitInSeconds;
+    private int $timeLimitInSeconds;
 
     public function __construct(int $timeLimitInSeconds, LoggerInterface $logger = null)
     {

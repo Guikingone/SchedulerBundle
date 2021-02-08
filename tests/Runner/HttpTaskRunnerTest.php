@@ -31,7 +31,7 @@ final class HttpTaskRunnerTest extends TestCase
             new MockResponse(\json_encode([
                 'error' => 404,
                 'message' => 'Resource not found',
-            ]), ['http_code' => 404]),
+            ], JSON_THROW_ON_ERROR), ['http_code' => 404]),
         ]);
 
         $runner = new HttpTaskRunner($httpClient);
@@ -46,7 +46,7 @@ final class HttpTaskRunnerTest extends TestCase
         $httpClient = new MockHttpClient([
             new MockResponse(\json_encode([
                 'body' => 'test',
-            ]), ['http_code' => 200]),
+            ], JSON_THROW_ON_ERROR), ['http_code' => 200]),
         ]);
 
         $runner = new HttpTaskRunner($httpClient);

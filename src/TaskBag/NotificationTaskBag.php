@@ -12,15 +12,8 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotificationTaskBag implements TaskBagInterface
 {
-    /**
-     * @var Notification
-     */
-    private $notification;
-
-    /**
-     * @var Recipient|Recipient[]
-     */
-    private $recipients;
+    private Notification $notification;
+    private array $recipients;
 
     public function __construct(
         Notification $notification,

@@ -35,15 +35,9 @@ use function sprintf;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    /**
-     * @var Redis
-     */
-    private $redis;
+    private ?Redis $redis = null;
 
-    /**
-     * @var Connection|null
-     */
-    private $connection;
+    private ?Connection $connection = null;
 
     /**
      * {@inheritdoc}

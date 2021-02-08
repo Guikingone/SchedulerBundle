@@ -316,7 +316,7 @@ EOF
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9507552);
+        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::exactly(2))->method('count')->willReturn(1);

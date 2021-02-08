@@ -62,7 +62,7 @@ final class ConnectionTest extends TestCase
                         'tracked' => true,
                     ],
                     'taskInternalType' => NullTask::class,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
             [
                 'id' => 2,
@@ -74,7 +74,7 @@ final class ConnectionTest extends TestCase
                         'tracked' => false,
                     ],
                     'taskInternalType' => NullTask::class,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ],
         ], true);
 
@@ -159,7 +159,7 @@ final class ConnectionTest extends TestCase
             'body' => json_encode([
                 'expression' => '* * * * *',
                 'taskInternalType' => NullTask::class,
-            ]),
+            ], JSON_THROW_ON_ERROR),
         ]);
 
         $queryBuilder = $this->getQueryBuilderMock();

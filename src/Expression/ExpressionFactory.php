@@ -56,10 +56,7 @@ final class ExpressionFactory
         self::REBOOT_MACRO => 'reboot',
     ];
 
-    /**
-     * @var string
-     */
-    private $expression = '* * * * *';
+    private string $expression = '* * * * *';
 
     public function __toString(): string
     {

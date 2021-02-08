@@ -20,12 +20,9 @@ final class FailoverTransport extends AbstractTransport
     /**
      * @var SplObjectStorage<TransportInterface>
      */
-    private $failedTransports;
+    private SplObjectStorage $failedTransports;
 
-    /**
-     * @var iterable|TransportInterface[]
-     */
-    private $transports;
+    private iterable $transports;
 
     /**
      * @param iterable|TransportInterface[] $transports
@@ -47,9 +44,7 @@ final class FailoverTransport extends AbstractTransport
      */
     public function get(string $name): TaskInterface
     {
-        return $this->execute(function (TransportInterface $transport) use ($name): TaskInterface {
-            return $transport->get($name);
-        });
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
     }
 
     /**
@@ -57,9 +52,7 @@ final class FailoverTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->execute(function (TransportInterface $transport): TaskListInterface {
-            return $transport->list();
-        });
+        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list());
     }
 
     /**
