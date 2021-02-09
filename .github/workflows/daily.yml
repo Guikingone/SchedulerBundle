@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.2', '7.3', '7.4']
+        php-versions: ['7.4', '8.0']
         composer-dependencies: ['', 'lowest']
     services:
       redis:
@@ -59,7 +59,7 @@ jobs:
       - name: PHP-CS-FIXER
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
-          args: --dry-run .
+          args: --dry-run . --diff-format=udiff
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
