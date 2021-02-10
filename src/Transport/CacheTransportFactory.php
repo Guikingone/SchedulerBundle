@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function array_merge;
 use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LongTailTransportFactory extends AbstractCompoundTransportFactory
+final class CacheTransportFactory implements TransportFactoryInterface
 {
-    /**
-     * @var iterable|TransportFactoryInterface[]
-     */
-    private iterable $transportFactories;
+    private CacheItemPoolInterface $pool;
 
-    /**
-     * @param iterable|TransportFactoryInterface[] $transportFactories
-     */
-    public function __construct(iterable $transportFactories)
+    public function __construct(CacheItemPoolInterface $pool)
     {
-        $this->transportFactories = $transportFactories;
+        $this->pool = $pool;
     }
 
     /**
@@ -31,7 +27,9 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new LongTailTransport($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
+        return new CacheTransport([
+            'execution_mode' => $dsn->getHost(),
+        ], $this->pool, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**
@@ -39,6 +37,6 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'longtail://') || 0 === strpos($dsn, 'lt://');
+        return 0 === strpos($dsn, 'cache://');
     }
 }

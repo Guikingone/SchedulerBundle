@@ -53,7 +53,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             'connection' => $dsn->getHost(),
             'execution_mode' => $dsn->getOption('execution_mode'),
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
-        ], $doctrineConnection, $serializer, $this->logger);
+        ], $doctrineConnection, $serializer, $schedulePolicyOrchestrator, $this->logger);
     }
 
     /**

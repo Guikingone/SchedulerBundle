@@ -9,6 +9,8 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
@@ -60,7 +62,10 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection = new Connection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $this->driverConnection, $serializer);
+            'execution_mode' => 'first_in_first_out',
+        ], $this->driverConnection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
     }
 
     /**

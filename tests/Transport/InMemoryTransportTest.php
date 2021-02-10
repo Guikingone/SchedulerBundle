@@ -171,6 +171,22 @@ final class InMemoryTransportTest extends TestCase
     /**
      * @dataProvider provideTasks
      */
+    public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
+    {
+        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $transport->create($task);
+        self::assertCount(1, $transport->list());
+
+        $transport->delete('bar');
+        self::assertCount(1, $transport->list());
+    }
+
+    /**
+     * @dataProvider provideTasks
+     */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
         $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([

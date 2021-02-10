@@ -20,6 +20,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -40,7 +42,9 @@ final class DoctrineTransportTest extends TestCase
         self::expectExceptionCode(0);
         new DoctrineTransport([
             'auto_setup' => 'foo',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
     }
 
     public function testTransportCannotBeConfiguredWithInvalidTableName(): void
@@ -53,7 +57,9 @@ final class DoctrineTransportTest extends TestCase
         self::expectExceptionCode(0);
         new DoctrineTransport([
             'table_name' => true,
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
     }
 
     public function testTransportHasDefaultConfiguration(): void
@@ -63,7 +69,9 @@ final class DoctrineTransportTest extends TestCase
 
         $transport = new DoctrineTransport([
             'connection' => 'default',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::assertArrayHasKey('connection', $transport->getOptions());
         self::assertSame('default', $transport->getOptions()['connection']);
@@ -85,7 +93,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => false,
             'table_name' => '_custom_table_name_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::assertArrayHasKey('connection', $transport->getOptions());
         self::assertSame('default', $transport->getOptions()['connection']);
@@ -141,7 +151,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => false,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer, $logger);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]), $logger);
 
         self::assertEmpty($transport->list());
     }
@@ -207,7 +219,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::assertSame($task, $transport->get('foo'));
     }
@@ -346,7 +360,10 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
         $transport->create($task);
     }
 
@@ -363,7 +380,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $transport->update('foo', $task);
     }
@@ -431,7 +450,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $transport->pause('foo');
     }
@@ -502,7 +523,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $transport->resume('foo');
     }
@@ -519,7 +542,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $transport->delete('foo');
     }
@@ -536,7 +561,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $transport->clear();
     }
@@ -551,7 +578,9 @@ final class DoctrineTransportTest extends TestCase
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::assertNotEmpty($transport->getOptions());
     }

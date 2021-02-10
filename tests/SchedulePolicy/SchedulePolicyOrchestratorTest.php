@@ -32,6 +32,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The tasks cannot be sorted as no policies have been defined');
+        self::expectExceptionCode(0);
         $orchestrator->sort('deadline', []);
     }
 
@@ -50,10 +51,12 @@ final class SchedulePolicyOrchestratorTest extends TestCase
 
         $orchestrator = new SchedulePolicyOrchestrator([
             new BatchPolicy(),
+            new FirstInFirstOutPolicy(),
         ]);
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The policy "test" cannot be used');
+        self::expectExceptionCode(0);
         $orchestrator->sort('test', [$task]);
     }
 
@@ -64,10 +67,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
 
         self::assertCount(2, $orchestrator->sort('batch', [$secondTask, $task]));
     }
@@ -97,10 +100,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getExecutionComputationTime')->willReturn(10.0);
+        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.0);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getExecutionComputationTime')->willReturn(12.0);
+        $secondTask->expects(self::once())->method('getExecutionComputationTime')->willReturn(12.0);
 
         self::assertSame([
             'app' => $task,

@@ -20,6 +20,9 @@ use function is_array;
  */
 final class RoundRobinTransport extends AbstractTransport
 {
+    /**
+     * @var iterable|TransportInterface[]
+     */
     private iterable $transports;
     private SplObjectStorage $sleepingTransports;
 

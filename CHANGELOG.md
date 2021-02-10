@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.4.0
+-----
+
+* [PSR-6](https://www.php-fig.org/psr/psr-6/) transport introduced (see https://github.com/Guikingone/SchedulerBundle/pull/16)
+
 0.3.4
 -----
 

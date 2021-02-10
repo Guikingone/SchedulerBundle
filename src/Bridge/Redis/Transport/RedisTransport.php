@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -16,12 +18,16 @@ use function array_merge;
 final class RedisTransport extends AbstractTransport
 {
     private Connection $connection;
+    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
     /**
      * @param array<string, int|string> $options
      */
-    public function __construct(array $options, SerializerInterface $serializer)
-    {
+    public function __construct(
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ) {
         $this->defineOptions(array_merge([
             'host' => '127.0.0.1',
             'password' => null,
@@ -45,6 +51,7 @@ final class RedisTransport extends AbstractTransport
         ]);
 
         $this->connection = new Connection($this->getOptions(), $serializer);
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
     }
 
     /**
@@ -52,7 +59,10 @@ final class RedisTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->connection->list();
+        return new TaskList($this->schedulePolicyOrchestrator->sort(
+            $this->getExecutionMode(),
+            $this->connection->list()->toArray()
+        ));
     }
 
     /**

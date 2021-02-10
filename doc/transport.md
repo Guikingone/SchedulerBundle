@@ -11,6 +11,16 @@ Think of transports like the transports used by the following components in Symf
 
 This bundle defines a set of transports, each transport has its own configuration and can be overridden if required.
 
+## List of available transports
+
+- [InMemory](#inmemory)
+- [Filesystem](#filesystem)
+- [Cache](#cache)
+- [FailOver](#failover)
+- [RoundRobin](#roundrobin)
+- [Redis](#redis)
+- [Doctrine](#doctrine)
+
 ## Informations
 
 Once created, the transport is injected into the `Scheduler`, 
@@ -105,6 +115,32 @@ scheduler_bundle:
 **Extra**: The options key is an extra way of configuring the parameters without using the dsn.
 
 _Note: Keep in mind that this directory could be versioned if required_
+
+## Cache
+
+_*Introduced in 0.4*_
+
+The [CacheTransport](../src/Transport/CacheTransport.php) stores every task in a PSR compliant
+`CacheItemPoolInterface`, every cache adapter that implement this interface can be used.
+
+By default, this bundle use the ones defined in the `cache` configuration key of the `framework`:
+
+```yaml
+framework:
+    cache:
+        app: cache.adapter.filesystem
+```
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    transport:
+        dsn: 'cache://app'
+```
+
+**Configuration**: This transport requires that you provide the name of the pool to use,
+keep in mind that the `execution_mode` option is allowed.
 
 ## FailOver
 

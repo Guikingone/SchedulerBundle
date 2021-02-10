@@ -68,7 +68,7 @@ final class FailOverConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getOptions(): iterable
     {
         return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
     }

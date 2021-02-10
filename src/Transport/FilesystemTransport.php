@@ -25,11 +25,15 @@ use function sys_get_temp_dir;
 final class FilesystemTransport extends AbstractTransport
 {
     private Filesystem $filesystem;
-    private ?SchedulePolicyOrchestratorInterface $orchestrator;
-    private ?SerializerInterface $serializer;
+    private SchedulePolicyOrchestratorInterface $orchestrator;
+    private SerializerInterface $serializer;
 
-    public function __construct(string $path = null, array $options = [], SerializerInterface $serializer = null, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
-    {
+    public function __construct(
+        string $path = null,
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ) {
         $this->defineOptions(array_merge([
             'path' => $path ?? sys_get_temp_dir(),
             'filename_mask' => '%s/_symfony_scheduler_/%s.json',
@@ -57,7 +61,7 @@ final class FilesystemTransport extends AbstractTransport
             $tasks[] = $this->get(strtr($task->getFilename(), ['.json' => '']));
         }
 
-        return new TaskList(null !== $this->orchestrator ? $this->orchestrator->sort($this->options['execution_mode'], $tasks) : $tasks);
+        return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
     }
 
     /**

@@ -22,12 +22,11 @@ final class InMemoryTransport extends AbstractTransport
      * @var array<string, TaskInterface>
      */
     private array $tasks = [];
-    private ?SchedulePolicyOrchestratorInterface $orchestrator;
+    private SchedulePolicyOrchestratorInterface $orchestrator;
 
-    public function __construct(array $options = [], SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
+    public function __construct(array $options, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator)
     {
         $this->defineOptions($options);
-
         $this->orchestrator = $schedulePolicyOrchestrator;
     }
 
@@ -48,7 +47,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return new TaskList($this->tasks);
+        return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $this->tasks));
     }
 
     /**
@@ -61,7 +60,7 @@ final class InMemoryTransport extends AbstractTransport
         }
 
         $this->tasks[$task->getName()] = $task;
-        $this->tasks = null !== $this->orchestrator ? $this->orchestrator->sort($this->getExecutionMode(), $this->tasks) : $this->tasks;
+        $this->tasks = $this->orchestrator->sort($this->getExecutionMode(), $this->tasks);
     }
 
     /**

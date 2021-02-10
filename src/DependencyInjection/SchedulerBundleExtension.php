@@ -79,6 +79,8 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Transport\CacheTransportFactory;
+use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
@@ -120,7 +122,7 @@ final class SchedulerBundleExtension extends Extension
 
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
-        $this->registerTransportFactories($container);
+        $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
         $this->registerScheduler($container);
         $this->registerCommands($container);
@@ -160,7 +162,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag('scheduler.expression_builder');
     }
 
-    private function registerTransportFactories(ContainerBuilder $container): void
+    private function registerTransportFactories(ContainerBuilder $container, array $configuration): void
     {
         $container->register(TransportFactory::class, TransportFactory::class)
             ->setArguments([
@@ -221,6 +223,22 @@ final class SchedulerBundleExtension extends Extension
                 'class' => RoundRobinTransportFactory::class,
             ])
         ;
+
+        if (0 === strpos($configuration['transport']['dsn'], 'cache://')) {
+            $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
+                ->setArguments([
+                    new Reference(
+                        sprintf('cache.%s', Dsn::fromString($configuration['transport']['dsn'])->getHost()),
+                        ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE
+                    ),
+                ])
+                ->setPublic(false)
+                ->addTag('scheduler.transport_factory')
+                ->addTag('container.preload', [
+                    'class' => CacheTransportFactory::class,
+                ])
+            ;
+        }
     }
 
     private function registerTransport(ContainerBuilder $container, array $configuration): void
@@ -584,10 +602,6 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('container.preload', [
                 'class' => HttpTaskRunner::class,
             ])
-            ->addTag('scheduler.extra', [
-                'require' => 'http_client',
-                'tag' => 'scheduler.runner',
-            ])
         ;
 
         $container->register(MessengerTaskRunner::class, MessengerTaskRunner::class)
@@ -598,10 +612,6 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('container.preload', [
                 'class' => MessengerTaskRunner::class,
             ])
-            ->addTag('scheduler.extra', [
-                'require' => 'messenger.default_bus',
-                'tag' => 'scheduler.runner',
-            ])
         ;
 
         $container->register(NotificationTaskRunner::class, NotificationTaskRunner::class)
@@ -611,10 +621,6 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.runner')
             ->addTag('container.preload', [
                 'class' => NotificationTaskRunner::class,
-            ])
-            ->addTag('scheduler.extra', [
-                'require' => 'notifier',
-                'tag' => 'scheduler.runner',
             ])
         ;
 

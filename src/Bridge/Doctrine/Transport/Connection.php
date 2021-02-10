@@ -19,6 +19,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\AbstractTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -38,6 +39,7 @@ final class Connection implements ConnectionInterface
     private array $configuration;
     private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
+    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
     private LoggerInterface $logger;
 
     /**
@@ -47,11 +49,13 @@ final class Connection implements ConnectionInterface
         array $configuration,
         DbalConnection $driverConnection,
         SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
         $this->configuration = $configuration;
         $this->driverConnection = $driverConnection;
         $this->serializer = $serializer;
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -83,8 +87,10 @@ final class Connection implements ConnectionInterface
                 $statement = $this->executeQuery($query->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
-                return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
-            });
+            return new TaskList($this->schedulePolicyOrchestrator->sort(
+                $this->configuration['execution_mode'],
+                array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks)
+            ));
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }

@@ -32,7 +32,6 @@ final class Connection implements ConnectionInterface
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
-
         $this->connection->connect($options['host'], $options['port'], $options['timeout']);
 
         if (0 !== strpos($this->list = $options['list'], '_')) {
@@ -167,10 +166,5 @@ final class Connection implements ConnectionInterface
         if (!$this->connection->hDel($this->list, ...$keys)) {
             throw new TransportException('The list cannot be emptied');
         }
-    }
-
-    public function clean(): void
-    {
-        $this->connection->unlink($this->list);
     }
 }
