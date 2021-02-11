@@ -24,7 +24,11 @@ final class DeadlinePolicy implements PolicyInterface
     public function sort(array $tasks): array
     {
         foreach ($tasks as $task) {
-            if (null === $task->getExecutionRelativeDeadline() || null === $task->getArrivalTime()) {
+            if (null === $task->getExecutionRelativeDeadline()) {
+                continue;
+            }
+
+            if (null === $task->getArrivalTime()) {
                 continue;
             }
 

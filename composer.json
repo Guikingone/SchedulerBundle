@@ -94,8 +94,9 @@
     "require-dev": {
         "ext-pcntl": "*",
         "ext-redis": "*",
-        "doctrine/dbal": "^2.10|^3.0",
-        "doctrine/orm": "^2.6",
+        "api-platform/core": "^2.6",
+        "doctrine/dbal": "^2.12|^3.0",
+        "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^2.18",
         "infection/infection": "^0.21",
         "nikic/php-parser": "^4.10.2",

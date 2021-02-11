@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\Result;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\Synchronizer\SingleDatabaseSynchronizer;
 use Doctrine\DBAL\Types\Types;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -35,17 +34,18 @@ final class Connection implements ConnectionInterface
     private bool $autoSetup;
     private array $configuration = [];
     private DoctrineConnection $driverConnection;
-    private SingleDatabaseSynchronizer $schemaSynchronizer;
     private SerializerInterface $serializer;
 
     /**
      * @param mixed[] $configuration
      */
-    public function __construct(array $configuration, DoctrineConnection $driverConnection, SerializerInterface $serializer)
-    {
+    public function __construct(
+        array $configuration,
+        DoctrineConnection $driverConnection,
+        SerializerInterface $serializer
+    ) {
         $this->configuration = $configuration;
         $this->driverConnection = $driverConnection;
-        $this->schemaSynchronizer = new SingleDatabaseSynchronizer($this->driverConnection);
         $this->autoSetup = $this->configuration['auto_setup'];
         $this->serializer = $serializer;
     }
@@ -59,7 +59,7 @@ final class Connection implements ConnectionInterface
             $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
 
             $statement = $this->executeQuery($query->getSQL());
-            $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
+            $tasks = $statement->fetchAllAssociative();
 
             return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
         } catch (Throwable $throwable) {
@@ -84,7 +84,7 @@ final class Connection implements ConnectionInterface
                 $queryBuilder->getParameterTypes()
             );
 
-            $data = $statement instanceof Result ? $statement->fetchAssociative() : $statement->fetch();
+            $data = $statement->fetchAssociative();
             if (empty($data)) {
                 throw new LogicException('The desired task cannot be found.');
             }
@@ -134,7 +134,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 if (1 !== $statement->rowCount()) {
-                    throw new DBALException('The given data are invalid.');
+                    throw new Exception('The given data are invalid.');
                 }
             });
         } catch (Throwable $throwable) {
@@ -235,7 +235,7 @@ final class Connection implements ConnectionInterface
         $configuration = $this->driverConnection->getConfiguration();
         $assetFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter(null);
-        $this->schemaSynchronizer->updateSchema($this->getSchema(), true);
+        $this->updateSchema();
         $configuration->setSchemaAssetsFilter($assetFilter);
 
         $this->autoSetup = false;
@@ -246,10 +246,22 @@ final class Connection implements ConnectionInterface
         if ($connection !== $this->driverConnection) {
             return;
         }
+
         if ($schema->hasTable($this->configuration['table_name'])) {
             return;
         }
+
         $this->addTableToSchema($schema);
+    }
+
+    private function updateSchema(): void
+    {
+        $comparator = new Comparator();
+        $schemaDiff = $comparator->compare($this->driverConnection->getSchemaManager()->createSchema(), $this->getSchema());
+
+        foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
+            $this->driverConnection->executeStatement($sql);
+        }
     }
 
     private function prepareUpdate(string $name, TaskInterface $task): void
@@ -265,13 +277,13 @@ final class Connection implements ConnectionInterface
                 ;
 
                 $statement = $connection->executeQuery(
-                    $query->getSQL(),
+                    $query->getSQL(). ' ' .$this->driverConnection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),
                     $query->getParameterTypes()
                 );
 
                 if (1 !== $statement->rowCount()) {
-                    throw new DBALException('The given task cannot be updated as the identifier or the body is invalid');
+                    throw new Exception('The given task cannot be updated as the identifier or the body is invalid');
                 }
             });
         } catch (Throwable $throwable) {

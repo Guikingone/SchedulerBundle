@@ -33,7 +33,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
         $connectionOptions = [
-            'auto_setup' => $dsn->getOption('auto_setup', true),
+            'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
             'connection' => $dsn->getHost(),
             'execution_mode' => $dsn->getOption('execution_mode'),
             'table_name' => $dsn->getOption('tableName', '_symfony_scheduler_tasks'),

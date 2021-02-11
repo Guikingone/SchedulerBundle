@@ -44,6 +44,7 @@ final class DoctrineTransportFactoryTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
+        self::expectExceptionCode(0);
         $factory->createTransport(Dsn::fromString('doctrine://test'), [], $serializer, $schedulePolicyOrchestrator);
     }
 
@@ -53,12 +54,46 @@ final class DoctrineTransportFactoryTest extends TestCase
         $connection = $this->createMock(Connection::class);
 
         $registry = $this->createMock(ConnectionRegistry::class);
-        $registry->expects(self::once())->method('getConnection')->willReturn($connection);
+        $registry->expects(self::once())->method('getConnection')->with(self::equalTo('default'))->willReturn($connection);
 
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new DoctrineTransportFactory($registry);
-        self::assertInstanceOf(DoctrineTransport::class, $factory->createTransport(Dsn::fromString('doctrine://default'), [], $serializer, $schedulePolicyOrchestrator));
+        $transport = $factory->createTransport(Dsn::fromString('doctrine://default'), [], $serializer, $schedulePolicyOrchestrator);
+
+        self::assertInstanceOf(DoctrineTransport::class, $transport);
+        self::assertArrayHasKey('auto_setup', $transport->getOptions());
+        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertSame('default', $transport->getOptions()['connection']);
+        self::assertArrayHasKey('connection', $transport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+        self::assertArrayHasKey('table_name', $transport->getOptions());
+        self::assertNull($transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+    }
+
+    public function testFactoryReturnTransportWithAutoSetup(): void
+    {
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        $registry = $this->createMock(ConnectionRegistry::class);
+        $registry->expects(self::once())->method('getConnection')->with(self::equalTo('default'))->willReturn($connection);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $factory = new DoctrineTransportFactory($registry);
+        $transport = $factory->createTransport(Dsn::fromString('doctrine://default?auto_setup=false'), [], $serializer, $schedulePolicyOrchestrator);
+
+        self::assertInstanceOf(DoctrineTransport::class, $transport);
+        self::assertArrayHasKey('auto_setup', $transport->getOptions());
+        self::assertFalse($transport->getOptions()['auto_setup']);
+        self::assertSame('default', $transport->getOptions()['connection']);
+        self::assertArrayHasKey('connection', $transport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+        self::assertArrayHasKey('table_name', $transport->getOptions());
+        self::assertNull($transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
     }
 
     public function testFactoryReturnTransportWithExecutionMode(): void

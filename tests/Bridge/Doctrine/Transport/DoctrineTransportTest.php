@@ -21,6 +21,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Serializer\SerializerInterface;
 use function class_exists;
 use function interface_exists;
@@ -30,6 +31,51 @@ use function interface_exists;
  */
 final class DoctrineTransportTest extends TestCase
 {
+    public function testTransportCannotBeConfiguredWithInvalidAutoSetup(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "auto_setup" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new DoctrineTransport([
+            'auto_setup' => 'foo',
+        ], $connection, $serializer);
+    }
+
+    public function testTransportCannotBeConfiguredWithInvalidTableName(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "table_name" with value true is expected to be of type "string", but is of type "bool"');
+        self::expectExceptionCode(0);
+        new DoctrineTransport([
+            'table_name' => true,
+        ], $connection, $serializer);
+    }
+
+    public function testTransportHasDefaultConfiguration(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        $transport = new DoctrineTransport([
+            'connection' => 'default',
+        ], $connection, $serializer);
+
+        self::assertArrayHasKey('connection', $transport->getOptions());
+        self::assertSame('default', $transport->getOptions()['connection']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getOptions());
+        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertArrayHasKey('table_name', $transport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+    }
+
     public function testTransportCanBeConfigured(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
@@ -38,7 +84,7 @@ final class DoctrineTransportTest extends TestCase
         $transport = new DoctrineTransport([
             'connection' => 'default',
             'execution_mode' => 'normal',
-            'auto_setup' => true,
+            'auto_setup' => false,
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
@@ -47,7 +93,7 @@ final class DoctrineTransportTest extends TestCase
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['execution_mode']);
         self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertFalse($transport->getOptions()['auto_setup']);
         self::assertArrayHasKey('table_name', $transport->getOptions());
         self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
     }
