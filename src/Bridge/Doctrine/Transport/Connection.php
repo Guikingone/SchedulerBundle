@@ -277,7 +277,7 @@ final class Connection implements ConnectionInterface
                 ;
 
                 $statement = $connection->executeQuery(
-                    $query->getSQL(),
+                    $query->getSQL(). ' ' .$this->driverConnection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),
                     $query->getParameterTypes()
                 );
