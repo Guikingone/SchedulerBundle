@@ -3,7 +3,7 @@ includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
 
 parameters:
-    level: 6
+    level: 1
     paths:
         - src
         - tests
