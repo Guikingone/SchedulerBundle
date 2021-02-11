@@ -84,7 +84,7 @@ final class DoctrineTransportTest extends TestCase
         $transport = new DoctrineTransport([
             'connection' => 'default',
             'execution_mode' => 'normal',
-            'auto_setup' => true,
+            'auto_setup' => false,
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
@@ -93,7 +93,7 @@ final class DoctrineTransportTest extends TestCase
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['execution_mode']);
         self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertFalse($transport->getOptions()['auto_setup']);
         self::assertArrayHasKey('table_name', $transport->getOptions());
         self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
     }

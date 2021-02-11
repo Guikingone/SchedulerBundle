@@ -107,6 +107,11 @@ final class Dsn
         return $this->options[$key] ?? $default;
     }
 
+    public function getOptionAsBool(string $key, $default = null): bool
+    {
+        return 'false' === $this->getOption($key, $default) ? false : (bool) $this->getOption($key, $default);
+    }
+
     /**
      * @return mixed[]
      */
