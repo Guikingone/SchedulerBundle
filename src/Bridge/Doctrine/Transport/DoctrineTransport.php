@@ -22,8 +22,8 @@ class DoctrineTransport extends AbstractTransport
     public function __construct(array $options, DbalConnection $driverConnection, SerializerInterface $serializer)
     {
         $this->defineOptions(array_merge([
-            'auto_setup' => true,
-            'connection' => null,
+            'auto_setup' => $options['auto_setup'] ?? true,
+            'connection' => $options['connection'] ?? null,
             'table_name' => '_symfony_scheduler_tasks',
         ], $options), [
             'auto_setup' => ['bool'],

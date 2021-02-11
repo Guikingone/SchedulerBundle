@@ -21,6 +21,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Serializer\SerializerInterface;
 use function class_exists;
 use function interface_exists;
@@ -30,6 +31,32 @@ use function interface_exists;
  */
 final class DoctrineTransportTest extends TestCase
 {
+    public function testTransportCannotBeConfiguredWithInvalidAutoSetup(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "auto_setup" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new DoctrineTransport([
+            'auto_setup' => 'foo',
+        ], $connection, $serializer);
+    }
+
+    public function testTransportCannotBeConfiguredWithInvalidTableName(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "table_name" with value true is expected to be of type "string", but is of type "bool"');
+        self::expectExceptionCode(0);
+        new DoctrineTransport([
+            'table_name' => true,
+        ], $connection, $serializer);
+    }
+
     public function testTransportHasDefaultConfiguration(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
