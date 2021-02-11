@@ -17,6 +17,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaConfig;
+use Doctrine\DBAL\Schema\Sequence;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -493,6 +494,40 @@ final class ConnectionTest extends TestCase
         $connection->configureSchema($schema, $driverConnection);
     }
 
+    public function testConnectionCanSetUp(): void
+    {
+        $configuration = $this->createMock(Configuration::class);
+        $serializer = $this->createMock(SerializerInterface::class);
+        $sequence = $this->createMock(Sequence::class);
+
+        $platform = $this->createMock(AbstractPlatform::class);
+        $platform->expects(self::once())->method('getCreateTableSQL')->willReturn([]);
+
+        $table = $this->createMock(Table::class);
+        $table->expects(self::once())->method('getForeignKeys')->willReturn([]);
+
+        $schema = $this->createMock(Schema::class);
+        $schema->expects(self::once())->method('getNamespaces')->willReturn(['foo', 'bar']);
+        $schema->expects(self::once())->method('getTables')->willReturn([$table]);
+        $schema->expects(self::once())->method('getTable')->willReturn($table);
+        $schema->expects(self::once())->method('getSequences')->willReturn([$sequence]);
+
+        $schemaManager = $this->createMock(AbstractSchemaManager::class);
+        $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
+
+        $driverConnection = $this->createMock(Connection::class);
+        $driverConnection->method('getDatabasePlatform')->willReturn($platform);
+        $driverConnection->method('getConfiguration')->willReturn($configuration);
+        $driverConnection->method('getSchemaManager')->willReturn($schemaManager);
+
+        $connection = new DoctrineConnection([
+            'auto_setup' => true,
+            'table_name' => '_symfony_scheduler_tasks',
+        ], $driverConnection, $serializer);
+
+        $connection->setup();
+    }
+
     private function getDBALConnectionMock(): MockObject
     {
         $platform = $this->createMock(AbstractPlatform::class);
@@ -509,6 +544,7 @@ final class ConnectionTest extends TestCase
         $schemaConfig = $this->createMock(SchemaConfig::class);
         $schemaConfig->method('getMaxIdentifierLength')->willReturn(63);
         $schemaConfig->method('getDefaultTableOptions')->willReturn([]);
+
         $schemaManager->method('createSchemaConfig')->willReturn($schemaConfig);
 
         $driverConnection->method('getSchemaManager')->willReturn($schemaManager);
@@ -535,7 +571,7 @@ final class ConnectionTest extends TestCase
     }
 
     /**
-     * @return \Doctrine\DBAL\Driver\Result&\PHPUnit\Framework\MockObject\MockObject|Statement&\PHPUnit\Framework\MockObject\MockObject
+     * @return Result&MockObject|Statement&MockObject
      */
     private function getStatementMock($expectedResult, bool $list = false)
     {

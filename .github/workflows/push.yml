@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.4', '8.0']
+        php-versions: ['7.4', '8.0', '8.1']
         composer-dependencies: ['', 'lowest']
     services:
       redis:
@@ -63,10 +63,6 @@ jobs:
       - name: Rector
         run: php vendor/bin/rector process --dry-run --clear-cache
 
-      # —— PHPStan ———————————————————————————————————————————————————————
-      - name: PHPStan
-        run: php vendor/bin/phpstan analyze
-
       # —— PHPUnit ———————————————————————————————————————————————————————
       - name: PHPUnit
         run: php vendor/bin/phpunit tests
@@ -82,6 +78,6 @@ jobs:
 
       # —— Infection —————————————————————————————————————————————————————
       - name: Infection
-        run: php vendor/bin/infection --no-progress --min-covered-msi=80 --min-msi=75 --show-mutations --threads=4
+        run: php vendor/bin/infection --no-progress --min-covered-msi=85 --min-msi=80 --show-mutations --threads=4
         env:
           SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
