@@ -30,6 +30,25 @@ use function interface_exists;
  */
 final class DoctrineTransportTest extends TestCase
 {
+    public function testTransportHasDefaultConfiguration(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $connection = $this->createMock(Connection::class);
+
+        $transport = new DoctrineTransport([
+            'connection' => 'default',
+        ], $connection, $serializer);
+
+        self::assertArrayHasKey('connection', $transport->getOptions());
+        self::assertSame('default', $transport->getOptions()['connection']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getOptions());
+        self::assertTrue($transport->getOptions()['auto_setup']);
+        self::assertArrayHasKey('table_name', $transport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+    }
+
     public function testTransportCanBeConfigured(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
