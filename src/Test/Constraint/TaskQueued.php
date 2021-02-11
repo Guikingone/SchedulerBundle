@@ -43,7 +43,11 @@ final class TaskQueued extends Constraint
     {
         $count = 0;
         foreach ($eventsList->getEvents() as $event) {
-            if (!$event instanceof TaskScheduledEvent || !$event->getTask()->isQueued()) {
+            if (!$event instanceof TaskScheduledEvent) {
+                continue;
+            }
+
+            if (!$event->getTask()->isQueued()) {
                 continue;
             }
 
