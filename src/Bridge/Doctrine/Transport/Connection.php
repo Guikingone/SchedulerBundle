@@ -7,8 +7,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\Result;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\Schema;
@@ -41,8 +40,11 @@ final class Connection implements ConnectionInterface
     /**
      * @param mixed[] $configuration
      */
-    public function __construct(array $configuration, DoctrineConnection $driverConnection, SerializerInterface $serializer)
-    {
+    public function __construct(
+        array $configuration,
+        DoctrineConnection $driverConnection,
+        SerializerInterface $serializer
+    ) {
         $this->configuration = $configuration;
         $this->driverConnection = $driverConnection;
         $this->schemaSynchronizer = new SingleDatabaseSynchronizer($this->driverConnection);
@@ -59,7 +61,7 @@ final class Connection implements ConnectionInterface
             $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
 
             $statement = $this->executeQuery($query->getSQL());
-            $tasks = $statement instanceof Result ? $statement->fetchAllAssociative() : $statement->fetchAll();
+            $tasks = $statement->fetchAllAssociative();
 
             return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
         } catch (Throwable $throwable) {
@@ -84,7 +86,7 @@ final class Connection implements ConnectionInterface
                 $queryBuilder->getParameterTypes()
             );
 
-            $data = $statement instanceof Result ? $statement->fetchAssociative() : $statement->fetch();
+            $data = $statement->fetchAssociative();
             if (empty($data)) {
                 throw new LogicException('The desired task cannot be found.');
             }
@@ -134,7 +136,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 if (1 !== $statement->rowCount()) {
-                    throw new DBALException('The given data are invalid.');
+                    throw new Exception('The given data are invalid.');
                 }
             });
         } catch (Throwable $throwable) {
@@ -246,9 +248,11 @@ final class Connection implements ConnectionInterface
         if ($connection !== $this->driverConnection) {
             return;
         }
+
         if ($schema->hasTable($this->configuration['table_name'])) {
             return;
         }
+
         $this->addTableToSchema($schema);
     }
 
@@ -271,7 +275,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 if (1 !== $statement->rowCount()) {
-                    throw new DBALException('The given task cannot be updated as the identifier or the body is invalid');
+                    throw new Exception('The given task cannot be updated as the identifier or the body is invalid');
                 }
             });
         } catch (Throwable $throwable) {
