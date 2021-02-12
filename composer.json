@@ -102,7 +102,7 @@
         "nikic/php-parser": "^4.10.2",
         "phpstan/phpstan": "^0.12",
         "phpstan/phpstan-phpunit": "^0.12",
-        "phpstan/phpstan-doctrine": "^0.12",
+        "phpstan/phpstan-doctrine": "^0.12.19",
         "phpunit/phpunit": "^9.5",
         "psalm/plugin-phpunit": "^0.15",
         "psr/cache": "^1.0",
