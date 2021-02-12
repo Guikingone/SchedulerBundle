@@ -9,8 +9,13 @@ on:
 
 jobs:
   phpstan:
-    name: PHPStan
+    name: Static analysis with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: true
+      matrix:
+        php-versions: [ '7.4', '8.0' ]
+        composer-dependencies: [ 'highest', 'lowest' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -18,7 +23,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.0
+          php-version: ${{ matrix.php-versions }}
         env:
           update: true
 
@@ -28,7 +33,7 @@ jobs:
       - name: Install Composer dependencies
         uses: "ramsey/composer-install@v1"
         with:
-          dependency-versions: "highest"
+          dependency-versions: ${{ matrix.composer-dependencies }}
           composer-options: "--prefer-stable"
 
       - name: Run PHPStan
