@@ -1,0 +1,35 @@
+name: Static analysis
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+        env:
+          update: true
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install Composer dependencies
+        uses: "ramsey/composer-install@v1"
+        with:
+          dependency-versions: "highest"
+          composer-options: "--prefer-stable"
+
+      - name: Run PHPStan
+        run: php vendor/bin/phpstan analyze
