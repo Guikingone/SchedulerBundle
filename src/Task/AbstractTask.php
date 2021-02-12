@@ -66,6 +66,8 @@ abstract class AbstractTask implements TaskInterface
             'execution_end_time' => null,
             'last_execution' => null,
             'max_duration' => null,
+            'max_execution' => null,
+            'max_retry' => null,
             'nice' => null,
             'output' => false,
             'output_to_store' => false,
@@ -104,6 +106,8 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $resolver->setAllowedTypes('max_duration', ['float', 'null']);
+        $resolver->setAllowedTypes('max_execution', ['int', 'null']);
+        $resolver->setAllowedTypes('max_retry', ['int', 'null']);
         $resolver->setAllowedTypes('nice', ['int', 'null']);
         $resolver->setAllowedTypes('output', ['bool']);
         $resolver->setAllowedTypes('output_to_store', ['bool']);
@@ -138,6 +142,8 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setInfo('execution_end_time', '[Internal] The date where the execution is finished, mostly used by the internal sort process');
         $resolver->setInfo('last_execution', 'Define the last execution date of the task');
         $resolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
+        $resolver->setInfo('max_execution', 'Define the maximum amount of execution of a task');
+        $resolver->setInfo('max_retry', 'Define the maximum amount of retry of a task if this one fail, this value SHOULD NOT be higher than "max_execution"');
         $resolver->setInfo('nice', 'Define a priority for this task inside a runner, a high value means a lower priority in the runner');
         $resolver->setInfo('output', 'Define if the output of the task must be returned by the worker');
         $resolver->setInfo('output_to_store', 'Define if the output of the task must be stored');
@@ -479,6 +485,30 @@ abstract class AbstractTask implements TaskInterface
     public function getMaxDuration(): ?float
     {
         return $this->options['max_duration'];
+    }
+
+    public function setMaxExecution(int $maxExecution = null): TaskInterface
+    {
+        $this->options['max_execution'] = $maxExecution;
+
+        return $this;
+    }
+
+    public function getMaxExecution(): ?int
+    {
+        return $this->options['max_execution'];
+    }
+
+    public function setMaxRetry(int $maxRetry = null): TaskInterface
+    {
+        $this->options['max_retry'] = $maxRetry;
+
+        return $this;
+    }
+
+    public function getMaxRetry(): ?int
+    {
+        return $this->options['max_retry'];
     }
 
     public function getNice(): ?int

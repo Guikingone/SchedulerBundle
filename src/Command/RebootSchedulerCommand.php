@@ -28,11 +28,8 @@ use function sleep;
 final class RebootSchedulerCommand extends Command
 {
     private SchedulerInterface $scheduler;
-
     private WorkerInterface $worker;
-
     private EventDispatcherInterface $eventDispatcher;
-
     private LoggerInterface $logger;
 
     /**

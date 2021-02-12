@@ -186,6 +186,14 @@ interface TaskInterface
 
     public function getMaxDuration(): ?float;
 
+    public function setMaxExecution(int $maxExecution = null): TaskInterface;
+
+    public function getMaxExecution(): ?int;
+
+    public function setMaxRetry(int $maxRetry = null): TaskInterface;
+
+    public function getMaxRetry(): ?int;
+
     public function getNice(): ?int;
 
     public function setNice(int $nice = null): self;

@@ -67,7 +67,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                     ->arrayNode('tasks')
                         ->beforeNormalization()
                             ->always(function (array $taskConfiguration): array {
-                                $chainedTasks = array_filter($taskConfiguration, function (array $configuration) {
+                                $chainedTasks = array_filter($taskConfiguration, function (array $configuration): bool {
                                     return 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']);
                                 });
 
@@ -89,11 +89,15 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             })
                         ->end()
                         ->useAttributeAsKey('name')
-                            ->normalizeKeys(false)
+                        ->normalizeKeys(false)
                             ->variablePrototype()->end()
-                        ->end()
-                        ->scalarNode('lock_store')
-                            ->info('The store used by every worker to prevent overlapping, by default, a FlockStore is created')
+                    ->end()
+                    ->scalarNode('lock_store')
+                        ->info('The store used by every worker to prevent overlapping, by default, a FlockStore is created')
+                        ->defaultValue(null)
+                    ->end()
+                    ->scalarNode('rate_limiter')
+                        ->info('The limiter used to control the execution and retry of tasks')
                         ->defaultValue(null)
                     ->end()
                 ->end()

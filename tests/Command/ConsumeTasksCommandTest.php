@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
+use SchedulerBundle\Middleware\WorkerMiddlewareHub;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -331,7 +332,7 @@ EOF
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher);
 
         $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher);
 

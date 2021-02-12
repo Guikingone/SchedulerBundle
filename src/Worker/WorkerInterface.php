@@ -58,7 +58,7 @@ interface WorkerInterface
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    public function getOptions(): array;
+    public function getOptions(): ?array;
 }

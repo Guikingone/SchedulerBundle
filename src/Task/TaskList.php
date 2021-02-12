@@ -49,7 +49,7 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        array_map(function (TaskInterface $task): void {
+        array_walk($tasks, function (TaskInterface $task): void {
             try {
                 $this->tasks[$task->getName()] = $task;
             } catch (Throwable $throwable) {
@@ -57,7 +57,7 @@ final class TaskList implements TaskListInterface
 
                 throw $throwable;
             }
-        }, $tasks);
+        });
     }
 
     /**

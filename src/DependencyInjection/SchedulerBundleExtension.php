@@ -25,6 +25,10 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
+use SchedulerBundle\Middleware\MiddlewareHubInterface;
+use SchedulerBundle\Middleware\WorkerMiddlewareHub;
+use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
+use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
@@ -114,6 +118,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container);
         $this->registerRedisBridge($container);
+        $this->registerMiddlewareHubs($container);
         $this->registerDataCollector($container);
     }
 
@@ -130,6 +135,9 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag('scheduler.transport_factory');
         $container->registerForAutoconfiguration(PolicyInterface::class)->addTag('scheduler.schedule_policy');
         $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
+        $container->registerForAutoconfiguration(MiddlewareHubInterface::class)->addTag('scheduler.middleware_hub');
+        $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
+        $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
     }
 
     private function registerTransportFactories(ContainerBuilder $container): void
@@ -654,10 +662,10 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new TaggedIteratorArgument('scheduler.runner'),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerMiddlewareHub::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 null !== $configuration['lock_store'] && 0 !== \strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
-                new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.worker')
             ->addTag('monolog.logger', [
@@ -728,6 +736,20 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
                 'class' => RedisTransportFactory::class,
+            ])
+        ;
+    }
+
+    private function registerMiddlewareHubs(ContainerBuilder $container): void
+    {
+        $container->register(WorkerMiddlewareHub::class, WorkerMiddlewareHub::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.worker_middleware'),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.middleware_hub')
+            ->addTag('container.preload', [
+                'class' => WorkerMiddlewareHub::class,
             ])
         ;
     }

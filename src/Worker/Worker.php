@@ -9,7 +9,7 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\RuntimeException;
-use Symfony\Component\Lock\BlockingStoreInterface;
+use SchedulerBundle\Middleware\WorkerMiddlewareHub;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
@@ -30,9 +30,8 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Component\Notifier\Notification\Notification;
-use Symfony\Component\Notifier\NotifierInterface;
-use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Component\RateLimiter\LimiterInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
@@ -58,17 +57,18 @@ final class Worker implements WorkerInterface
     ];
 
     private iterable $runners = [];
-    private TaskExecutionTrackerInterface $tracker;
-    private ?EventDispatcherInterface $eventDispatcher;
-    private TaskListInterface $failedTasks;
-    private LoggerInterface $logger;
+    private ?array $options = [];
     private bool $running = false;
     private bool $shouldStop = false;
-    private ?PersistingStoreInterface $store;
     private SchedulerInterface $scheduler;
-    private ?array $options = null;
+    private TaskExecutionTrackerInterface $tracker;
+    private WorkerMiddlewareHub $middlewareHub;
+    private ?EventDispatcherInterface $eventDispatcher;
+    private LoggerInterface $logger;
+    private ?PersistingStoreInterface $store;
     private ?TaskInterface $lastExecutedTask = null;
-    private ?NotifierInterface $notifier;
+    private ?RateLimiterFactory $rateLimiter;
+    private TaskListInterface $failedTasks;
 
     /**
      * @param iterable|RunnerInterface[] $runners
@@ -77,18 +77,20 @@ final class Worker implements WorkerInterface
         SchedulerInterface $scheduler,
         iterable $runners,
         TaskExecutionTrackerInterface $tracker,
+        WorkerMiddlewareHub $middlewareHub,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        BlockingStoreInterface $store = null,
-        NotifierInterface $notifier = null
+        PersistingStoreInterface $store = null,
+        RateLimiterFactory $rateLimiter = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
         $this->tracker = $tracker;
-        $this->store = $store;
+        $this->middlewareHub = $middlewareHub;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?: new NullLogger();
-        $this->notifier = $notifier;
+        $this->store = $store;
+        $this->rateLimiter = $rateLimiter;
         $this->failedTasks = new TaskList();
     }
 
@@ -118,6 +120,7 @@ final class Worker implements WorkerInterface
                 }
 
                 $this->dispatch(new WorkerRunningEvent($this));
+                $limiter = $this->lockMaxTaskExecution($task);
 
                 foreach ($this->runners as $runner) {
                     if (!$runner->support($task)) {
@@ -135,12 +138,9 @@ final class Worker implements WorkerInterface
                         continue 2;
                     }
 
-                    if (null !== $task->getBeforeExecutingNotificationBag()) {
-                        $bag = $task->getBeforeExecutingNotificationBag();
-                        $this->notify($bag->getNotification(), $bag->getRecipients());
-                    }
-
                     try {
+                        $this->middlewareHub->runPreExecutionMiddleware($task);
+
                         if ($lockedTask->acquire() && !$this->running) {
                             $this->running = true;
                             $this->dispatch(new WorkerRunningEvent($this));
@@ -151,10 +151,11 @@ final class Worker implements WorkerInterface
                             throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
                         }
 
-                        if (null !== $task->getAfterExecutingNotificationBag()) {
-                            $bag = $task->getAfterExecutingNotificationBag();
-                            $this->notify($bag->getNotification(), $bag->getRecipients());
+                        if ($limiter instanceof LimiterInterface) {
+                            $limiter->consume()->ensureAccepted();
                         }
+
+                        $this->middlewareHub->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
@@ -235,9 +236,8 @@ final class Worker implements WorkerInterface
 
     /**
      * {@inheritdoc}
-     * @return mixed[]|null
      */
-    public function getOptions(): array
+    public function getOptions(): ?array
     {
         return $this->options;
     }
@@ -259,6 +259,18 @@ final class Worker implements WorkerInterface
         }
 
         return true;
+    }
+
+    private function lockMaxTaskExecution(TaskInterface $task): ?LimiterInterface
+    {
+        if (null === $this->rateLimiter) {
+            return null;
+        }
+
+        $limiter = $this->rateLimiter->create($task->getName());
+        $limiter->reserve($task->getMaxExecution() ?? 1);
+
+        return $limiter;
     }
 
     private function handleTask(RunnerInterface $runner, TaskInterface $task): void
@@ -312,18 +324,5 @@ final class Worker implements WorkerInterface
         }
 
         $this->eventDispatcher->dispatch($event);
-    }
-
-    /**
-     * @param Notification $notification
-     * @param Recipient[]  $recipients
-     */
-    private function notify(Notification $notification, array $recipients): void
-    {
-        if (null === $this->notifier) {
-            return;
-        }
-
-        $this->notifier->send($notification, ...$recipients);
     }
 }

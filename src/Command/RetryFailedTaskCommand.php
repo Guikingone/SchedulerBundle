@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,21 +25,22 @@ use function sprintf;
 final class RetryFailedTaskCommand extends Command
 {
     private WorkerInterface $worker;
-
     private EventDispatcherInterface $eventDispatcher;
-
-    private ?LoggerInterface $logger;
+    private LoggerInterface $logger;
 
     /**
      * @var string
      */
     protected static $defaultName = 'scheduler:retry:failed';
 
-    public function __construct(WorkerInterface $worker, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        WorkerInterface $worker,
+        EventDispatcherInterface $eventDispatcher,
+        LoggerInterface $logger = null
+    ) {
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger;
+        $this->logger = $logger ?: new NullLogger();
 
         parent::__construct();
     }
@@ -104,7 +106,9 @@ EOF
 
             return self::SUCCESS;
         }
+
         $style->warning(sprintf('The task "%s" has not been retried', $task->getName()));
+
         return self::FAILURE;
     }
 }

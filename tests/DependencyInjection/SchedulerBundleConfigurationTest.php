@@ -47,4 +47,17 @@ final class SchedulerBundleConfigurationTest extends TestCase
             ],
         ]);
     }
+
+    public function testConfigurationCanDefineSpecificRateLimiter(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'rate_limiter' => 'foo',
+            ],
+        ]);
+
+        self::assertArrayHasKey('rate_limiter', $configuration);
+        self::assertNotNull($configuration['rate_limiter']);
+        self::assertSame('foo', $configuration['rate_limiter']);
+    }
 }

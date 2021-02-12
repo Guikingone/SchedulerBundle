@@ -8,6 +8,8 @@ use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use SchedulerBundle\Middleware\NotifierMiddleware;
+use SchedulerBundle\Middleware\WorkerMiddlewareHub;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\BlockingStoreInterface;
@@ -38,7 +40,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, [], $watcher, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [], $watcher, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
 
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
@@ -54,13 +56,14 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, [$runner], $watcher, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->stop();
 
         $worker->execute([
             'sleepDurationDelay' => 5,
         ]);
 
+        self::assertNotNull($worker->getOptions());
         self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
         self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
     }
@@ -88,7 +91,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner, $secondRunner], $watcher, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner, $secondRunner], $watcher, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
@@ -109,7 +112,7 @@ final class WorkerTest extends TestCase
         $scheduler->expects(self::never())->method('getTimezone');
         $scheduler->expects(self::never())->method('getDueTasks');
 
-        $worker = new Worker($scheduler, [$runner], $watcher, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->stop();
         $worker->execute();
 
@@ -157,7 +160,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($secondTask, $worker->getLastExecutedTask());
@@ -196,7 +199,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -232,7 +235,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
@@ -279,7 +282,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($validTask, $worker->getLastExecutedTask());
@@ -315,7 +318,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -363,7 +366,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNotEmpty($worker->getFailedTasks());
@@ -401,7 +404,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertEmpty($worker->getFailedTasks());
@@ -437,7 +440,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -472,7 +475,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -503,7 +506,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, $eventDispatcher, $logger, $store);
+        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger, $store);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -531,7 +534,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -574,7 +577,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub([new NotifierMiddleware($notifier)]), $eventDispatcher, $logger, null);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -617,7 +620,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub([new NotifierMiddleware($notifier)]), $eventDispatcher, $logger, null);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -657,7 +660,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub([new NotifierMiddleware($notifier)]), $eventDispatcher, $logger, null);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -700,9 +703,24 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher, $logger, null, $notifier);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareHub([new NotifierMiddleware($notifier)]), $eventDispatcher, $logger, null);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
+    }
+
+    public function testWorkerCannotReserveMaxExecutionTokensWithoutRateLimiter(): void
+    {
+
+    }
+
+    public function testWorkerCannotReserveMaxExecutionTokensWithoutMaxExecutionLimit(): void
+    {
+
+    }
+
+    public function testWorkerCanReserveMaxExecutionTokensAndLimitTaskExecution(): void
+    {
+
     }
 }
