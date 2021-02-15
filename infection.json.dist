@@ -9,6 +9,9 @@
         "configDir": "."
     },
     "logs": {
+        "badge": {
+            "branch": "main"
+        }
         "text": "infection.log",
         "summary": "summary.log"
     },
