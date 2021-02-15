@@ -3,6 +3,7 @@
 <div align="center">
     <img src="https://github.com/Guikingone/SchedulerBundle/workflows/SchedulerBundle%20-%20Daily/badge.svg" alt="CI" />
     <img src="https://insight.symfony.com/projects/825be328-29f8-44f7-a750-f82818ae9111/mini.svg"  alt="hero"/>
+    <img src="https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FGuikingone%2FSchedulerBundle%2Fmain" alt="infection" />
 </div>
 
 <h4 align="center">A Symfony bundle built to schedule/consume repetitive tasks</h4>
