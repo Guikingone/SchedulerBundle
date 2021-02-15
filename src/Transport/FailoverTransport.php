@@ -21,7 +21,6 @@ final class FailoverTransport extends AbstractTransport
      * @var SplObjectStorage<TransportInterface>
      */
     private SplObjectStorage $failedTransports;
-
     private iterable $transports;
 
     /**

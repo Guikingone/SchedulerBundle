@@ -7,6 +7,6 @@ namespace SchedulerBundle\Middleware;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface MiddlewareHubInterface
+interface MiddlewareStackInterface
 {
 }

@@ -17,6 +17,13 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotifierMiddlewareTest extends TestCase
 {
+    public function testMiddlewareIsOrdered(): void
+    {
+        $middleware = new NotifierMiddleware();
+
+        self::assertSame(2, $middleware->getPriority());
+    }
+
     public function testMiddlewareCannotExecutePreExecutionNotificationsWithoutNotification(): void
     {
         $notifier = $this->createMock(NotifierInterface::class);

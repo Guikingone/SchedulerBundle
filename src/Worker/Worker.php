@@ -9,7 +9,7 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Middleware\WorkerMiddlewareHub;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
@@ -62,12 +62,11 @@ final class Worker implements WorkerInterface
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
-    private WorkerMiddlewareHub $middlewareHub;
+    private WorkerMiddlewareStack $middlewareHub;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private ?PersistingStoreInterface $store;
     private ?TaskInterface $lastExecutedTask = null;
-    private ?RateLimiterFactory $rateLimiter;
     private TaskListInterface $failedTasks;
 
     /**
@@ -77,11 +76,10 @@ final class Worker implements WorkerInterface
         SchedulerInterface $scheduler,
         iterable $runners,
         TaskExecutionTrackerInterface $tracker,
-        WorkerMiddlewareHub $middlewareHub,
+        WorkerMiddlewareStack $middlewareHub,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        PersistingStoreInterface $store = null,
-        RateLimiterFactory $rateLimiter = null
+        PersistingStoreInterface $store = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
@@ -90,7 +88,6 @@ final class Worker implements WorkerInterface
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?: new NullLogger();
         $this->store = $store;
-        $this->rateLimiter = $rateLimiter;
         $this->failedTasks = new TaskList();
     }
 
@@ -120,7 +117,6 @@ final class Worker implements WorkerInterface
                 }
 
                 $this->dispatch(new WorkerRunningEvent($this));
-                $limiter = $this->lockMaxTaskExecution($task);
 
                 foreach ($this->runners as $runner) {
                     if (!$runner->support($task)) {
@@ -149,10 +145,6 @@ final class Worker implements WorkerInterface
 
                         if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
                             throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
-                        }
-
-                        if ($limiter instanceof LimiterInterface) {
-                            $limiter->consume()->ensureAccepted();
                         }
 
                         $this->middlewareHub->runPostExecutionMiddleware($task);
@@ -259,18 +251,6 @@ final class Worker implements WorkerInterface
         }
 
         return true;
-    }
-
-    private function lockMaxTaskExecution(TaskInterface $task): ?LimiterInterface
-    {
-        if (null === $this->rateLimiter) {
-            return null;
-        }
-
-        $limiter = $this->rateLimiter->create($task->getName());
-        $limiter->reserve($task->getMaxExecution() ?? 1);
-
-        return $limiter;
     }
 
     private function handleTask(RunnerInterface $runner, TaskInterface $task): void

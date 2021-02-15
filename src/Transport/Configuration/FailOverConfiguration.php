@@ -15,7 +15,6 @@ use Throwable;
 final class FailOverConfiguration implements ConfigurationInterface
 {
     private iterable $configurations;
-
     private SplObjectStorage $failedConfigurations;
 
     /**

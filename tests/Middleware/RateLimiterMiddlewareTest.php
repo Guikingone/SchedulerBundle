@@ -9,6 +9,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerMiddlewareHubTest extends TestCase
+final class RateLimiterMiddlewareTest extends TestCase
 {
 }

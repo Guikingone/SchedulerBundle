@@ -21,7 +21,6 @@ use function is_array;
 final class RoundRobinTransport extends AbstractTransport
 {
     private iterable $transports;
-
     private SplObjectStorage $sleepingTransports;
 
     /**

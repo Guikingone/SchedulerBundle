@@ -25,8 +25,11 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
-use SchedulerBundle\Middleware\MiddlewareHubInterface;
-use SchedulerBundle\Middleware\WorkerMiddlewareHub;
+use SchedulerBundle\Middleware\MiddlewareStackInterface;
+use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -135,7 +138,9 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag('scheduler.transport_factory');
         $container->registerForAutoconfiguration(PolicyInterface::class)->addTag('scheduler.schedule_policy');
         $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
-        $container->registerForAutoconfiguration(MiddlewareHubInterface::class)->addTag('scheduler.middleware_hub');
+        $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
+        $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
+        $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
     }
@@ -662,7 +667,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new TaggedIteratorArgument('scheduler.runner'),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(WorkerMiddlewareHub::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 null !== $configuration['lock_store'] && 0 !== \strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
@@ -742,14 +747,25 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerMiddlewareHubs(ContainerBuilder $container): void
     {
-        $container->register(WorkerMiddlewareHub::class, WorkerMiddlewareHub::class)
+        $container->register(SchedulerMiddlewareStack::class, SchedulerMiddlewareStack::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.scheduler_middleware'),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.middleware_hub')
+            ->addTag('container.preload', [
+                'class' => SchedulerMiddlewareStack::class,
+            ])
+        ;
+
+        $container->register(WorkerMiddlewareStack::class, WorkerMiddlewareStack::class)
             ->setArguments([
                 new TaggedIteratorArgument('scheduler.worker_middleware'),
             ])
             ->setPublic(false)
             ->addTag('scheduler.middleware_hub')
             ->addTag('container.preload', [
-                'class' => WorkerMiddlewareHub::class,
+                'class' => WorkerMiddlewareStack::class,
             ])
         ;
     }

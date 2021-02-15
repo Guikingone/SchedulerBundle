@@ -24,10 +24,13 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
-use SchedulerBundle\Middleware\MiddlewareHubInterface;
+use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
+use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
-use SchedulerBundle\Middleware\WorkerMiddlewareHub;
+use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
@@ -132,8 +135,12 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[PolicyInterface::class]->hasTag('scheduler.schedule_policy'));
         self::assertArrayHasKey(WorkerInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[WorkerInterface::class]->hasTag('scheduler.worker'));
-        self::assertArrayHasKey(MiddlewareHubInterface::class, $autoconfigurationInterfaces);
-        self::assertTrue($autoconfigurationInterfaces[MiddlewareHubInterface::class]->hasTag('scheduler.middleware_hub'));
+        self::assertArrayHasKey(MiddlewareStackInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[MiddlewareStackInterface::class]->hasTag('scheduler.middleware_hub'));
+        self::assertArrayHasKey(PreSchedulingMiddlewareInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[PreSchedulingMiddlewareInterface::class]->hasTag('scheduler.scheduler_middleware'));
+        self::assertArrayHasKey(PostSchedulingMiddlewareInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[PostSchedulingMiddlewareInterface::class]->hasTag('scheduler.scheduler_middleware'));
         self::assertArrayHasKey(PreExecutionMiddlewareInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[PreExecutionMiddlewareInterface::class]->hasTag('scheduler.worker_middleware'));
         self::assertArrayHasKey(PostExecutionMiddlewareInterface::class, $autoconfigurationInterfaces);
@@ -873,12 +880,19 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container);
 
-        self::assertTrue($container->hasDefinition(WorkerMiddlewareHub::class));
-        self::assertFalse($container->getDefinition(WorkerMiddlewareHub::class)->isPublic());
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(WorkerMiddlewareHub::class)->getArgument(0));
-        self::assertTrue($container->getDefinition(WorkerMiddlewareHub::class)->hasTag('scheduler.middleware_hub'));
-        self::assertTrue($container->getDefinition(WorkerMiddlewareHub::class)->hasTag('container.preload'));
-        self::assertSame(WorkerMiddlewareHub::class, $container->getDefinition(WorkerMiddlewareHub::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(SchedulerMiddlewareStack::class));
+        self::assertFalse($container->getDefinition(SchedulerMiddlewareStack::class)->isPublic());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(SchedulerMiddlewareStack::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
+        self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(SchedulerMiddlewareStack::class, $container->getDefinition(SchedulerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(WorkerMiddlewareStack::class));
+        self::assertFalse($container->getDefinition(WorkerMiddlewareStack::class)->isPublic());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(WorkerMiddlewareStack::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
+        self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(WorkerMiddlewareStack::class, $container->getDefinition(WorkerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testDataCollectorIsConfigured(): void
