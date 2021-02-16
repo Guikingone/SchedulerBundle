@@ -1,4 +1,4 @@
-name: SchedulerBundle - Daily
+name: Daily
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -65,9 +65,9 @@ jobs:
       - name: Rector
         run: php vendor/bin/rector process --dry-run --clear-cache
 
-#      # —— PHPStan ———————————————————————————————————————————————————————
-#      - name: PHPStan
-#        run: php vendor/bin/phpstan analyze
+      # —— PHPStan ———————————————————————————————————————————————————————
+      - name: PHPStan
+        run: php vendor/bin/phpstan analyze
 
       # —— PHPUnit ———————————————————————————————————————————————————————
       - name: PHPUnit
