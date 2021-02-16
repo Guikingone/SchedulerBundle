@@ -51,7 +51,7 @@ final class ListFailedTasksCommand extends Command
         $style = new SymfonyStyle($input, $output);
 
         $failedTasksList = $this->worker->getFailedTasks()->toArray();
-        if (empty($failedTasksList)) {
+        if ([] === $failedTasksList) {
             $style->warning('No failed task has been found');
 
             return self::SUCCESS;

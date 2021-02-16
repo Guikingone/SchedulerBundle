@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
@@ -30,8 +29,6 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Component\RateLimiter\LimiterInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
@@ -141,10 +138,6 @@ final class Worker implements WorkerInterface
                             $this->running = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
-                        }
-
-                        if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
-                            throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
                         }
 
                         $this->middlewareHub->runPostExecutionMiddleware($task);

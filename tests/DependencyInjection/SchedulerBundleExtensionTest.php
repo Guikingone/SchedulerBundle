@@ -25,11 +25,13 @@ use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
+use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
@@ -893,6 +895,21 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
         self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('container.preload'));
         self::assertSame(WorkerMiddlewareStack::class, $container->getDefinition(WorkerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(NotifierMiddleware::class));
+        self::assertFalse($container->getDefinition(NotifierMiddleware::class)->isPublic());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(NotifierMiddleware::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(NotifierMiddleware::class)->hasTag('scheduler.scheduler_middleware'));
+        self::assertTrue($container->getDefinition(NotifierMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(NotifierMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(NotifierMiddleware::class, $container->getDefinition(NotifierMiddleware::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TaskCallbackMiddleware::class));
+        self::assertFalse($container->getDefinition(TaskCallbackMiddleware::class)->isPublic());
+        self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('scheduler.scheduler_middleware'));
+        self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(TaskCallbackMiddleware::class, $container->getDefinition(TaskCallbackMiddleware::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testDataCollectorIsConfigured(): void

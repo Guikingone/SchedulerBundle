@@ -26,9 +26,11 @@ use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
+use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
@@ -121,7 +123,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container);
         $this->registerRedisBridge($container);
-        $this->registerMiddlewareHubs($container);
+        $this->registerMiddlewareStacks($container);
         $this->registerDataCollector($container);
     }
 
@@ -745,7 +747,7 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    private function registerMiddlewareHubs(ContainerBuilder $container): void
+    private function registerMiddlewareStacks(ContainerBuilder $container): void
     {
         $container->register(SchedulerMiddlewareStack::class, SchedulerMiddlewareStack::class)
             ->setArguments([
@@ -766,6 +768,27 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.middleware_hub')
             ->addTag('container.preload', [
                 'class' => WorkerMiddlewareStack::class,
+            ])
+        ;
+
+        $container->register(NotifierMiddleware::class, NotifierMiddleware::class)
+            ->setArguments([
+                new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.scheduler_middleware')
+            ->addTag('scheduler.worker_middleware')
+            ->addTag('container.preload', [
+                'class' => NotifierMiddleware::class,
+            ])
+        ;
+
+        $container->register(TaskCallbackMiddleware::class, TaskCallbackMiddleware::class)
+            ->setPublic(false)
+            ->addTag('scheduler.scheduler_middleware')
+            ->addTag('scheduler.worker_middleware')
+            ->addTag('container.preload', [
+                'class' => TaskCallbackMiddleware::class,
             ])
         ;
     }

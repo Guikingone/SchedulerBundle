@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SchedulerBundle\Middleware\NotifierMiddleware;
+use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -282,7 +283,9 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
+            new TaskCallbackMiddleware(),
+        ]), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($validTask, $worker->getLastExecutedTask());
@@ -366,7 +369,9 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
+            new TaskCallbackMiddleware(),
+        ]), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNotEmpty($worker->getFailedTasks());
@@ -404,7 +409,9 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
+            new TaskCallbackMiddleware(),
+        ]), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertEmpty($worker->getFailedTasks());

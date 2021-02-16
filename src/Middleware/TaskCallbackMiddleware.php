@@ -12,7 +12,7 @@ use function call_user_func;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, PostSchedulingMiddlewareInterface, OrderedMiddlewareInterface
+final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, PostSchedulingMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
     /**
      * {@inheritdoc}
@@ -41,6 +41,21 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             $scheduler->unschedule($task->getName());
 
             throw new RuntimeException('The task has encounter an error after scheduling, it has been unscheduled');
+        }
+    }
+
+    public function postExecute(TaskInterface $task): void
+    {
+        if (null === $task->getAfterExecuting()) {
+            return;
+        }
+
+        if (false === call_user_func($task->getAfterExecuting(), $task)) {
+            throw new RuntimeException(sprintf(
+                'The task "%s" has encounter an error when executing the %s::getAfterExecuting() callback',
+                $task->getName(),
+                get_class($task),
+            ));
         }
     }
 
