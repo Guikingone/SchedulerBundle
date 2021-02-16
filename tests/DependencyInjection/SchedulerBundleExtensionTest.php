@@ -628,12 +628,14 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(StopWorkerOnSignalSubscriber::class, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(TaskLifecycleSubscriber::class));
+        self::assertFalse($container->getDefinition(TaskLifecycleSubscriber::class)->isPublic());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLifecycleSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(TaskLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(TaskLifecycleSubscriber::class)->hasTag('container.preload'));
         self::assertSame(TaskLifecycleSubscriber::class, $container->getDefinition(TaskLifecycleSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(WorkerLifecycleSubscriber::class));
+        self::assertFalse($container->getDefinition(WorkerLifecycleSubscriber::class)->isPublic());
         self::assertInstanceOf(Reference::class, $container->getDefinition(WorkerLifecycleSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('container.preload'));
@@ -865,7 +867,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(DoctrineTransportFactory::class, $container->getDefinition(DoctrineTransportFactory::class)->getTag('container.preload')[0]['class']);
     }
 
-    public function testMiddlewareHubAreConfigured(): void
+    public function testMiddlewareStackAreConfigured(): void
     {
         $extension = new SchedulerBundleExtension();
 

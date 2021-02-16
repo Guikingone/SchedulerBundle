@@ -10,6 +10,7 @@ use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\Middleware\RateLimiterMiddleware;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Component\RateLimiter\Storage\StorageInterface;
 
 /**
@@ -112,5 +113,30 @@ final class RateLimiterMiddlewareTest extends TestCase
 
     public function testMiddlewareCannotPostExecuteWithoutAcceptedTokenConsumption(): void
     {
+        $factory = new RateLimiterFactory([
+            'id' => 'foo',
+            'policy' => 'token_bucket',
+            'limit' => 1,
+            'rate' => [
+                'interval' => '5 seconds',
+            ],
+        ], new InMemoryStorage());
+        $factory->create('foo');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical')->with(self::equalTo('The execution limit for task "foo" has been exceeded'));
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getMaxExecution')->willReturn(0);
+
+        $middleware = new RateLimiterMiddleware($factory, $logger);
+
+        $middleware->postExecute($task);
+
+        self::expectException(MiddlewareException::class);
+        self::expectExceptionMessage('Rate Limit Exceeded');
+        self::expectExceptionCode(0);
+        $middleware->postExecute($task);
     }
 }

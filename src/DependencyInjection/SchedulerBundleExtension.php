@@ -630,6 +630,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => TaskLifecycleSubscriber::class,
@@ -640,6 +641,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => WorkerLifecycleSubscriber::class,

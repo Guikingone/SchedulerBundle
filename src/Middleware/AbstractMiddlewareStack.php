@@ -47,11 +47,4 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
     {
         array_walk($middlewareList, $func);
     }
-
-    private function getOrderedMiddlewareStack(array $middleware): array
-    {
-        uasort($middleware, fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() > $nextMiddleware->getPriority() ? 1 : 0);
-
-        return $middleware;
-    }
 }

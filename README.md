@@ -86,3 +86,4 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Runners](doc/runners.md)
 * [Worker](doc/worker.md)
 * [Middleware](doc/middleware.md)
+* [Tests](doc/test.md)

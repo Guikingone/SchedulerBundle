@@ -12,6 +12,7 @@ use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Test\Constraint\TaskQueued;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -27,6 +28,10 @@ final class TaskLoggerSubscriberTest extends TestCase
         self::assertArrayHasKey(TaskFailedEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
+
+        self::assertArrayHasKey(TaskQueued::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskQueued::class]);
+        self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskQueued::class]);
 
         self::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
@@ -51,6 +56,7 @@ final class TaskLoggerSubscriberTest extends TestCase
         self::assertEmpty($subscriber->getEvents()->getFailedTaskEvents());
         self::assertEmpty($subscriber->getEvents()->getExecutedTaskEvents());
         self::assertEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
+        self::assertEmpty($subscriber->getEvents()->getQueuedTaskEvents());
     }
 
     public function testExecutedTaskCanBeRetrieved(): void
@@ -77,5 +83,28 @@ final class TaskLoggerSubscriberTest extends TestCase
         $subscriber->onTask($event);
 
         self::assertNotEmpty($subscriber->getEvents()->getEvents());
+    }
+
+    public function testQueuedTaskCanBeRetrieved(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('isQueued')->willReturn(true);
+
+        $event = new TaskScheduledEvent($task);
+
+        $subscriber = new TaskLoggerSubscriber();
+        $subscriber->onTask($event);
+
+        self::assertNotEmpty($subscriber->getEvents()->getQueuedTaskEvents());
+    }
+
+    public function testUnscheduledTaskCanBeRetrieved(): void
+    {
+        $event = new TaskUnscheduledEvent('foo');
+
+        $subscriber = new TaskLoggerSubscriber();
+        $subscriber->onTask($event);
+
+        self::assertNotEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
     }
 }

@@ -33,12 +33,10 @@ use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
-use function call_user_func;
 use function count;
 use function in_array;
 use function sleep;
 use function sprintf;
-use function usleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -59,7 +57,7 @@ final class Worker implements WorkerInterface
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
-    private WorkerMiddlewareStack $middlewareHub;
+    private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private ?PersistingStoreInterface $store;
@@ -73,7 +71,7 @@ final class Worker implements WorkerInterface
         SchedulerInterface $scheduler,
         iterable $runners,
         TaskExecutionTrackerInterface $tracker,
-        WorkerMiddlewareStack $middlewareHub,
+        WorkerMiddlewareStack $middlewareStack,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
         PersistingStoreInterface $store = null
@@ -81,7 +79,7 @@ final class Worker implements WorkerInterface
         $this->scheduler = $scheduler;
         $this->runners = $runners;
         $this->tracker = $tracker;
-        $this->middlewareHub = $middlewareHub;
+        $this->middlewareStack = $middlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?: new NullLogger();
         $this->store = $store;
@@ -127,12 +125,8 @@ final class Worker implements WorkerInterface
                         usleep($task->getExecutionDelay());
                     }
 
-                    if (null !== $task->getBeforeExecuting() && false === call_user_func($task->getBeforeExecuting(), $task)) {
-                        continue 2;
-                    }
-
                     try {
-                        $this->middlewareHub->runPreExecutionMiddleware($task);
+                        $this->middlewareStack->runPreExecutionMiddleware($task);
 
                         if ($lockedTask->acquire() && !$this->running) {
                             $this->running = true;
@@ -140,7 +134,7 @@ final class Worker implements WorkerInterface
                             $this->handleTask($runner, $task);
                         }
 
-                        $this->middlewareHub->runPostExecutionMiddleware($task);
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);

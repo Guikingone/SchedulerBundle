@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, PostSchedulingMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
+final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, PostSchedulingMiddlewareInterface, PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
     /**
      * {@inheritdoc}
@@ -44,6 +44,21 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             $scheduler->unschedule($task->getName());
 
             throw new MiddlewareException('The task has encounter an error after scheduling, it has been unscheduled');
+        }
+    }
+
+    public function preExecute(TaskInterface $task): void
+    {
+        if (is_null($task->getBeforeExecuting())) {
+            return;
+        }
+
+        if (false === call_user_func($task->getBeforeExecuting(), $task)) {
+            throw new MiddlewareException(sprintf(
+                'The task "%s" has encounter an error when executing the %s::getBeforeExecuting() callback',
+                $task->getName(),
+                get_class($task),
+            ));
         }
     }
 
