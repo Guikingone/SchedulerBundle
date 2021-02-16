@@ -10,6 +10,7 @@ use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
+use function is_null;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -83,7 +84,7 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
      */
     private function notify(Notification $notification, array $recipients): void
     {
-        if (null === $this->notifier) {
+        if (is_null($this->notifier)) {
             return;
         }
 

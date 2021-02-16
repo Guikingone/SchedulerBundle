@@ -27,15 +27,10 @@ use function rawurldecode;
 final class TaskSubscriber implements EventSubscriberInterface
 {
     private SchedulerInterface $scheduler;
-
     private string $tasksPath;
-
     private WorkerInterface $worker;
-
     private EventDispatcherInterface $eventDispatcher;
-
     private SerializerInterface $serializer;
-
     private LoggerInterface $logger;
 
     /**

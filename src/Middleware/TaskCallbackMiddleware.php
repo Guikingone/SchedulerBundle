@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
-use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use function call_user_func;
+use function get_class;
+use function is_null;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -19,12 +22,12 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
      */
     public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if (null === $task->getBeforeScheduling()) {
+        if (is_null($task->getBeforeScheduling())) {
             return;
         }
 
         if (false === call_user_func($task->getBeforeScheduling(), $task)) {
-            throw new RuntimeException('The task cannot be scheduled as en error occurred on the before scheduling callback');
+            throw new MiddlewareException('The task cannot be scheduled as en error occurred on the before scheduling callback');
         }
     }
 
@@ -33,25 +36,25 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
      */
     public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if (null === $task->getAfterScheduling()) {
+        if (is_null($task->getAfterScheduling())) {
             return;
         }
 
         if (false === call_user_func($task->getAfterScheduling(), $task)) {
             $scheduler->unschedule($task->getName());
 
-            throw new RuntimeException('The task has encounter an error after scheduling, it has been unscheduled');
+            throw new MiddlewareException('The task has encounter an error after scheduling, it has been unscheduled');
         }
     }
 
     public function postExecute(TaskInterface $task): void
     {
-        if (null === $task->getAfterExecuting()) {
+        if (is_null($task->getAfterExecuting())) {
             return;
         }
 
         if (false === call_user_func($task->getAfterExecuting(), $task)) {
-            throw new RuntimeException(sprintf(
+            throw new MiddlewareException(sprintf(
                 'The task "%s" has encounter an error when executing the %s::getAfterExecuting() callback',
                 $task->getName(),
                 get_class($task),
