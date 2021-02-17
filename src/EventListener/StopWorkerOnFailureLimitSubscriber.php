@@ -20,8 +20,10 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
     private int $maximumFailedTasks;
     private ?int $failedTasks = null;
 
-    public function __construct(int $maximumFailedTasks, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        int $maximumFailedTasks,
+        ?LoggerInterface $logger = null
+    ) {
         $this->maximumFailedTasks = $maximumFailedTasks;
         $this->logger = $logger ?: new NullLogger();
     }
