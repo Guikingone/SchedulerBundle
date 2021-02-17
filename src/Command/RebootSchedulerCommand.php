@@ -87,7 +87,10 @@ EOF
 
         if ($input->getOption('dry-run')) {
             if (0 === $tasks->count()) {
-                $io->warning('The scheduler does not contain any tasks planned for the reboot process');
+                $io->warning([
+                    'The scheduler does not contain any tasks',
+                    'Be sure that the tasks use the "@reboot" expression',
+                ]);
 
                 return self::SUCCESS;
             }
@@ -111,7 +114,10 @@ EOF
         }
 
         while ($this->worker->isRunning()) {
-            $io->warning('The scheduler cannot be rebooted as the worker is not available, retrying to access it');
+            $io->warning([
+                'The scheduler cannot be rebooted as the worker is not available,',
+                'The process will be retried in 1 second',
+            ]);
 
             sleep(1);
         }

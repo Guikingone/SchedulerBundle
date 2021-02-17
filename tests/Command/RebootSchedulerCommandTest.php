@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle\Command;
 use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\TaskList;
-use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -64,12 +63,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('execute')->with(self::equalTo([]), ...$taskList);
 
-        $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:reboot'));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -91,18 +85,14 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('execute');
 
-        $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:reboot'));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([
             '--dry-run' => true,
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] The scheduler does not contain any tasks planned for the reboot process', $tester->getDisplay());
+        self::assertStringContainsString('[WARNING] The scheduler does not contain any tasks', $tester->getDisplay());
+        self::assertStringContainsString('Be sure that the tasks use the "@reboot" expression', $tester->getDisplay());
     }
 
     public function testCommandCannotRebootSchedulerWithRunningWorker(): void
@@ -132,16 +122,12 @@ EOF
         $worker->expects(self::exactly(2))->method('isRunning')->willReturnOnConsecutiveCalls(true, false);
         $worker->expects(self::once())->method('execute')->with([], self::equalTo($task));
 
-        $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:reboot'));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] The scheduler cannot be rebooted as the worker is not available, retrying to access it', $tester->getDisplay());
+        self::assertStringContainsString('[WARNING] The scheduler cannot be rebooted as the worker is not available', $tester->getDisplay());
+        self::assertStringContainsString('The process will be retried in 1 second', $tester->getDisplay());
         self::assertStringContainsString('[OK] The scheduler have been rebooted', $tester->getDisplay());
         self::assertStringContainsString('Name', $tester->getDisplay());
         self::assertStringContainsString('foo', $tester->getDisplay());
@@ -180,12 +166,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')->with([], self::equalTo($task));
 
-        $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:reboot'));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -227,12 +208,7 @@ EOF
         $worker->expects(self::never())->method('isRunning');
         $worker->expects(self::never())->method('execute');
 
-        $command = new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:reboot'));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([
             '--dry-run' => true,
         ]);
