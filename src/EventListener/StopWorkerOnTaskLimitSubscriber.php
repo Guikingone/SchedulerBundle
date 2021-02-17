@@ -18,8 +18,10 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
     private int $maximumTasks;
     private LoggerInterface $logger;
 
-    public function __construct(int $maximumTasks, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        int $maximumTasks,
+        ?LoggerInterface $logger = null
+    ) {
         $this->maximumTasks = $maximumTasks;
         $this->logger = $logger ?: new NullLogger();
     }
