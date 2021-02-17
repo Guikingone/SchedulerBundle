@@ -165,6 +165,9 @@ final class TaskSubscriberTest extends TestCase
 
         self::assertTrue($event->hasResponse());
         self::assertInstanceOf(JsonResponse::class, $event->getResponse());
+        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('message', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('trace', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
         self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()->getStatusCode());
     }
 
