@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -73,6 +74,8 @@ final class TaskSubscriberTest extends TestCase
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
         self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('A GET request should at least contains a task name or its expression!');
+        self::expectExceptionCode(0);
         $subscriber->onKernelRequest($event);
     }
 
@@ -81,20 +84,21 @@ final class TaskSubscriberTest extends TestCase
         $serializer = $this->createMock(Serializer::class);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
-        $eventSubscriber->expects(self::once())->method('addSubscriber');
+        $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
 
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(3))->method('getName')->willReturn('app.bar');
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
-        $taskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('foo');
+
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute');
+        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?name=app.bar');
@@ -110,12 +114,16 @@ final class TaskSubscriberTest extends TestCase
     public function testValidPathCanBeHandledWithValidExpression(): void
     {
         $serializer = $this->createMock(Serializer::class);
-        $task = $this->createMock(TaskInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
-        $taskList->expects(self::once())->method('count')->willReturn(1);
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('app.bar');
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getName')->willReturn('foo');
+        $secondTask->expects(self::once())->method('getExpression')->willReturn('@reboot');
+
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -128,7 +136,7 @@ final class TaskSubscriberTest extends TestCase
         $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
-        $eventSubscriber->expects(self::once())->method('addSubscriber');
+        $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
 
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $subscriber->onKernelRequest($event);
