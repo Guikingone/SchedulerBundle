@@ -6,6 +6,7 @@ namespace SchedulerBundle\Middleware;
 
 use Closure;
 use function array_filter;
+use function array_merge;
 use function uasort;
 
 /**
@@ -25,26 +26,47 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
     protected function getPreSchedulingMiddleware(): array
     {
-        return array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface);
+        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface);
+
+        return $this->orderMiddleware($list);
     }
 
     protected function getPostSchedulingMiddleware(): array
     {
-        return array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface);
+        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface);
+
+        return $this->orderMiddleware($list);
     }
 
     protected function getPreExecutionMiddleware(): array
     {
-        return array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface);
+        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface);
+
+        return $this->orderMiddleware($list);
     }
 
     protected function getPostExecutionMiddleware(): array
     {
-        return array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface);
+        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface);
+
+        return $this->orderMiddleware($list);
     }
 
     protected function runMiddleware(array $middlewareList, Closure $func): void
     {
         array_walk($middlewareList, $func);
+    }
+
+    private function orderMiddleware(array $middlewareList): array
+    {
+        $orderedMiddleware = array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof OrderedMiddlewareInterface);
+
+        if ([] === $orderedMiddleware) {
+            return $middlewareList;
+        }
+
+        uasort($orderedMiddleware, fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() < $nextMiddleware->getPriority() ? -1 : 1);
+
+        return array_replace($middlewareList, $orderedMiddleware);
     }
 }
