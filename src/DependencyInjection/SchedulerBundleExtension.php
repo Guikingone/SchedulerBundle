@@ -7,6 +7,8 @@ namespace SchedulerBundle\DependencyInjection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
+use SchedulerBundle\Bridge\ApiPlatform\CollectionDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\ItemDataProvider;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -135,6 +137,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerDoctrineBridge($container);
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
+        $this->registerApiPlatformBridge($container);
         $this->registerDataCollector($container);
     }
 
@@ -888,6 +891,31 @@ final class SchedulerBundleExtension extends Extension
                 ])
             ;
         }
+    }
+
+    private function registerApiPlatformBridge(ContainerBuilder $container): void
+    {
+        $container->register(ItemDataProvider::class, ItemDataProvider::class)
+            ->setArguments([
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.item_data_provider')
+            ->addTag('container.preload', [
+                'class' => ItemDataProvider::class,
+            ])
+        ;
+
+        $container->register(CollectionDataProvider::class, CollectionDataProvider::class)
+            ->setArguments([
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.collection_data_provider')
+            ->addTag('container.preload', [
+                'class' => CollectionDataProvider::class,
+            ])
+        ;
     }
 
     private function registerDataCollector(ContainerBuilder $container): void

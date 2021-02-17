@@ -15,6 +15,7 @@
         "psr-4": {
             "SchedulerBundle\\": "src/",
             "SchedulerBundle\\Bridge\\": "src/Bridge/",
+            "SchedulerBundle\\Bridge\\ApiPlatform\\": "src/Bridge/ApiPlatform/",
             "SchedulerBundle\\Bridge\\Doctrine\\": "src/Bridge/Doctrine/",
             "SchedulerBundle\\Bridge\\Doctrine\\SchemaListener\\": "src/Bridge/Doctrine/SchemaListener/",
             "SchedulerBundle\\Bridge\\Doctrine\\Transport\\": "src/Bridge/Doctrine/Transport/",
@@ -46,6 +47,7 @@
         "psr-4": {
             "Tests\\SchedulerBundle\\": "tests/",
             "Tests\\SchedulerBundle\\Bridge\\": "tests/Bridge/",
+            "Tests\\SchedulerBundle\\Bridge\\ApiPlatform\\": "tests/Bridge/ApiPlatform/",
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\": "tests/Bridge/Doctrine/",
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\SchemaListener\\": "tests/Bridge/Doctrine/SchemaListener/",
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\Transport\\": "tests/Bridge/Doctrine/Transport/",
