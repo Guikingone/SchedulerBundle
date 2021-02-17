@@ -3,7 +3,7 @@
 {% import _self as helper %}
 
 {% block toolbar %}
-    {% set events = collector.events %}
+    {% set events = collector.getEvents() %}
 
     {% if events|length > 0 %}
         {% set scheduled_tasks = events.scheduledTaskEvents %}

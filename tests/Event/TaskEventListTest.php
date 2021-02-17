@@ -78,6 +78,17 @@ final class TaskEventListTest extends TestCase
         self::assertSame($task, $list->getFailedTaskEvents()[0]->getTask()->getTask());
     }
 
+    public function testQueuedTaskEventsCanBeRetrievedWithoutValidEvent(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('isQueued')->willReturn(true);
+
+        $list = new TaskEventList();
+        $list->addEvent(new TaskExecutedEvent($task));
+
+        self::assertEmpty($list->getQueuedTaskEvents());
+    }
+
     public function testQueuedTaskEventsCanBeRetrieved(): void
     {
         $task = $this->createMock(TaskInterface::class);

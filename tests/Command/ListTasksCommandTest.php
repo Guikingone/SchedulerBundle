@@ -76,16 +76,22 @@ EOF
     public function testCommandCanListTaskWithSpecificState(string $stateOption): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::exactly(2))->method('toArray')->willReturn([$task]);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(1))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::never())->method('getDescription')->willReturn('A random task');
+        $secondTask->expects(self::never())->method('getExpression')->willReturn('* * * * *');
+        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::DISABLED);
+        $secondTask->expects(self::never())->method('getTags')->willReturn(['app', 'slow']);
+
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -103,13 +109,18 @@ EOF
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
         self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
         self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('A random task', $tester->getDisplay());
         self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('* * * * *', $tester->getDisplay());
         self::assertStringContainsString('Last execution date', $tester->getDisplay());
         self::assertStringContainsString('Next execution date', $tester->getDisplay());
         self::assertStringContainsString('Last execution duration', $tester->getDisplay());
         self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString(TaskInterface::ENABLED, $tester->getDisplay());
         self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app, slow', $tester->getDisplay());
     }
 
     /**
