@@ -12,7 +12,7 @@ This bundle provides a set of constraints built on top of the API to assert on t
 
 ## Tests trait
 
-A little bonus is the `SchedulerAssertionTrait` that can be used on tests that extends `KernelTestCase`:
+A little bonus is the `SchedulerAssertionTrait` that can be used on tests that extend `KernelTestCase`:
 
 ```php
 <?php

@@ -9,7 +9,7 @@ This bundle defines middleware related to execution and scheduling phases.
 Middlewares are "man in the middle" that allows you to interact with the task
 that is about to be scheduled/executed or even after the scheduling/execution.
 
-There's two type of middleware:
+There are two types of middleware:
 
 - Pre_*Action*_Middleware
 - Post_*Action*_Middleware
@@ -51,7 +51,7 @@ final class FooMiddleware implements PreSchedulingMiddlewareInterface, PostSched
 }
 ```
 
-Both method receives the current task (before scheduling it and sending it through transport) along with the scheduler.
+Both methods receive the current task (before scheduling it and sending it through transport) along with the scheduler.
 
 ## Execution
 
@@ -87,9 +87,9 @@ final class FooMiddleware implements PreExecutionMiddlewareInterface, PostExecut
 }
 ```
 
-Both method receives the current task.
+Both methods receive the current task.
 
-### Extra informations
+### Extra information
 
 - Implementing both interfaces for each middleware is not required, your middleware can be focused on a single one.
 - A middleware can interact during both process by implementing the desired interfaces, 
