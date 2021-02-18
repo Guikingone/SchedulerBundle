@@ -38,6 +38,3 @@ jobs:
 
       - name: Run PHPStan
         run: php vendor/bin/phpstan analyze
-
-      - name: Run Psalm
-        run: php vendor/bin/psalm

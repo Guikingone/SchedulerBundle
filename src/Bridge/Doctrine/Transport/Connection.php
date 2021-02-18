@@ -7,6 +7,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
+use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -127,6 +128,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL().' '.$connection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),
@@ -199,6 +201,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':name', $name, ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(),
                     $query->getParameters(),
@@ -276,6 +279,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(). ' ' .$this->driverConnection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),
