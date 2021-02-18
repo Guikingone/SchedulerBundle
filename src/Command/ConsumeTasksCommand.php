@@ -19,7 +19,7 @@ use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_pop;
 use function implode;

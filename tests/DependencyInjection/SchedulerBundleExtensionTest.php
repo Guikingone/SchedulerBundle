@@ -30,6 +30,7 @@ use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\RateLimiterMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -67,7 +68,7 @@ use SchedulerBundle\Task\TaskBuilder;
 use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
-use SchedulerBundle\Transport\FailoverTransportFactory;
+use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LongTailTransportFactory;
@@ -104,6 +105,8 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container);
 
+        $container->compile();
+
         self::assertTrue($container->hasParameter('scheduler.timezone'));
         self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
         self::assertTrue($container->hasParameter('scheduler.trigger_path'));
@@ -124,6 +127,8 @@ final class SchedulerBundleExtensionTest extends TestCase
                 ],
             ],
         ], $container);
+
+        $container->compile();
 
         $autoconfigurationInterfaces = $container->getAutoconfiguredInstanceof();
 
@@ -167,6 +172,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(TransportFactory::class));
+        self::assertCount(1, $container->getDefinition(TransportFactory::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(TransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(TransportFactory::class)->hasTag('container.preload'));
         self::assertSame(TransportFactory::class, $container->getDefinition(TransportFactory::class)->getTag('container.preload')[0]['class']);
@@ -184,11 +190,11 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(FilesystemTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(FilesystemTransportFactory::class, $container->getDefinition(FilesystemTransportFactory::class)->getTag('container.preload')[0]['class']);
 
-        self::assertTrue($container->hasDefinition(FailoverTransportFactory::class));
-        self::assertFalse($container->getDefinition(FailoverTransportFactory::class)->isPublic());
-        self::assertTrue($container->getDefinition(FailoverTransportFactory::class)->hasTag('scheduler.transport_factory'));
-        self::assertTrue($container->getDefinition(FailoverTransportFactory::class)->hasTag('container.preload'));
-        self::assertSame(FailoverTransportFactory::class, $container->getDefinition(FailoverTransportFactory::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(FailOverTransportFactory::class));
+        self::assertFalse($container->getDefinition(FailOverTransportFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(FailOverTransportFactory::class)->hasTag('scheduler.transport_factory'));
+        self::assertTrue($container->getDefinition(FailOverTransportFactory::class)->hasTag('container.preload'));
+        self::assertSame(FailOverTransportFactory::class, $container->getDefinition(FailOverTransportFactory::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(LongTailTransportFactory::class));
         self::assertFalse($container->getDefinition(LongTailTransportFactory::class)->isPublic());
@@ -229,6 +235,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition('scheduler.transport'));
+        self::assertTrue($container->hasAlias(TransportInterface::class));
+        self::assertCount(4, $container->getDefinition('scheduler.transport')->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.transport')->getFactory()[0]);
         self::assertSame('createTransport', $container->getDefinition('scheduler.transport')->getFactory()[1]);
         self::assertSame('memory://first_in_first_out', $container->getDefinition('scheduler.transport')->getArgument(0));
@@ -263,11 +271,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Scheduler::class));
         self::assertTrue($container->hasAlias(SchedulerInterface::class));
+        self::assertCount(6, $container->getDefinition(Scheduler::class)->getArguments());
         self::assertSame('Europe/Paris', $container->getDefinition(Scheduler::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(3));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(4));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(5));
         self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
@@ -293,6 +303,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(ConsumeTasksCommand::class));
+        self::assertCount(4, $container->getDefinition(ConsumeTasksCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ConsumeTasksCommand::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(ConsumeTasksCommand::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(ConsumeTasksCommand::class)->getArgument(2));
@@ -304,18 +315,21 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ConsumeTasksCommand::class, $container->getDefinition(ConsumeTasksCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ListFailedTasksCommand::class));
+        self::assertCount(1, $container->getDefinition(ListFailedTasksCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ListFailedTasksCommand::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ListFailedTasksCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(ListFailedTasksCommand::class)->hasTag('container.preload'));
         self::assertSame(ListFailedTasksCommand::class, $container->getDefinition(ListFailedTasksCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ListTasksCommand::class));
+        self::assertCount(1, $container->getDefinition(ListTasksCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ListTasksCommand::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ListTasksCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(ListTasksCommand::class)->hasTag('container.preload'));
         self::assertSame(ListTasksCommand::class, $container->getDefinition(ListTasksCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RebootSchedulerCommand::class));
+        self::assertCount(4, $container->getDefinition(RebootSchedulerCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(RebootSchedulerCommand::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RebootSchedulerCommand::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RebootSchedulerCommand::class)->getArgument(2));
@@ -327,6 +341,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(RebootSchedulerCommand::class, $container->getDefinition(RebootSchedulerCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RemoveFailedTaskCommand::class));
+        self::assertCount(2, $container->getDefinition(RemoveFailedTaskCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(RemoveFailedTaskCommand::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RemoveFailedTaskCommand::class)->getArgument(1));
         self::assertTrue($container->getDefinition(RemoveFailedTaskCommand::class)->hasTag('console.command'));
@@ -334,6 +349,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(RemoveFailedTaskCommand::class, $container->getDefinition(RemoveFailedTaskCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RetryFailedTaskCommand::class));
+        self::assertCount(3, $container->getDefinition(RetryFailedTaskCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(RetryFailedTaskCommand::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RetryFailedTaskCommand::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RetryFailedTaskCommand::class)->getArgument(2));
@@ -365,6 +381,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SchedulePolicyOrchestrator::class));
         self::assertTrue($container->hasAlias(SchedulePolicyOrchestratorInterface::class));
+        self::assertCount(1, $container->getDefinition(SchedulePolicyOrchestrator::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(SchedulePolicyOrchestrator::class)->getArgument(0));
         self::assertTrue($container->getDefinition(SchedulePolicyOrchestrator::class)->hasTag('container.preload'));
         self::assertSame(SchedulePolicyOrchestrator::class, $container->getDefinition(SchedulePolicyOrchestrator::class)->getTag('container.preload')[0]['class']);
@@ -425,6 +442,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(TaskBuilder::class));
         self::assertTrue($container->hasAlias(TaskBuilderInterface::class));
+        self::assertCount(2, $container->getDefinition(TaskBuilder::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(TaskBuilder::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskBuilder::class)->getArgument(1));
         self::assertTrue($container->getDefinition(TaskBuilder::class)->hasTag('container.preload'));
@@ -451,6 +469,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ShellBuilder::class, $container->getDefinition(ShellBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ChainedBuilder::class));
+        self::assertCount(1, $container->getDefinition(ChainedBuilder::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('container.preload'));
@@ -475,6 +494,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition('scheduler.application'));
+        self::assertCount(1, $container->getDefinition('scheduler.application')->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.application')->getArgument(0));
 
         self::assertTrue($container->hasDefinition(ShellTaskRunner::class));
@@ -483,6 +503,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ShellTaskRunner::class, $container->getDefinition(ShellTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(CommandTaskRunner::class));
+        self::assertCount(1, $container->getDefinition(CommandTaskRunner::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(CommandTaskRunner::class)->getArgument(0));
         self::assertTrue($container->getDefinition(CommandTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(CommandTaskRunner::class)->hasTag('container.preload'));
@@ -494,18 +515,21 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(CallbackTaskRunner::class, $container->getDefinition(CallbackTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(HttpTaskRunner::class));
+        self::assertCount(1, $container->getDefinition(HttpTaskRunner::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(HttpTaskRunner::class)->getArgument(0));
         self::assertTrue($container->getDefinition(HttpTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(HttpTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(HttpTaskRunner::class, $container->getDefinition(HttpTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(MessengerTaskRunner::class));
+        self::assertCount(1, $container->getDefinition(MessengerTaskRunner::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(MessengerTaskRunner::class)->getArgument(0));
         self::assertTrue($container->getDefinition(MessengerTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(MessengerTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(MessengerTaskRunner::class, $container->getDefinition(MessengerTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(NotificationTaskRunner::class));
+        self::assertCount(1, $container->getDefinition(NotificationTaskRunner::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(NotificationTaskRunner::class)->getArgument(0));
         self::assertTrue($container->getDefinition(NotificationTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(NotificationTaskRunner::class)->hasTag('container.preload'));
@@ -517,6 +541,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(NullTaskRunner::class, $container->getDefinition(NullTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ChainedTaskRunner::class));
+        self::assertCount(1, $container->getDefinition(ChainedTaskRunner::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedTaskRunner::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('container.preload'));
@@ -541,6 +566,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(TaskNormalizer::class));
+        self::assertCount(5, $container->getDefinition(TaskNormalizer::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(2));
@@ -551,7 +577,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(TaskNormalizer::class, $container->getDefinition(TaskNormalizer::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(NotificationTaskBagNormalizer::class));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(0));
+        self::assertCount(1, $container->getDefinition(NotificationTaskBagNormalizer::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(NotificationTaskBagNormalizer::class)->getArgument(0));
         self::assertTrue($container->getDefinition(NotificationTaskBagNormalizer::class)->hasTag('serializer.normalizer'));
         self::assertTrue($container->getDefinition(NotificationTaskBagNormalizer::class)->hasTag('container.preload'));
         self::assertSame(NotificationTaskBagNormalizer::class, $container->getDefinition(NotificationTaskBagNormalizer::class)->getTag('container.preload')[0]['class']);
@@ -575,6 +602,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(TaskMessageHandler::class));
+        self::assertCount(1, $container->getDefinition(TaskMessageHandler::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskMessageHandler::class)->getArgument(0));
         self::assertTrue($container->getDefinition(TaskMessageHandler::class)->hasTag('messenger.message_handler'));
         self::assertTrue($container->getDefinition(TaskMessageHandler::class)->hasTag('container.preload'));
@@ -599,6 +627,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         ], $container);
 
         self::assertTrue($container->hasDefinition(TaskSubscriber::class));
+        self::assertCount(6, $container->getDefinition(TaskSubscriber::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskSubscriber::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskSubscriber::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskSubscriber::class)->getArgument(2));
@@ -612,6 +641,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(TaskSubscriber::class, $container->getDefinition(TaskSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(TaskExecutionSubscriber::class));
+        self::assertCount(1, $container->getDefinition(TaskExecutionSubscriber::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskExecutionSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(TaskExecutionSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(TaskExecutionSubscriber::class)->hasTag('container.preload'));
@@ -636,6 +666,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(WorkerLifecycleSubscriber::class));
         self::assertFalse($container->getDefinition(WorkerLifecycleSubscriber::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(WorkerLifecycleSubscriber::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(WorkerLifecycleSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('container.preload'));
@@ -663,6 +694,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(TaskExecutionTracker::class));
         self::assertTrue($container->hasAlias(TaskExecutionTrackerInterface::class));
+        self::assertCount(1, $container->getDefinition(TaskExecutionTracker::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskExecutionTracker::class)->getArgument(0));
         self::assertTrue($container->getDefinition(TaskExecutionTracker::class)->hasTag('container.preload'));
         self::assertSame(TaskExecutionTracker::class, $container->getDefinition(TaskExecutionTracker::class)->getTag('container.preload')[0]['class']);
@@ -687,6 +719,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Worker::class));
         self::assertTrue($container->hasAlias(WorkerInterface::class));
+        self::assertCount(7, $container->getDefinition(Worker::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(0));
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(Worker::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(2));
@@ -719,12 +752,14 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Worker::class));
         self::assertTrue($container->hasAlias(WorkerInterface::class));
+        self::assertCount(7, $container->getDefinition(Worker::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(0));
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(Worker::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(3));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(4));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(5));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(6));
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('scheduler.worker'));
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Worker::class)->getTag('monolog.logger')[0]['channel']);
@@ -854,6 +889,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SchedulerTransportDoctrineSchemaSubscriber::class));
         self::assertFalse($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->hasTag('doctrine.event_subscriber'));
         self::assertTrue($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->hasTag('container.preload'));
@@ -861,6 +897,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(DoctrineTransportFactory::class));
         self::assertFalse($container->getDefinition(DoctrineTransportFactory::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(DoctrineTransportFactory::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(DoctrineTransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('container.preload'));
@@ -886,6 +923,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SchedulerMiddlewareStack::class));
         self::assertFalse($container->getDefinition(SchedulerMiddlewareStack::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(SchedulerMiddlewareStack::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(SchedulerMiddlewareStack::class)->getArgument(0));
         self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
         self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('container.preload'));
@@ -893,6 +931,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(WorkerMiddlewareStack::class));
         self::assertFalse($container->getDefinition(WorkerMiddlewareStack::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(WorkerMiddlewareStack::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(WorkerMiddlewareStack::class)->getArgument(0));
         self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
         self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('container.preload'));
@@ -900,6 +939,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(NotifierMiddleware::class));
         self::assertFalse($container->getDefinition(NotifierMiddleware::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(NotifierMiddleware::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(NotifierMiddleware::class)->getArgument(0));
         self::assertTrue($container->getDefinition(NotifierMiddleware::class)->hasTag('scheduler.scheduler_middleware'));
         self::assertTrue($container->getDefinition(NotifierMiddleware::class)->hasTag('scheduler.worker_middleware'));
@@ -912,6 +952,35 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('container.preload'));
         self::assertSame(TaskCallbackMiddleware::class, $container->getDefinition(TaskCallbackMiddleware::class)->getTag('container.preload')[0]['class']);
+
+        self::assertFalse($container->hasDefinition(RateLimiterMiddleware::class));
+    }
+
+    public function testRateLimiterMiddlewareCanBeConfigured(): void
+    {
+        $extension = new SchedulerBundleExtension();
+
+        $container = new ContainerBuilder();
+        $extension->load([
+            'scheduler_bundle' => [
+                'path' => '/_foo',
+                'timezone' => 'Europe/Paris',
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'tasks' => [],
+                'lock_store' => null,
+                'rate_limiter' => 'foo',
+            ],
+        ], $container);
+
+        self::assertTrue($container->hasDefinition(RateLimiterMiddleware::class));
+        self::assertFalse($container->getDefinition(RateLimiterMiddleware::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(RateLimiterMiddleware::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(RateLimiterMiddleware::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(RateLimiterMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(RateLimiterMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(RateLimiterMiddleware::class, $container->getDefinition(RateLimiterMiddleware::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testDataCollectorIsConfigured(): void
@@ -933,6 +1002,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SchedulerDataCollector::class));
         self::assertFalse($container->getDefinition(SchedulerDataCollector::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(SchedulerDataCollector::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerDataCollector::class)->getArgument(0));
         self::assertTrue($container->getDefinition(SchedulerDataCollector::class)->hasTag('data_collector'));
         self::assertSame('@Scheduler/Collector/data_collector.html.twig', $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['template']);

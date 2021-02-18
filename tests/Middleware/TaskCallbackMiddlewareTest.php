@@ -83,7 +83,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $middleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
-        self::expectExceptionMessage('The task has encounter an error after scheduling, it has been unscheduled');
+        self::expectExceptionMessage('The task has encountered an error after scheduling, it has been unscheduled');
         self::expectExceptionCode(0);
         $middleware->postScheduling($task, $scheduler);
     }

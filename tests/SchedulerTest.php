@@ -254,7 +254,7 @@ final class SchedulerTest extends TestCase
         ]), $eventDispatcher);
 
         self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The task has encounter an error after scheduling, it has been unscheduled');
+        self::expectExceptionMessage('The task has encountered an error after scheduling, it has been unscheduled');
         self::expectExceptionCode(0);
         $scheduler->schedule($task);
     }

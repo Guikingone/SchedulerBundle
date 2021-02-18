@@ -12,6 +12,7 @@ use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\RateLimiterMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\BlockingStoreInterface;
@@ -553,10 +554,13 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
         $worker->execute();
 
+        /** @var FailedTask $failedTask */
+        $failedTask = $worker->getFailedTasks()->get('failed.failed');
+
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertCount(1, $worker->getFailedTasks());
-        self::assertSame('Random error occurred', $worker->getFailedTasks()->get('failed.failed')->getReason());
+        self::assertSame('Random error occurred', $failedTask->getReason());
     }
 
     public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
@@ -863,8 +867,11 @@ final class WorkerTest extends TestCase
 
         $worker->execute();
 
+        /** @var FailedTask $failedTask */
+        $failedTask = $worker->getFailedTasks()->get('foo.failed');
+
         self::assertSame($task, $worker->getLastExecutedTask());
-        self::assertSame($task, $worker->getFailedTasks()->get('foo.failed')->getTask());
-        self::assertSame('Rate Limit Exceeded', $worker->getFailedTasks()->get('foo.failed')->getReason());
+        self::assertSame($task, $failedTask->getTask());
+        self::assertSame('Rate Limit Exceeded', $failedTask->getReason());
     }
 }

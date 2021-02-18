@@ -8,8 +8,8 @@ use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Transport\FailoverTransport;
-use SchedulerBundle\Transport\FailoverTransportFactory;
+use SchedulerBundle\Transport\FailOverTransport;
+use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransport;
@@ -63,13 +63,13 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new FailoverTransportFactory([
+        $factory = new TransportFactory([new FailOverTransportFactory([
             new InMemoryTransportFactory(),
             new FilesystemTransportFactory(),
         ])]);
 
         self::assertInstanceOf(
-            FailoverTransport::class,
+            FailOverTransport::class,
             $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }

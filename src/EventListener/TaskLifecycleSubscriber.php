@@ -6,7 +6,6 @@ namespace SchedulerBundle\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Event\TaskEventInterface;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -25,7 +24,7 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?: new NullLogger();
     }
 
-    public function onTaskScheduled(TaskEventInterface $event): void
+    public function onTaskScheduled(TaskScheduledEvent $event): void
     {
         $this->logger->info('A task has been scheduled', [
             'task' => $event->getTask()->getName(),

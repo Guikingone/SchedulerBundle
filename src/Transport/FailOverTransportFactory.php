@@ -11,7 +11,7 @@ use function strpos;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailoverTransportFactory extends AbstractCompoundTransportFactory
+final class FailOverTransportFactory extends AbstractCompoundTransportFactory
 {
     private iterable $transportFactories;
 
@@ -28,7 +28,7 @@ final class FailoverTransportFactory extends AbstractCompoundTransportFactory
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new FailoverTransport($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
+        return new FailOverTransport($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
     }
 
     /**

@@ -23,8 +23,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function json_decode;
 
 /**
@@ -41,8 +39,8 @@ final class TaskSubscriberTest extends TestCase
 
     public function testInvalidPathCannotBeHandledWithInvalidPath(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
-        $eventSubscriber = $this->createMock(EventDispatcherInterface::class);
+        $serializer = $this->createMock(Serializer::class);
+        $eventSubscriber = $this->createMock(EventDispatcher::class);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
@@ -61,8 +59,8 @@ final class TaskSubscriberTest extends TestCase
 
     public function testValidPathCannotBeHandledWithoutParams(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
-        $eventSubscriber = $this->createMock(EventDispatcherInterface::class);
+        $serializer = $this->createMock(Serializer::class);
+        $eventSubscriber = $this->createMock(EventDispatcher::class);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
@@ -74,7 +72,7 @@ final class TaskSubscriberTest extends TestCase
         $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('A GET request should at least contains a task name or its expression!');
+        self::expectExceptionMessage('A GET request should at least contain a task name or its expression!');
         self::expectExceptionCode(0);
         $subscriber->onKernelRequest($event);
     }
@@ -147,7 +145,7 @@ final class TaskSubscriberTest extends TestCase
 
     public function testResponseIsSetWhenWorkerErrorIsThrown(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createMock(Serializer::class);
         $task = $this->createMock(TaskInterface::class);
 
         $taskList = $this->createMock(TaskListInterface::class);

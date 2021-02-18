@@ -29,6 +29,7 @@ use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\RateLimiterMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -69,7 +70,7 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Transport\FailoverTransportFactory;
+use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LongTailTransportFactory;
@@ -123,7 +124,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container);
         $this->registerRedisBridge($container);
-        $this->registerMiddlewareStacks($container);
+        $this->registerMiddlewareStacks($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -157,6 +158,7 @@ final class SchedulerBundleExtension extends Extension
                 'class' => TransportFactory::class,
             ])
         ;
+
         $container->setAlias(TransportFactoryInterface::class, TransportFactory::class);
 
         $container->register(InMemoryTransportFactory::class, InMemoryTransportFactory::class)
@@ -175,11 +177,11 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(FailoverTransportFactory::class, FailoverTransportFactory::class)
+        $container->register(FailOverTransportFactory::class, FailOverTransportFactory::class)
             ->setPublic(false)
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
-                'class' => FailoverTransportFactory::class,
+                'class' => FailOverTransportFactory::class,
             ])
         ;
 
@@ -217,6 +219,8 @@ final class SchedulerBundleExtension extends Extension
                 'class' => TransportInterface::class,
             ])
         ;
+
+        $container->setAlias(TransportInterface::class, 'scheduler.transport');
     }
 
     private function registerScheduler(ContainerBuilder $container): void
@@ -225,6 +229,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 $container->getParameter('scheduler.timezone'),
                 new Reference('scheduler.transport', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
@@ -236,6 +241,7 @@ final class SchedulerBundleExtension extends Extension
                 'class' => Scheduler::class,
             ])
         ;
+
         $container->setAlias(SchedulerInterface::class, Scheduler::class);
     }
 
@@ -749,7 +755,7 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    private function registerMiddlewareStacks(ContainerBuilder $container): void
+    private function registerMiddlewareStacks(ContainerBuilder $container, array $configuration): void
     {
         $container->register(SchedulerMiddlewareStack::class, SchedulerMiddlewareStack::class)
             ->setArguments([
@@ -793,6 +799,19 @@ final class SchedulerBundleExtension extends Extension
                 'class' => TaskCallbackMiddleware::class,
             ])
         ;
+
+        if (null !== $configuration['rate_limiter']) {
+            $container->register(RateLimiterMiddleware::class, RateLimiterMiddleware::class)
+                ->setArguments([
+                    new Reference(sprintf('limiter.%s', $configuration['rate_limiter']), ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('scheduler.worker_middleware')
+                ->addTag('container.preload', [
+                    'class' => RateLimiterMiddleware::class,
+                ])
+            ;
+        }
     }
 
     private function registerDataCollector(ContainerBuilder $container): void

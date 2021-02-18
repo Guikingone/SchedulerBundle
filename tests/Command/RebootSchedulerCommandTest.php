@@ -15,7 +15,6 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +23,7 @@ final class RebootSchedulerCommandTest extends TestCase
 {
     public function testCommandIsConfigured(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
 
@@ -184,7 +183,7 @@ EOF
 
     public function testCommandCanDryRunTheSchedulerReboot(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');

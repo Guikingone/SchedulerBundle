@@ -14,7 +14,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 final class TaskExecutedEvent extends Event implements TaskEventInterface
 {
     private TaskInterface $task;
-
     private ?Output $output;
 
     public function __construct(TaskInterface $task, Output $output = null)

@@ -38,6 +38,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         SetList::PHP_72,
         SetList::PHP_73,
         SetList::PHP_74,
+        SetList::SYMFONY_50,
+        SetList::SYMFONY_52,
     ]);
 
     $parameters->set(Option::ENABLE_CACHE, true);

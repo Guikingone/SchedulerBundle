@@ -37,7 +37,7 @@ final class CallbackTask extends AbstractTask
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int, mixed>|array<string, mixed>
      */
     public function getArguments(): array
     {
@@ -45,7 +45,7 @@ final class CallbackTask extends AbstractTask
     }
 
     /**
-     * @param array<string, mixed> $arguments
+     * @param array<int, mixed>|array<string, mixed> $arguments
      */
     public function setArguments(array $arguments): self
     {

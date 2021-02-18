@@ -25,7 +25,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -36,7 +35,7 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
@@ -82,7 +81,7 @@ EOF
 
     public function testCommandCannotConsumeEmptyTasks(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $taskList = $this->createMock(TaskListInterface::class);

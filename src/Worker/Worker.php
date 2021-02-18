@@ -33,7 +33,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
-use function count;
 use function in_array;
 use function sleep;
 use function sprintf;
@@ -153,7 +152,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === (is_countable($tasks) ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === $tasks->count() && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }

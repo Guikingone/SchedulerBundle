@@ -28,7 +28,7 @@ final class TaskExecutedTest extends TestCase
     public function testConstraintCannotMatchWithoutValidEvent(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExecutionState')->willReturn(TaskInterface::SUCCEED);
+        $task->expects(self::never())->method('getExecutionState');
 
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));

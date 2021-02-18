@@ -43,7 +43,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         if (false === call_user_func($task->getAfterScheduling(), $task)) {
             $scheduler->unschedule($task->getName());
 
-            throw new MiddlewareException('The task has encounter an error after scheduling, it has been unscheduled');
+            throw new MiddlewareException('The task has encountered an error after scheduling, it has been unscheduled');
         }
     }
 

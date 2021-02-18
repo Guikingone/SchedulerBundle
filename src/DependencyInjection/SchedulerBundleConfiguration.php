@@ -97,7 +97,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->defaultValue(null)
                     ->end()
                     ->scalarNode('rate_limiter')
-                        ->info('The limiter used to control the execution and retry of tasks')
+                        ->info('The limiter used to control the execution and retry of tasks, MUST be a valid limiter identifier')
                         ->defaultValue(null)
                     ->end()
                 ->end()

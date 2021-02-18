@@ -17,7 +17,7 @@ use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function get_class;
 use function implode;
 use function sleep;

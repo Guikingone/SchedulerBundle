@@ -20,9 +20,7 @@ final class Output
     public const ERROR = 'error';
 
     private ?string $output;
-
     private TaskInterface $task;
-
     private string $type;
 
     public function __construct(

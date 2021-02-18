@@ -1,8 +1,8 @@
 # Middleware
 
-- [Scheduling](middleware.md#Scheduling)
-- [Execution](middleware.md#Execution)
-- [Order](middleware.md#Order)
+- [Scheduling](#Scheduling)
+- [Execution](#Execution)
+- [Order](#Order)
 
 This bundle defines middleware related to execution and scheduling phases.
 

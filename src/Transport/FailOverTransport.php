@@ -15,10 +15,10 @@ use function array_merge;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailoverTransport extends AbstractTransport
+final class FailOverTransport extends AbstractTransport
 {
     /**
-     * @var SplObjectStorage<TransportInterface>
+     * @var SplObjectStorage<int, TransportInterface>
      */
     private SplObjectStorage $failedTransports;
     private iterable $transports;

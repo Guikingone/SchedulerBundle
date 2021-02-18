@@ -46,6 +46,7 @@ final class ShellBuilderTest extends TestCase
         self::assertNull($task->getTimezone());
         self::assertSame(TaskInterface::ENABLED, $task->getState());
 
+        /** @var ShellTask $task */
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
             'name' => 'foo',
             'command' => ['ls', '-al'],

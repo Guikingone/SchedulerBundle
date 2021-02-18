@@ -98,7 +98,7 @@ interface TaskInterface
 
     public function mustRunInBackground(): bool;
 
-    public function beforeScheduling(callable $beforeSchedulingCallable = null): TaskInterface;
+    public function beforeScheduling($beforeSchedulingCallable = null): TaskInterface;
 
     public function getBeforeScheduling();
 
@@ -118,12 +118,28 @@ interface TaskInterface
 
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
+    /**
+     * @param null|callable|array $afterSchedulingCallable
+     *
+     * @return TaskInterface
+     */
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface;
 
+    /**
+     * @return null|callable|array
+     */
     public function getAfterScheduling();
 
+    /**
+     * @param null|callable|array $beforeExecutingCallable
+     *
+     * @return TaskInterface
+     */
     public function beforeExecuting($beforeExecutingCallable = null): TaskInterface;
 
+    /**
+     * @return null|callable|array
+     */
     public function getBeforeExecuting();
 
     public function afterExecuting($afterExecutingCallable = null): TaskInterface;
