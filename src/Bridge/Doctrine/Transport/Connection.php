@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement;
@@ -34,7 +33,7 @@ final class Connection implements ConnectionInterface
 {
     private bool $autoSetup;
     private array $configuration = [];
-    private DoctrineConnection $driverConnection;
+    private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
 
     /**
@@ -42,7 +41,7 @@ final class Connection implements ConnectionInterface
      */
     public function __construct(
         array $configuration,
-        DoctrineConnection $driverConnection,
+        DbalConnection $driverConnection,
         SerializerInterface $serializer
     ) {
         $this->configuration = $configuration;
