@@ -19,8 +19,14 @@ class DoctrineTransport extends AbstractTransport
 {
     private Connection $connection;
 
-    public function __construct(array $options, DbalConnection $driverConnection, SerializerInterface $serializer)
-    {
+    /**
+     * @param array<string, bool|int|string|null> $options
+     */
+    public function __construct(
+        array $options,
+        DbalConnection $driverConnection,
+        SerializerInterface $serializer
+    ) {
         $this->defineOptions(array_merge([
             'auto_setup' => $options['auto_setup'] ?? true,
             'connection' => $options['connection'] ?? null,

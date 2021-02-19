@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use SchedulerBundle\Task\Builder\BuilderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use function sprintf;
@@ -13,12 +14,15 @@ use function sprintf;
  */
 final class TaskBuilder implements TaskBuilderInterface
 {
+    /**
+     * @var iterable|BuilderInterface[]
+     */
     private iterable $builders;
 
     private PropertyAccessorInterface $propertyAccessor;
 
     /**
-     * @param iterable|TaskBuilderInterface[] $builders
+     * @param iterable|BuilderInterface[] $builders
      */
     public function __construct(iterable $builders, PropertyAccessorInterface $propertyAccessor)
     {

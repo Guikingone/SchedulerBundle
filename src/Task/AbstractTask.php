@@ -686,7 +686,7 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    private function validateExpression($expression): bool
+    private function validateExpression(string $expression): bool
     {
         return CronExpression::isValidExpression($expression);
     }
@@ -696,9 +696,11 @@ abstract class AbstractTask implements TaskInterface
         if (null === $nice) {
             return true;
         }
+
         if ($nice > 19) {
             return false;
         }
+
         return $nice >= -20;
     }
 

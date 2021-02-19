@@ -24,15 +24,17 @@ final class BatchPolicyTest extends TestCase
     public function testTasksCanBeSorted(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
-        $task->method('setPriority')->withConsecutive([1], [0]);
+        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $task->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
-        $secondTask->method('setPriority')->withConsecutive([1], [0]);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+        $secondTask->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
 
         $policy = new BatchPolicy();
+        $list = $policy->sort([$secondTask, $task]);
 
-        self::assertCount(2, $policy->sort([$secondTask, $task]));
+        self::assertCount(2, $list);
+        self::assertEquals([$task, $secondTask], $list);
     }
 }

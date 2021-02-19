@@ -14,6 +14,9 @@ use function sprintf;
  */
 final class TransportFactory
 {
+    /**
+     * @var iterable|TransportFactoryInterface[]
+     */
     private iterable $factories;
 
     /**

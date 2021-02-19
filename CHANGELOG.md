@@ -5,7 +5,7 @@ CHANGELOG
 -----
 
 * Doctrine dependencies updated (see https://github.com/Guikingone/SchedulerBundle/pull/17)
-* Middleware introduced (https://github.com/Guikingone/SchedulerBundle/pull/19)
+* Middleware introduced (see https://github.com/Guikingone/SchedulerBundle/pull/19)
 
 0.2.0
 -----

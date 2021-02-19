@@ -44,7 +44,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $middleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
-        self::expectExceptionMessage('The task cannot be scheduled as en error occurred on the before scheduling callback');
+        self::expectExceptionMessage('The task cannot be scheduled as an error occurred on the before scheduling callback');
         self::expectExceptionCode(0);
         $middleware->preScheduling($task, $scheduler);
     }
@@ -117,7 +117,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $middleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
-        self::expectExceptionMessage('The task "foo" has encounter an error when executing the SchedulerBundle\Task\NullTask::getBeforeExecuting() callback');
+        self::expectExceptionMessage('The task "foo" has encountered an error when executing the SchedulerBundle\Task\NullTask::getBeforeExecuting() callback.');
         self::expectExceptionCode(0);
         $middleware->preExecute($task);
     }
@@ -150,7 +150,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $middleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
-        self::expectExceptionMessage('The task "foo" has encounter an error when executing the SchedulerBundle\Task\NullTask::getAfterExecuting() callback');
+        self::expectExceptionMessage('The task "foo" has encountered an error when executing the SchedulerBundle\Task\NullTask::getAfterExecuting() callback.');
         self::expectExceptionCode(0);
         $middleware->postExecute($task);
     }

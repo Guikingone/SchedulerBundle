@@ -33,6 +33,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
+use function count;
 use function in_array;
 use function sleep;
 use function sprintf;
@@ -90,7 +91,7 @@ final class Worker implements WorkerInterface
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
-        if (empty($this->runners)) {
+        if (0 === count($this->runners)) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -152,7 +153,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === $tasks->count() && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }

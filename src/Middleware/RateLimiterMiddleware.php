@@ -46,7 +46,7 @@ final class RateLimiterMiddleware implements PreExecutionMiddlewareInterface, Po
             $limiter->reserve($task->getMaxExecution());
         } catch (ReserveNotSupportedException $exception) {
             $this->logger->critical(sprintf(
-                'A reservation cannot be created for task "%s", please ensure that the policy used support it',
+                'A reservation cannot be created for task "%s", please ensure that the policy used supports it.',
                 $task->getName()
             ));
 

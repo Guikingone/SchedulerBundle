@@ -132,7 +132,7 @@ final class ConnectionTest extends TestCase
     public function testConnectionCannotReturnAnInvalidTask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $statement = $this->getStatementMock(null);
+        $statement = $this->getStatementMock([]);
 
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
@@ -539,7 +539,10 @@ final class ConnectionTest extends TestCase
         $connection->setup();
     }
 
-    private function getDBALConnectionMock(): MockObject
+    /**
+     * @return Connection|MockObject
+     */
+    private function getDBALConnectionMock()
     {
         $platform = $this->createMock(AbstractPlatform::class);
         $platform->method('getWriteLockSQL')->willReturn('FOR UPDATE');

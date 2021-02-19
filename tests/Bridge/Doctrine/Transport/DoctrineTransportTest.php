@@ -439,7 +439,10 @@ final class DoctrineTransportTest extends TestCase
         self::assertNotEmpty($transport->getOptions());
     }
 
-    private function getDBALConnectionMock(): MockObject
+    /**
+     * @return Connection|MockObject
+     */
+    private function getDBALConnectionMock()
     {
         $platform = $this->createMock(AbstractPlatform::class);
         $platform->method('getWriteLockSQL')->willReturn('FOR UPDATE');

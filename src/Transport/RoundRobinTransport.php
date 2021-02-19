@@ -29,7 +29,7 @@ final class RoundRobinTransport extends AbstractTransport
     public function __construct(iterable $transports, array $options = [])
     {
         $this->defineOptions(array_merge([
-            'quantum' => 2,
+            'quantum' => $options['quantum'] ?? 2,
         ], $options), [
             'quantum' => ['int'],
         ]);
@@ -121,7 +121,7 @@ final class RoundRobinTransport extends AbstractTransport
      */
     private function execute(Closure $func)
     {
-        if (empty($this->transports)) {
+        if (0 === count($this->transports)) {
             throw new TransportException('No transport found');
         }
 

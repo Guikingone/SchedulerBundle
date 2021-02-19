@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use function array_merge;
+use function count;
 use function parse_str;
 use function parse_url;
 use function preg_match;
@@ -19,13 +20,9 @@ use function urldecode;
 final class Dsn
 {
     private string $scheme;
-
     private string $host;
-
     private ?string $user;
-
     private ?string $password;
-
     private ?int $port;
 
     /**
@@ -127,7 +124,7 @@ final class Dsn
     {
         preg_match('#\(([^()]|(?R))*\)#', $dsn, $matches);
 
-        if (empty($matches)) {
+        if (0 === count($matches)) {
             return [];
         }
 

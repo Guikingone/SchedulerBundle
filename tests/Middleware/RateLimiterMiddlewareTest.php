@@ -46,7 +46,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $storage = $this->createMock(StorageInterface::class);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('critical')->with(self::equalTo('A reservation cannot be created for task "foo", please ensure that the policy used support it'));
+        $logger->expects(self::once())->method('critical')->with(self::equalTo('A reservation cannot be created for task "foo", please ensure that the policy used supports it.'));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');

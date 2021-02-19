@@ -92,8 +92,8 @@ Both methods receive the current task.
 ### Extra information
 
 - Implementing both interfaces for each middleware is not required, your middleware can be focused on a single one.
-- A middleware can interact during both process by implementing the desired interfaces, 
-  each stack sort related middleware before interacting with it.
+- A middleware can interact during both processes by implementing the desired interfaces, 
+  each stack sorts related middlewares before interacting with them.
 
 ## Order
 

@@ -11,7 +11,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class AbstractTransport implements TransportInterface
 {
-    protected ?array $options = null;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $options = [
+        'execution_mode' => 'first_in_first_out',
+        'path' => null,
+    ];
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {

@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use ArrayIterator;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
@@ -211,12 +212,15 @@ EOF
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
-    public function testCommandCanConsumeSchedulersWithFailureLimit(): void
+    /**
+     * @dataProvider providerFailureLimitContext
+     */
+    public function testCommandCanConsumeSchedulersWithFailureLimit(int $failureLimit, string $note): void
     {
         $logger = $this->createMock(LoggerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber(10, $logger));
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber($failureLimit, $logger));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
@@ -232,11 +236,11 @@ EOF
 
         $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
-            '--failure-limit' => 10,
+            '--failure-limit' => $failureLimit,
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('The worker will automatically exit once 10 tasks have failed', $tester->getDisplay());
+        self::assertStringContainsString($note, $tester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
@@ -283,7 +287,7 @@ EOF
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
         $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([$task]));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -310,5 +314,11 @@ EOF
         self::assertStringContainsString('Duration: < 1 sec', $tester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $tester->getDisplay());
         self::assertStringNotContainsString('Task failed: "foo"', $tester->getDisplay());
+    }
+
+    public function providerFailureLimitContext(): Generator
+    {
+        yield 'Multiple tasks' => [10, 'The worker will automatically exit once 10 tasks have failed'];
+        yield 'Single task' => [1, 'The worker will automatically exit once 1 task have failed'];
     }
 }

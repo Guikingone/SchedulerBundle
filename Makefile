@@ -34,11 +34,11 @@ php-cs-fixer-dry:
 
 phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon)
 phpstan: phpstan.neon.dist
-	$(PHP) vendor/bin/phpstan analyse
+	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug
 
 psalm: ## Run Psalm
 psalm: psalm.xml
-	$(PHP) vendor/bin/psalm
+	$(PHP) vendor/bin/psalm --show-info=true
 
 rector-dry: ## Run Rector in --dry-run mode
 rector-dry: rector.php

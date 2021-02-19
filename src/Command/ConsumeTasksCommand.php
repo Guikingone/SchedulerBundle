@@ -130,12 +130,10 @@ EOF
             $style->note('The worker will wait for tasks every minutes');
         }
 
-        $tasksCount = $tasks->count();
-
         $style->comment('Quit the worker with CONTROL-C.');
 
         if (OutputInterface::VERBOSITY_VERBOSE > $output->getVerbosity()) {
-            $style->note(sprintf('The task%s output can be displayed if the -vv option is used', $tasksCount > 1 ? 's' : ''));
+            $style->note(sprintf('The task%s output can be displayed if the -vv option is used', $tasks->count() > 1 ? 's' : ''));
         }
 
         if ($output->isVeryVerbose()) {
