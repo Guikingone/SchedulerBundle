@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Expression;
 
+use DateTimeImmutable;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\InvalidExpressionException;
 use function array_key_exists;
@@ -11,6 +12,7 @@ use function explode;
 use function implode;
 use function sprintf;
 use function strpos;
+use function strtotime;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -61,6 +63,28 @@ final class ExpressionFactory
     public function __toString(): string
     {
         return $this->expression;
+    }
+
+    public static function createFromString(string $expression): self
+    {
+        $self = new self();
+
+        if (false !== strtotime($expression)) {
+            $date = DateTimeImmutable::createFromFormat('U', $expression);
+
+            $self->setExpression(sprintf(
+                '%d %d %d %d %d',
+                (int) $date->format('i'),
+                (int) $date->format('H'),
+                (int) $date->format('d'),
+                (int) $date->format('m'),
+                (int) $date->format('w')
+            ));
+        }
+
+        $self->setExpression($expression);
+
+        return $self;
     }
 
     public function setExpression(string $expression): void

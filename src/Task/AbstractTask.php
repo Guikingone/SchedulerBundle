@@ -8,7 +8,9 @@ use Cron\CronExpression;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -128,6 +130,10 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedValues('priority', fn (int $priority): bool => $this->validatePriority($priority));
         $resolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
         $resolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
+
+        $resolver->setNormalizer('expression', function (Options $options, string $value): string {
+            return ExpressionFactory::createFromString($value)->getExpression();
+        });
 
         $resolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
         $resolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
@@ -688,7 +694,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateExpression(string $expression): bool
     {
-        return CronExpression::isValidExpression($expression);
+        return CronExpression::isValidExpression($expression) || false !== strtotime($expression);
     }
 
     private function validateNice(int $nice = null): bool
