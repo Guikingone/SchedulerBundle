@@ -99,4 +99,25 @@ Both methods receive the current task.
 
 ## Order
 
-// TODO
+Middlewares can be ordered using an integer, this approach allows to define a specific order
+when executing middlewares, this can be useful to prioritize specific behaviour.
+
+This behaviour is implemented via [OrderedMiddlewareInterface](../src/Middleware/OrderedMiddlewareInterface.php):
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
+
+final class FooMiddleware implements OrderedMiddlewareInterface
+{
+    public function getPriority() : int
+    {
+        return 1;
+    }
+}
+```
+
+_Note: The lower the priority, the earlier the middleware is called._
