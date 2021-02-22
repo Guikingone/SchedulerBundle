@@ -21,7 +21,7 @@ final class RateLimiterMiddlewareTest extends TestCase
     public function testMiddlewareCannotPreExecuteWithoutRateLimiter(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getMaxExecution');
+        $task->expects(self::never())->method('getMaxExecutions');
 
         $middleware = new RateLimiterMiddleware();
         $middleware->preExecute($task);
@@ -32,7 +32,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $storage = $this->createMock(StorageInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getMaxExecution')->willReturn(null);
+        $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
         $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
             'id' => 'foo',
@@ -50,7 +50,7 @@ final class RateLimiterMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(2))->method('getMaxExecution')->willReturn(5);
+        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
         $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
             'id' => 'foo',
@@ -74,7 +74,7 @@ final class RateLimiterMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(2))->method('getMaxExecution')->willReturn(5);
+        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
         $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
             'id' => 'foo',
@@ -91,7 +91,7 @@ final class RateLimiterMiddlewareTest extends TestCase
     public function testMiddlewareCannotPostExecuteWithoutRateLimiter(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getMaxExecution');
+        $task->expects(self::never())->method('getMaxExecutions');
 
         $middleware = new RateLimiterMiddleware();
         $middleware->postExecute($task);
@@ -102,7 +102,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $storage = $this->createMock(StorageInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getMaxExecution')->willReturn(null);
+        $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
         $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
             'id' => 'foo',
@@ -128,7 +128,7 @@ final class RateLimiterMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(2))->method('getMaxExecution')->willReturn(0);
+        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(0);
 
         $middleware = new RateLimiterMiddleware($factory, $logger);
 

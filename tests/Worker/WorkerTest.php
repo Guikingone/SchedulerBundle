@@ -759,7 +759,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
         $task->expects(self::once())->method('setLastExecution');
-        $task->expects(self::never())->method('getMaxExecution');
+        $task->expects(self::never())->method('getMaxExecutions');
 
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
@@ -793,7 +793,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
         $task->expects(self::once())->method('setLastExecution');
-        $task->expects(self::exactly(2))->method('getMaxExecution')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(null);
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
@@ -838,7 +838,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
         $task->expects(self::once())->method('setLastExecution');
-        $task->expects(self::exactly(3))->method('getMaxExecution')->willReturn(1);
+        $task->expects(self::exactly(3))->method('getMaxExecutions')->willReturn(1);
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
