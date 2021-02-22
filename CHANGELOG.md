@@ -6,6 +6,9 @@ CHANGELOG
 
 * Doctrine dependencies updated (see https://github.com/Guikingone/SchedulerBundle/pull/17)
 * Middleware introduced (see https://github.com/Guikingone/SchedulerBundle/pull/19)
+* `Scheduler::yieldTask()` introduced (see https://github.com/Guikingone/SchedulerBundle/pull/19)
+* `scheduler:yield` command added (see https://github.com/Guikingone/SchedulerBundle/pull/19)
+* Documentation improvements (see https://github.com/Guikingone/SchedulerBundle/pull/19)
 
 0.2.0
 -----

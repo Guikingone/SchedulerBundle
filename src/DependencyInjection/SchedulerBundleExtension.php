@@ -16,6 +16,7 @@ use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
+use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskExecutionSubscriber;
@@ -25,6 +26,7 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
+use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
@@ -324,6 +326,16 @@ final class SchedulerBundleExtension extends Extension
                 'class' => RetryFailedTaskCommand::class,
             ])
         ;
+
+        $container->register(YieldTaskCommand::class, YieldTaskCommand::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => YieldTaskCommand::class,
+            ])
+        ;
     }
 
     private function registerExpressionFactoryAndPolicies(ContainerBuilder $container): void
@@ -584,6 +596,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('messenger.message_handler')
             ->addTag('container.preload', [
                 'class' => TaskMessageHandler::class,
+            ])
+        ;
+
+        $container->register(TaskToYieldMessageHandler::class, TaskToYieldMessageHandler::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('messenger.message_handler')
+            ->addTag('container.preload', [
+                'class' => TaskToYieldMessageHandler::class,
             ])
         ;
     }

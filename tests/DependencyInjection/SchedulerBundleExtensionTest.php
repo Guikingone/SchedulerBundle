@@ -14,6 +14,7 @@ use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
+use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
@@ -24,6 +25,7 @@ use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\Messenger\TaskMessageHandler;
+use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
@@ -358,6 +360,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('scheduler', $container->getDefinition(RetryFailedTaskCommand::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(RetryFailedTaskCommand::class)->hasTag('container.preload'));
         self::assertSame(RetryFailedTaskCommand::class, $container->getDefinition(RetryFailedTaskCommand::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(YieldTaskCommand::class));
+        self::assertCount(1, $container->getDefinition(YieldTaskCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(YieldTaskCommand::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('container.preload'));
+        self::assertSame(YieldTaskCommand::class, $container->getDefinition(YieldTaskCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void
@@ -607,6 +616,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(TaskMessageHandler::class)->hasTag('messenger.message_handler'));
         self::assertTrue($container->getDefinition(TaskMessageHandler::class)->hasTag('container.preload'));
         self::assertSame(TaskMessageHandler::class, $container->getDefinition(TaskMessageHandler::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TaskToYieldMessageHandler::class));
+        self::assertCount(1, $container->getDefinition(TaskToYieldMessageHandler::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskToYieldMessageHandler::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(TaskToYieldMessageHandler::class)->hasTag('messenger.message_handler'));
+        self::assertTrue($container->getDefinition(TaskToYieldMessageHandler::class)->hasTag('container.preload'));
+        self::assertSame(TaskToYieldMessageHandler::class, $container->getDefinition(TaskToYieldMessageHandler::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testSubscribersAreRegistered(): void

@@ -41,3 +41,44 @@ _Description: Retry a task that has failed during execution_
 ```bash
 $ bin/console scheduler:retry:failed **taskname**
 ```
+
+## Yielding a task
+
+_Introduced in `0.3`_
+
+_Description: Yield a task_
+
+```bash
+$ bin/console scheduler:yield **task**
+```
+
+### Example
+
+Using the `--force` option:
+
+```bash
+$ bin/console scheduler:retry foo --force
+
+[OK] The task "foo" has been yielded
+```
+
+Using the question:
+
+```bash
+$ bin/console scheduler:retry foo --force
+
+Do you want to yield this task? (yes/no) [no]:
+> yes
+
+[OK] The task "foo" has been yielded
+```
+
+Using the `--force` option and the `--async` one:
+
+```bash
+$ bin/console scheduler:retry foo --async --force
+
+[OK] The task "foo" has been yielded
+```
+**PS: Using the `async` option forces the scheduler to call the message bus, this approach requires
+that you call the related command from it to consume messages**

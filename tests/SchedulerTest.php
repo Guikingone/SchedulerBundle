@@ -533,6 +533,68 @@ final class SchedulerTest extends TestCase
         self::assertNotEmpty($dueTasks);
     }
 
+    public function testSchedulerCanYieldTask(): void
+    {
+        $timezone = new DateTimeZone('UTC');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('getName')->willReturn('foo');
+        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($timezone);
+        $task->expects(self::exactly(2))->method('setScheduledAt');
+        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($timezone));
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
+        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
+        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $scheduler->schedule($task);
+
+        $scheduler->yieldTask('foo');
+    }
+
+    public function testSchedulerCanYieldTaskAsynchronouslyWithoutMessageBus(): void
+    {
+        $timezone = new DateTimeZone('UTC');
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('getName')->willReturn('foo');
+        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($timezone);
+        $task->expects(self::exactly(2))->method('setScheduledAt');
+        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($timezone));
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
+        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
+        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $scheduler->schedule($task);
+
+        $scheduler->yieldTask('foo', true);
+    }
+
+    public function testSchedulerCannotYieldTaskAsynchronouslyWithMessageBus(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('getName');
+        $task->expects(self::never())->method('getExpression');
+        $task->expects(self::never())->method('getTimezone');
+        $task->expects(self::never())->method('setScheduledAt');
+        $task->expects(self::never())->method('setTimezone');
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::never())->method('get');
+        $transport->expects(self::never())->method('create');
+        $transport->expects(self::never())->method('delete');
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, new SchedulerMessageBus());
+        $scheduler->yieldTask('foo', true);
+    }
+
     public function provideTasks(): Generator
     {
         yield 'Shell tasks' => [

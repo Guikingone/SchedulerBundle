@@ -7,6 +7,7 @@ namespace SchedulerBundle;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
@@ -89,6 +90,23 @@ final class Scheduler implements SchedulerInterface
     {
         $this->transport->delete($name);
         $this->dispatch(new TaskUnscheduledEvent($name));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function yieldTask(string $name, bool $async = false): void
+    {
+        if ($async && null !== $this->bus) {
+            $this->bus->dispatch(new TaskToYieldMessage($name));
+
+            return;
+        }
+
+        $task = $this->transport->get($name);
+
+        $this->unschedule($name);
+        $this->schedule($task);
     }
 
     /**

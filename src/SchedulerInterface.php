@@ -24,6 +24,13 @@ interface SchedulerInterface
     public function unschedule(string $taskName): void;
 
     /**
+     * Dequeue the task {@param string $name} then re-schedule it.
+     *
+     * If the argument {@param bool $async} is used, the action is done via the message bus (if injected).
+     */
+    public function yieldTask(string $name, bool $async = false): void;
+
+    /**
      * Update a specific task, the name should NOT be changed, every metadata can.
      */
     public function update(string $taskName, TaskInterface $task): void;

@@ -1,5 +1,7 @@
 # Middleware
 
+_Introduced in `0.3`_
+
 - [Scheduling](#Scheduling)
 - [Execution](#Execution)
 - [Order](#Order)
