@@ -145,10 +145,15 @@ final class Scheduler implements SchedulerInterface
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             switch ($task) {
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable:
-                    if ($task->getExecutionStartDate() !== $synchronizedCurrentDate && $task->getExecutionStartDate() >= $synchronizedCurrentDate) {
-                        return false;
+                    if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
+                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
                     }
-                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+
+                    if ($task->getExecutionStartDate() < $synchronizedCurrentDate) {
+                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+                    }
+
+                    return false;
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable:
                     return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
                 case $task->getExecutionEndDate() instanceof DateTimeImmutable:
