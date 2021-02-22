@@ -7,7 +7,8 @@
     "authors": [
         {
             "name": "Guillaume Loulier",
-            "email": "contact@guillaumeloulier.fr"
+            "email": "contact@guillaumeloulier.fr",
+            "homepage": "https://www.guillaumeloulier.fr/"
         }
     ],
     "autoload": {

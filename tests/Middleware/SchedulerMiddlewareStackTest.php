@@ -12,6 +12,7 @@ use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use Tests\SchedulerBundle\Middleware\Assets\OrderedMiddleware;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -22,6 +23,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
         $task = $this->createMock(TaskInterface::class);
+
+        $orderedMiddleware = $this->createMock(OrderedMiddlewareInterface::class);
+        $orderedMiddleware->expects(self::never())->method('getPriority');
 
         $middleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postScheduling');
@@ -55,7 +59,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $stack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
-    public function testStackCanRunPreMiddlewareListWithOrderedMiddleware(): void
+    public function testStackCannotRunPreMiddlewareListWithErroredOrderedMiddleware(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
         $task = $this->createMock(TaskInterface::class);
@@ -91,6 +95,69 @@ final class SchedulerMiddlewareStackTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('An error occurred');
         self::expectExceptionCode(0);
+        $stack->runPreSchedulingMiddleware($task, $scheduler);
+    }
+
+    public function testStackCanRunOrderedPreMiddlewareList(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $task = $this->createMock(TaskInterface::class);
+
+        $orderedMiddleware = $this->createMock(OrderedMiddleware::class);
+        $orderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(1);
+        $orderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $secondOrderedMiddleware = $this->createMock(OrderedMiddleware::class);
+        $secondOrderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(2);
+        $secondOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $thirdOrderedMiddleware = $this->createMock(OrderedMiddleware::class);
+        $thirdOrderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(0);
+        $thirdOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $fourthOrderedMiddleware = $this->createMock(OrderedMiddleware::class);
+        $fourthOrderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(1);
+        $fourthOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $middleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
+        $middleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
+        $secondMiddleware->expects(self::never())->method('postScheduling');
+
+        $stack = new SchedulerMiddlewareStack([
+            $middleware,
+            $secondMiddleware,
+            $orderedMiddleware,
+            $secondOrderedMiddleware,
+            $thirdOrderedMiddleware,
+            $fourthOrderedMiddleware,
+        ]);
+
+        $stack->runPreSchedulingMiddleware($task, $scheduler);
+    }
+
+    public function testStackCanRunSingleOrderedPreMiddlewareList(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $task = $this->createMock(TaskInterface::class);
+
+        $orderedMiddleware = $this->createMock(OrderedMiddleware::class);
+        $orderedMiddleware->expects(self::never())->method('getPriority');
+        $orderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $middleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
+        $middleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
+
+        $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
+        $secondMiddleware->expects(self::never())->method('postScheduling');
+
+        $stack = new SchedulerMiddlewareStack([
+            $middleware,
+            $secondMiddleware,
+            $orderedMiddleware,
+        ]);
+
         $stack->runPreSchedulingMiddleware($task, $scheduler);
     }
 

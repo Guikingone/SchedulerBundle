@@ -33,9 +33,7 @@ use function unlink;
 final class ConnectionIntegrationTest extends TestCase
 {
     private ?Connection $connection = null;
-
     private ?DbalConnection $driverConnection = null;
-
     private ?string $sqliteFile = null;
 
     /**

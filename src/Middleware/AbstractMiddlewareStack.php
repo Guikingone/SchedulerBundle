@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use Closure;
 use function array_filter;
 use function array_replace;
+use function array_walk;
 use function uasort;
 
 /**
@@ -32,9 +33,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     protected function getPreSchedulingMiddleware(): array
     {
-        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface);
-
-        return $this->orderMiddleware($list);
+        return $this->orderMiddleware(array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface));
     }
 
     /**
@@ -42,9 +41,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     protected function getPostSchedulingMiddleware(): array
     {
-        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface);
-
-        return $this->orderMiddleware($list);
+        return $this->orderMiddleware(array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface));
     }
 
     /**
@@ -52,9 +49,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     protected function getPreExecutionMiddleware(): array
     {
-        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface);
-
-        return $this->orderMiddleware($list);
+        return $this->orderMiddleware(array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface));
     }
 
     /**
@@ -62,9 +57,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     protected function getPostExecutionMiddleware(): array
     {
-        $list = array_filter($this->stack, fn ($middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface);
-
-        return $this->orderMiddleware($list);
+        return $this->orderMiddleware(array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface));
     }
 
     /**
@@ -78,7 +71,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
     private function orderMiddleware(array $middlewareList): array
     {
-        $orderedMiddleware = array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof OrderedMiddlewareInterface);
+        $orderedMiddleware = array_filter($middlewareList, fn (object $middleware): bool => $middleware instanceof OrderedMiddlewareInterface);
 
         if ([] === $orderedMiddleware) {
             return $middlewareList;
