@@ -76,6 +76,7 @@ When a task is configured, time to execute it, two approaches can be used:
 ## Documentation
 
 * [Usage](doc/usage.md)
+* [Best practices](doc/best_practices.md)
 * [Tasks](doc/tasks.md)
 * [Transports](doc/transport.md)
 * [Commands](doc/command.md)

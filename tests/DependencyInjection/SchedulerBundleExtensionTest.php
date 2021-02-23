@@ -23,7 +23,12 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
-use SchedulerBundle\Expression\ExpressionFactory;
+use SchedulerBundle\Expression\BuilderInterface;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilderInterface;
+use SchedulerBundle\Expression\StringExpressionBuilder;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -154,6 +159,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[PreExecutionMiddlewareInterface::class]->hasTag('scheduler.worker_middleware'));
         self::assertArrayHasKey(PostExecutionMiddlewareInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[PostExecutionMiddlewareInterface::class]->hasTag('scheduler.worker_middleware'));
+        self::assertArrayHasKey(ExpressionBuilderInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ExpressionBuilderInterface::class]->hasTag('scheduler.expression_builder'));
     }
 
     public function testTransportFactoriesAreRegistered(): void
@@ -386,7 +393,22 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container);
 
-        self::assertTrue($container->hasDefinition(ExpressionFactory::class));
+        self::assertTrue($container->hasDefinition(Expression::class));
+
+        self::assertTrue($container->hasDefinition(ExpressionBuilder::class));
+        self::assertTrue($container->hasAlias(BuilderInterface::class));
+        self::assertCount(1, $container->getDefinition(ExpressionBuilder::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ExpressionBuilder::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(ExpressionBuilder::class)->hasTag('container.preload'));
+        self::assertSame(ExpressionBuilder::class, $container->getDefinition(ExpressionBuilder::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(CronExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('container.preload'));
+        self::assertSame(CronExpressionBuilder::class, $container->getDefinition(CronExpressionBuilder::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(StringExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(StringExpressionBuilder::class)->hasTag('container.preload'));
+        self::assertSame(StringExpressionBuilder::class, $container->getDefinition(StringExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(SchedulePolicyOrchestrator::class));
         self::assertTrue($container->hasAlias(SchedulePolicyOrchestratorInterface::class));

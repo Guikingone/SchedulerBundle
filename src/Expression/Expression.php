@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Expression;
 
-use DateTimeImmutable;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\InvalidExpressionException;
 use function array_key_exists;
+use function count;
 use function explode;
 use function implode;
 use function sprintf;
 use function strpos;
-use function strtotime;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ExpressionFactory
+final class Expression
 {
     /**
      * @var string
@@ -68,22 +67,6 @@ final class ExpressionFactory
     public static function createFromString(string $expression): self
     {
         $self = new self();
-
-        if (false !== $format = strtotime($expression)) {
-            $date = DateTimeImmutable::createFromFormat('U', (string) $format);
-
-            $self->setExpression(sprintf(
-                '%d %d %d %d %d',
-                (int) $date->format('i'),
-                (int) $date->format('H'),
-                (int) $date->format('d'),
-                (int) $date->format('m'),
-                (int) $date->format('w')
-            ));
-
-            return $self;
-        }
-
         $self->setExpression($expression);
 
         return $self;
@@ -197,7 +180,7 @@ final class ExpressionFactory
     {
         $fields = explode(':', $time);
 
-        $this->changeExpression(0, 2 === \count($fields) ? $fields[1] : '0');
+        $this->changeExpression(0, 2 === count($fields) ? $fields[1] : '0');
         $this->changeExpression(1, $fields[0]);
 
         return $this->expression;

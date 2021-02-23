@@ -24,7 +24,12 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
-use SchedulerBundle\Expression\ExpressionFactory;
+use SchedulerBundle\Expression\BuilderInterface;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilderInterface;
+use SchedulerBundle\Expression\StringExpressionBuilder;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -148,6 +153,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
+        $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag('scheduler.expression_builder');
     }
 
     private function registerTransportFactories(ContainerBuilder $container): void
@@ -340,7 +346,29 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerExpressionFactoryAndPolicies(ContainerBuilder $container): void
     {
-        $container->register(ExpressionFactory::class, ExpressionFactory::class);
+        $container->register(Expression::class, Expression::class);
+
+        $container->register(ExpressionBuilder::class, ExpressionBuilder::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.expression_builder'),
+            ])
+            ->addTag('container.preload', [
+                'class' => ExpressionBuilder::class,
+            ])
+        ;
+        $container->setAlias(BuilderInterface::class, ExpressionBuilder::class);
+
+        $container->register(CronExpressionBuilder::class, CronExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => CronExpressionBuilder::class,
+            ])
+        ;
+
+        $container->register(StringExpressionBuilder::class, StringExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => StringExpressionBuilder::class,
+            ])
+        ;
 
         $container->register(SchedulePolicyOrchestrator::class, SchedulePolicyOrchestrator::class)
             ->setArguments([
