@@ -31,7 +31,7 @@ use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
-use SchedulerBundle\Middleware\RateLimiterMiddleware;
+use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -823,14 +823,14 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         if (null !== $configuration['rate_limiter']) {
-            $container->register(RateLimiterMiddleware::class, RateLimiterMiddleware::class)
+            $container->register(MaxExecutionMiddleware::class, MaxExecutionMiddleware::class)
                 ->setArguments([
                     new Reference(sprintf('limiter.%s', $configuration['rate_limiter']), ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 ])
                 ->setPublic(false)
                 ->addTag('scheduler.worker_middleware')
                 ->addTag('container.preload', [
-                    'class' => RateLimiterMiddleware::class,
+                    'class' => MaxExecutionMiddleware::class,
                 ])
             ;
         }

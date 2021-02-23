@@ -32,7 +32,7 @@ use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
-use SchedulerBundle\Middleware\RateLimiterMiddleware;
+use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -969,7 +969,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(TaskCallbackMiddleware::class)->hasTag('container.preload'));
         self::assertSame(TaskCallbackMiddleware::class, $container->getDefinition(TaskCallbackMiddleware::class)->getTag('container.preload')[0]['class']);
 
-        self::assertFalse($container->hasDefinition(RateLimiterMiddleware::class));
+        self::assertFalse($container->hasDefinition(MaxExecutionMiddleware::class));
     }
 
     public function testRateLimiterMiddlewareCanBeConfigured(): void
@@ -990,13 +990,13 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container);
 
-        self::assertTrue($container->hasDefinition(RateLimiterMiddleware::class));
-        self::assertFalse($container->getDefinition(RateLimiterMiddleware::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(RateLimiterMiddleware::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(RateLimiterMiddleware::class)->getArgument(0));
-        self::assertTrue($container->getDefinition(RateLimiterMiddleware::class)->hasTag('scheduler.worker_middleware'));
-        self::assertTrue($container->getDefinition(RateLimiterMiddleware::class)->hasTag('container.preload'));
-        self::assertSame(RateLimiterMiddleware::class, $container->getDefinition(RateLimiterMiddleware::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(MaxExecutionMiddleware::class));
+        self::assertFalse($container->getDefinition(MaxExecutionMiddleware::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(MaxExecutionMiddleware::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(MaxExecutionMiddleware::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(MaxExecutionMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(MaxExecutionMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(MaxExecutionMiddleware::class, $container->getDefinition(MaxExecutionMiddleware::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testDataCollectorIsConfigured(): void

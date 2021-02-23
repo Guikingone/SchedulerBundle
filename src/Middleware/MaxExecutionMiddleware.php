@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class RateLimiterMiddleware implements PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
+final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
 {
     private ?RateLimiterFactory $rateLimiter;
     private LoggerInterface $logger;

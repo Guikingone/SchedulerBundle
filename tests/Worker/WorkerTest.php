@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SchedulerBundle\Middleware\NotifierMiddleware;
-use SchedulerBundle\Middleware\RateLimiterMiddleware;
+use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Task\FailedTask;
@@ -773,7 +773,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
-            new RateLimiterMiddleware(),
+            new MaxExecutionMiddleware(),
         ]), $eventDispatcher, $logger);
         $worker->execute();
 
@@ -811,7 +811,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
-            new RateLimiterMiddleware(new RateLimiterFactory([
+            new MaxExecutionMiddleware(new RateLimiterFactory([
                 'id' => 'foo',
                 'policy' => 'token_bucket',
                 'limit' => 1,
@@ -856,7 +856,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
-            new RateLimiterMiddleware(new RateLimiterFactory([
+            new MaxExecutionMiddleware(new RateLimiterFactory([
                 'id' => 'foo',
                 'policy' => 'token_bucket',
                 'limit' => 1,

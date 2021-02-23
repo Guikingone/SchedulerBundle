@@ -7,7 +7,7 @@ namespace Tests\SchedulerBundle\Middleware;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\MiddlewareException;
-use SchedulerBundle\Middleware\RateLimiterMiddleware;
+use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
@@ -16,14 +16,14 @@ use Symfony\Component\RateLimiter\Storage\StorageInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class RateLimiterMiddlewareTest extends TestCase
+final class MaxExecutionMiddlewareTest extends TestCase
 {
     public function testMiddlewareCannotPreExecuteWithoutRateLimiter(): void
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getMaxExecutions');
 
-        $middleware = new RateLimiterMiddleware();
+        $middleware = new MaxExecutionMiddleware();
         $middleware->preExecute($task);
     }
 
@@ -34,7 +34,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
-        $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
+        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
         ], $storage));
@@ -52,7 +52,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
-        $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
+        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'sliding_window',
             'limit' => 10,
@@ -76,7 +76,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
-        $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
+        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
             'limit' => 10,
@@ -93,7 +93,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getMaxExecutions');
 
-        $middleware = new RateLimiterMiddleware();
+        $middleware = new MaxExecutionMiddleware();
         $middleware->postExecute($task);
     }
 
@@ -104,7 +104,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
-        $middleware = new RateLimiterMiddleware(new RateLimiterFactory([
+        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
         ], $storage));
@@ -130,7 +130,7 @@ final class RateLimiterMiddlewareTest extends TestCase
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(0);
 
-        $middleware = new RateLimiterMiddleware($factory, $logger);
+        $middleware = new MaxExecutionMiddleware($factory, $logger);
 
         $middleware->postExecute($task);
 
