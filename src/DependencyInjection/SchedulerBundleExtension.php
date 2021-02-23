@@ -29,7 +29,7 @@ use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
-use SchedulerBundle\Expression\StringExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -364,9 +364,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(StringExpressionBuilder::class, StringExpressionBuilder::class)
+        $container->register(FluentExpressionBuilder::class, FluentExpressionBuilder::class)
             ->addTag('container.preload', [
-                'class' => StringExpressionBuilder::class,
+                'class' => FluentExpressionBuilder::class,
             ])
         ;
 

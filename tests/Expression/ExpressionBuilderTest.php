@@ -11,5 +11,4 @@ use PHPUnit\Framework\TestCase;
  */
 final class ExpressionBuilderTest extends TestCase
 {
-
 }

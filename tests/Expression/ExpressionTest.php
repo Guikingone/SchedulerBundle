@@ -10,7 +10,7 @@ use SchedulerBundle\Expression\Expression;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ExpressionFactoryTest extends TestCase
+final class ExpressionTest extends TestCase
 {
     public function testEverySpecificMinutesExpressionCanBeCreated(): void
     {

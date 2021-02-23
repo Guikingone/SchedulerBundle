@@ -184,7 +184,7 @@ Each task has its own set of options, the full list is documented in [AbstractTa
 
 ## Expression
 
-This bundle support defining tasks expression via basic cron syntax:
+This bundle supports defining tasks expression via basic cron syntax:
 
 ```bash
 * * * * *

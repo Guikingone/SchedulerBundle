@@ -11,7 +11,7 @@ use function strtotime;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class StringExpressionBuilder implements ExpressionBuilderInterface
+final class FluentExpressionBuilder implements ExpressionBuilderInterface
 {
     public function build(string $expression): Expression
     {

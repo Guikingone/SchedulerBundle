@@ -28,7 +28,7 @@ use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
-use SchedulerBundle\Expression\StringExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -406,9 +406,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(CronExpressionBuilder::class, $container->getDefinition(CronExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
-        self::assertTrue($container->hasDefinition(StringExpressionBuilder::class));
-        self::assertTrue($container->getDefinition(StringExpressionBuilder::class)->hasTag('container.preload'));
-        self::assertSame(StringExpressionBuilder::class, $container->getDefinition(StringExpressionBuilder::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(FluentExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(FluentExpressionBuilder::class)->hasTag('container.preload'));
+        self::assertSame(FluentExpressionBuilder::class, $container->getDefinition(FluentExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(SchedulePolicyOrchestrator::class));
         self::assertTrue($container->hasAlias(SchedulePolicyOrchestratorInterface::class));
