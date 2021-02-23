@@ -69,8 +69,8 @@ final class ExpressionFactory
     {
         $self = new self();
 
-        if (false !== strtotime($expression)) {
-            $date = DateTimeImmutable::createFromFormat('U', $expression);
+        if (false !== $format = strtotime($expression)) {
+            $date = DateTimeImmutable::createFromFormat('U', (string) $format);
 
             $self->setExpression(sprintf(
                 '%d %d %d %d %d',
@@ -80,6 +80,8 @@ final class ExpressionFactory
                 (int) $date->format('m'),
                 (int) $date->format('w')
             ));
+
+            return $self;
         }
 
         $self->setExpression($expression);

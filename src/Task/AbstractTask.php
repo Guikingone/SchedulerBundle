@@ -131,9 +131,7 @@ abstract class AbstractTask implements TaskInterface
         $resolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
         $resolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
 
-        $resolver->setNormalizer('expression', function (Options $options, string $value): string {
-            return ExpressionFactory::createFromString($value)->getExpression();
-        });
+        $resolver->setNormalizer('expression', fn (Options $options, string $value): string => ExpressionFactory::createFromString($value)->getExpression());
 
         $resolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
         $resolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');

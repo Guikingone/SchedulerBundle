@@ -2,20 +2,21 @@
 
 This bundle provides multiple type of tasks:
 
-- [ShellTask](tasks.md#ShellTask)
-- [CommandTask](tasks.md#CommandTask)
-- [ChainedTask](tasks.md#ChainedTask)
-- [CallbackTask](tasks.md#CallbackTask)
+- [ShellTask](#ShellTask)
+- [CommandTask](#CommandTask)
+- [ChainedTask](#ChainedTask)
+- [CallbackTask](#CallbackTask)
 - HttpTask
 - MessengerTask
-- [NotificationTask](tasks.md#NotificationTask)
-- [NullTask](tasks.md#NullTask)
+- [NotificationTask](#NotificationTask)
+- [NullTask](#NullTask)
 
 ## Extra
 
-- [Task callbacks](tasks.md#Callbacks)
-- [Task notifications](tasks.md#Notifications)
-- [Options](tasks.md#Options)
+- [Task callbacks](#Callbacks)
+- [Task notifications](#Notifications)
+- [Options](#Options)
+- [Fluent Expression](#Expression)
 
 ## ShellTask
 
@@ -180,3 +181,14 @@ Each task can define a set of notification:
 ## Options
 
 Each task has its own set of options, the full list is documented in [AbstractTask](../src/Task/AbstractTask.php).
+
+## Expression
+
+This bundle support defining tasks expression via basic cron syntax:
+
+```bash
+* * * * *
+```
+
+Even if this approach is mostly recommended, you may need to use a more "user-friendly" syntax, to do so,
+this bundle allows you to use "fluent" expressions thanks to [strtotime](https://www.php.net/manual/fr/function.strtotime).
