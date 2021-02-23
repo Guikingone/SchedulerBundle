@@ -11,12 +11,23 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\RoundRobinTransport;
 use SchedulerBundle\Transport\TransportInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class RoundRobinTransportTest extends TestCase
 {
+    public function testTransportCannotBeConfiguredWithInvalidOption(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "quantum" with value "foo" is expected to be of type "int", but is of type "string"');
+        self::expectExceptionCode(0);
+        new RoundRobinTransport([], [
+            'quantum' => 'foo',
+        ]);
+    }
+
     public function testTransportIsConfigured(): void
     {
         $transport = new RoundRobinTransport([]);

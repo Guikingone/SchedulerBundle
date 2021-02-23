@@ -48,6 +48,6 @@ final class TaskMessageHandlerTest extends TestCase
 
         $handler = new TaskMessageHandler($worker);
 
-        ($handler)(new TaskMessage($task));
+        ($handler)(new TaskMessage($task, 2));
     }
 }

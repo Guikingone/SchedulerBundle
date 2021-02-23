@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use SchedulerBundle\Test\Constraint\TaskQueued;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskEventInterface;
 use SchedulerBundle\Event\TaskEventList;
@@ -42,6 +43,7 @@ final class TaskLoggerSubscriber implements EventSubscriberInterface
         return [
             TaskExecutedEvent::class => ['onTask', -255],
             TaskFailedEvent::class => ['onTask', -255],
+            TaskQueued::class => ['onTask', -255],
             TaskScheduledEvent::class => ['onTask', -255],
             TaskUnscheduledEvent::class => ['onTask', -255],
         ];

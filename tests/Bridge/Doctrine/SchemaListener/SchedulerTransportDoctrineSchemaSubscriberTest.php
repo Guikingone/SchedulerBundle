@@ -88,7 +88,7 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
         $otherTransport = $this->createMock(TransportInterface::class);
         $otherTransport->expects(self::never())->method(self::anything());
 
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$doctrineTransport, $otherTransport]);
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport]);
         $subscriber->postGenerateSchema($event);
     }
 

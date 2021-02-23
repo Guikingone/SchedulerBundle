@@ -7,6 +7,8 @@ namespace SchedulerBundle;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Messenger\TaskToYieldMessage;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -17,12 +19,8 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Component\Notifier\Notification\Notification;
-use Symfony\Component\Notifier\NotifierInterface;
-use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use function call_user_func;
 use function sprintf;
 
 /**
@@ -43,23 +41,23 @@ final class Scheduler implements SchedulerInterface
     private DateTimeImmutable $initializationDate;
     private DateTimeZone $timezone;
     private TransportInterface $transport;
+    private SchedulerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private ?MessageBusInterface $bus;
-    private ?NotifierInterface $notifier;
 
     public function __construct(
         string $timezone,
         TransportInterface $transport,
+        SchedulerMiddlewareStack $middlewareStack,
         EventDispatcherInterface $eventDispatcher = null,
-        MessageBusInterface $bus = null,
-        NotifierInterface $notifier = null
+        MessageBusInterface $bus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
         $this->transport = $transport;
+        $this->middlewareStack = $middlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->bus = $bus;
-        $this->notifier = $notifier;
     }
 
     /**
@@ -67,14 +65,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
-        if (null !== $task->getBeforeScheduling() && false === call_user_func($task->getBeforeScheduling(), $task)) {
-            throw new RuntimeException('The task cannot be scheduled');
-        }
-
-        if (null !== $task->getBeforeSchedulingNotificationBag()) {
-            $bag = $task->getBeforeSchedulingNotificationBag();
-            $this->notify($bag->getNotification(), $bag->getRecipients());
-        }
+        $this->middlewareStack->runPreSchedulingMiddleware($task, $this);
 
         $task->setScheduledAt($this->getSynchronizedCurrentDate());
         $task->setTimezone($task->getTimezone() ?? $this->timezone);
@@ -87,19 +78,9 @@ final class Scheduler implements SchedulerInterface
         }
 
         $this->transport->create($task);
-
         $this->dispatch(new TaskScheduledEvent($task));
 
-        if (null !== $task->getAfterScheduling() && false === call_user_func($task->getAfterScheduling(), $task)) {
-            $this->unschedule($task->getName());
-
-            throw new RuntimeException('The task has encounter an error after scheduling, it has been unscheduled');
-        }
-
-        if (null !== $task->getAfterSchedulingNotificationBag()) {
-            $bag = $task->getAfterSchedulingNotificationBag();
-            $this->notify($bag->getNotification(), $bag->getRecipients());
-        }
+        $this->middlewareStack->runPostSchedulingMiddleware($task, $this);
     }
 
     /**
@@ -109,6 +90,23 @@ final class Scheduler implements SchedulerInterface
     {
         $this->transport->delete($name);
         $this->dispatch(new TaskUnscheduledEvent($name));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function yieldTask(string $name, bool $async = false): void
+    {
+        if ($async && null !== $this->bus) {
+            $this->bus->dispatch(new TaskToYieldMessage($name));
+
+            return;
+        }
+
+        $task = $this->transport->get($name);
+
+        $this->unschedule($name);
+        $this->schedule($task);
     }
 
     /**
@@ -147,10 +145,15 @@ final class Scheduler implements SchedulerInterface
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             switch ($task) {
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable:
-                    if ($task->getExecutionStartDate() !== $synchronizedCurrentDate && $task->getExecutionStartDate() >= $synchronizedCurrentDate) {
-                        return false;
+                    if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
+                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
                     }
-                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+
+                    if ($task->getExecutionStartDate() < $synchronizedCurrentDate) {
+                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+                    }
+
+                    return false;
                 case $task->getExecutionStartDate() instanceof DateTimeImmutable:
                     return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
                 case $task->getExecutionEndDate() instanceof DateTimeImmutable:
@@ -202,24 +205,16 @@ final class Scheduler implements SchedulerInterface
         $this->eventDispatcher->dispatch($event);
     }
 
-    /**
-     * @param Notification $notification
-     * @param Recipient[]  $recipients
-     */
-    private function notify(Notification $notification, array $recipients): void
-    {
-        if (null === $this->notifier) {
-            return;
-        }
-
-        $this->notifier->send($notification, ...$recipients);
-    }
-
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
         $initializationDelay = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
         if ($initializationDelay->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $initializationDelay->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
-            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $initializationDelay->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
+            throw new RuntimeException(sprintf(
+                'The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]',
+                $initializationDelay->f,
+                self::MIN_SYNCHRONIZATION_DELAY,
+                self::MAX_SYNCHRONIZATION_DELAY
+            ));
         }
 
         return $this->initializationDate->add($initializationDelay);

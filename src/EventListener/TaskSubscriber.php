@@ -7,6 +7,7 @@ namespace SchedulerBundle\EventListener;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,8 +16,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Serializer\Serializer;
 use Throwable;
 use function array_key_exists;
 use function rawurldecode;
@@ -27,15 +27,10 @@ use function rawurldecode;
 final class TaskSubscriber implements EventSubscriberInterface
 {
     private SchedulerInterface $scheduler;
-
     private string $tasksPath;
-
     private WorkerInterface $worker;
-
     private EventDispatcherInterface $eventDispatcher;
-
-    private SerializerInterface $serializer;
-
+    private Serializer $serializer;
     private LoggerInterface $logger;
 
     /**
@@ -45,7 +40,7 @@ final class TaskSubscriber implements EventSubscriberInterface
         SchedulerInterface $scheduler,
         WorkerInterface $worker,
         EventDispatcherInterface $eventDispatcher,
-        SerializerInterface $serializer,
+        Serializer $serializer,
         LoggerInterface $logger = null,
         string $tasksPath = '/_tasks'
     ) {
@@ -66,19 +61,19 @@ final class TaskSubscriber implements EventSubscriberInterface
 
         $query = $request->query->all();
         if (Request::METHOD_GET === $request->getMethod() && (!array_key_exists('name', $query) && !array_key_exists('expression', $query))) {
-            throw new InvalidArgumentException('A GET request should at least contains a task name or its expression!');
+            throw new InvalidArgumentException('A GET request should at least contain a task name or its expression!');
         }
 
         $tasks = $this->scheduler->getTasks();
 
         if (array_key_exists('name', $query) && $name = $query['name']) {
             $request->attributes->set('task_filter', $name);
-            $tasks->filter(fn (TaskInterface $task): bool => $name === $task->getName());
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $name === $task->getName());
         }
 
         if (array_key_exists('expression', $query) && $expression = $query['expression']) {
             $request->attributes->set('task_filter', $expression);
-            $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
+            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));

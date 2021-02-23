@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Result;
-use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -133,7 +132,7 @@ final class ConnectionTest extends TestCase
     public function testConnectionCannotReturnAnInvalidTask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $statement = $this->getStatementMock(null);
+        $statement = $this->getStatementMock([]);
 
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
@@ -540,7 +539,10 @@ final class ConnectionTest extends TestCase
         $connection->setup();
     }
 
-    private function getDBALConnectionMock(): MockObject
+    /**
+     * @return Connection|MockObject
+     */
+    private function getDBALConnectionMock()
     {
         $platform = $this->createMock(AbstractPlatform::class);
         $platform->method('getWriteLockSQL')->willReturn('FOR UPDATE');
@@ -584,26 +586,16 @@ final class ConnectionTest extends TestCase
     }
 
     /**
-     * @return Result&MockObject|Statement&MockObject
+     * @return Result|MockObject
      */
     private function getStatementMock($expectedResult, bool $list = false)
     {
-        $statement = $this->createMock(\interface_exists(Result::class) ? Result::class : Statement::class);
-        if ($list && \interface_exists(Result::class)) {
-            $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult);
-        }
+        $statement = $this->createMock(Result::class);
 
-        if ($list && !\interface_exists(Result::class)) {
-            $statement->expects(self::once())->method('fetchAll')->willReturn($expectedResult);
-        }
-
-        if (!$list && \interface_exists(Result::class)) {
-            $statement->expects(self::once())->method('fetchAssociative')->willReturn($expectedResult);
-        }
-
-        if (!$list && !\interface_exists(Result::class)) {
-            $statement->expects(self::once())->method('fetch')->willReturn($expectedResult);
-        }
+        $list
+            ? $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult)
+            : $statement->expects(self::once())->method('fetchAssociative')->willReturn($expectedResult)
+        ;
 
         return $statement;
     }

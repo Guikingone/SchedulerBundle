@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Core\Configuration\Option;
 use Rector\Core\ValueObject\PhpVersion;
+use Rector\Php71\Rector\FuncCall\CountOnNullRector;
 use Rector\Set\ValueObject\SetList;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
@@ -27,6 +28,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set(Option::SKIP, [
         __DIR__ . '/src/Serializer',
         __DIR__ . '/vendor',
+        CountOnNullRector::class
     ]);
 
     $parameters->set(Option::SETS, [
@@ -38,6 +40,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         SetList::PHP_72,
         SetList::PHP_73,
         SetList::PHP_74,
+        SetList::SYMFONY_50,
+        SetList::SYMFONY_52,
     ]);
 
     $parameters->set(Option::ENABLE_CACHE, true);

@@ -64,13 +64,15 @@ final class CommandTaskRunnerTest extends TestCase
         self::expectException(UnrecognizedCommandException::class);
         self::expectExceptionMessage('The given command "app:foo" cannot be found!');
         self::expectExceptionCode(0);
-        self::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
+        self::assertNotNull($runner->run($task)->getOutput());
+        self::assertSame(Output::ERROR, $runner->run($task)->getOutput());
 
         $task = new CommandTask('foo', FooCommand::class);
         self::expectException(UnrecognizedCommandException::class);
         self::expectExceptionMessage('The given command "app:foo" cannot be found!');
         self::expectExceptionCode(0);
-        self::assertInstanceOf(Output::class, $runner->run($task)->getOutput());
+        self::assertNotNull($runner->run($task)->getOutput());
+        self::assertSame(Output::ERROR, $runner->run($task)->getOutput());
     }
 
     public function testCommandCanBeCalledWhenRegistered(): void

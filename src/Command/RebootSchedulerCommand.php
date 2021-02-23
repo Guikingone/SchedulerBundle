@@ -17,7 +17,7 @@ use SchedulerBundle\Expression\ExpressionFactory;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function get_class;
 use function implode;
 use function sleep;
@@ -28,11 +28,8 @@ use function sleep;
 final class RebootSchedulerCommand extends Command
 {
     private SchedulerInterface $scheduler;
-
     private WorkerInterface $worker;
-
     private EventDispatcherInterface $eventDispatcher;
-
     private LoggerInterface $logger;
 
     /**
@@ -44,7 +41,7 @@ final class RebootSchedulerCommand extends Command
         SchedulerInterface $scheduler,
         WorkerInterface $worker,
         EventDispatcherInterface $eventDispatcher,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
         $this->worker = $worker;
@@ -83,17 +80,20 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
+
+        $table = new Table($output);
+        $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
 
         if ($input->getOption('dry-run')) {
-            $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
-            if (empty($tasks)) {
-                $io->warning('The scheduler does not contain any tasks planned for the reboot process');
+            if (0 === $tasks->count()) {
+                $io->warning([
+                    'The scheduler does not contain any tasks',
+                    'Be sure that the tasks use the "@reboot" expression',
+                ]);
 
                 return self::SUCCESS;
             }
-
-            $table = new Table($output);
-            $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
 
             foreach ($tasks as $task) {
                 $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);
@@ -107,8 +107,6 @@ EOF
 
         $this->scheduler->reboot();
 
-        $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
-
         if (0 === $tasks->count()) {
             $io->success('The scheduler have been rebooted, no tasks have been executed');
 
@@ -116,19 +114,18 @@ EOF
         }
 
         while ($this->worker->isRunning()) {
-            $io->warning('The scheduler cannot be rebooted as the worker is not available, retrying to access it');
+            $io->warning([
+                'The scheduler cannot be rebooted as the worker is not available,',
+                'The process will be retried in 1 second',
+            ]);
 
             sleep(1);
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));
-
-        $this->worker->execute([], ...$tasks);
+        $this->worker->execute([], ...$tasks->toArray(false));
 
         $io->success('The scheduler have been rebooted, the following tasks have been executed');
-
-        $table = new Table($output);
-        $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
 
         foreach ($tasks as $task) {
             $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);

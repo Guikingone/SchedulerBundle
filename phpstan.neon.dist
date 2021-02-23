@@ -1,9 +1,10 @@
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
 
 parameters:
-    level: 1
+    level: 5
     paths:
         - src
         - tests

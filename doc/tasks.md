@@ -159,7 +159,7 @@ Each task can define a set of callback:
 
 - **beforeScheduling**: If `false` is returned by the callable, the task is not scheduled.
 - **afterScheduling**: If `false` is returned by the callable, the task is unscheduled.
-- **beforeExecuting**: If `false` is returned, the task is not executed.
+- **beforeExecuting**: If `false` is returned, the task is stored in the [FailedTask](../src/Task/FailedTask.php) list and marked as errored.
 - **afterExecuting**: If `false` is returned, the task is stored in the [FailedTask](../src/Task/FailedTask.php) list and marked as errored.
 
 **Keep in mind that due to internal limitations, a `Closure` instance cannot be passed as callback if your tasks are stored in external transports or the filesystem one.** 
@@ -175,7 +175,7 @@ Each task can define a set of notification:
 - **beforeScheduling**: This notification will be sent before scheduling the task (and after the `beforeScheduling` callback if defined)
 - **afterScheduling**: This notification will be sent after scheduling the task (and after the `afterScheduling` callback if defined)
 - **beforeExecuting**: This notification will be sent before executing the task (and after the `beforeExecuting` callback if defined)
-- **afterExecuting**: This notification will be sent after executing the task (and after the `beforeExecuting` callback if defined and if this one does not failed)
+- **afterExecuting**: This notification will be sent after executing the task (and after the `beforeExecuting` callback if defined and if this one does not fail)
 
 ## Options
 

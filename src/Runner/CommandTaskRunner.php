@@ -74,7 +74,7 @@ final class CommandTaskRunner implements RunnerInterface
         return $task instanceof CommandTask;
     }
 
-    private function buildInput(TaskInterface $task): InputInterface
+    private function buildInput(CommandTask $task): InputInterface
     {
         $command = $this->findCommand($task->getCommand());
         $options = $this->buildOptions($task);
@@ -83,9 +83,11 @@ final class CommandTaskRunner implements RunnerInterface
     }
 
     /**
-     * @return mixed[]
+     * @param CommandTask $task
+     *
+     * @return array
      */
-    private function buildOptions(TaskInterface $task): array
+    private function buildOptions(CommandTask $task): array
     {
         $options = [];
         foreach ($task->getOptions() as $key => $option) {

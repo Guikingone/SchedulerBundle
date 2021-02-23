@@ -8,22 +8,22 @@ use Closure;
 use SchedulerBundle\Exception\ConfigurationException;
 use SplObjectStorage;
 use Throwable;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class FailOverConfiguration implements ConfigurationInterface
 {
-    private iterable $configurations;
-
+    private iterable $configurationStorages;
     private SplObjectStorage $failedConfigurations;
 
     /**
-     * @param iterable|ConfigurationInterface[] $configurations
+     * @param iterable|ConfigurationInterface[] $configurationStorages
      */
-    public function __construct(iterable $configurations)
+    public function __construct(iterable $configurationStorages)
     {
-        $this->configurations = $configurations;
+        $this->configurationStorages = $configurationStorages;
         $this->failedConfigurations = new SplObjectStorage();
     }
 
@@ -75,11 +75,11 @@ final class FailOverConfiguration implements ConfigurationInterface
 
     private function execute(Closure $func)
     {
-        if (empty($this->configurations)) {
+        if (0 === count($this->configurationStorages)) {
             throw new ConfigurationException('No configuration found');
         }
 
-        foreach ($this->configurations as $configuration) {
+        foreach ($this->configurationStorages as $configuration) {
             if ($this->failedConfigurations->contains($configuration)) {
                 continue;
             }
@@ -93,6 +93,6 @@ final class FailOverConfiguration implements ConfigurationInterface
             }
         }
 
-        throw new ConfigurationException('All the configurations failed to execute the requested action');
+        throw new ConfigurationException('All the configurationStorages failed to execute the requested action');
     }
 }

@@ -33,8 +33,8 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
-     * @param array           $options
-     * @param TaskInterface[] $tasks
+     * @param array<string, int|string> $options
+     * @param TaskInterface             ...$tasks
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      */
@@ -58,7 +58,7 @@ interface WorkerInterface
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    public function getOptions(): array;
+    public function getOptions(): ?array;
 }

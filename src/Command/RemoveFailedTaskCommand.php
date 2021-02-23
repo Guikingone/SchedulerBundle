@@ -22,7 +22,6 @@ use function sprintf;
 final class RemoveFailedTaskCommand extends Command
 {
     private SchedulerInterface $scheduler;
-
     private WorkerInterface $worker;
 
     /**
@@ -97,7 +96,9 @@ EOF
 
             return self::SUCCESS;
         }
+
         $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+
         return self::FAILURE;
     }
 }

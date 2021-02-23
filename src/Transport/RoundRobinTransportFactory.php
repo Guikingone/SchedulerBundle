@@ -13,6 +13,9 @@ use function strpos;
  */
 final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
 {
+    /**
+     * @var iterable|TransportFactoryInterface[]
+     */
     private iterable $transportFactories;
 
     /**

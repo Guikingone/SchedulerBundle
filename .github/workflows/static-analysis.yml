@@ -37,4 +37,7 @@ jobs:
           composer-options: "--prefer-stable"
 
       - name: Run PHPStan
-        run: php vendor/bin/phpstan analyze
+        run: php vendor/bin/phpstan analyze --xdebug
+
+      - name: Run Psalm
+        run: php vendor/bin/psalm

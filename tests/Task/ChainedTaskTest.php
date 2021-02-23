@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 
@@ -51,5 +52,15 @@ final class ChainedTaskTest extends TestCase
         self::assertNotEmpty($chainedTask->getTasks());
         self::assertSame($task, $chainedTask->getTasks()[0]);
         self::assertSame($task, $chainedTask->getTask(0));
+    }
+
+    public function testAdditionalTaskCannotBeAccessedIfNotSet(): void
+    {
+        $chainedTask = new ChainedTask('foo');
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task does not exist');
+        self::expectExceptionCode(0);
+        $chainedTask->getTask(0);
     }
 }

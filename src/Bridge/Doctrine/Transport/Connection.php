@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
+use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -24,6 +24,8 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
+use function count;
+use function is_countable;
 use function sprintf;
 
 /**
@@ -33,7 +35,7 @@ final class Connection implements ConnectionInterface
 {
     private bool $autoSetup;
     private array $configuration = [];
-    private DoctrineConnection $driverConnection;
+    private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
 
     /**
@@ -41,7 +43,7 @@ final class Connection implements ConnectionInterface
      */
     public function __construct(
         array $configuration,
-        DoctrineConnection $driverConnection,
+        DbalConnection $driverConnection,
         SerializerInterface $serializer
     ) {
         $this->configuration = $configuration;
@@ -85,7 +87,7 @@ final class Connection implements ConnectionInterface
             );
 
             $data = $statement->fetchAssociative();
-            if (empty($data)) {
+            if (false === $data || (is_countable($data) && 0 === count($data))) {
                 throw new LogicException('The desired task cannot be found.');
             }
 
@@ -127,6 +129,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL().' '.$connection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),
@@ -199,6 +202,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':name', $name, ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(),
                     $query->getParameters(),
@@ -276,6 +280,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
+                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(). ' ' .$this->driverConnection->getDatabasePlatform()->getWriteLockSQL(),
                     $query->getParameters(),

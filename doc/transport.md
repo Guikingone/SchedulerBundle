@@ -106,9 +106,9 @@ scheduler_bundle:
 
 _Note: Keep in mind that this directory could be versioned if required_
 
-## Failover
+## FailOver
 
-The [FailoverTransport](../src/Transport/FailoverTransport.php) allows to use multiple transports and "prevent" errors
+The [FailOverTransport](../src/Transport/FailOverTransport.php) allows to use multiple transports and "prevent" errors
 when trying to schedule a task, this approach is also known as ["High-Availability"](https://en.wikipedia.org/wiki/High_availability),
 it is particularly useful if you use a transport that can fail during an operation (like network-related, etc).
 

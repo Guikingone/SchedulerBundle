@@ -8,8 +8,7 @@ use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Exception\RuntimeException;
-use Symfony\Component\Lock\BlockingStoreInterface;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
@@ -30,19 +29,14 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Component\Notifier\Notification\Notification;
-use Symfony\Component\Notifier\NotifierInterface;
-use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
-use function call_user_func;
 use function count;
 use function in_array;
 use function sleep;
 use function sprintf;
-use function usleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -58,17 +52,17 @@ final class Worker implements WorkerInterface
     ];
 
     private iterable $runners = [];
-    private TaskExecutionTrackerInterface $tracker;
-    private ?EventDispatcherInterface $eventDispatcher;
-    private TaskListInterface $failedTasks;
-    private LoggerInterface $logger;
+    private ?array $options = [];
     private bool $running = false;
     private bool $shouldStop = false;
-    private ?PersistingStoreInterface $store;
     private SchedulerInterface $scheduler;
-    private ?array $options = null;
+    private TaskExecutionTrackerInterface $tracker;
+    private WorkerMiddlewareStack $middlewareStack;
+    private ?EventDispatcherInterface $eventDispatcher;
+    private LoggerInterface $logger;
+    private ?PersistingStoreInterface $store;
     private ?TaskInterface $lastExecutedTask = null;
-    private ?NotifierInterface $notifier;
+    private TaskListInterface $failedTasks;
 
     /**
      * @param iterable|RunnerInterface[] $runners
@@ -77,18 +71,18 @@ final class Worker implements WorkerInterface
         SchedulerInterface $scheduler,
         iterable $runners,
         TaskExecutionTrackerInterface $tracker,
+        WorkerMiddlewareStack $middlewareStack,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        BlockingStoreInterface $store = null,
-        NotifierInterface $notifier = null
+        PersistingStoreInterface $store = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
         $this->tracker = $tracker;
-        $this->store = $store;
+        $this->middlewareStack = $middlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?: new NullLogger();
-        $this->notifier = $notifier;
+        $this->store = $store;
         $this->failedTasks = new TaskList();
     }
 
@@ -97,7 +91,7 @@ final class Worker implements WorkerInterface
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
-        if (empty($this->runners)) {
+        if (0 === count($this->runners)) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -131,30 +125,16 @@ final class Worker implements WorkerInterface
                         usleep($task->getExecutionDelay());
                     }
 
-                    if (null !== $task->getBeforeExecuting() && false === call_user_func($task->getBeforeExecuting(), $task)) {
-                        continue 2;
-                    }
-
-                    if (null !== $task->getBeforeExecutingNotificationBag()) {
-                        $bag = $task->getBeforeExecutingNotificationBag();
-                        $this->notify($bag->getNotification(), $bag->getRecipients());
-                    }
-
                     try {
+                        $this->middlewareStack->runPreExecutionMiddleware($task);
+
                         if ($lockedTask->acquire() && !$this->running) {
                             $this->running = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
 
-                        if (null !== $task->getAfterExecuting() && false === call_user_func($task->getAfterExecuting(), $task)) {
-                            throw new RuntimeException(sprintf('The task "%s" after executing callback has failed', $task->getName()));
-                        }
-
-                        if (null !== $task->getAfterExecutingNotificationBag()) {
-                            $bag = $task->getAfterExecutingNotificationBag();
-                            $this->notify($bag->getNotification(), $bag->getRecipients());
-                        }
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
@@ -173,7 +153,7 @@ final class Worker implements WorkerInterface
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === (is_countable($tasks) ? count($tasks) : 0) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->shouldStop || ($tasksCount === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }
@@ -235,9 +215,8 @@ final class Worker implements WorkerInterface
 
     /**
      * {@inheritdoc}
-     * @return mixed[]|null
      */
-    public function getOptions(): array
+    public function getOptions(): ?array
     {
         return $this->options;
     }
@@ -312,18 +291,5 @@ final class Worker implements WorkerInterface
         }
 
         $this->eventDispatcher->dispatch($event);
-    }
-
-    /**
-     * @param Notification $notification
-     * @param Recipient[]  $recipients
-     */
-    private function notify(Notification $notification, array $recipients): void
-    {
-        if (null === $this->notifier) {
-            return;
-        }
-
-        $this->notifier->send($notification, ...$recipients);
     }
 }

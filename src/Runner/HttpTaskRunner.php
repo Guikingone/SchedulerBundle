@@ -34,8 +34,6 @@ final class HttpTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        $task->setExecutionState(TaskInterface::RUNNING);
-
         try {
             $response = $this->httpClient->request($task->getMethod(), $task->getUrl(), $task->getClientOptions());
             $task->setExecutionState(TaskInterface::SUCCEED);

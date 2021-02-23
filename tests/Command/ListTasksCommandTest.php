@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle\Command;
 use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListTasksCommand;
@@ -46,6 +45,9 @@ Use the --expression option to list the tasks with a specific expression:
 
 Use the --state option to list the tasks with a specific state:
     <info>php %command.full_name% --state=paused</info>
+
+Use the -s option to list the tasks with a specific state:
+    <info>php %command.full_name% -s=paused</info>
 EOF
         );
     }
@@ -58,12 +60,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -76,26 +73,27 @@ EOF
     public function testCommandCanListTaskWithSpecificState(string $stateOption): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::exactly(2))->method('toArray')->willReturn([$task]);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(1))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::never())->method('getDescription')->willReturn('A random task');
+        $secondTask->expects(self::never())->method('getExpression')->willReturn('* * * * *');
+        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::DISABLED);
+        $secondTask->expects(self::never())->method('getTags')->willReturn(['app', 'slow']);
+
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             $stateOption => TaskInterface::ENABLED,
         ]);
@@ -103,13 +101,18 @@ EOF
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
         self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
         self::assertStringContainsString('Description', $tester->getDisplay());
+        self::assertStringContainsString('A random task', $tester->getDisplay());
         self::assertStringContainsString('Expression', $tester->getDisplay());
+        self::assertStringContainsString('* * * * *', $tester->getDisplay());
         self::assertStringContainsString('Last execution date', $tester->getDisplay());
         self::assertStringContainsString('Next execution date', $tester->getDisplay());
         self::assertStringContainsString('Last execution duration', $tester->getDisplay());
         self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString(TaskInterface::ENABLED, $tester->getDisplay());
         self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app, slow', $tester->getDisplay());
     }
 
     /**
@@ -118,26 +121,27 @@ EOF
     public function testCommandCanListTaskWithSpecificExpression(string $expressionOption): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
-        $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::exactly(2))->method('toArray')->willReturn([$task]);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
+        $secondTask->expects(self::never())->method('getDescription')->willReturn('A random task');
+        $secondTask->expects(self::once())->method('getExpression')->willReturn('@reboot');
+        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::never())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $secondTask->expects(self::never())->method('getTags')->willReturn(['app', 'slow']);
+
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             $expressionOption => '* * * * *',
         ]);
@@ -171,12 +175,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -219,12 +218,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             $expressionOption => '* * * * *',
             $stateOption => TaskInterface::ENABLED,
@@ -244,6 +238,7 @@ EOF
         self::assertStringContainsString('Last execution date', $tester->getDisplay());
         self::assertStringContainsString('Next execution date', $tester->getDisplay());
         self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('Not tracked', $tester->getDisplay());
         self::assertStringContainsString('Last execution memory usage', $tester->getDisplay());
         self::assertStringContainsString('State', $tester->getDisplay());
         self::assertStringContainsString('Tags', $tester->getDisplay());
@@ -264,12 +259,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             '--expression' => '0 * * * *',
         ]);
@@ -289,12 +279,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             '--state' => 'test',
         ]);
@@ -314,12 +299,7 @@ EOF
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $command = new ListTasksCommand($scheduler);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:list'));
+        $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
             '--expression' => '0 * * * *',
             '--state' => 'started',

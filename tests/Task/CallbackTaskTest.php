@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\CallbackTask;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;

@@ -11,17 +11,17 @@ use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
 use Throwable;
 use function array_merge;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailoverTransport extends AbstractTransport
+final class FailOverTransport extends AbstractTransport
 {
     /**
-     * @var SplObjectStorage<TransportInterface>
+     * @var SplObjectStorage<object, mixed>
      */
     private SplObjectStorage $failedTransports;
-
     private iterable $transports;
 
     /**
@@ -117,7 +117,7 @@ final class FailoverTransport extends AbstractTransport
 
     private function execute(Closure $func)
     {
-        if (empty($this->transports)) {
+        if (0 === count($this->transports)) {
             throw new TransportException('No transport found');
         }
 

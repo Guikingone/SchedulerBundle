@@ -7,6 +7,7 @@ namespace SchedulerBundle\SchedulePolicy;
 use InvalidArgumentException;
 use RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
+use function count;
 use function sprintf;
 
 /**
@@ -14,6 +15,9 @@ use function sprintf;
  */
 final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInterface
 {
+    /**
+     * @var iterable|PolicyInterface[]
+     */
     private iterable $policies;
 
     /**
@@ -31,11 +35,11 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
      */
     public function sort(string $policy, array $tasks): array
     {
-        if (empty($this->policies)) {
+        if (0 === count($this->policies)) {
             throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
         }
 
-        if (empty($tasks)) {
+        if (0 === count($tasks)) {
             return [];
         }
 

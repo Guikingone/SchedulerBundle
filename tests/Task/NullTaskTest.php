@@ -228,6 +228,26 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidMaxRetry(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "max_retries" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'max_retries' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidMaxExecution(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "max_executions" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'max_executions' => 'foo',
+        ]);
+    }
+
     /**
      * @dataProvider provideNice
      */

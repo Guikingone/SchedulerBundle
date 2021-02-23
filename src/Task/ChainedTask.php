@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use SchedulerBundle\Exception\InvalidArgumentException;
+use function array_key_exists;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -36,6 +39,10 @@ final class ChainedTask extends AbstractTask
 
     public function getTask(int $index): TaskInterface
     {
+        if (!array_key_exists($index, $this->options['tasks'])) {
+            throw new InvalidArgumentException('The task does not exist');
+        }
+
         return $this->options['tasks'][$index];
     }
 

@@ -42,7 +42,11 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
         try {
             $doctrineConnection = $this->registry->getConnection($connectionOptions['connection']);
         } catch (InvalidArgumentException $invalidArgumentException) {
-            throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()), $invalidArgumentException->getCode(), $invalidArgumentException);
+            throw new TransportException(
+                sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()),
+                $invalidArgumentException->getCode(),
+                $invalidArgumentException
+            );
         }
 
         return new DoctrineTransport($connectionOptions, $doctrineConnection, $serializer);

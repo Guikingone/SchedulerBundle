@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\DBAL\Driver\Connection as DbalConnection;
+use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -19,8 +19,14 @@ class DoctrineTransport extends AbstractTransport
 {
     private Connection $connection;
 
-    public function __construct(array $options, DbalConnection $driverConnection, SerializerInterface $serializer)
-    {
+    /**
+     * @param array<string, bool|int|string|null> $options
+     */
+    public function __construct(
+        array $options,
+        DbalConnection $driverConnection,
+        SerializerInterface $serializer
+    ) {
         $this->defineOptions(array_merge([
             'auto_setup' => $options['auto_setup'] ?? true,
             'connection' => $options['connection'] ?? null,

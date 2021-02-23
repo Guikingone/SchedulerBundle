@@ -10,7 +10,6 @@ use InvalidArgumentException;
 use Throwable;
 use function array_filter;
 use function array_key_exists;
-use function array_map;
 use function array_values;
 use function count;
 use function gettype;
@@ -49,7 +48,7 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        array_map(function (TaskInterface $task): void {
+        array_walk($tasks, function (TaskInterface $task): void {
             try {
                 $this->tasks[$task->getName()] = $task;
             } catch (Throwable $throwable) {
@@ -57,7 +56,7 @@ final class TaskList implements TaskListInterface
 
                 throw $throwable;
             }
-        }, $tasks);
+        });
     }
 
     /**

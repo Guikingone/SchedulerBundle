@@ -68,7 +68,7 @@ final class CommandTask extends AbstractTask
 
     private function validateCommand(string $command): void
     {
-        if (empty($command)) {
+        if ('' === $command) {
             throw new InvalidArgumentException('The command argument must be a valid command FQCN|string, empty string given');
         }
     }

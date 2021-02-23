@@ -44,7 +44,11 @@ final class TaskExecuted extends Constraint
     {
         $count = 0;
         foreach ($eventsList->getEvents() as $event) {
-            if (!$event instanceof TaskExecutedEvent && TaskInterface::INCOMPLETE !== $event->getTask()->getExecutionState()) {
+            if (!$event instanceof TaskExecutedEvent) {
+                continue;
+            }
+
+            if (TaskInterface::SUCCEED !== $event->getTask()->getExecutionState()) {
                 continue;
             }
 

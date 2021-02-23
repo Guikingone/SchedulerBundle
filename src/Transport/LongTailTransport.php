@@ -9,6 +9,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
+use function count;
 use function reset;
 use function usort;
 
@@ -113,7 +114,7 @@ final class LongTailTransport extends AbstractTransport
      */
     private function execute(Closure $func)
     {
-        if (empty($this->transports)) {
+        if (0 === count($this->transports)) {
             throw new TransportException('No transport found');
         }
 

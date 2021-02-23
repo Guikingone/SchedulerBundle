@@ -64,6 +64,9 @@ Use the --expression option to list the tasks with a specific expression:
 
 Use the --state option to list the tasks with a specific state:
     <info>php %command.full_name% --state=paused</info>
+
+Use the -s option to list the tasks with a specific state:
+    <info>php %command.full_name% -s=paused</info>
 EOF
             )
         ;

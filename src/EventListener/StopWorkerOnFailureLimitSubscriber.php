@@ -17,13 +17,13 @@ use function sprintf;
 final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterface
 {
     private LoggerInterface $logger;
-
     private int $maximumFailedTasks;
-
     private ?int $failedTasks = null;
 
-    public function __construct(int $maximumFailedTasks, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        int $maximumFailedTasks,
+        ?LoggerInterface $logger = null
+    ) {
         $this->maximumFailedTasks = $maximumFailedTasks;
         $this->logger = $logger ?: new NullLogger();
     }
@@ -40,7 +40,10 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         if ($event->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
             $this->failedTasks = 0;
             $worker->stop();
-            $this->logger->info(sprintf('Worker has stopped due to the failure limit of %d exceeded', $this->maximumFailedTasks));
+            $this->logger->info(sprintf(
+                'Worker has stopped due to the failure limit of %d exceeded',
+                $this->maximumFailedTasks
+            ));
         }
     }
 

@@ -6,12 +6,13 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use ArrayIterator;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
-use Symfony\Component\Console\Application;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -25,7 +26,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -36,7 +36,7 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
@@ -82,7 +82,7 @@ EOF
 
     public function testCommandCannotConsumeEmptyTasks(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $taskList = $this->createMock(TaskListInterface::class);
@@ -93,12 +93,7 @@ EOF
 
         $worker = $this->createMock(WorkerInterface::class);
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -119,12 +114,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -149,12 +139,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')->willThrowException(new Exception('Random error occurred'));
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([]);
 
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
@@ -184,12 +169,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
             '--limit' => 10,
         ]);
@@ -221,12 +201,7 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
             '--time-limit' => 10,
         ]);
@@ -237,12 +212,15 @@ EOF
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
-    public function testCommandCanConsumeSchedulersWithFailureLimit(): void
+    /**
+     * @dataProvider providerFailureLimitContext
+     */
+    public function testCommandCanConsumeSchedulersWithFailureLimit(int $failureLimit, string $note): void
     {
         $logger = $this->createMock(LoggerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber(10, $logger));
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber($failureLimit, $logger));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
@@ -256,18 +234,13 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
-            '--failure-limit' => 10,
+            '--failure-limit' => $failureLimit,
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('The worker will automatically exit once 10 tasks have failed', $tester->getDisplay());
+        self::assertStringContainsString($note, $tester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
@@ -293,12 +266,7 @@ EOF
             'sleepUntilNextMinute' => true,
         ]);
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
             '--wait' => true,
         ]);
@@ -319,7 +287,7 @@ EOF
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
         $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([$task]));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -331,14 +299,9 @@ EOF
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, $eventDispatcher);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
 
-        $command = new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher);
-
-        $application = new Application();
-        $application->add($command);
-
-        $tester = new CommandTester($application->get('scheduler:consume'));
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $tester->execute([
             '--limit' => 1,
         ], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
@@ -351,5 +314,11 @@ EOF
         self::assertStringContainsString('Duration: < 1 sec', $tester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $tester->getDisplay());
         self::assertStringNotContainsString('Task failed: "foo"', $tester->getDisplay());
+    }
+
+    public function providerFailureLimitContext(): Generator
+    {
+        yield 'Multiple tasks' => [10, 'The worker will automatically exit once 10 tasks have failed'];
+        yield 'Single task' => [1, 'The worker will automatically exit once 1 task have failed'];
     }
 }

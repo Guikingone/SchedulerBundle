@@ -9,7 +9,6 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use Throwable;
 use function call_user_func_array;
-use function is_string;
 use function trim;
 
 /**

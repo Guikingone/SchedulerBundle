@@ -1,7 +1,7 @@
 ![SchedulerBundleHero](assets/SchedulerBundle.png)
 
 <div align="center">
-    <img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/SchedulerBundle%20-%20Daily?style=flat" alt="Daily build status">
+    <img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Daily?style=flat" alt="Daily build status">
     <img src="https://img.shields.io/packagist/v/guikingone/scheduler-bundle?style=flat" alt="Current bundle version">
     <img src="https://img.shields.io/packagist/php-v/guikingone/scheduler-bundle?style=flat" alt="PHP version requirement">
     <img src="https://img.shields.io/symfony/i/grade/825be328-29f8-44f7-a750-f82818ae9111?style=flat" alt="Symfony Insight">
@@ -85,3 +85,6 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Policies](doc/policies.md)
 * [Runners](doc/runners.md)
 * [Worker](doc/worker.md)
+* [Scheduler](doc/scheduler.md)
+* [Middleware](doc/middleware.md)
+* [Tests](doc/test.md)
