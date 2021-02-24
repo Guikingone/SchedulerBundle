@@ -7,6 +7,7 @@ namespace SchedulerBundle;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -120,9 +121,15 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function pause(string $name): void
+    public function pause(string $taskName, bool $async = false): void
     {
-        $this->transport->pause($name);
+        if ($async && null !== $this->bus) {
+            $this->bus->dispatch(new TaskToPauseMessage($taskName));
+
+            return;
+        }
+
+        $this->transport->pause($taskName);
     }
 
     /**

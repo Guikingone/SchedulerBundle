@@ -25,6 +25,7 @@ use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\BuilderInterface;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
@@ -361,6 +362,12 @@ final class SchedulerBundleExtension extends Extension
         $container->register(CronExpressionBuilder::class, CronExpressionBuilder::class)
             ->addTag('container.preload', [
                 'class' => CronExpressionBuilder::class,
+            ])
+        ;
+
+        $container->register(ComputedExpressionBuilder::class, ComputedExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => ComputedExpressionBuilder::class,
             ])
         ;
 

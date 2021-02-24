@@ -38,7 +38,7 @@ interface SchedulerInterface
     /**
      * Pause a specific task, when paused, a task cannot be executed by the worker (but it can be sent to it).
      */
-    public function pause(string $taskName): void;
+    public function pause(string $taskName, bool $async = false): void;
 
     /**
      * Re-enable a specific task (if disabled or paused), once resumed, the task can be executed.

@@ -23,7 +23,6 @@ final class CronExpressionBuilderTest extends TestCase
     public function testBuilderCanBuildExpression(): void
     {
         $builder = new CronExpressionBuilder();
-
         $expression = $builder->build('* * * * *');
 
         self::assertSame('* * * * *', $expression->getExpression());

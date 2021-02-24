@@ -16,7 +16,7 @@ This bundle provides multiple type of tasks:
 - [Task callbacks](#Callbacks)
 - [Task notifications](#Notifications)
 - [Options](#Options)
-- [Fluent Expression](#Expression)
+- [Fluent Expression](#fluent-expressions)
 
 ## ShellTask
 
@@ -182,7 +182,7 @@ Each task can define a set of notification:
 
 Each task has its own set of options, the full list is documented in [AbstractTask](../src/Task/AbstractTask.php).
 
-## Expression
+## Fluent expressions
 
 This bundle supports defining tasks expression via basic cron syntax:
 

@@ -24,6 +24,7 @@ use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Expression\BuilderInterface;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
@@ -405,6 +406,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(CronExpressionBuilder::class));
         self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(CronExpressionBuilder::class, $container->getDefinition(CronExpressionBuilder::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(ComputedExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(ComputedExpressionBuilder::class)->hasTag('container.preload'));
+        self::assertSame(ComputedExpressionBuilder::class, $container->getDefinition(ComputedExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(FluentExpressionBuilder::class));
         self::assertTrue($container->getDefinition(FluentExpressionBuilder::class)->hasTag('container.preload'));
