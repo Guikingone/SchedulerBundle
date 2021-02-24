@@ -68,6 +68,7 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
@@ -103,6 +104,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function array_merge;
 use function class_exists;
 use function sprintf;
+use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -464,7 +466,19 @@ final class SchedulerBundleExtension extends Extension
         ;
         $container->setAlias(TaskBuilderInterface::class, TaskBuilder::class);
 
+        $container->register(AbstractTaskBuilder::class, AbstractTaskBuilder::class)
+            ->setArguments([
+                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setAbstract(true)
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => AbstractTaskBuilder::class,
+            ])
+        ;
+
         $container->register(CommandBuilder::class, CommandBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => CommandBuilder::class,
@@ -472,6 +486,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(HttpBuilder::class, HttpBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => HttpBuilder::class,
@@ -479,6 +494,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(NullBuilder::class, NullBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => NullBuilder::class,
@@ -486,6 +502,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(ShellBuilder::class, ShellBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => ShellBuilder::class,
@@ -494,8 +511,10 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(ChainedBuilder::class, ChainedBuilder::class)
             ->setArguments([
+                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new TaggedIteratorArgument('scheduler.task_builder'),
             ])
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => ChainedBuilder::class,
@@ -737,7 +756,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                null !== $configuration['lock_store'] && 0 !== \strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
+                null !== $configuration['lock_store'] && 0 !== strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
             ])
             ->addTag('scheduler.worker')
             ->addTag('monolog.logger', [

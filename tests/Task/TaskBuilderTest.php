@@ -6,6 +6,10 @@ namespace Tests\SchedulerBundle\Task;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\Builder\CommandBuilder;
@@ -26,7 +30,11 @@ final class TaskBuilderTest extends TestCase
     public function testBuilderCannotBuildWithoutBuilders(): void
     {
         $builder = new TaskBuilder([
-            new NullBuilder(),
+            new NullBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ], PropertyAccess::createPropertyAccessor());
 
         self::expectException(InvalidArgumentException::class);
@@ -43,7 +51,11 @@ final class TaskBuilderTest extends TestCase
     public function testBuilderCanCreateNullTask(array $options): void
     {
         $builder = new TaskBuilder([
-            new NullBuilder(),
+            new NullBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ], PropertyAccess::createPropertyAccessor());
 
         self::assertInstanceOf(NullTask::class, $builder->create($options));
@@ -55,7 +67,11 @@ final class TaskBuilderTest extends TestCase
     public function testBuilderCanCreateShellTask(array $options): void
     {
         $builder = new TaskBuilder([
-            new ShellBuilder(),
+            new ShellBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ], PropertyAccess::createPropertyAccessor());
 
         self::assertInstanceOf(ShellTask::class, $builder->create($options));
@@ -67,7 +83,11 @@ final class TaskBuilderTest extends TestCase
     public function testBuilderCanCreateCommandTask(array $options): void
     {
         $builder = new TaskBuilder([
-            new CommandBuilder(),
+            new CommandBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ], PropertyAccess::createPropertyAccessor());
 
         self::assertInstanceOf(CommandTask::class, $builder->create($options));
@@ -79,7 +99,11 @@ final class TaskBuilderTest extends TestCase
     public function testBuilderCanCreateHttpTask(array $options): void
     {
         $builder = new TaskBuilder([
-            new HttpBuilder(),
+            new HttpBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ], PropertyAccess::createPropertyAccessor());
 
         self::assertInstanceOf(HttpTask::class, $builder->create($options));

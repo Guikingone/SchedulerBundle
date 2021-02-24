@@ -5,15 +5,23 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task\Builder;
 
 use DateTimeZone;
+use SchedulerBundle\Expression\BuilderInterface as ExpressionBuilderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-trait TaskBuilderTrait
+abstract class AbstractTaskBuilder
 {
-    private function handleTaskAttributes(TaskInterface $task, array $options, PropertyAccessorInterface $propertyAccessor): TaskInterface
+    private ExpressionBuilderInterface $expressionBuilder;
+
+    public function __construct(ExpressionBuilderInterface $expressionBuilder)
+    {
+        $this->expressionBuilder = $expressionBuilder;
+    }
+
+    protected function handleTaskAttributes(TaskInterface $task, array $options, PropertyAccessorInterface $propertyAccessor): TaskInterface
     {
         foreach ($options as $option => $value) {
             if (!$propertyAccessor->isWritable($task, $option)) {
@@ -22,6 +30,12 @@ trait TaskBuilderTrait
 
             if ('timezone' === $option && $propertyAccessor->isWritable($task, $option)) {
                 $propertyAccessor->setValue($task, $option, new DateTimeZone($value));
+
+                continue;
+            }
+
+            if ('expression' === $option && $propertyAccessor->isWritable($task, $option)) {
+                $propertyAccessor->setValue($task, $option, $this->expressionBuilder->build($value)->getExpression());
 
                 continue;
             }

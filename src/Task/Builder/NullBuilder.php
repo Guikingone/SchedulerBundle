@@ -11,18 +11,14 @@ use SchedulerBundle\Task\TaskInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class NullBuilder implements BuilderInterface
+final class NullBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
-    use TaskBuilderTrait;
-
     /**
      * {@inheritdoc}
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $task = new NullTask($options['name']);
-
-        return $this->handleTaskAttributes($task, $options, $propertyAccessor);
+        return $this->handleTaskAttributes(new NullTask($options['name']), $options, $propertyAccessor);
     }
 
     /**

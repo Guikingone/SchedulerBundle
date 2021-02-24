@@ -19,12 +19,12 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
 
         $expression = new Expression();
         $expression->setExpression(sprintf(
-            '%d %d %d %d %d',
+            '%d %s %s %s %s',
             (int) $date->format('i'),
-            (int) $date->format('H'),
-            (int) $date->format('d'),
-            (int) $date->format('m'),
-            (int) $date->format('w')
+            $date->format('G'),
+            $date->format('j'),
+            $date->format('n'),
+            $date->format('w')
         ));
 
         return $expression;

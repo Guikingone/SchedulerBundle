@@ -692,7 +692,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateExpression(string $expression): bool
     {
-        return CronExpression::isValidExpression($expression) || false !== strtotime($expression);
+        return CronExpression::isValidExpression($expression);
     }
 
     private function validateNice(int $nice = null): bool

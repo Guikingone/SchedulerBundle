@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task\Builder;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Expression\BuilderInterface as ExpressionBuilderInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -13,18 +14,21 @@ use function array_map;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ChainedBuilder implements BuilderInterface
+final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
-    use TaskBuilderTrait;
-
     private iterable $builders;
 
     /**
+     * @param ExpressionBuilderInterface  $builder
      * @param iterable|BuilderInterface[] $builders
      */
-    public function __construct(iterable $builders = [])
-    {
+    public function __construct(
+        ExpressionBuilderInterface $builder,
+        iterable $builders = []
+    ) {
         $this->builders = $builders;
+
+        parent::__construct($builder);
     }
 
     /**

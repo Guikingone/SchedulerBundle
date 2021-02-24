@@ -184,6 +184,8 @@ Each task has its own set of options, the full list is documented in [AbstractTa
 
 ## Fluent expressions
 
+_Introduced in `0.3`_
+
 This bundle supports defining tasks expression via basic cron syntax:
 
 ```bash
@@ -191,4 +193,8 @@ This bundle supports defining tasks expression via basic cron syntax:
 ```
 
 Even if this approach is mostly recommended, you may need to use a more "user-friendly" syntax, to do so,
-this bundle allows you to use "fluent" expressions thanks to [strtotime](https://www.php.net/manual/fr/function.strtotime).
+this bundle allows you to use "fluent" expressions thanks to [strtotime](https://www.php.net/manual/fr/function.strtotime) and "computed" expressions:
+
+### Strtotime
+
+### Computed expressions

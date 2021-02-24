@@ -67,6 +67,7 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
@@ -88,6 +89,7 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use stdClass;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -100,20 +102,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 {
     public function testParametersAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
-
-        $container->compile();
+        ]);
 
         self::assertTrue($container->hasParameter('scheduler.timezone'));
         self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
@@ -123,20 +118,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testInterfacesForAutoconfigureAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
-
-        $container->compile();
+        ]);
 
         $autoconfigurationInterfaces = $container->getAutoconfiguredInstanceof();
 
@@ -166,20 +154,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testTransportFactoriesAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(TransportFactory::class));
         self::assertCount(1, $container->getDefinition(TransportFactory::class)->getArguments());
@@ -264,20 +247,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testSchedulerIsRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(Scheduler::class));
         self::assertTrue($container->hasAlias(SchedulerInterface::class));
@@ -297,20 +275,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testCommandsAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(ConsumeTasksCommand::class));
         self::assertCount(4, $container->getDefinition(ConsumeTasksCommand::class)->getArguments());
@@ -379,20 +352,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(Expression::class));
 
@@ -461,20 +429,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testBuildersAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(TaskBuilder::class));
         self::assertTrue($container->hasAlias(TaskBuilderInterface::class));
@@ -484,29 +447,43 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(TaskBuilder::class)->hasTag('container.preload'));
         self::assertSame(TaskBuilder::class, $container->getDefinition(TaskBuilder::class)->getTag('container.preload')[0]['class']);
 
+        self::assertTrue($container->hasDefinition(AbstractTaskBuilder::class));
+        self::assertFalse($container->getDefinition(AbstractTaskBuilder::class)->isPublic());
+        self::assertTrue($container->getDefinition(AbstractTaskBuilder::class)->isAbstract());
+        self::assertCount(1, $container->getDefinition(AbstractTaskBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(AbstractTaskBuilder::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(AbstractTaskBuilder::class)->hasTag('container.preload'));
+        self::assertSame(AbstractTaskBuilder::class, $container->getDefinition(AbstractTaskBuilder::class)->getTag('container.preload')[0]['class']);
+
         self::assertTrue($container->hasDefinition(CommandBuilder::class));
+        self::assertFalse($container->getDefinition(CommandBuilder::class)->isPublic());
         self::assertTrue($container->getDefinition(CommandBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(CommandBuilder::class)->hasTag('container.preload'));
         self::assertSame(CommandBuilder::class, $container->getDefinition(CommandBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(HttpBuilder::class));
+        self::assertFalse($container->getDefinition(HttpBuilder::class)->isPublic());
         self::assertTrue($container->getDefinition(HttpBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(HttpBuilder::class)->hasTag('container.preload'));
         self::assertSame(HttpBuilder::class, $container->getDefinition(HttpBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(NullBuilder::class));
+        self::assertFalse($container->getDefinition(NullBuilder::class)->isPublic());
         self::assertTrue($container->getDefinition(NullBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(NullBuilder::class)->hasTag('container.preload'));
         self::assertSame(NullBuilder::class, $container->getDefinition(NullBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ShellBuilder::class));
+        self::assertFalse($container->getDefinition(ShellBuilder::class)->isPublic());
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('container.preload'));
         self::assertSame(ShellBuilder::class, $container->getDefinition(ShellBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ChainedBuilder::class));
-        self::assertCount(1, $container->getDefinition(ChainedBuilder::class)->getArguments());
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
+        self::assertFalse($container->getDefinition(ChainedBuilder::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(ChainedBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(1));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('container.preload'));
         self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getTag('container.preload')[0]['class']);
@@ -514,20 +491,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testRunnersAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition('scheduler.application'));
         self::assertCount(1, $container->getDefinition('scheduler.application')->getArguments());
@@ -586,20 +558,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testNormalizersAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(TaskNormalizer::class));
         self::assertCount(5, $container->getDefinition(TaskNormalizer::class)->getArguments());
@@ -622,20 +589,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testMessengerToolsAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(TaskMessageHandler::class));
         self::assertCount(1, $container->getDefinition(TaskMessageHandler::class)->getArguments());
@@ -654,20 +616,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testSubscribersAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(TaskSubscriber::class));
         self::assertCount(6, $container->getDefinition(TaskSubscriber::class)->getArguments());
@@ -718,20 +675,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testTrackerIsRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition('scheduler.stop_watch'));
 
@@ -745,20 +697,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testWorkerIsRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(Worker::class));
         self::assertTrue($container->hasAlias(WorkerInterface::class));
@@ -778,20 +725,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testWorkerIsRegisteredWithLockStore(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => 'foo',
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => 'foo',
+        ]);
 
         self::assertTrue($container->hasDefinition(Worker::class));
         self::assertTrue($container->hasAlias(WorkerInterface::class));
@@ -812,30 +754,25 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testTasksAreRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [
-                    'foo' => [
-                        'type' => 'command',
-                        'command' => 'cache:clear',
-                        'expression' => '*/5 * * * *',
-                        'description' => 'A simple cache clear task',
-                        'options' => [
-                            'env' => 'test',
-                        ],
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [
+                'foo' => [
+                    'type' => 'command',
+                    'command' => 'cache:clear',
+                    'expression' => '*/5 * * * *',
+                    'description' => 'A simple cache clear task',
+                    'options' => [
+                        'env' => 'test',
                     ],
                 ],
-                'lock_store' => null,
             ],
-        ], $container);
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition('scheduler.foo_task'));
         self::assertEquals([
@@ -858,33 +795,28 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testChainedTaskCanBeRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [
-                    'foo' => [
-                        'type' => 'chained',
-                        'tasks' => [
-                            'bar' => [
-                                'type' => 'shell',
-                                'expression' => '* * * * *',
-                            ],
-                            'random' => [
-                                'type' => 'shell',
-                                'expression' => '*/5 * * * *',
-                            ],
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [
+                'foo' => [
+                    'type' => 'chained',
+                    'tasks' => [
+                        'bar' => [
+                            'type' => 'shell',
+                            'expression' => '* * * * *',
+                        ],
+                        'random' => [
+                            'type' => 'shell',
+                            'expression' => '*/5 * * * *',
                         ],
                     ],
                 ],
             ],
-        ], $container);
+        ]);
 
         self::assertTrue($container->hasDefinition('scheduler.foo_task'));
         self::assertEquals([
@@ -949,20 +881,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testMiddlewareStackAreConfigured(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(SchedulerMiddlewareStack::class));
         self::assertFalse($container->getDefinition(SchedulerMiddlewareStack::class)->isPublic());
@@ -1001,21 +928,16 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testRateLimiterMiddlewareCanBeConfigured(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
-                'rate_limiter' => 'foo',
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+            'rate_limiter' => 'foo',
+        ]);
 
         self::assertTrue($container->hasDefinition(MaxExecutionMiddleware::class));
         self::assertFalse($container->getDefinition(MaxExecutionMiddleware::class)->isPublic());
@@ -1028,20 +950,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testDataCollectorIsConfigured(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(SchedulerDataCollector::class));
         self::assertFalse($container->getDefinition(SchedulerDataCollector::class)->isPublic());
@@ -1052,5 +969,19 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(SchedulerDataCollector::NAME, $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['id']);
         self::assertTrue($container->getDefinition(SchedulerDataCollector::class)->hasTag('container.preload'));
         self::assertSame(SchedulerDataCollector::class, $container->getDefinition(SchedulerDataCollector::class)->getTag('container.preload')[0]['class']);
+    }
+
+    private function getContainer(array $configuration = []): ContainerBuilder
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension(new SchedulerBundleExtension());
+        $container->loadFromExtension('scheduler_bundle', $configuration);
+
+        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
+        $container->getCompilerPassConfig()->setRemovingPasses([]);
+        $container->getCompilerPassConfig()->setAfterRemovingPasses([]);
+        $container->compile();
+
+        return $container;
     }
 }

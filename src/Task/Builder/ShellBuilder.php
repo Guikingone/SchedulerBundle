@@ -11,18 +11,18 @@ use SchedulerBundle\Task\TaskInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ShellBuilder implements BuilderInterface
+final class ShellBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
-    use TaskBuilderTrait;
-
     /**
      * {@inheritdoc}
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $task = new ShellTask($options['name'], $options['command'], $options['cwd'] ?? null, $options['environment_variables'] ?? [], $options['timeout'] ?? 60);
-
-        return $this->handleTaskAttributes($task, $options, $propertyAccessor);
+        return $this->handleTaskAttributes(
+            new ShellTask($options['name'], $options['command'], $options['cwd'] ?? null, $options['environment_variables'] ?? [], $options['timeout'] ?? 60),
+            $options,
+            $propertyAccessor
+        );
     }
 
     /**
