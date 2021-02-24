@@ -112,6 +112,7 @@
         "psr/cache": "^1.0",
         "rector/rector": "^0.9.18",
         "roave/no-leaks": "^1.2",
+        "simshaun/recurr": "^4.0",
         "symfony/dependency-injection": "^5.2",
         "symfony/framework-bundle": "^5.2",
         "symfony/http-client": "^5.2",

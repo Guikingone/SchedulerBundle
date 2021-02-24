@@ -180,7 +180,12 @@ EOF
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
-    public function testCommandCanConsumeSchedulersWithTimeLimit(): void
+    /**
+     * @dataProvider provideLimitOption
+     *
+     * @param int|string $limit
+     */
+    public function testCommandCanConsumeSchedulersWithTimeLimit($limit): void
     {
         $logger = $this->createMock(LoggerInterface::class);
 
@@ -203,7 +208,7 @@ EOF
 
         $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([
-            '--time-limit' => 10,
+            '--time-limit' => $limit,
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -320,5 +325,11 @@ EOF
     {
         yield 'Multiple tasks' => [10, 'The worker will automatically exit once 10 tasks have failed'];
         yield 'Single task' => [1, 'The worker will automatically exit once 1 task have failed'];
+    }
+
+    public function provideLimitOption(): Generator
+    {
+        yield [10];
+        yield ['10'];
     }
 }

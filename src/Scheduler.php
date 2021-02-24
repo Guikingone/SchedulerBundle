@@ -87,10 +87,10 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function unschedule(string $name): void
+    public function unschedule(string $taskName): void
     {
-        $this->transport->delete($name);
-        $this->dispatch(new TaskUnscheduledEvent($name));
+        $this->transport->delete($taskName);
+        $this->dispatch(new TaskUnscheduledEvent($taskName));
     }
 
     /**
@@ -135,9 +135,9 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function resume(string $name): void
+    public function resume(string $taskName): void
     {
-        $this->transport->resume($name);
+        $this->transport->resume($taskName);
     }
 
     /**
