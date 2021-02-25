@@ -526,6 +526,9 @@ final class ConnectionTest extends TestCase
         $schemaManager = $this->createMock(AbstractSchemaManager::class);
         $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
 
+        $configuration->expects(self::once())->method('getSchemaAssetsFilter')->willReturn(null);
+        $configuration->expects(self::exactly(2))->method('setSchemaAssetsFilter')->withConsecutive([self::equalTo(null)], [self::equalTo(null)]);
+
         $driverConnection = $this->createMock(Connection::class);
         $driverConnection->method('getDatabasePlatform')->willReturn($platform);
         $driverConnection->method('getConfiguration')->willReturn($configuration);
