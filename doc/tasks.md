@@ -197,4 +197,57 @@ this bundle allows you to use "fluent" expressions thanks to [strtotime](https:/
 
 ### Strtotime
 
+Scheduling a task with a "fluent" expression is as easy as it sounds:
+
+```yaml
+scheduler_bundle:
+  # ...
+  tasks:
+    foo:
+      type: 'shell'
+      command: ['ls', '-al']
+      expression: 'next monday 10:00'
+```
+
+Every expression supported by [strtotime](https://www.php.net/manual/fr/function.strtotime) is allowed.
+
+_Note: Keep in mind that using a fluent expression does not lock the amount of execution of the task, 
+if it should only run once, you must consider using the `single_run` option._
+
+_Note: If you need to generate the expression thanks to a specific timezone, the `timezone` option can be used:_
+
+```yaml
+scheduler_bundle:
+  # ...
+  tasks:
+    foo:
+      type: 'shell'
+      command: ['ls', '-al']
+      expression: 'next monday 10:00'
+      timezone: 'Europe/Paris'
+```
+
+*The default value is `UTC`*
+
 ### Computed expressions
+
+A "computed" expression is a special expression that use `#` for specific parts of the expression:
+
+```yaml
+scheduler_bundle:
+  # ...
+  tasks:
+    foo:
+      type: 'shell'
+      command: ['ls', '-al']
+      expression: '# * * * *'
+```
+
+The final expression will contain an integer 0 and 59 in the minute field of the expression 
+as described in the [man page](https://crontab.guru/crontab.5.html).
+
+_Note: `#` can be used in multiple parts of the expression at the same time._
+
+### Notices
+
+Both computed and fluent expressions cannot be used *outside* of the configuration definition.

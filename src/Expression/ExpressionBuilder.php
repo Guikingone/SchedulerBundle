@@ -26,7 +26,7 @@ final class ExpressionBuilder implements BuilderInterface
         $this->builders = $builders;
     }
 
-    public function build(string $expression): Expression
+    public function build(string $expression, ?string $timezone = null): Expression
     {
         if (0 === count($this->builders)) {
             throw new RuntimeException('No builder found');
@@ -37,7 +37,7 @@ final class ExpressionBuilder implements BuilderInterface
                 continue;
             }
 
-            return $builder->build($expression);
+            return $builder->build($expression, $timezone);
         }
 
         throw new InvalidArgumentException('The expression cannot be used');

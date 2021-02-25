@@ -11,7 +11,7 @@ use Cron\CronExpression;
  */
 final class CronExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression): Expression
+    public function build(string $expression, ?string $timezone = null): Expression
     {
         return Expression::createFromString($expression);
     }

@@ -35,7 +35,7 @@ abstract class AbstractTaskBuilder
             }
 
             if ('expression' === $option && $propertyAccessor->isWritable($task, $option)) {
-                $propertyAccessor->setValue($task, $option, $this->expressionBuilder->build($value)->getExpression());
+                $propertyAccessor->setValue($task, $option, $this->expressionBuilder->build($value, $options['timezone'] ?? null)->getExpression());
 
                 continue;
             }

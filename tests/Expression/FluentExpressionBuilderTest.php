@@ -32,6 +32,17 @@ final class FluentExpressionBuilderTest extends TestCase
         self::assertSame($finalExpression->getExpression(), $endExpression);
     }
 
+    /**
+     * @dataProvider provideExpression
+     */
+    public function testBuilderCanBuildWithTimezone(string $expression, string $endExpression): void
+    {
+        $builder = new FluentExpressionBuilder();
+        $finalExpression = $builder->build($expression, 'UTC');
+
+        self::assertSame($finalExpression->getExpression(), $endExpression);
+    }
+
     public function provideExpression(): Generator
     {
         yield ['first monday of January 1980 10:00', '0 10 7 1 1'];

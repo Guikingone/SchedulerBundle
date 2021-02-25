@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Expression;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use function sprintf;
 use function strtotime;
 
@@ -13,9 +14,9 @@ use function strtotime;
  */
 final class FluentExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression): Expression
+    public function build(string $expression, ?string $timezone = null): Expression
     {
-        $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression));
+        $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression), new DateTimeZone($timezone ?? 'UTC'));
 
         $expression = new Expression();
         $expression->setExpression(sprintf(

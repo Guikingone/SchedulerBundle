@@ -14,7 +14,7 @@ use function random_int;
  */
 final class ComputedExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression): Expression
+    public function build(string $expression, ?string $timezone = null): Expression
     {
         $parts = explode(' ', $expression);
 

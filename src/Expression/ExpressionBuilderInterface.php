@@ -9,7 +9,7 @@ namespace SchedulerBundle\Expression;
  */
 interface ExpressionBuilderInterface
 {
-    public function build(string $expression): Expression;
+    public function build(string $expression, ?string $timezone): Expression;
 
     public function support(string $expression): bool;
 }
