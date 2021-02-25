@@ -35,9 +35,15 @@ final class ComputedExpressionBuilder implements ExpressionBuilderInterface
                 $parts[$position] = random_int(1, 12);
             }
 
-            if (4 === $position && $part === '#') {
-                $parts[$position] = random_int(0, 6);
+            if (4 !== $position) {
+                continue;
             }
+
+            if ($part !== '#') {
+                continue;
+            }
+
+            $parts[$position] = random_int(0, 6);
         }
 
         return Expression::createFromString(implode(' ', $parts));
