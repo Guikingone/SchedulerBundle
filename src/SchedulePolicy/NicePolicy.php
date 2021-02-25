@@ -31,7 +31,7 @@ final class NicePolicy implements PolicyInterface
                 return 1;
             }
 
-            return $task->getNice() > $nextTask->getNice() ? 1 : -1;
+            return $task->getNice() <=> $nextTask->getNice();
         });
 
         return $tasks;

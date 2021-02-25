@@ -112,11 +112,11 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
 
         $thirdOrderedMiddleware = $this->createMock(OrderedMiddleware::class);
-        $thirdOrderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(0);
+        $thirdOrderedMiddleware->expects(self::exactly(2))->method('getPriority')->willReturn(0);
         $thirdOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
 
         $fourthOrderedMiddleware = $this->createMock(OrderedMiddleware::class);
-        $fourthOrderedMiddleware->expects(self::exactly(3))->method('getPriority')->willReturn(1);
+        $fourthOrderedMiddleware->expects(self::exactly(2))->method('getPriority')->willReturn(1);
         $fourthOrderedMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task), self::equalTo($scheduler));
 
         $middleware = $this->createMock(PreSchedulingMiddlewareInterface::class);

@@ -77,7 +77,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
             return $middlewareList;
         }
 
-        uasort($orderedMiddleware, fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() < $nextMiddleware->getPriority() ? -1 : 1);
+        uasort($orderedMiddleware, fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() <=> $nextMiddleware->getPriority());
 
         return array_replace($middlewareList, $orderedMiddleware);
     }
