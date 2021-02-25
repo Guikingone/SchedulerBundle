@@ -60,7 +60,7 @@ interface SchedulerInterface
     /**
      * Return every tasks scheduled.
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function getTasks(): TaskListInterface;
 

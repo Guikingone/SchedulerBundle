@@ -121,7 +121,8 @@
         "symfony/notifier": "^5.2",
         "symfony/rate-limiter": "^5.2",
         "thecodingmachine/safe": "^1.3.3",
-        "vimeo/psalm": "^4.4"
+        "vimeo/psalm": "^4.4",
+        "psalm/plugin-symfony": "^2.1"
     },
     "suggest": {
         "symfony/http-client": "For dispatching http tasks",

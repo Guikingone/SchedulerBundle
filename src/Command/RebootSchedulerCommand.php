@@ -33,7 +33,7 @@ final class RebootSchedulerCommand extends Command
     private LoggerInterface $logger;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:reboot';
 
