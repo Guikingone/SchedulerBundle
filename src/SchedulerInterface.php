@@ -48,7 +48,7 @@ interface SchedulerInterface
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function getDueTasks(): TaskListInterface;
 
