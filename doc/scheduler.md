@@ -83,3 +83,25 @@ final class Foo
     }
 }
 ```
+
+### Pausing task
+
+_Introduced in `0.3`_
+
+Pausing a task using the asynchronous approach requires to use the method second argument:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use SchedulerBundle\SchedulerInterface;
+
+final class Foo
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->pause('foo', true);
+    }
+}
+```

@@ -41,7 +41,7 @@ final class DeadlinePolicy implements PolicyInterface
         uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
             $currentDate = new DateTimeImmutable();
 
-            return $currentDate->add($task->getExecutionAbsoluteDeadline()) < $currentDate->add($nextTask->getExecutionAbsoluteDeadline()) ? 1 : -1;
+            return $currentDate->add($nextTask->getExecutionAbsoluteDeadline()) <=> $currentDate->add($task->getExecutionAbsoluteDeadline());
         });
 
         return $tasks;

@@ -38,7 +38,7 @@ interface SchedulerInterface
     /**
      * Pause a specific task, when paused, a task cannot be executed by the worker (but it can be sent to it).
      */
-    public function pause(string $taskName): void;
+    public function pause(string $taskName, bool $async = false): void;
 
     /**
      * Re-enable a specific task (if disabled or paused), once resumed, the task can be executed.
@@ -48,7 +48,7 @@ interface SchedulerInterface
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function getDueTasks(): TaskListInterface;
 
@@ -60,7 +60,7 @@ interface SchedulerInterface
     /**
      * Return every tasks scheduled.
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string, TaskInterface>
      */
     public function getTasks(): TaskListInterface;
 

@@ -118,7 +118,7 @@ final class LongTailTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        usort($this->transports, fn (TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() > $nextTransport->list()->count() ? 1 : -1);
+        usort($this->transports, fn (TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() <=> $nextTransport->list()->count());
 
         $transport = reset($this->transports);
 

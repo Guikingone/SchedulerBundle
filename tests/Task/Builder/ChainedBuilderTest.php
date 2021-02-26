@@ -7,6 +7,10 @@ namespace Tests\SchedulerBundle\Task\Builder;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\ShellBuilder;
 use SchedulerBundle\Task\ChainedTask;
@@ -20,7 +24,11 @@ final class ChainedBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new ChainedBuilder();
+        $builder = new ChainedBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
 
         self::assertFalse($builder->support('test'));
         self::assertTrue($builder->support('chained'));
@@ -31,7 +39,11 @@ final class ChainedBuilderTest extends TestCase
      */
     public function testBuilderCanBuildWithoutBuilders(array $configuration): void
     {
-        $builder = new ChainedBuilder();
+        $builder = new ChainedBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given task cannot be created as no related builder can be found');
@@ -44,8 +56,16 @@ final class ChainedBuilderTest extends TestCase
      */
     public function testBuilderCanBuild(array $configuration): void
     {
-        $builder = new ChainedBuilder([
-            new ShellBuilder(),
+        $builder = new ChainedBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]), [
+            new ShellBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ]);
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $configuration);

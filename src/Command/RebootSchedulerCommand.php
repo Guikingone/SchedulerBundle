@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\Expression\ExpressionFactory;
+use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -33,7 +33,7 @@ final class RebootSchedulerCommand extends Command
     private LoggerInterface $logger;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:reboot';
 
@@ -80,7 +80,7 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
+        $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Type', 'State', 'Tags']);

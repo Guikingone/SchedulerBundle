@@ -6,6 +6,10 @@ namespace Tests\SchedulerBundle\Task\Builder;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\HttpBuilder;
 use SchedulerBundle\Task\HttpTask;
@@ -18,7 +22,11 @@ final class HttpBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new HttpBuilder();
+        $builder = new HttpBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
 
         self::assertFalse($builder->support('test'));
         self::assertTrue($builder->support('http'));
@@ -29,7 +37,11 @@ final class HttpBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new HttpBuilder();
+        $builder = new HttpBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
 

@@ -464,6 +464,24 @@ final class SchedulerTest extends TestCase
         self::assertNotEmpty($resumedTasks);
     }
 
+    public function testSchedulerCanPauseTaskWithoutMessageBus(): void
+    {
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('pause')->with(self::equalTo('foo'));
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $scheduler->pause('foo');
+    }
+
+    public function testSchedulerCanPauseTaskWithMessageBus(): void
+    {
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::never())->method('pause');
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, new SchedulerMessageBus());
+        $scheduler->pause('foo', true);
+    }
+
     public function testDueTasksCanBeReturnedWithStartAndEndDate(): void
     {
         $task = $this->createMock(TaskInterface::class);

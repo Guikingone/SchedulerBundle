@@ -107,6 +107,7 @@
         "phpstan/phpstan-doctrine": "^0.12.19",
         "phpstan/phpstan-phpunit": "^0.12",
         "phpstan/phpstan-symfony": "^0.12.19",
+        "psalm/plugin-symfony": "^2.1",
         "phpunit/phpunit": "^9.5",
         "psalm/plugin-phpunit": "^0.15",
         "psr/cache": "^1.0",

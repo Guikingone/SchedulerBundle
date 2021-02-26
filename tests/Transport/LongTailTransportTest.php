@@ -23,7 +23,9 @@ final class LongTailTransportTest extends TestCase
 
         self::assertCount(2, $transport->getOptions());
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getExecutionMode());
         self::assertArrayHasKey('path', $transport->getOptions());
+        self::assertNull($transport->getOptions()['path']);
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
@@ -32,6 +34,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->get('foo');
     }
 
@@ -41,7 +44,7 @@ final class LongTailTransportTest extends TestCase
         $taskList->expects(self::once())->method('count')->willReturn(0);
 
         $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList->expects(self::exactly(3))->method('count')->willReturn(1);
 
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
@@ -51,16 +54,22 @@ final class LongTailTransportTest extends TestCase
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
+        $secondTransport->expects(self::exactly(2))->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('get');
+
+        $thirdTransport = $this->createMock(TransportInterface::class);
+        $thirdTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
+        $thirdTransport->expects(self::never())->method('get');
 
         $transport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
+            $thirdTransport,
         ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->get('foo');
     }
 
@@ -99,6 +108,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->list();
     }
 
@@ -126,6 +136,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->list();
     }
 
@@ -159,6 +170,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->create($task);
     }
 
@@ -189,6 +201,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->create($task);
     }
 
@@ -226,6 +239,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->update('foo', $task);
     }
 
@@ -256,6 +270,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->update('foo', $task);
     }
 
@@ -291,6 +306,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->delete('foo');
     }
 
@@ -319,6 +335,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->delete('foo');
     }
 
@@ -352,6 +369,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->pause('foo');
     }
 
@@ -380,6 +398,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->pause('foo');
     }
 
@@ -441,6 +460,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->resume('foo');
     }
 
@@ -474,6 +494,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
         $transport->clear();
     }
 
@@ -502,6 +523,7 @@ final class LongTailTransportTest extends TestCase
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
         $transport->clear();
     }
 

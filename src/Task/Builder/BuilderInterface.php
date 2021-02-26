@@ -12,6 +12,12 @@ use SchedulerBundle\Task\TaskInterface;
  */
 interface BuilderInterface
 {
+    /**
+     * @param PropertyAccessorInterface $propertyAccessor
+     * @param array<string, mixed>      $options
+     *
+     * @return TaskInterface
+     */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface;
 
     public function support(?string $type = null): bool;

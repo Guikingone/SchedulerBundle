@@ -11,18 +11,18 @@ use SchedulerBundle\Task\TaskInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class HttpBuilder implements BuilderInterface
+final class HttpBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
-    use TaskBuilderTrait;
-
     /**
      * {@inheritdoc}
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $task = new HttpTask($options['name'], $options['url'], $options['method'] ?? null, $options['client_options'] ?? []);
-
-        return $this->handleTaskAttributes($task, $options, $propertyAccessor);
+        return $this->handleTaskAttributes(
+            new HttpTask($options['name'], $options['url'], $options['method'] ?? null, $options['client_options'] ?? []),
+            $options,
+            $propertyAccessor
+        );
     }
 
     /**

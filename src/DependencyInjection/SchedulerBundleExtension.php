@@ -24,7 +24,13 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
-use SchedulerBundle\Expression\ExpressionFactory;
+use SchedulerBundle\Expression\BuilderInterface;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilderInterface;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -62,6 +68,7 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
@@ -97,6 +104,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function array_merge;
 use function class_exists;
 use function sprintf;
+use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -148,6 +156,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
+        $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag('scheduler.expression_builder');
     }
 
     private function registerTransportFactories(ContainerBuilder $container): void
@@ -340,7 +349,35 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerExpressionFactoryAndPolicies(ContainerBuilder $container): void
     {
-        $container->register(ExpressionFactory::class, ExpressionFactory::class);
+        $container->register(Expression::class, Expression::class);
+
+        $container->register(ExpressionBuilder::class, ExpressionBuilder::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.expression_builder'),
+            ])
+            ->addTag('container.preload', [
+                'class' => ExpressionBuilder::class,
+            ])
+        ;
+        $container->setAlias(BuilderInterface::class, ExpressionBuilder::class);
+
+        $container->register(CronExpressionBuilder::class, CronExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => CronExpressionBuilder::class,
+            ])
+        ;
+
+        $container->register(ComputedExpressionBuilder::class, ComputedExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => ComputedExpressionBuilder::class,
+            ])
+        ;
+
+        $container->register(FluentExpressionBuilder::class, FluentExpressionBuilder::class)
+            ->addTag('container.preload', [
+                'class' => FluentExpressionBuilder::class,
+            ])
+        ;
 
         $container->register(SchedulePolicyOrchestrator::class, SchedulePolicyOrchestrator::class)
             ->setArguments([
@@ -429,7 +466,19 @@ final class SchedulerBundleExtension extends Extension
         ;
         $container->setAlias(TaskBuilderInterface::class, TaskBuilder::class);
 
+        $container->register(AbstractTaskBuilder::class, AbstractTaskBuilder::class)
+            ->setArguments([
+                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setAbstract(true)
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => AbstractTaskBuilder::class,
+            ])
+        ;
+
         $container->register(CommandBuilder::class, CommandBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => CommandBuilder::class,
@@ -437,6 +486,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(HttpBuilder::class, HttpBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => HttpBuilder::class,
@@ -444,6 +494,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(NullBuilder::class, NullBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => NullBuilder::class,
@@ -451,6 +502,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(ShellBuilder::class, ShellBuilder::class)
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => ShellBuilder::class,
@@ -459,8 +511,10 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(ChainedBuilder::class, ChainedBuilder::class)
             ->setArguments([
+                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new TaggedIteratorArgument('scheduler.task_builder'),
             ])
+            ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
                 'class' => ChainedBuilder::class,
@@ -702,7 +756,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                null !== $configuration['lock_store'] && 0 !== \strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
+                null !== $configuration['lock_store'] && 0 !== strpos('@', (string) $configuration['lock_store']) ? new Reference($configuration['lock_store']) : null,
             ])
             ->addTag('scheduler.worker')
             ->addTag('monolog.logger', [

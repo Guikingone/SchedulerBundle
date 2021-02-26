@@ -7,6 +7,7 @@ namespace SchedulerBundle;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -14,7 +15,7 @@ use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Expression\ExpressionFactory;
+use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -86,10 +87,10 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function unschedule(string $name): void
+    public function unschedule(string $taskName): void
     {
-        $this->transport->delete($name);
-        $this->dispatch(new TaskUnscheduledEvent($name));
+        $this->transport->delete($taskName);
+        $this->dispatch(new TaskUnscheduledEvent($taskName));
     }
 
     /**
@@ -120,17 +121,23 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function pause(string $name): void
+    public function pause(string $taskName, bool $async = false): void
     {
-        $this->transport->pause($name);
+        if ($async && null !== $this->bus) {
+            $this->bus->dispatch(new TaskToPauseMessage($taskName));
+
+            return;
+        }
+
+        $this->transport->pause($taskName);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $name): void
+    public function resume(string $taskName): void
     {
-        $this->transport->resume($name);
+        $this->transport->resume($taskName);
     }
 
     /**
@@ -185,7 +192,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(fn (TaskInterface $task): bool => ExpressionFactory::REBOOT_MACRO === $task->getExpression());
+        $rebootTasks = $this->getTasks()->filter(fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 

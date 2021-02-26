@@ -11,10 +11,8 @@ use SchedulerBundle\Task\TaskInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CommandBuilder implements BuilderInterface
+final class CommandBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
-    use TaskBuilderTrait;
-
     /**
      * {@inheritdoc}
      */

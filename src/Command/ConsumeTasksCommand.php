@@ -36,7 +36,7 @@ final class ConsumeTasksCommand extends Command
     private WorkerInterface $worker;
 
     /**
-     * @var string|mixed
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:consume';
 
@@ -162,6 +162,10 @@ EOF
     {
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($style): void {
             $output = $event->getOutput();
+            if (null === $output) {
+                return;
+            }
+
             if (null === $output->getOutput()) {
                 return;
             }

@@ -24,7 +24,7 @@ final class ListFailedTasksCommand extends Command
     private WorkerInterface $worker;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:list:failed';
 

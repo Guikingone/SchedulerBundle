@@ -22,7 +22,7 @@ final class FirstInLastOutPolicy implements PolicyInterface
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() > $nextTask->getScheduledAt() ? 1 : -1);
+        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
 
         return $tasks;
     }

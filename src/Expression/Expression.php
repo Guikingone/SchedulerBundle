@@ -7,6 +7,7 @@ namespace SchedulerBundle\Expression;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\InvalidExpressionException;
 use function array_key_exists;
+use function count;
 use function explode;
 use function implode;
 use function sprintf;
@@ -15,7 +16,7 @@ use function strpos;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ExpressionFactory
+final class Expression
 {
     /**
      * @var string
@@ -61,6 +62,14 @@ final class ExpressionFactory
     public function __toString(): string
     {
         return $this->expression;
+    }
+
+    public static function createFromString(string $expression): self
+    {
+        $self = new self();
+        $self->setExpression($expression);
+
+        return $self;
     }
 
     public function setExpression(string $expression): void
@@ -171,7 +180,7 @@ final class ExpressionFactory
     {
         $fields = explode(':', $time);
 
-        $this->changeExpression(0, 2 === \count($fields) ? $fields[1] : '0');
+        $this->changeExpression(0, 2 === count($fields) ? $fields[1] : '0');
         $this->changeExpression(1, $fields[0]);
 
         return $this->expression;

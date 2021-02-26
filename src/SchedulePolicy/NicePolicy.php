@@ -26,10 +26,12 @@ final class NicePolicy implements PolicyInterface
             if ($task->getPriority() > 0) {
                 return 1;
             }
+
             if ($nextTask->getPriority() > 0) {
                 return 1;
             }
-            return $task->getNice() > $nextTask->getNice() ? 1 : -1;
+
+            return $task->getNice() <=> $nextTask->getNice();
         });
 
         return $tasks;

@@ -6,6 +6,10 @@ namespace Tests\SchedulerBundle\Task\Builder;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use SchedulerBundle\Expression\CronExpressionBuilder;
+use SchedulerBundle\Expression\ExpressionBuilder;
+use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\NullBuilder;
 use SchedulerBundle\Task\NullTask;
@@ -18,7 +22,11 @@ final class NullBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new NullBuilder();
+        $builder = new NullBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
 
         self::assertFalse($builder->support('test'));
         self::assertTrue($builder->support());
@@ -29,7 +37,11 @@ final class NullBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new NullBuilder();
+        $builder = new NullBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         $task = $builder->build($propertyAccessor, $options);
