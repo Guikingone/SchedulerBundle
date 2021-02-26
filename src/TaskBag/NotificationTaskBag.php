@@ -13,6 +13,10 @@ use Symfony\Component\Notifier\Recipient\Recipient;
 final class NotificationTaskBag implements TaskBagInterface
 {
     private Notification $notification;
+
+    /**
+     * @var Recipient[]
+     */
     private array $recipients;
 
     public function __construct(
@@ -28,6 +32,9 @@ final class NotificationTaskBag implements TaskBagInterface
         return $this->notification;
     }
 
+    /**
+     * @return Recipient[]
+     */
     public function getRecipients(): array
     {
         return $this->recipients;

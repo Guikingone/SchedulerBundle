@@ -7,6 +7,9 @@ namespace SchedulerBundle\DependencyInjection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
+use SchedulerBundle\Bridge\ApiPlatform\CollectionDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
+use SchedulerBundle\Bridge\ApiPlatform\ItemDataProvider;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -91,6 +94,7 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -135,6 +139,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerDoctrineBridge($container);
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
+        $this->registerApiPlatformBridge($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -362,18 +367,21 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(BuilderInterface::class, ExpressionBuilder::class);
 
         $container->register(CronExpressionBuilder::class, CronExpressionBuilder::class)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => CronExpressionBuilder::class,
             ])
         ;
 
         $container->register(ComputedExpressionBuilder::class, ComputedExpressionBuilder::class)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => ComputedExpressionBuilder::class,
             ])
         ;
 
         $container->register(FluentExpressionBuilder::class, FluentExpressionBuilder::class)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => FluentExpressionBuilder::class,
             ])
@@ -477,7 +485,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(CommandBuilder::class, CommandBuilder::class)
+        $commandBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $commandBuilderDefinition->setClass(CommandBuilder::class);
+        $container->setDefinition(CommandBuilder::class, $commandBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -485,7 +495,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(HttpBuilder::class, HttpBuilder::class)
+        $httpBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $httpBuilderDefinition->setClass(HttpBuilder::class);
+        $container->setDefinition(HttpBuilder::class, $httpBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -493,7 +505,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(NullBuilder::class, NullBuilder::class)
+        $httpBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $httpBuilderDefinition->setClass(NullBuilder::class);
+        $container->setDefinition(NullBuilder::class, $httpBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -501,7 +515,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(ShellBuilder::class, ShellBuilder::class)
+        $httpBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $httpBuilderDefinition->setClass(ShellBuilder::class);
+        $container->setDefinition(ShellBuilder::class, $httpBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -509,11 +525,10 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(ChainedBuilder::class, ChainedBuilder::class)
-            ->setArguments([
-                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new TaggedIteratorArgument('scheduler.task_builder'),
-            ])
+        $httpBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $httpBuilderDefinition->setClass(ChainedBuilder::class);
+        $container->setDefinition(ChainedBuilder::class, $httpBuilderDefinition)
+            ->setArgument(1, new TaggedIteratorArgument('scheduler.task_builder'))
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -888,6 +903,46 @@ final class SchedulerBundleExtension extends Extension
                 ])
             ;
         }
+    }
+
+    private function registerApiPlatformBridge(ContainerBuilder $container, array $configuration): void
+    {
+        if (false === $configuration['api_platform']) {
+            return;
+        }
+
+        $container->register(ItemDataProvider::class, ItemDataProvider::class)
+            ->setArguments([
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.item_data_provider')
+            ->addTag('container.preload', [
+                'class' => ItemDataProvider::class,
+            ])
+        ;
+
+        $container->register(CollectionDataProvider::class, CollectionDataProvider::class)
+            ->setArguments([
+                new Reference(SearchFilter::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.collection_data_provider')
+            ->addTag('container.preload', [
+                'class' => CollectionDataProvider::class,
+            ])
+        ;
+
+        $container->register(SearchFilter::class, SearchFilter::class)
+            ->setPublic(false)
+            ->addTag('api_platform.filter')
+            ->addTag('container.preload', [
+                'class' => SearchFilter::class,
+            ])
+        ;
     }
 
     private function registerDataCollector(ContainerBuilder $container): void
