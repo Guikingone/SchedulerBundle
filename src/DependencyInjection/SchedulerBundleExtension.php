@@ -91,6 +91,7 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -362,18 +363,24 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(BuilderInterface::class, ExpressionBuilder::class);
 
         $container->register(CronExpressionBuilder::class, CronExpressionBuilder::class)
+            ->setPublic(false)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => CronExpressionBuilder::class,
             ])
         ;
 
         $container->register(ComputedExpressionBuilder::class, ComputedExpressionBuilder::class)
+            ->setPublic(false)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => ComputedExpressionBuilder::class,
             ])
         ;
 
         $container->register(FluentExpressionBuilder::class, FluentExpressionBuilder::class)
+            ->setPublic(false)
+            ->addTag('scheduler.expression_builder')
             ->addTag('container.preload', [
                 'class' => FluentExpressionBuilder::class,
             ])
@@ -477,7 +484,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(CommandBuilder::class, CommandBuilder::class)
+        $commandBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $commandBuilderDefinition->setClass(CommandBuilder::class);
+        $container->setDefinition(CommandBuilder::class, $commandBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -485,7 +494,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(HttpBuilder::class, HttpBuilder::class)
+        $httpBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $httpBuilderDefinition->setClass(HttpBuilder::class);
+        $container->setDefinition(HttpBuilder::class, $httpBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -493,7 +504,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(NullBuilder::class, NullBuilder::class)
+        $nullBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $nullBuilderDefinition->setClass(NullBuilder::class);
+        $container->setDefinition(NullBuilder::class, $nullBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -501,7 +514,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(ShellBuilder::class, ShellBuilder::class)
+        $shellBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $shellBuilderDefinition->setClass(ShellBuilder::class);
+        $container->setDefinition(ShellBuilder::class, $shellBuilderDefinition)
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [
@@ -509,11 +524,10 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(ChainedBuilder::class, ChainedBuilder::class)
-            ->setArguments([
-                new Reference(BuilderInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new TaggedIteratorArgument('scheduler.task_builder'),
-            ])
+        $chainedBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
+        $chainedBuilderDefinition->setClass(ChainedBuilder::class);
+        $container->setDefinition(ChainedBuilder::class, $chainedBuilderDefinition)
+            ->setArgument(1, new TaggedIteratorArgument('scheduler.task_builder'))
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [

@@ -8,6 +8,8 @@ use Closure;
 use function array_filter;
 use function array_replace;
 use function array_walk;
+use function is_array;
+use function iterator_to_array;
 use function uasort;
 
 /**
@@ -25,7 +27,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     public function __construct(iterable $stack = [])
     {
-        $this->stack = $stack;
+        $this->stack = is_array($stack) ? $stack : iterator_to_array($stack, true);
     }
 
     /**
