@@ -14,6 +14,7 @@ use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
+use SchedulerBundle\Command\RefreshTasksCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
@@ -344,6 +345,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('console.command')
             ->addTag('container.preload', [
                 'class' => YieldTaskCommand::class,
+            ])
+        ;
+
+        $container->register(RefreshTasksCommand::class, RefreshTasksCommand::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => RefreshTasksCommand::class,
             ])
         ;
     }
