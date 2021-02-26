@@ -100,6 +100,10 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->info('The limiter used to control the execution and retry of tasks, MUST be a valid limiter identifier')
                         ->defaultValue(null)
                     ->end()
+                    ->scalarNode('api_platform')
+                        ->info('Enable the API-Platform support')
+                        ->defaultValue(false)
+                    ->end()
                 ->end()
             ->end()
         ;

@@ -18,6 +18,7 @@
 - Retry / Remove / Sort policies
 - Background worker
 - [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
+- API-Platform support
 
 ## Installation
 
@@ -77,6 +78,7 @@ When a task is configured, time to execute it, two approaches can be used:
 
 * [Usage](doc/usage.md)
 * [Best practices](doc/best_practices.md)
+* [API-Platform](doc/api_platform.md)
 * [Tasks](doc/tasks.md)
 * [Transports](doc/transport.md)
 * [Commands](doc/command.md)

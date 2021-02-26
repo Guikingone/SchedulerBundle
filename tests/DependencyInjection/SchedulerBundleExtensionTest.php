@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Bridge\ApiPlatform\CollectionDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
+use SchedulerBundle\Bridge\ApiPlatform\ItemDataProvider;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -946,6 +949,45 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(MaxExecutionMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(MaxExecutionMiddleware::class)->hasTag('container.preload'));
         self::assertSame(MaxExecutionMiddleware::class, $container->getDefinition(MaxExecutionMiddleware::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testApiPlatformBridgeCanBeConfigured(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+            'api_platform' => true,
+        ]);
+
+        self::assertTrue($container->hasDefinition(ItemDataProvider::class));
+        self::assertFalse($container->getDefinition(ItemDataProvider::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(ItemDataProvider::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ItemDataProvider::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ItemDataProvider::class)->getArgument(1));
+        self::assertTrue($container->getDefinition(ItemDataProvider::class)->hasTag('api_platform.item_data_provider'));
+        self::assertTrue($container->getDefinition(ItemDataProvider::class)->hasTag('container.preload'));
+        self::assertSame(ItemDataProvider::class, $container->getDefinition(ItemDataProvider::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(CollectionDataProvider::class));
+        self::assertFalse($container->getDefinition(CollectionDataProvider::class)->isPublic());
+        self::assertCount(3, $container->getDefinition(CollectionDataProvider::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(1));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(2));
+        self::assertTrue($container->getDefinition(CollectionDataProvider::class)->hasTag('api_platform.collection_data_provider'));
+        self::assertTrue($container->getDefinition(CollectionDataProvider::class)->hasTag('container.preload'));
+        self::assertSame(CollectionDataProvider::class, $container->getDefinition(CollectionDataProvider::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(SearchFilter::class));
+        self::assertFalse($container->getDefinition(SearchFilter::class)->isPublic());
+        self::assertTrue($container->getDefinition(SearchFilter::class)->hasTag('api_platform.filter'));
+        self::assertTrue($container->getDefinition(SearchFilter::class)->hasTag('container.preload'));
+        self::assertSame(SearchFilter::class, $container->getDefinition(SearchFilter::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testDataCollectorIsConfigured(): void
