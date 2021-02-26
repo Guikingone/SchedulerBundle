@@ -56,9 +56,10 @@ final class CollectionDataProviderTest extends TestCase
         $provider->getCollection(TaskInterface::class);
     }
 
-    public function testProviderCanReturnTask(): void
+    public function testProviderCanReturnTaskList(): void
     {
         $list = $this->createMock(TaskListInterface::class);
+        $list->expects(self::never())->method('filter');
 
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects(self::once())->method('list')->willReturn($list);
@@ -69,5 +70,41 @@ final class CollectionDataProviderTest extends TestCase
         $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
 
         self::assertSame($list, $provider->getCollection(TaskInterface::class));
+    }
+
+    public function testProviderCannotReturnFilteredTaskListWithoutFilters(): void
+    {
+        $list = $this->createMock(TaskListInterface::class);
+        $list->expects(self::never())->method('filter')->willReturnSelf();
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('list')->willReturn($list);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
+        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider->getCollection(TaskInterface::class, 'GET', [
+            'filters' => [],
+        ]);
+    }
+
+    public function testProviderCanReturnFilteredTaskList(): void
+    {
+        $list = $this->createMock(TaskListInterface::class);
+        $list->expects(self::once())->method('filter')->willReturnSelf();
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('list')->willReturn($list);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
+        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider->getCollection(TaskInterface::class, 'GET', [
+            'filters' => [
+                'expression' => '* * * * *',
+            ],
+        ]);
     }
 }

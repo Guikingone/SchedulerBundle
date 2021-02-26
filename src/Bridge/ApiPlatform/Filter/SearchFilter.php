@@ -45,7 +45,7 @@ final class SearchFilter implements FilterInterface
                 ],
             ],
             'state' => [
-                'type' => 'bool',
+                'type' => 'string',
                 'required' => false,
                 'property' => 'state',
                 'swagger' => [
@@ -55,7 +55,7 @@ final class SearchFilter implements FilterInterface
                 ],
             ],
             'timezone' => [
-                'type' => 'bool',
+                'type' => 'string',
                 'required' => false,
                 'property' => 'timezone',
                 'swagger' => [
@@ -65,7 +65,7 @@ final class SearchFilter implements FilterInterface
                 ],
             ],
             'type' => [
-                'type' => 'bool',
+                'type' => 'string',
                 'required' => false,
                 'property' => 'type',
                 'swagger' => [
@@ -80,6 +80,10 @@ final class SearchFilter implements FilterInterface
     public function filter(TaskListInterface $list, array $filters = []): TaskListInterface
     {
         if ([] === $filters) {
+            return $list;
+        }
+
+        if (0 === $list->count()) {
             return $list;
         }
 

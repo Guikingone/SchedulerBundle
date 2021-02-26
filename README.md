@@ -18,7 +18,7 @@
 - Retry / Remove / Sort policies
 - Background worker
 - [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
-- API-Platform support
+- [API-Platform](https://api-platform.com/) support
 
 ## Installation
 
