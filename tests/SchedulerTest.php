@@ -317,7 +317,6 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         self::assertEmpty($scheduler->getTasks());
-        self::assertInstanceOf(TaskListInterface::class, $scheduler->getTasks());
     }
 
     public function testTaskCannotBeScheduledTwice(): void
@@ -353,10 +352,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        $dueTasks = $scheduler->getDueTasks();
-
-        self::assertNotEmpty($dueTasks);
-        self::assertInstanceOf(TaskListInterface::class, $dueTasks);
+        self::assertNotEmpty($scheduler->getDueTasks());
     }
 
     /**
@@ -435,7 +431,7 @@ final class SchedulerTest extends TestCase
         $task->addTag('new_tag');
 
         $scheduler->update($task->getName(), $task);
-        $updatedTask = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags()));
+        $updatedTask = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
         self::assertNotEmpty($updatedTask);
     }
 
@@ -499,10 +495,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        $dueTasks = $scheduler->getDueTasks();
-
-        self::assertInstanceOf(TaskListInterface::class, $dueTasks);
-        self::assertNotEmpty($dueTasks);
+        self::assertNotEmpty($scheduler->getDueTasks());
     }
 
     public function testDueTasksCanBeReturnedWithPreviousStartDate(): void
@@ -522,10 +515,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        $dueTasks = $scheduler->getDueTasks();
-
-        self::assertInstanceOf(TaskListInterface::class, $dueTasks);
-        self::assertNotEmpty($dueTasks);
+        self::assertNotEmpty($scheduler->getDueTasks());
     }
 
     public function testDueTasksCanBeReturnedWithEndDate(): void
@@ -545,10 +535,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        $dueTasks = $scheduler->getDueTasks();
-
-        self::assertInstanceOf(TaskListInterface::class, $dueTasks);
-        self::assertNotEmpty($dueTasks);
+        self::assertNotEmpty($scheduler->getDueTasks());
     }
 
     public function testSchedulerCanYieldTask(): void

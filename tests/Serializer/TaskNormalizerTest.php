@@ -424,7 +424,6 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NotificationTask::class, $task);
         self::assertSame('foo', $task->getName());
-        self::assertInstanceOf(Notification::class, $task->getNotification());
         self::assertCount(2, $task->getRecipients());
         self::assertSame('test@test.fr', $task->getRecipients()[0]->getEmail());
         self::assertSame('foo@test.fr', $task->getRecipients()[1]->getEmail());
@@ -543,7 +542,6 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getBeforeSchedulingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getBeforeSchedulingNotificationBag()->getNotification());
         self::assertInstanceOf(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients()[0]);
         self::assertSame('* * * * *', $task->getExpression());
     }
@@ -566,7 +564,6 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getAfterSchedulingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getAfterSchedulingNotificationBag()->getNotification());
         self::assertInstanceOf(Recipient::class, $task->getAfterSchedulingNotificationBag()->getRecipients()[0]);
         self::assertSame('* * * * *', $task->getExpression());
     }

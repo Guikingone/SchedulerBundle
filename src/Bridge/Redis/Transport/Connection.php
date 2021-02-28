@@ -23,11 +23,6 @@ use function strpos;
 final class Connection implements ConnectionInterface
 {
     private Redis $connection;
-
-    /**
-     * @var int
-     */
-    private $dbIndex;
     private string $list;
     private SerializerInterface $serializer;
 
@@ -48,9 +43,7 @@ final class Connection implements ConnectionInterface
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
-        $this->dbIndex = $options['dbindex'];
-
-        if (!$this->connection->select($this->dbIndex)) {
+        if (!$this->connection->select($options['dbindex'])) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
