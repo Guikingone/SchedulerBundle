@@ -36,7 +36,6 @@ use function sprintf;
 final class ConnectionIntegrationTest extends TestCase
 {
     private ?Redis $redis = null;
-
     private ?Connection $connection = null;
 
     /**
@@ -45,7 +44,7 @@ final class ConnectionIntegrationTest extends TestCase
     protected function setUp(): void
     {
         if (!getenv('SCHEDULER_REDIS_DSN')) {
-            $this->markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
+            self::markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
         }
 
         $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
@@ -112,7 +111,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
+
         self::assertSame($task->getName(), $storedTask->getName());
     }
 
@@ -137,7 +136,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
+
         self::assertSame($task->getName(), $storedTask->getName());
     }
 
@@ -160,7 +159,6 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
 
         $storedTask->setExpression('0 * * * *');
@@ -168,8 +166,8 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->update($task->getName(), $storedTask);
 
         $updatedTask = $this->connection->get($task->getName());
+
         self::assertSame('0 * * * *', $updatedTask->getExpression());
-        self::assertInstanceOf(TaskInterface::class, $updatedTask);
         self::assertSame($task->getName(), $updatedTask->getName());
     }
 

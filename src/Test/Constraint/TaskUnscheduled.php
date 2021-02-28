@@ -30,9 +30,7 @@ final class TaskUnscheduled extends Constraint
     }
 
     /**
-     * @param TaskEventList $eventsList
-     *
-     * {@inheritdoc}
+     * @param mixed|TaskEventList $eventsList
      */
     protected function matches($eventsList): bool
     {
