@@ -179,7 +179,6 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
 
         $storedTask->setState(TaskInterface::PAUSED);
@@ -201,7 +200,6 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->pause($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
         self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
     }
@@ -216,7 +214,6 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create($task);
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
         self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
 
@@ -238,14 +235,12 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->pause($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
         self::assertSame(TaskInterface::PAUSED, $storedTask->getState());
 
         $this->connection->resume($task->getName());
 
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
         self::assertSame(TaskInterface::ENABLED, $storedTask->getState());
     }
@@ -268,7 +263,6 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $this->connection->create($task);
         $storedTask = $this->connection->get($task->getName());
-        self::assertInstanceOf(TaskInterface::class, $storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
 
         $this->connection->delete($task->getName());
