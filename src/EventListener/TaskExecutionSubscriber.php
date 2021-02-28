@@ -36,7 +36,7 @@ final class TaskExecutionSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, string>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

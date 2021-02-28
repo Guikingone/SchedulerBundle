@@ -40,7 +40,7 @@ final class RetryFailedTaskCommand extends Command
     ) {
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();
     }

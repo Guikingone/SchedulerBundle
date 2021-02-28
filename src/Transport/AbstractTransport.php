@@ -58,7 +58,7 @@ abstract class AbstractTransport implements TransportInterface
     }
 
     /**
-     * @return mixed[]|string[]
+     * {@inheritdoc}
      */
     public function getOptions(): array
     {

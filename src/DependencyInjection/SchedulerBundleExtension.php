@@ -347,16 +347,6 @@ final class SchedulerBundleExtension extends Extension
                 'class' => YieldTaskCommand::class,
             ])
         ;
-
-        $container->register(RefreshTasksCommand::class, RefreshTasksCommand::class)
-            ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-            ])
-            ->addTag('console.command')
-            ->addTag('container.preload', [
-                'class' => RefreshTasksCommand::class,
-            ])
-        ;
     }
 
     private function registerExpressionFactoryAndPolicies(ContainerBuilder $container): void

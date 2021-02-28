@@ -23,7 +23,7 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
         ?LoggerInterface $logger = null
     ) {
         $this->maximumTasks = $maximumTasks;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
@@ -38,7 +38,7 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, string>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

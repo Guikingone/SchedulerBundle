@@ -48,7 +48,7 @@ final class TaskSubscriber implements EventSubscriberInterface
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
         $this->serializer = $serializer;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
         $this->tasksPath = $tasksPath;
     }
 
@@ -99,7 +99,7 @@ final class TaskSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, array<int[]|string[]>>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

@@ -12,7 +12,6 @@ use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
-use SchedulerBundle\Command\RefreshTasksCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
@@ -349,13 +348,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('container.preload'));
         self::assertSame(YieldTaskCommand::class, $container->getDefinition(YieldTaskCommand::class)->getTag('container.preload')[0]['class']);
-
-        self::assertTrue($container->hasDefinition(RefreshTasksCommand::class));
-        self::assertCount(1, $container->getDefinition(RefreshTasksCommand::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(RefreshTasksCommand::class)->getArgument(0));
-        self::assertTrue($container->getDefinition(RefreshTasksCommand::class)->hasTag('console.command'));
-        self::assertTrue($container->getDefinition(RefreshTasksCommand::class)->hasTag('container.preload'));
-        self::assertSame(RefreshTasksCommand::class, $container->getDefinition(RefreshTasksCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void

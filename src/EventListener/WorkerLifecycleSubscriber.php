@@ -22,7 +22,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
     public function __construct(LoggerInterface $logger = null)
     {
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onWorkerRestarted(WorkerRestartedEvent $event): void
@@ -67,7 +67,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return string[]
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

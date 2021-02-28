@@ -117,7 +117,7 @@ EOF
                 null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
                 null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
                 $task->getState(),
-                implode(', ', $task->getTags()) ?: 'No tags set',
+                implode(', ', $task->getTags()) ?? 'No tags set',
             ];
         });
 

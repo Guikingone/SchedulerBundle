@@ -22,10 +22,12 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
     private LoggerInterface $logger;
     private int $timeLimitInSeconds;
 
-    public function __construct(int $timeLimitInSeconds, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        int $timeLimitInSeconds,
+        ?LoggerInterface $logger = null
+    ) {
         $this->timeLimitInSeconds = $timeLimitInSeconds;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onWorkerStarted(): void
@@ -46,7 +48,7 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, string>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

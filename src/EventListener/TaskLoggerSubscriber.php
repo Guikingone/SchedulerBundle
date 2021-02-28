@@ -36,7 +36,7 @@ final class TaskLoggerSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, array<int|string>>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {
