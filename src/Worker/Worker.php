@@ -81,7 +81,7 @@ final class Worker implements WorkerInterface
         $this->tracker = $tracker;
         $this->middlewareStack = $middlewareStack;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
         $this->store = $store;
         $this->failedTasks = new TaskList();
     }
@@ -102,7 +102,7 @@ final class Worker implements WorkerInterface
         $tasksCount = 0;
 
         while (!$this->shouldStop) {
-            if (!$tasks) {
+            if (0 === count($tasks)) {
                 $tasks = $this->scheduler->getDueTasks();
             }
 
@@ -227,7 +227,7 @@ final class Worker implements WorkerInterface
             throw new LogicException('The task state must be defined in order to be executed!');
         }
 
-        if (in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED])) {
+        if (in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED], true)) {
             $this->logger->info(sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), [
                 'name' => $task->getName(),
                 'expression' => $task->getExpression(),

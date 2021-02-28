@@ -33,7 +33,6 @@ final class NullTaskRunnerTest extends TestCase
         $runner = new NullTaskRunner();
         $output = $runner->run($task);
 
-        self::assertInstanceOf(Output::class, $output);
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }

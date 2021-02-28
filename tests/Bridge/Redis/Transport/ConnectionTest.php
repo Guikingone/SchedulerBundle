@@ -91,7 +91,6 @@ final class ConnectionTest extends TestCase
         $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
         $data = $connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $data);
         self::assertArrayNotHasKey('foo', $data->toArray());
     }
 
@@ -123,8 +122,7 @@ final class ConnectionTest extends TestCase
         $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
         $data = $connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $data);
-        self::assertInstanceOf(TaskInterface::class, $data->get('foo'));
+        self::assertInstanceOf(NullTask::class, $data->get('foo'));
     }
 
     public function testConnectionCannotCreateWithExistingKey(): void
