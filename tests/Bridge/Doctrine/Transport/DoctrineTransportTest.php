@@ -226,11 +226,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
-        $task = $transport->get('foo');
-
-        self::assertInstanceOf(NullTask::class, $task);
-        self::assertSame('foo', $task->getName());
-        self::assertSame('* * * * *', $task->getExpression());
+        self::assertSame($task, $transport->get('foo'));
     }
 
     public function testTransportCanCreateATask(): void

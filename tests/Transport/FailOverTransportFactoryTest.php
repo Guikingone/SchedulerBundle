@@ -12,7 +12,6 @@ use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -58,7 +57,6 @@ final class FailOverTransportFactoryTest extends TestCase
         ]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FailOverTransport::class, $transport);
         self::assertArrayHasKey('mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['mode']);
@@ -77,7 +75,6 @@ final class FailOverTransportFactoryTest extends TestCase
         ]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FailOverTransport::class, $transport);
         self::assertArrayHasKey('mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['mode']);

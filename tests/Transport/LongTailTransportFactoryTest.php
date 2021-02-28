@@ -11,7 +11,6 @@ use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\LongTailTransportFactory;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -40,7 +39,6 @@ final class LongTailTransportFactoryTest extends TestCase
         ]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(LongTailTransport::class, $transport);
     }
 

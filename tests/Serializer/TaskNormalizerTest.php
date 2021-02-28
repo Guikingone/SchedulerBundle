@@ -77,7 +77,7 @@ final class TaskNormalizerTest extends TestCase
 
         $task = $serializer->denormalize($data, TaskInterface::class, 'json');
 
-        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertSame('foo', $task->getName());
     }
 
     public function testCallbackTaskCannotBeDenormalizedWithClosure(): void
@@ -375,7 +375,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndTime());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
-        self::assertInstanceOf(DateTimeZone::class, $task->getTimeZone());
+        self::assertInstanceOf(DateTimeZone::class, $task->getTimezone());
     }
 
     public function testMessengerTaskCanBeDenormalized(): void
@@ -408,7 +408,6 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NotificationTask::class, $task);
         self::assertSame('foo', $task->getName());
-        self::assertInstanceOf(Notification::class, $task->getNotification());
         self::assertSame('* * * * *', $task->getExpression());
     }
 

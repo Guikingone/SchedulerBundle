@@ -906,7 +906,6 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
         $worker->execute([], $task);
 
-        self::assertInstanceOf(TaskListInterface::class, $worker->getFailedTasks());
         self::assertEmpty($worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -941,7 +940,6 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
         $worker->execute([], $task);
 
-        self::assertInstanceOf(TaskListInterface::class, $worker->getFailedTasks());
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
     }
