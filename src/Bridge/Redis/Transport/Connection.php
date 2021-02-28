@@ -32,7 +32,7 @@ final class Connection implements ConnectionInterface
     private SerializerInterface $serializer;
 
     /**
-     * @param array<string, string|int> $options
+     * @param array<string, string|int|null> $options
      */
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
@@ -48,7 +48,9 @@ final class Connection implements ConnectionInterface
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
-        if (($this->dbIndex = $options['dbindex']) && !$this->connection->select($this->dbIndex)) {
+        $this->dbIndex = $options['dbindex'];
+
+        if (!$this->connection->select($this->dbIndex)) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
