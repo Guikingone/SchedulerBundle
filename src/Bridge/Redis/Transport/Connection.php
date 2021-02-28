@@ -43,7 +43,7 @@ final class Connection implements ConnectionInterface
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
-        if (!$this->connection->select($options['dbindex'])) {
+        if (!$this->connection->select($options['dbindex'] ?? 0)) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
