@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -91,8 +92,10 @@ use stdClass;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -259,13 +262,20 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Scheduler::class));
         self::assertTrue($container->hasAlias(SchedulerInterface::class));
-        self::assertCount(6, $container->getDefinition(Scheduler::class)->getArguments());
+        self::assertCount(5, $container->getDefinition(Scheduler::class)->getArguments());
         self::assertSame('Europe/Paris', $container->getDefinition(Scheduler::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(1));
+        self::assertSame('scheduler.transport', (string) $container->getDefinition(Scheduler::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(1)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(2));
+        self::assertSame(SchedulerMiddlewareStack::class, (string) $container->getDefinition(Scheduler::class)->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(2)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(3));
+        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(3));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(3)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(4));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(5));
+        self::assertSame(MessageBusInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(4));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(4)->getInvalidBehavior());
         self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);

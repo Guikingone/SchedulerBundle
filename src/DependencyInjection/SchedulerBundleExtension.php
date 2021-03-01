@@ -14,7 +14,6 @@ use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
-use SchedulerBundle\Command\RefreshTasksCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
@@ -245,7 +244,6 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
