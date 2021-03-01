@@ -186,7 +186,7 @@ final class TaskListTest extends TestCase
 
         $list = new TaskList([$task]);
 
-        self::assertInstanceOf(ArrayIterator::class, $list->getIterator());
+        self::assertNotEmpty($list->getIterator());
     }
 
     public function testArrayCanBeReturned(): void

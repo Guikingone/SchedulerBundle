@@ -25,7 +25,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         ?LoggerInterface $logger = null
     ) {
         $this->maximumFailedTasks = $maximumFailedTasks;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onTaskFailedEvent(): void
@@ -48,7 +48,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
     }
 
     /**
-     * @return array<string, string>
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

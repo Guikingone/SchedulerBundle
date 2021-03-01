@@ -166,7 +166,6 @@ final class DoctrineTransportTest extends TestCase
 
         $list = $transport->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $list);
         self::assertNotEmpty($list);
     }
 
@@ -227,7 +226,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer);
 
-        self::assertInstanceOf(TaskInterface::class, $transport->get('foo'));
+        self::assertSame($task, $transport->get('foo'));
     }
 
     public function testTransportCanCreateATask(): void

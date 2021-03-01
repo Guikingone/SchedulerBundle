@@ -12,7 +12,6 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function json_encode;
 
@@ -31,7 +30,14 @@ final class ConnectionTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The list name must start with an underscore');
         self::expectExceptionCode(0);
-        new Connection(['host' => 'localhost', 'port' => 6379, 'timeout' => 30, 'dbindex' => 0, 'auth' => 'root', 'list' => 'foo'], $serializer, $redis);
+        new Connection([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 30,
+            'dbindex' => 0,
+            'auth' => 'root',
+            'list' => 'foo'
+        ], $serializer, $redis);
     }
 
     public function testConnectionCannotBeCreatedWithInvalidCredentials(): void
@@ -45,7 +51,14 @@ final class ConnectionTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('Redis connection failed: "ERR Error connecting user: wrong credentials".');
         self::expectExceptionCode(0);
-        new Connection(['host' => 'localhost', 'port' => 6379, 'timeout' => 30, 'auth' => 'root', 'dbindex' => 'test', 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        new Connection([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 30,
+            'auth' => 'root',
+            'dbindex' => 'test',
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
     }
 
     public function testConnectionCannotBeCreatedWithInvalidDatabase(): void
@@ -54,13 +67,20 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
-        $redis->expects(self::once())->method('select')->willReturn(false);
+        $redis->expects(self::once())->method('select')->with(self::equalTo('test'))->willReturn(false);
         $redis->expects(self::once())->method('getLastError')->willReturn('ERR Error selecting database: wrong database name');
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('Redis connection failed: "ERR Error selecting database: wrong database name".');
         self::expectExceptionCode(0);
-        new Connection(['host' => 'localhost', 'port' => 6379, 'timeout' => 30, 'auth' => 'root', 'dbindex' => 'test', 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        new Connection([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 30,
+            'auth' => 'root',
+            'dbindex' => 'test',
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
     }
 
     public function testConnectionCannotListWithException(): void
@@ -68,10 +88,18 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hLen')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The list is not initialized');
@@ -85,13 +113,20 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hLen')->willReturn(0);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
         $data = $connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $data);
         self::assertArrayNotHasKey('foo', $data->toArray());
     }
 
@@ -102,6 +137,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hLen')->willReturn(2);
         $redis->expects(self::once())->method('hKeys')->with(self::equalTo('_symfony_scheduler_tasks'))->willReturn(['foo', 'bar']);
@@ -120,11 +156,17 @@ final class ConnectionTest extends TestCase
             'type' => 'null',
         ], JSON_THROW_ON_ERROR));
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
         $data = $connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $data);
-        self::assertInstanceOf(TaskInterface::class, $data->get('foo'));
+        self::assertInstanceOf(NullTask::class, $data->get('foo'));
     }
 
     public function testConnectionCannotCreateWithExistingKey(): void
@@ -136,10 +178,18 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(true);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "random" has already been scheduled!');
@@ -160,11 +210,19 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
         $redis->expects(self::once())->method('hSetNx')->with(self::equalTo($list), 'random', 'foo');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => $list
+        ], $serializer, $redis);
         $connection->create($taskToCreate);
     }
 
@@ -174,10 +232,18 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'auth' => 'root', 'port' => 6379, 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'auth' => 'root',
+            'port' => 6379,
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
@@ -193,10 +259,18 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be updated as it does not exist');
@@ -213,12 +287,20 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hSet')->willReturn(false);
         $redis->expects(self::once())->method('getLastError')->willReturn('Random error');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks'
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be updated, error: Random error');
@@ -235,6 +317,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('connect');
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(0);
@@ -248,6 +331,7 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
 
@@ -268,6 +352,7 @@ final class ConnectionTest extends TestCase
         $serializer->expects(self::once())->method('deserialize')->willReturn($task);
 
         $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
@@ -292,6 +377,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::exactly(2))->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(false);
@@ -316,6 +402,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::exactly(2))->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(0);
@@ -330,6 +417,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
         $redis->expects(self::never())->method('hGet');
 
@@ -351,6 +439,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
 
@@ -374,6 +463,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::exactly(2))->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->willReturn(false);
@@ -399,6 +489,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::exactly(2))->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->willReturn(0);
@@ -416,6 +507,7 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo')->willReturn(0);
 
         $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
@@ -434,10 +526,18 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo')->willReturn(self::equalTo(1));
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => $list
+        ], $serializer, $redis);
         $connection->delete('foo');
     }
 
@@ -450,10 +550,18 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hKeys')->with(self::equalTo($list))->willReturn(['foo', 'bar']);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo', 'bar')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => $list
+        ], $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The list cannot be emptied');
@@ -470,10 +578,18 @@ final class ConnectionTest extends TestCase
 
         $redis = $this->createMock(Redis::class);
         $redis->expects(self::once())->method('auth')->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hKeys')->with(self::equalTo($list))->willReturn(['foo', 'bar']);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo', 'bar')->willReturn(2);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
+        $connection = new Connection([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => $list
+        ], $serializer, $redis);
         $connection->empty();
     }
 

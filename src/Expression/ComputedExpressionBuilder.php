@@ -51,6 +51,6 @@ final class ComputedExpressionBuilder implements ExpressionBuilderInterface
 
     public function support(string $expression): bool
     {
-        return in_array('#', explode(' ', $expression));
+        return in_array('#', explode(' ', $expression), true);
     }
 }

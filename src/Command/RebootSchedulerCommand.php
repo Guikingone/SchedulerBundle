@@ -46,7 +46,7 @@ final class RebootSchedulerCommand extends Command
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();
     }

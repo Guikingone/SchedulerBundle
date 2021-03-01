@@ -24,6 +24,5 @@ final class FailedTaskTest extends TestCase
         self::assertSame('bar.failed', $failedTask->getName());
         self::assertSame($task, $failedTask->getTask());
         self::assertSame('foo', $failedTask->getReason());
-        self::assertInstanceOf(DateTimeInterface::class, $failedTask->getFailedAt());
     }
 }

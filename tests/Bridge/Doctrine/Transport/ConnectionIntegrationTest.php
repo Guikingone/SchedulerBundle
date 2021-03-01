@@ -69,7 +69,6 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $list = $this->connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $list);
         self::assertEmpty($list);
     }
 
@@ -80,7 +79,6 @@ final class ConnectionIntegrationTest extends TestCase
 
         $list = $this->connection->list();
 
-        self::assertInstanceOf(TaskListInterface::class, $list);
         self::assertNotEmpty($list);
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }

@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use stdClass;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -42,7 +43,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $normalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer(), new NotificationTaskBagNormalizer(new ObjectNormalizer()));
 
-        self::assertFalse($normalizer->supportsNormalization(new FooTask()));
+        self::assertFalse($normalizer->supportsNormalization(new stdClass()));
         self::assertTrue($normalizer->supportsNormalization(new NullTask('foo')));
     }
 
@@ -51,7 +52,20 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->normalize(new NullTask('foo'));
@@ -76,12 +90,18 @@ final class TaskNormalizerTest extends TestCase
 
         $task = $serializer->denormalize($data, TaskInterface::class, 'json');
 
-        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertSame('foo', $task->getName());
     }
 
     public function testCallbackTaskCannotBeDenormalizedWithClosure(): void
     {
-        $normalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer(), new NotificationTaskBagNormalizer(new ObjectNormalizer()));
+        $normalizer = new TaskNormalizer(
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            new ObjectNormalizer(),
+            new NotificationTaskBagNormalizer(new ObjectNormalizer())
+        );
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
@@ -96,7 +116,20 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $task = new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']);
@@ -374,7 +407,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndTime());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
-        self::assertInstanceOf(DateTimeZone::class, $task->getTimeZone());
+        self::assertInstanceOf(DateTimeZone::class, $task->getTimezone());
     }
 
     public function testMessengerTaskCanBeDenormalized(): void
@@ -407,7 +440,6 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NotificationTask::class, $task);
         self::assertSame('foo', $task->getName());
-        self::assertInstanceOf(Notification::class, $task->getNotification());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -424,7 +456,6 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NotificationTask::class, $task);
         self::assertSame('foo', $task->getName());
-        self::assertInstanceOf(Notification::class, $task->getNotification());
         self::assertCount(2, $task->getRecipients());
         self::assertSame('test@test.fr', $task->getRecipients()[0]->getEmail());
         self::assertSame('foo@test.fr', $task->getRecipients()[1]->getEmail());
@@ -454,18 +485,75 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $data = $serializer->serialize(new ChainedTask('foo', new ShellTask('bar', ['echo', 'Symfony']), new ShellTask('foo_second', ['echo', 'Bar'])), 'json');
+        $data = $serializer->serialize(new ChainedTask(
+            'foo',
+            new ShellTask('bar', ['echo', 'Symfony']),
+            new ShellTask('foo_second', ['echo', 'Bar'])
+        ), 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
+        self::assertCount(2, $task->getTasks());
         self::assertInstanceOf(ShellTask::class, $task->getTask(0));
         self::assertSame('bar', $task->getTask(0)->getName());
         self::assertInstanceOf(ShellTask::class, $task->getTask(1));
         self::assertSame('foo_second', $task->getTask(1)->getName());
+    }
+
+    public function testChainedTaskWithCommandTaskCanBeDenormalized(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->serialize(new ChainedTask(
+            'foo',
+            new ShellTask('bar', ['echo', 'Symfony']),
+            new CommandTask('foo_second', 'cache:clear', [], ['--no-warmup']),
+            new CommandTask('foo_third', 'cache:clear', [], ['--no-warmup', '-vvv'])
+        ), 'json');
+        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
+
+        self::assertInstanceOf(ChainedTask::class, $task);
+        self::assertNotEmpty($task->getTasks());
+        self::assertCount(3, $task->getTasks());
+        self::assertInstanceOf(ShellTask::class, $task->getTask(0));
+        self::assertSame('bar', $task->getTask(0)->getName());
+
+        self::assertInstanceOf(CommandTask::class, $task->getTask(1));
+        self::assertSame('foo_second', $task->getTask(1)->getName());
+        self::assertSame('cache:clear', $task->getTask(1)->getCommand());
+        self::assertEmpty($task->getTask(1)->getArguments());
+        self::assertNotEmpty($task->getTask(1)->getOptions());
+        self::assertContains('--no-warmup', $task->getTask(1)->getOptions());
+
+        self::assertInstanceOf(CommandTask::class, $task->getTask(2));
+        self::assertSame('foo_third', $task->getTask(2)->getName());
+        self::assertSame('cache:clear', $task->getTask(2)->getCommand());
+        self::assertEmpty($task->getTask(2)->getArguments());
+        self::assertNotEmpty($task->getTask(2)->getOptions());
+        self::assertContains('--no-warmup', $task->getTask(2)->getOptions());
+        self::assertContains('-vvv', $task->getTask(2)->getOptions());
     }
 
     public function testShellTaskWithBeforeSchedulingNotificationTaskBagCanBeNormalized(): void
@@ -473,11 +561,27 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeSchedulingNotificationBag(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
+        $task->beforeSchedulingNotificationBag(new NotificationTaskBag(
+            new Notification('foo', ['email']),
+            new Recipient('test@test.fr', '')
+        ));
 
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
@@ -486,8 +590,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getBeforeSchedulingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getBeforeSchedulingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty($task->getBeforeSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -496,11 +599,27 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterSchedulingNotificationBag(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
+        $task->afterSchedulingNotificationBag(new NotificationTaskBag(
+            new Notification('foo', ['email']),
+            new Recipient('test@test.fr', '')
+        ));
 
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
@@ -509,8 +628,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getAfterSchedulingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getAfterSchedulingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getAfterSchedulingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty($task->getAfterSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -519,11 +637,27 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeExecutingNotificationBag(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
+        $task->beforeExecutingNotificationBag(new NotificationTaskBag(
+            new Notification('foo', ['email']),
+            new Recipient('test@test.fr', '')
+        ));
 
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
@@ -532,8 +666,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getBeforeExecutingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getBeforeExecutingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getBeforeExecutingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty($task->getBeforeExecutingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -542,11 +675,27 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterExecutingNotificationBag(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
+        $task->afterExecutingNotificationBag(new NotificationTaskBag(
+            new Notification('foo', ['email']),
+            new Recipient('test@test.fr', '')
+        ));
 
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
@@ -555,14 +704,9 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getAfterExecutingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getAfterExecutingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getAfterExecutingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty($task->getAfterExecutingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
-}
-
-final class FooTask
-{
 }
 
 final class FooMessage

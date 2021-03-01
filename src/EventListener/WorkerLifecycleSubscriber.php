@@ -10,6 +10,7 @@ use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -21,7 +22,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
     public function __construct(LoggerInterface $logger = null)
     {
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onWorkerRestarted(WorkerRestartedEvent $event): void
@@ -30,7 +31,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
         $this->logger->info('The worker has been restarted', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask()->getName(),
+            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
         ]);
     }
 
@@ -40,7 +41,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
         $this->logger->info('The worker is currently running', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask()->getName(),
+            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
             'idle' => $event->isIdle(),
         ]);
     }
@@ -51,7 +52,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
         $this->logger->info('The worker has been started', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask()->getName(),
+            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
         ]);
     }
 
@@ -61,12 +62,12 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
 
         $this->logger->info('The worker has been stopped', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask()->getName(),
+            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
         ]);
     }
 
     /**
-     * @return string[]
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

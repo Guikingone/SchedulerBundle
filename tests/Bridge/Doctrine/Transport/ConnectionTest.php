@@ -192,7 +192,6 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $task = $connection->get('foo');
 
-        self::assertInstanceOf(TaskInterface::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }

@@ -22,6 +22,7 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_pop;
+use function count;
 use function implode;
 use function sprintf;
 
@@ -49,7 +50,7 @@ final class ConsumeTasksCommand extends Command
         $this->scheduler = $scheduler;
         $this->worker = $worker;
         $this->eventDispatcher = $eventDispatcher;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();
     }
@@ -120,9 +121,9 @@ EOF
             $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
         }
 
-        if ($stopOptions) {
+        if (0 !== count($stopOptions)) {
             $last = array_pop($stopOptions);
-            $stopsWhen = ($stopOptions ? implode(', ', $stopOptions).' or ' : '').$last;
+            $stopsWhen = (0 !== count($stopOptions) ? implode(', ', $stopOptions).' or ' : '').$last;
             $style->comment(sprintf('The worker will automatically exit once %s.', $stopsWhen));
         }
 

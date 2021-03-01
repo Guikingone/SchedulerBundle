@@ -11,7 +11,6 @@ use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\RoundRobinTransport;
 use SchedulerBundle\Transport\RoundRobinTransportFactory;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -40,9 +39,8 @@ final class RoundRobinTransportFactoryTest extends TestCase
         ]);
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(RoundRobinTransport::class, $transport);
-        self::assertNotNull($transport->getExecutionMode());
+        self::assertSame('first_in_first_out', $transport->getExecutionMode());
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertArrayHasKey('quantum', $transport->getOptions());
         self::assertSame(2, $transport->getOptions()['quantum']);

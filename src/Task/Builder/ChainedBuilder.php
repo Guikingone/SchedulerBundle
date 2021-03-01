@@ -16,6 +16,9 @@ use function array_map;
  */
 final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
+    /**
+     * @var iterable|BuilderInterface[]
+     */
     private iterable $builders;
 
     /**

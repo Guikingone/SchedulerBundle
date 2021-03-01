@@ -21,7 +21,7 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
 
     public function __construct(LoggerInterface $logger = null)
     {
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onTaskScheduled(TaskScheduledEvent $event): void
@@ -53,7 +53,7 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return string[]
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {

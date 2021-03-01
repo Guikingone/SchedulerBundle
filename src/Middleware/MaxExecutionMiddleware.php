@@ -27,7 +27,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
         ?LoggerInterface $logger = null
     ) {
         $this->rateLimiter = $rateLimiter;
-        $this->logger = $logger ?: new NullLogger();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function preExecute(TaskInterface $task): void

@@ -134,15 +134,19 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'type' => get_class($innerObject[0]),
                 ],
                 'tasks' => fn (array $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(function (TaskInterface $task) use ($format, $context): array {
-                    return $this->normalize($task, $format, $context);
+                    return $this->normalize($task, $format, array_merge($context, [
+                        AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
+                            'options' => [],
+                        ],
+                    ]));
                 }, $innerObject),
             ]
         ];
 
         return [
-            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, $normalizationCallbacks, $object instanceof CommandTask ? [] : [
-                AbstractNormalizer::IGNORED_ATTRIBUTES => [
-                    'options',
+            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, $normalizationCallbacks, [
+                AbstractNormalizer::IGNORED_ATTRIBUTES => $object instanceof CommandTask ? [] : [
+                    'options' => [],
                 ],
             ])),
             self::NORMALIZATION_DISCRIMINATOR => get_class($object),
@@ -160,7 +164,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, string $type, string $format = null, array $context = [])
+    public function denormalize($data, string $type, string $format = null, array $context = []): TaskInterface
     {
         $objectType = $data[self::NORMALIZATION_DISCRIMINATOR];
         $body = $data['body'];

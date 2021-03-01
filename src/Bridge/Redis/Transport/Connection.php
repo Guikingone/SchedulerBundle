@@ -23,16 +23,11 @@ use function strpos;
 final class Connection implements ConnectionInterface
 {
     private Redis $connection;
-
-    /**
-     * @var int
-     */
-    private $dbIndex;
     private string $list;
     private SerializerInterface $serializer;
 
     /**
-     * @param array<string, string|int> $options
+     * @param array<string, string|int|null> $options
      */
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
@@ -48,7 +43,7 @@ final class Connection implements ConnectionInterface
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 
-        if (($this->dbIndex = $options['dbindex']) && !$this->connection->select($this->dbIndex)) {
+        if (!$this->connection->select($options['dbindex'] ?? 0)) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
         }
 

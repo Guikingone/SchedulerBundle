@@ -52,7 +52,6 @@ final class FilesystemTransportFactoryTest extends TestCase
         $factory = new FilesystemTransportFactory();
         $transport = $factory->createTransport(Dsn::fromString('fs://first_in_first_out'), [], $serializer, $schedulerPolicyOrchestrator);
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertSame('first_in_first_out', $transport->getExecutionMode());
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
@@ -70,7 +69,6 @@ final class FilesystemTransportFactoryTest extends TestCase
         $factory = new FilesystemTransportFactory();
         $transport = $factory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
@@ -88,7 +86,6 @@ final class FilesystemTransportFactoryTest extends TestCase
             'path' => '/srv/app',
         ], $serializer, $schedulerPolicyOrchestrator);
 
-        self::assertInstanceOf(TransportInterface::class, $transport);
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);

@@ -372,14 +372,17 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ExpressionBuilder::class, $container->getDefinition(ExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(CronExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(CronExpressionBuilder::class, $container->getDefinition(CronExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ComputedExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(ComputedExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(ComputedExpressionBuilder::class, $container->getDefinition(ComputedExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(FluentExpressionBuilder::class));
+        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(FluentExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(FluentExpressionBuilder::class, $container->getDefinition(FluentExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
@@ -457,24 +460,32 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(CommandBuilder::class));
         self::assertFalse($container->getDefinition(CommandBuilder::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(CommandBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(CommandBuilder::class)->getArgument(0));
         self::assertTrue($container->getDefinition(CommandBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(CommandBuilder::class)->hasTag('container.preload'));
         self::assertSame(CommandBuilder::class, $container->getDefinition(CommandBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(HttpBuilder::class));
         self::assertFalse($container->getDefinition(HttpBuilder::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(HttpBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(HttpBuilder::class)->getArgument(0));
         self::assertTrue($container->getDefinition(HttpBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(HttpBuilder::class)->hasTag('container.preload'));
         self::assertSame(HttpBuilder::class, $container->getDefinition(HttpBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(NullBuilder::class));
         self::assertFalse($container->getDefinition(NullBuilder::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(NullBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(NullBuilder::class)->getArgument(0));
         self::assertTrue($container->getDefinition(NullBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(NullBuilder::class)->hasTag('container.preload'));
         self::assertSame(NullBuilder::class, $container->getDefinition(NullBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ShellBuilder::class));
         self::assertFalse($container->getDefinition(ShellBuilder::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(ShellBuilder::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ShellBuilder::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ShellBuilder::class)->hasTag('container.preload'));
         self::assertSame(ShellBuilder::class, $container->getDefinition(ShellBuilder::class)->getTag('container.preload')[0]['class']);

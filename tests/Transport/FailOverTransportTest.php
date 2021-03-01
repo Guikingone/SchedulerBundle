@@ -145,7 +145,7 @@ final class FailOverTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        self::assertInstanceOf(TaskListInterface::class, $transport->list());
+        self::assertEmpty($transport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

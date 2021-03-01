@@ -713,17 +713,18 @@ abstract class AbstractTask implements TaskInterface
         if ($priority > 1000) {
             return false;
         }
+
         return $priority >= -1000;
     }
 
     private function validateState(string $state): bool
     {
-        return in_array($state, TaskInterface::ALLOWED_STATES);
+        return in_array($state, TaskInterface::ALLOWED_STATES, true);
     }
 
     private function validateExecutionState(string $executionState = null): bool
     {
-        return null === $executionState ? true : in_array($executionState, TaskInterface::EXECUTION_STATES);
+        return null === $executionState ? true : in_array($executionState, TaskInterface::EXECUTION_STATES, true);
     }
 
     private function validateDate(?string $date = null): bool
