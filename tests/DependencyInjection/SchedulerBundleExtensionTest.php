@@ -382,17 +382,20 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ExpressionBuilder::class, $container->getDefinition(ExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(CronExpressionBuilder::class));
+        self::assertFalse($container->getDefinition(CronExpressionBuilder::class)->isPublic());
         self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(CronExpressionBuilder::class, $container->getDefinition(CronExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ComputedExpressionBuilder::class));
-        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
+        self::assertFalse($container->getDefinition(ComputedExpressionBuilder::class)->isPublic());
+        self::assertTrue($container->getDefinition(ComputedExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(ComputedExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(ComputedExpressionBuilder::class, $container->getDefinition(ComputedExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(FluentExpressionBuilder::class));
-        self::assertTrue($container->getDefinition(CronExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
+        self::assertFalse($container->getDefinition(FluentExpressionBuilder::class)->isPublic());
+        self::assertTrue($container->getDefinition(FluentExpressionBuilder::class)->hasTag('scheduler.expression_builder'));
         self::assertTrue($container->getDefinition(FluentExpressionBuilder::class)->hasTag('container.preload'));
         self::assertSame(FluentExpressionBuilder::class, $container->getDefinition(FluentExpressionBuilder::class)->getTag('container.preload')[0]['class']);
 
