@@ -150,24 +150,27 @@ final class Scheduler implements SchedulerInterface
         $dueTasks = $this->transport->list()->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()));
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
-            switch ($task) {
-                case $task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable:
-                    if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
-                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
-                    }
-
-                    if ($task->getExecutionStartDate() < $synchronizedCurrentDate) {
-                        return $task->getExecutionEndDate() > $synchronizedCurrentDate;
-                    }
-
-                    return false;
-                case $task->getExecutionStartDate() instanceof DateTimeImmutable:
-                    return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
-                case $task->getExecutionEndDate() instanceof DateTimeImmutable:
+            if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
+                if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
                     return $task->getExecutionEndDate() > $synchronizedCurrentDate;
-                default:
-                    return true;
+                }
+
+                if ($task->getExecutionStartDate() < $synchronizedCurrentDate) {
+                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+                }
+
+                return false;
             }
+
+            if ($task->getExecutionStartDate() instanceof DateTimeImmutable) {
+                return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
+            }
+
+            if ($task->getExecutionEndDate() instanceof DateTimeImmutable) {
+                return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+            }
+
+            return true;
         });
     }
 
