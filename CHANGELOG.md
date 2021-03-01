@@ -10,6 +10,7 @@ CHANGELOG
 * `scheduler:yield` command added (see https://github.com/Guikingone/SchedulerBundle/pull/19)
 * Documentation improvements (see https://github.com/Guikingone/SchedulerBundle/pull/19)
 * "Fluent" expressions (see https://github.com/Guikingone/SchedulerBundle/pull/26)
+* Core improvements (https://github.com/Guikingone/SchedulerBundle/pull/27)
 
 0.2.0
 -----
