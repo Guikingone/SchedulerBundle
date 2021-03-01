@@ -542,7 +542,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getBeforeSchedulingNotificationBag());
-        self::assertInstanceOf(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -564,7 +564,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getAfterSchedulingNotificationBag());
-        self::assertInstanceOf(Recipient::class, $task->getAfterSchedulingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -586,8 +586,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getBeforeExecutingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getBeforeExecutingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getBeforeExecutingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -609,8 +608,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('echo', $task->getCommand());
         self::assertContainsEquals('Symfony', $task->getCommand());
         self::assertNotNull($task->getAfterExecutingNotificationBag());
-        self::assertInstanceOf(Notification::class, $task->getAfterExecutingNotificationBag()->getNotification());
-        self::assertInstanceOf(Recipient::class, $task->getAfterExecutingNotificationBag()->getRecipients()[0]);
+        self::assertNotEmpty(Recipient::class, $task->getBeforeSchedulingNotificationBag()->getRecipients());
         self::assertSame('* * * * *', $task->getExpression());
     }
 }
