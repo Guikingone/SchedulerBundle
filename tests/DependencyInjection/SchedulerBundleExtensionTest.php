@@ -259,13 +259,12 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Scheduler::class));
         self::assertTrue($container->hasAlias(SchedulerInterface::class));
-        self::assertCount(6, $container->getDefinition(Scheduler::class)->getArguments());
+        self::assertCount(5, $container->getDefinition(Scheduler::class)->getArguments());
         self::assertSame('Europe/Paris', $container->getDefinition(Scheduler::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(1));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(3));
         self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(4));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(5));
         self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
