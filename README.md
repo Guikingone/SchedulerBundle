@@ -105,4 +105,5 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Worker](doc/worker.md)
 * [Scheduler](doc/scheduler.md)
 * [Middleware](doc/middleware.md)
+* [Probe](doc/probe.md)
 * [Tests](doc/test.md)

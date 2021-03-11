@@ -248,8 +248,16 @@ interface TaskInterface
 
     public function setSingleRun(bool $singleRun): self;
 
+    /**
+     * @return array<int, string>
+     */
     public function getTags(): array;
 
+    /**
+     * @param array<int, string> $tags
+     *
+     * @return $this
+     */
     public function setTags(array $tags): self;
 
     public function addTag(string $tag): self;

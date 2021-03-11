@@ -23,6 +23,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('path', $configuration);
         self::assertArrayHasKey('timezone', $configuration);
         self::assertArrayHasKey('tasks', $configuration);
+        self::assertArrayNotHasKey('probe', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
     }
 
@@ -117,5 +118,72 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertNotEmpty($configuration['transport']);
         self::assertArrayHasKey('dsn', $configuration['transport']);
         self::assertSame('cache://app', $configuration['transport']['dsn']);
+    }
+
+    public function testConfigurationCanDefineProbe(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'probe' => [
+                    'enabled' => true,
+                    'path' => '/_foo',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('probe', $configuration);
+        self::assertTrue($configuration['probe']['enabled']);
+        self::assertSame('/_foo', $configuration['probe']['path']);
+        self::assertArrayHasKey('clients', $configuration['probe']);
+        self::assertEmpty($configuration['probe']['clients']);
+
+        self::assertCount(0, $configuration['tasks']);
+    }
+
+    public function testConfigurationCanDefineProbeClients(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'probe' => [
+                    'enabled' => true,
+                    'path' => '/_foo',
+                    'clients' => [
+                        'bar' => [
+                            'externalProbePath' => '/_external_probe',
+                            'errorOnFailedTasks' => true,
+                            'delay' => 2000,
+                        ],
+                        'foo' => [
+                            'externalProbePath' => '/_external_probe',
+                            'errorOnFailedTasks' => true,
+                            'delay' => 1000,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('probe', $configuration);
+        self::assertTrue($configuration['probe']['enabled']);
+        self::assertSame('/_foo', $configuration['probe']['path']);
+        self::assertArrayHasKey('clients', $configuration['probe']);
+        self::assertNotEmpty($configuration['probe']['clients']);
+        self::assertCount(2, $configuration['probe']['clients']);
+        self::assertArrayHasKey('bar', $configuration['probe']['clients']);
+        self::assertSame('/_external_probe', $configuration['probe']['clients']['bar']['externalProbePath']);
+        self::assertTrue($configuration['probe']['clients']['bar']['errorOnFailedTasks']);
+        self::assertSame(2000, $configuration['probe']['clients']['bar']['delay']);
+        self::assertArrayHasKey('foo', $configuration['probe']['clients']);
+        self::assertSame('/_external_probe', $configuration['probe']['clients']['foo']['externalProbePath']);
+        self::assertTrue($configuration['probe']['clients']['foo']['errorOnFailedTasks']);
+        self::assertSame(1000, $configuration['probe']['clients']['foo']['delay']);
+
+        self::assertCount(2, $configuration['tasks']);
+        self::assertArrayHasKey('foo', $configuration['tasks']);
+        self::assertSame('probe', $configuration['tasks']['foo']['type']);
+        self::assertSame('* * * * *', $configuration['tasks']['foo']['expression']);
+        self::assertArrayHasKey('bar', $configuration['tasks']);
+        self::assertSame('probe', $configuration['tasks']['bar']['type']);
+        self::assertSame('* * * * *', $configuration['tasks']['bar']['expression']);
     }
 }

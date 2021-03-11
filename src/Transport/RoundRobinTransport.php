@@ -22,6 +22,10 @@ final class RoundRobinTransport extends AbstractTransport
      * @var TransportInterface[]
      */
     private iterable $transports;
+
+    /**
+     * @var SplObjectStorage<object, mixed>
+     */
     private SplObjectStorage $sleepingTransports;
 
     /**

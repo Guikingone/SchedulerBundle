@@ -19,6 +19,8 @@ use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
+use SchedulerBundle\EventListener\ProbeStateSubscriber;
+use SchedulerBundle\EventListener\ProbeSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -38,6 +40,7 @@ use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
+use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
@@ -45,6 +48,7 @@ use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
+use SchedulerBundle\Probe\Probe;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
@@ -146,9 +150,14 @@ final class SchedulerBundleExtension extends Extension
         $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
+        $this->registerProbeContext($container, $config);
         $this->registerDataCollector($container);
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerParameters(ContainerBuilder $container, array $configuration): void
     {
         $container->setParameter('scheduler.timezone', $configuration['timezone']);
@@ -251,6 +260,10 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerTransport(ContainerBuilder $container, array $configuration): void
     {
         $container->register('scheduler.transport', TransportInterface::class)
@@ -799,6 +812,10 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(TaskExecutionTrackerInterface::class, TaskExecutionTracker::class);
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerWorker(ContainerBuilder $container, array $configuration): void
     {
         $container->register(Worker::class, Worker::class)
@@ -822,10 +839,14 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(WorkerInterface::class, Worker::class);
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerTasks(ContainerBuilder $container, array $configuration): void
     {
         foreach ($configuration['tasks'] as $name => $taskConfiguration) {
-            $taskDefinition = $container->register(sprintf('scheduler.%s_task', $name), TaskInterface::class)
+            $taskDefinition = $container->register(sprintf('scheduler._%s_%s_task', $taskConfiguration['type'], $name), TaskInterface::class)
                 ->setFactory([new Reference(TaskBuilderInterface::class), 'create'])
                 ->setArguments([
                     array_merge(['name' => $name], $taskConfiguration),
@@ -885,6 +906,10 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerMiddlewareStacks(ContainerBuilder $container, array $configuration): void
     {
         $container->register(SchedulerMiddlewareStack::class, SchedulerMiddlewareStack::class)
@@ -965,6 +990,62 @@ final class SchedulerBundleExtension extends Extension
                 ])
             ;
         }
+    }
+
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
+    private function registerProbeContext(ContainerBuilder $container, array $configuration): void
+    {
+        if (!array_key_exists('probe', $configuration)) {
+            return;
+        }
+
+        if (!$configuration['probe']['enabled']) {
+            return;
+        }
+
+        $container->register(Probe::class, Probe::class)
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => Probe::class,
+            ])
+        ;
+
+        $container->register(ProbeSubscriber::class, ProbeSubscriber::class)
+            ->setArguments([
+                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => ProbeSubscriber::class,
+            ])
+        ;
+
+        $container->register(ProbeStateSubscriber::class, ProbeStateSubscriber::class)
+            ->setArguments([
+                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                $configuration['probe']['path'],
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => ProbeStateSubscriber::class,
+            ])
+        ;
+
+        $container->register(ProbeTaskMiddleware::class, ProbeTaskMiddleware::class)
+            ->setArguments([
+                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.worker_middleware')
+            ->addTag('container.preload', [
+                'class' => ProbeTaskMiddleware::class,
+            ])
+        ;
     }
 
     private function registerDataCollector(ContainerBuilder $container): void

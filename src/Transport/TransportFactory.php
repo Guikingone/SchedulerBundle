@@ -27,6 +27,9 @@ final class TransportFactory
         $this->factories = $transportsFactories;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
         foreach ($this->factories as $factory) {

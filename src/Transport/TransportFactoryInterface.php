@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 interface TransportFactoryInterface
 {
-    /**s
+    /**
      * @param array<string, int|string|bool|array> $options
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface;

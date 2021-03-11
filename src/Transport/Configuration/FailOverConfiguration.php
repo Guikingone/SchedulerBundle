@@ -18,6 +18,10 @@ final class FailOverConfiguration implements ConfigurationInterface
      * @var iterable|ConfigurationInterface[]
      */
     private iterable $configurationStorages;
+
+    /**
+     * @var SplObjectStorage<object, mixed>
+     */
     private SplObjectStorage $failedConfigurations;
 
     /**

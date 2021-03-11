@@ -35,6 +35,7 @@
             "SchedulerBundle\\Expression\\": "src/Expression/",
             "SchedulerBundle\\Messenger\\": "src/Messenger/",
             "SchedulerBundle\\Middleware\\": "src/Middleware/",
+            "SchedulerBundle\\Probe\\": "src/Probe/",
             "SchedulerBundle\\Runner\\": "src/Runner/",
             "SchedulerBundle\\SchedulePolicy\\": "src/SchedulePolicy/",
             "SchedulerBundle\\Serializer\\": "src/Serializer/",
@@ -132,7 +133,7 @@
         "vimeo/psalm": "^4.7"
     },
     "suggest": {
-        "symfony/http-client": "For dispatching http tasks",
+        "symfony/http-client": "For dispatching http tasks and / or using external probe clients",
         "symfony/messenger": "For dispatching tasks to queue",
         "symfony/notifier": "For dispatching notification tasks"
     }

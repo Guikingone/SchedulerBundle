@@ -11,6 +11,11 @@ use function array_merge;
  */
 final class ShellTask extends AbstractTask
 {
+    /**
+     * @param array<int, string>    $command
+     * @param array<string, string> $environmentVariables
+     * @param array<string, mixed>  $options {@see AbstractTask::defineOptions()}
+     */
     public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60.0, array $options = [])
     {
         $this->defineOptions(array_merge([
@@ -28,6 +33,9 @@ final class ShellTask extends AbstractTask
         parent::__construct($name);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getCommand(): array
     {
         return $this->options['command'];

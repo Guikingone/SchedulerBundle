@@ -16,6 +16,9 @@ use function sprintf;
  */
 final class HttpTask extends AbstractTask
 {
+    /**
+     * @param array<string, mixed> $clientOptions
+     */
     public function __construct(string $name, string $url, string $method = 'GET', array $clientOptions = [])
     {
         $this->validateClientOptions($clientOptions);
