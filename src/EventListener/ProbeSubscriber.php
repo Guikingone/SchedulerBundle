@@ -22,9 +22,9 @@ final class ProbeSubscriber implements EventSubscriberInterface
         $this->probe = $probe;
     }
 
-    public function onTaskScheduled(TaskScheduledEvent $event): void
+    public function onTaskExecuted(TaskExecutedEvent $event): void
     {
-        $this->probe->addScheduledTask($event->getTask());
+        $this->probe->addExecutedTask($event->getTask());
     }
 
     public function onTaskFailed(TaskFailedEvent $event): void
@@ -32,9 +32,9 @@ final class ProbeSubscriber implements EventSubscriberInterface
         $this->probe->addFailedTask($event->getTask());
     }
 
-    public function onTaskExecuted(TaskExecutedEvent $event): void
+    public function onTaskScheduled(TaskScheduledEvent $event): void
     {
-        $this->probe->addExecutedTask($event->getTask());
+        $this->probe->addScheduledTask($event->getTask());
     }
 
     /**
@@ -43,9 +43,9 @@ final class ProbeSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            TaskScheduledEvent::class => 'onTaskScheduled',
-            TaskFailedEvent::class => 'onTaskFailed',
             TaskExecutedEvent::class => 'onTaskExecuted',
+            TaskFailedEvent::class => 'onTaskFailed',
+            TaskScheduledEvent::class => 'onTaskScheduled',
         ];
     }
 }

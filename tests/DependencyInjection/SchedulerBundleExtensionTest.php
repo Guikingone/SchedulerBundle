@@ -1148,8 +1148,6 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(ProbeTaskMiddleware::class));
         self::assertFalse($container->getDefinition(ProbeTaskMiddleware::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(ProbeTaskMiddleware::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(ProbeTaskMiddleware::class)->getArgument(0));
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('container.preload'));
         self::assertSame(ProbeTaskMiddleware::class, $container->getDefinition(ProbeTaskMiddleware::class)->getTag('container.preload')[0]['class']);

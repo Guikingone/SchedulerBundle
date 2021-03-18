@@ -30,9 +30,9 @@ final class Probe
 
     public function __construct()
     {
-        $this->scheduledTasks = new TaskList();
-        $this->failedTasks = new TaskList();
         $this->executedTasks = new TaskList();
+        $this->failedTasks = new TaskList();
+        $this->scheduledTasks = new TaskList();
     }
 
     public function addScheduledTask(TaskInterface $task): void

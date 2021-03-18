@@ -41,11 +41,11 @@ scheduler_bundle:
         path: '/_probe'
         clients:
             foo:
-                externalProbePath: '/_external_probe_path'
+                externalProbePath: 'https://www.foo.com/_external_probe_path'
                 errorOnFailedTasks: true # Define if the probe must fail when `failedTasks` is not equal to 0
                 delay: 10 # Define a delay before sending the request (in milliseconds)
             bar:
-                externalProbePath: '/_second_external_probe_path'
+                externalProbePath: 'https://www.bar.com/_second_external_probe_path'
                 errorOnFailedTasks: false # Default value
 ```
 

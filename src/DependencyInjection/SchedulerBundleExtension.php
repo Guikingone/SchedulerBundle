@@ -1037,9 +1037,6 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(ProbeTaskMiddleware::class, ProbeTaskMiddleware::class)
-            ->setArguments([
-                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-            ])
             ->setPublic(false)
             ->addTag('scheduler.worker_middleware')
             ->addTag('container.preload', [
