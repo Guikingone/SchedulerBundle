@@ -19,7 +19,6 @@ use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
-use SchedulerBundle\EventListener\TaskExecutionSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
@@ -39,7 +38,9 @@ use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
@@ -905,10 +906,33 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
+        $container->register(SingleRunTaskMiddleware::class, SingleRunTaskMiddleware::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.worker_middleware')
+            ->addTag('container.preload', [
+                'class' => SingleRunTaskMiddleware::class,
+            ])
+        ;
+
+        $container->register(TaskUpdateMiddleware::class, TaskUpdateMiddleware::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.worker_middleware')
+            ->addTag('container.preload', [
+                'class' => TaskUpdateMiddleware::class,
+            ])
+        ;
+
         if (null !== $configuration['rate_limiter']) {
             $container->register(MaxExecutionMiddleware::class, MaxExecutionMiddleware::class)
                 ->setArguments([
                     new Reference(sprintf('limiter.%s', $configuration['rate_limiter']), ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 ])
                 ->setPublic(false)
                 ->addTag('scheduler.worker_middleware')

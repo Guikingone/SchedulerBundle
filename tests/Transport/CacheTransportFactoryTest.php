@@ -36,7 +36,7 @@ final class CacheTransportFactoryTest extends TestCase
 
         $factory = new CacheTransportFactory($pool);
 
-        $transport = $factory->createTransport(Dsn::fromString('cache://first_in_first_out'), [], $serializer, $orchestrator);
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        $transport = $factory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), [], $serializer, $orchestrator);
+        self::assertSame('normal', $transport->getOptions()['execution_mode']);
     }
 }

@@ -22,7 +22,6 @@ The following events are dispatched
 
 | Event                                                                         | Description                                                                     |
 | ------------------------------------------------------------------------------| ------------------------------------------------------------------------------- |
-| [`SingleRunTaskExecutedEvent`](../src/Event/SingleRunTaskExecutedEvent.php)   | Runs once a task that should be executed once has been executed                 |
 | [`WorkerRestartedEvent`](../src/Event/WorkerRestartedEvent.php)               | Runs when the worker has been restarted (requires a call to `Worker::restart()` |
 | [`WorkerRunningEvent`](../src/Event/WorkerRunningEvent.php)                   | Runs when the worker is running (idle or not)                                   |
 | [`WorkerStartedEvent`](../src/Event/WorkerStartedEvent.php)                   | Runs when the worker has been started                                           |

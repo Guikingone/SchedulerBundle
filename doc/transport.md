@@ -5,9 +5,9 @@ or scheduled via the [Scheduler](../src/Scheduler.php), every task is stored via
 
 Think of transports like the transports used by the following components in Symfony:
 
-- Mailer
-- Messenger
-- Notifier
+- [Mailer](https://symfony.com/doc/current/mailer.html#transport-setup)
+- [Messenger](https://symfony.com/doc/current/messenger.html#transport-configuration)
+- [Notifier](https://symfony.com/doc/current/notifier.html)
 
 This bundle defines a set of transports, each transport has its own configuration and can be overridden if required.
 
@@ -118,7 +118,7 @@ _Note: Keep in mind that this directory could be versioned if required_
 
 ## Cache
 
-_*Introduced in 0.4*_
+_Introduced in `0.4`_
 
 The [CacheTransport](../src/Transport/CacheTransport.php) stores every task in a PSR compliant
 `CacheItemPoolInterface`, every cache adapter that implement this interface can be used.
@@ -136,7 +136,7 @@ framework:
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'cache://app'
+        dsn: 'cache://app' # The execution mode can be specified as an option `cache://app?execution_mode=nice`
 ```
 
 **Configuration**: This transport requires that you provide the name of the pool to use,

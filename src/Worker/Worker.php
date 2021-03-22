@@ -13,7 +13,6 @@ use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\FlockStore;
-use SchedulerBundle\Event\SingleRunTaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
@@ -132,8 +131,6 @@ final class Worker implements WorkerInterface
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
-
-                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
@@ -142,6 +139,7 @@ final class Worker implements WorkerInterface
                         $lockedTask->release();
                         $this->running = false;
                         $this->lastExecutedTask = $task;
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                         $this->dispatch(new WorkerRunningEvent($this, true));
 
                         ++$tasksCount;
@@ -254,15 +252,6 @@ final class Worker implements WorkerInterface
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
         $this->handleSingleRunTask($task);
-    }
-
-    private function handleSingleRunTask(TaskInterface $task): void
-    {
-        if (!$task->isSingleRun()) {
-            return;
-        }
-
-        $this->dispatch(new SingleRunTaskExecutedEvent($task));
     }
 
     private function getLock(TaskInterface $task): LockInterface
