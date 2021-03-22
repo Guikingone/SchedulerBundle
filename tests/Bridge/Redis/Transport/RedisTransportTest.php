@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransport;
+use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
@@ -99,8 +100,17 @@ final class RedisTransportTest extends TestCase
         $list = $this->transport->list();
 
         self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(1, $list);
         self::assertNotEmpty($list);
-        self::assertSame($task, $list->get($task->getName()));
+        self::assertSame($task->getName(), $list->get($task->getName())->getName());
+    }
+
+    public function testTaskCannotBeRetrievedWhenNotCreated(): void
+    {
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionCode(0);
+        $this->transport->get('foo');
     }
 
     public function provideTasks(): Generator
