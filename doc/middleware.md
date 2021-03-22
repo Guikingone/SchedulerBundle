@@ -5,6 +5,7 @@ _Introduced in `0.3`_
 - [Scheduling](#Scheduling)
 - [Execution](#Execution)
 - [Order](#Order)
+- [Required middleware](#)
 
 This bundle defines middleware related to execution and scheduling phases.
 
@@ -121,3 +122,9 @@ final class FooMiddleware implements OrderedMiddlewareInterface
 ```
 
 _Note: The lower the priority, the earlier the middleware is called._
+
+## Required middleware
+
+_Introduced in `0.4`_
+
+// TODO

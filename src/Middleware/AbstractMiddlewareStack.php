@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use Closure;
+use Throwable;
 use function array_filter;
 use function array_replace;
 use function array_walk;
@@ -67,7 +68,15 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     protected function runMiddleware(array $middlewareList, Closure $func): void
     {
-        array_walk($middlewareList, $func);
+        $requiredMiddlewareList = array_filter($middlewareList, fn (object $middleware): bool => $middleware instanceof RequiredMiddlewareInterface);
+
+        try {
+            array_walk($middlewareList, $func);
+        } catch (Throwable $throwable) {
+            array_walk($requiredMiddlewareList, $func);
+
+            throw $throwable;
+        }
     }
 
     private function orderMiddleware(array $middlewareList): array

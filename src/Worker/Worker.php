@@ -131,6 +131,8 @@ final class Worker implements WorkerInterface
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
+
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
@@ -139,7 +141,6 @@ final class Worker implements WorkerInterface
                         $lockedTask->release();
                         $this->running = false;
                         $this->lastExecutedTask = $task;
-                        $this->middlewareStack->runPostExecutionMiddleware($task);
                         $this->dispatch(new WorkerRunningEvent($this, true));
 
                         ++$tasksCount;

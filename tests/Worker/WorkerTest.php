@@ -152,7 +152,7 @@ final class WorkerTest extends TestCase
         );
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::PAUSED);
 
@@ -370,10 +370,6 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('info');
 
-        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $tracker->expects(self::exactly(2))->method('startTracking');
-        $tracker->expects(self::exactly(2))->method('endTracking');
-
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
@@ -396,9 +392,19 @@ final class WorkerTest extends TestCase
         $validTask->expects(self::once())->method('setExecutionEndTime');
         $validTask->expects(self::once())->method('setLastExecution');
 
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $tracker->expects(self::exactly(2))->method('startTracking')->withConsecutive([$task], [$validTask]);
+        $tracker->expects(self::exactly(2))->method('endTracking')->withConsecutive([$task], [$validTask]);
+
         $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::exactly(2))->method('support')->withConsecutive([$task], [$validTask])->willReturn(true);
-        $runner->expects(self::exactly(2))->method('run')->withConsecutive([$task], [$validTask])->willReturn(new Output($task, null));
+        $runner->expects(self::exactly(2))->method('support')
+            ->withConsecutive([$task], [$validTask])
+            ->willReturn(true)
+        ;
+        $runner->expects(self::exactly(2))->method('run')
+            ->withConsecutive([$task], [$validTask])
+            ->willReturn(new Output($task, null))
+        ;
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
@@ -872,7 +878,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::never())->method('isSingleRun');
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
