@@ -647,10 +647,10 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->register(TaskNormalizer::class, TaskNormalizer::class)
             ->setArguments([
-                new Reference('serializer.normalizer.datetime'),
-                new Reference('serializer.normalizer.datetimezone'),
-                new Reference('serializer.normalizer.dateinterval'),
-                new Reference('serializer.normalizer.object'),
+                new Reference('serializer.normalizer.datetime', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference('serializer.normalizer.datetimezone', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference('serializer.normalizer.dateinterval', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
@@ -661,7 +661,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(NotificationTaskBagNormalizer::class, NotificationTaskBagNormalizer::class)
             ->setArguments([
-                new Reference('serializer.normalizer.object'),
+                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
@@ -710,16 +710,6 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->addTag('container.preload', [
                 'class' => TaskSubscriber::class,
-            ])
-        ;
-
-        $container->register(TaskExecutionSubscriber::class, TaskExecutionSubscriber::class)
-            ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-            ])
-            ->addTag('kernel.event_subscriber')
-            ->addTag('container.preload', [
-                'class' => TaskExecutionSubscriber::class,
             ])
         ;
 
