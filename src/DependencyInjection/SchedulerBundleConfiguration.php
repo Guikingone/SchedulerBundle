@@ -67,9 +67,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                     ->arrayNode('tasks')
                         ->beforeNormalization()
                             ->always(function (array $taskConfiguration): array {
-                                $chainedTasks = array_filter($taskConfiguration, function (array $configuration): bool {
-                                    return 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']);
-                                });
+                                $chainedTasks = array_filter($taskConfiguration, fn (array $configuration): bool => 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']));
 
                                 if (0 === count($chainedTasks)) {
                                     return $taskConfiguration;

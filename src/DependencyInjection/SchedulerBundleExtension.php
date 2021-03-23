@@ -268,7 +268,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(Scheduler::class, Scheduler::class)
             ->setArguments([
                 $container->getParameter('scheduler.timezone'),
-                new Reference('scheduler.transport', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
@@ -600,6 +600,10 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(HttpClientInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.runner')
+            ->addTag('scheduler.extra', [
+                'require' => 'http_client',
+                'tag' => 'scheduler.runner',
+            ])
             ->addTag('container.preload', [
                 'class' => HttpTaskRunner::class,
             ])
@@ -610,6 +614,10 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.runner')
+            ->addTag('scheduler.extra', [
+                'require' => 'messenger.default_bus',
+                'tag' => 'scheduler.runner',
+            ])
             ->addTag('container.preload', [
                 'class' => MessengerTaskRunner::class,
             ])
@@ -620,6 +628,10 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.runner')
+            ->addTag('scheduler.extra', [
+                'require' => 'notifier',
+                'tag' => 'scheduler.runner',
+            ])
             ->addTag('container.preload', [
                 'class' => NotificationTaskRunner::class,
             ])
@@ -794,7 +806,7 @@ final class SchedulerBundleExtension extends Extension
             $taskDefinition = $container->register(sprintf('scheduler.%s_task', $name), TaskInterface::class)
                 ->setFactory([new Reference(TaskBuilderInterface::class), 'create'])
                 ->setArguments([
-                    array_merge(['name' => $name], $taskConfiguration)
+                    array_merge(['name' => $name], $taskConfiguration),
                 ])
                 ->addTag('scheduler.task')
                 ->setPublic(false)

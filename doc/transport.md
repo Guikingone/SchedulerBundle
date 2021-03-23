@@ -96,23 +96,18 @@ scheduler_bundle:
         dsn: 'filesystem://first_in_first_out?path=/srv/app'
 ```
 
-_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration._
-
-### Extra configuration
-
-This transport can be configured using the following keys:
-
-- `filename_mask`: The filename mask is used to define the stored file name (default to `%s/_symfony_scheduler_/%s.json`).
+- The third and optional key is the `filename_mask` which define the "mask" of every task file (default to `%s/_symfony_scheduler_/%s.json`):
 
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'memory://first_in_first_out?filename_mask=%s/_foo_scheduler/%s.json'
-        options:
-            path: '%kernel.project_dir%/_foo'
+        dsn: 'filesystem://first_in_first_out?filename_mask=%s/_foo/%s.json'
 ```
 
-**Extra**: The options key is an extra way of configuring the parameters without using the dsn.
+**Important:** This configuration key must use the `json` file extension, 
+the mask is used in combination with the `path` configuration key to store every task.
+
+_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration._
 
 _Note: Keep in mind that this directory could be versioned if required_
 
@@ -136,11 +131,10 @@ framework:
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'cache://app' # The execution mode can be specified as an option `cache://app?execution_mode=nice`
+        dsn: 'cache://app'
 ```
 
-**Configuration**: This transport requires that you provide the name of the pool to use,
-keep in mind that the `execution_mode` option is allowed.
+**Configuration**: This transport requires that you provide the name of the pool to use, the `execution_mode` option is allowed.
 
 ## FailOver
 

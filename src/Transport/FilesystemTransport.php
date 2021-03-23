@@ -17,7 +17,6 @@ use function array_merge;
 use function file_get_contents;
 use function sprintf;
 use function strtr;
-use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -35,11 +34,11 @@ final class FilesystemTransport extends AbstractTransport
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->defineOptions(array_merge([
-            'path' => $path ?? sys_get_temp_dir(),
+            'path' => $path,
             'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], $options), [
-            'path' => ['string'],
-            'filename_mask' => ['string'],
+            'path' => 'string',
+            'filename_mask' => 'string',
         ]);
 
         $this->filesystem = new Filesystem();
@@ -67,13 +66,13 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): TaskInterface
+    public function get(string $name): TaskInterface
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        return $this->serializer->deserialize(file_get_contents(sprintf($this->options['filename_mask'], $this->options['path'], $taskName)), TaskInterface::class, 'json');
+        return $this->serializer->deserialize(file_get_contents(sprintf($this->options['filename_mask'], $this->options['path'], $name)), TaskInterface::class, 'json');
     }
 
     /**
@@ -107,45 +106,45 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function pause(string $taskName): void
+    public function pause(string $name): void
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::PAUSED === $task->getState()) {
-            throw new LogicException(sprintf('The task "%s" is already paused', $taskName));
+            throw new LogicException(sprintf('The task "%s" is already paused', $name));
         }
 
         $task->setState(TaskInterface::PAUSED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $taskName): void
+    public function resume(string $name): void
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::ENABLED === $task->getState()) {
-            throw new LogicException(sprintf('The task "%s" is already enabled', $taskName));
+            throw new LogicException(sprintf('The task "%s" is already enabled', $name));
         }
 
         $task->setState(TaskInterface::ENABLED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskName): void
+    public function delete(string $name): void
     {
-        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $taskName));
+        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $name));
     }
 
     /**

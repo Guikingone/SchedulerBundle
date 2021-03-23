@@ -9,8 +9,6 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
-use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sys_get_temp_dir;
 
@@ -27,21 +25,6 @@ final class FilesystemTransportFactoryTest extends TestCase
         self::assertTrue($factory->support('fs://'));
         self::assertTrue($factory->support('file://'));
         self::assertTrue($factory->support('filesystem://'));
-    }
-
-    public function testFactoryCannotCreateTransportWithInvalidConfiguration(): void
-    {
-        $serializer = $this->createMock(SerializerInterface::class);
-        $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-
-        $factory = new FilesystemTransportFactory();
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "filename_mask" with value 135 is expected to be of type "string", but is of type "int"');
-        self::expectExceptionCode(0);
-        $factory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
-            'filename_mask' => 135,
-        ], $serializer, $schedulerPolicyOrchestrator);
     }
 
     public function testFactoryCanCreateTransport(): void
@@ -82,9 +65,7 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $factory = new FilesystemTransportFactory();
-        $transport = $factory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
-            'path' => '/srv/app',
-        ], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $factory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());

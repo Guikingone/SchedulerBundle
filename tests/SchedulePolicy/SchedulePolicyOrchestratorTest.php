@@ -63,6 +63,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingBatch(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new BatchPolicy(),
         ]);
 
@@ -78,6 +79,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingDeadline(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new DeadlinePolicy(),
         ]);
 
@@ -96,6 +98,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingExecutionDuration(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new ExecutionDurationPolicy(),
         ]);
 
@@ -114,6 +117,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingFirstInFirstOut(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new BatchPolicy(),
             new FirstInFirstOutPolicy(),
         ]);
 
@@ -132,6 +136,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingFirstInLastOut(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new FirstInLastOutPolicy(),
         ]);
 
@@ -150,6 +155,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testTasksCanBeSortTasksUsingIdle(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new IdlePolicy(),
         ]);
 
@@ -168,6 +174,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testTasksCanBeSortTasksUsingMemoryUsage(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new MemoryUsagePolicy(),
         ]);
 
@@ -186,6 +193,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingNice(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new NicePolicy(),
         ]);
 
@@ -204,6 +212,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
     public function testSchedulePolicyCanSortTasksUsingRoundRobin(): void
     {
         $orchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
             new RoundRobinPolicy(),
         ]);
 

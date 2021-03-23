@@ -54,11 +54,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($task->getBeforeExecuting(), $task)) {
-            throw new MiddlewareException(sprintf(
-                'The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.',
-                $task->getName(),
-                get_class($task),
-            ));
+            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), get_class($task), ));
         }
     }
 
@@ -69,11 +65,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($task->getAfterExecuting(), $task)) {
-            throw new MiddlewareException(sprintf(
-                'The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.',
-                $task->getName(),
-                get_class($task),
-            ));
+            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), get_class($task), ));
         }
     }
 

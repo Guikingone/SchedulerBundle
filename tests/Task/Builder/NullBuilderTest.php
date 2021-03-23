@@ -29,7 +29,7 @@ final class NullBuilderTest extends TestCase
         ]));
 
         self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support());
+        self::assertTrue($builder->support('null'));
     }
 
     /**
@@ -60,7 +60,7 @@ final class NullBuilderTest extends TestCase
         yield [
             [
                 'name' => 'foo',
-                'type' => null,
+                'type' => 'null',
                 'expression' => '* * * * *',
                 'queued' => false,
                 'timezone' => 'UTC',

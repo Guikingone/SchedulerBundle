@@ -33,13 +33,13 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): TaskInterface
+    public function get(string $name): TaskInterface
     {
-        if (!array_key_exists($taskName, $this->tasks)) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $taskName));
+        if (!array_key_exists($name, $this->tasks)) {
+            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
         }
 
-        return $this->tasks[$taskName];
+        return $this->tasks[$name];
     }
 
     /**
@@ -80,37 +80,37 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskName): void
+    public function delete(string $name): void
     {
-        unset($this->tasks[$taskName]);
+        unset($this->tasks[$name]);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function pause(string $taskName): void
+    public function pause(string $name): void
     {
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::PAUSED === $task->getState()) {
             throw new LogicException(sprintf('The task "%s" is already paused', $task->getName()));
         }
 
         $task->setState(TaskInterface::PAUSED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $taskName): void
+    public function resume(string $name): void
     {
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::ENABLED === $task->getState()) {
             return;
         }
 
         $task->setState(TaskInterface::ENABLED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**

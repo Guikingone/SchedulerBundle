@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,8 +38,8 @@ final class ShellTaskTest extends TestCase
         $task = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
         self::assertSame('/srv/app', $task->getCwd());
 
-        $task->setCwd(\sys_get_temp_dir());
-        self::assertSame(\sys_get_temp_dir(), $task->getCwd());
+        $task->setCwd(sys_get_temp_dir());
+        self::assertSame(sys_get_temp_dir(), $task->getCwd());
     }
 
     public function testTaskCanBeCreatedWithSpecificEnvironmentVariables(): void

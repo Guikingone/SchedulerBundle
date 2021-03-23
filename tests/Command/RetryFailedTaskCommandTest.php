@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -38,16 +39,16 @@ final class RetryFailedTaskCommandTest extends TestCase
         self::assertSame(
             $command->getHelp(),
             <<<'EOF'
-The <info>%command.name%</info> command retry a failed task.
+                The <info>%command.name%</info> command retry a failed task.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Use the task-name argument to specify the task to retry:
-    <info>php %command.full_name% <task-name></info>
+                Use the task-name argument to specify the task to retry:
+                    <info>php %command.full_name% <task-name></info>
 
-Use the --force option to force the task retry without asking for confirmation:
-    <info>php %command.full_name% <task-name> --force</info>
-EOF
+                Use the --force option to force the task retry without asking for confirmation:
+                    <info>php %command.full_name% <task-name> --force</info>
+                EOF
         );
     }
 
@@ -123,8 +124,12 @@ EOF
 
     public function testCommandCanRetryTaskWithForceOption(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
+        $eventDispatcher->expects(self::once())->method('dispatch')
+            ->with(new StopWorkerOnTaskLimitSubscriber(1, $logger))
+        ;
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
@@ -136,7 +141,7 @@ EOF
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
         $worker->expects(self::once())->method('execute');
 
-        $command = new RetryFailedTaskCommand($worker, $eventDispatcher);
+        $command = new RetryFailedTaskCommand($worker, $eventDispatcher, $logger);
         $tester = new CommandTester($command);
         $tester->execute([
             'name' => 'foo',
@@ -149,8 +154,12 @@ EOF
 
     public function testCommandCanRetryTask(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
+        $eventDispatcher->expects(self::once())->method('dispatch')
+            ->with(new StopWorkerOnTaskLimitSubscriber(1, $logger))
+        ;
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
@@ -162,7 +171,7 @@ EOF
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
         $worker->expects(self::once())->method('execute');
 
-        $command = new RetryFailedTaskCommand($worker, $eventDispatcher);
+        $command = new RetryFailedTaskCommand($worker, $eventDispatcher, $logger);
         $tester = new CommandTester($command);
         $tester->setInputs(['yes']);
         $tester->execute([

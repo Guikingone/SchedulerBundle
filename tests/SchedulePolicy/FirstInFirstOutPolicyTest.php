@@ -30,11 +30,15 @@ final class FirstInFirstOutPolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
+        $thirdTask = $this->createMock(TaskInterface::class);
+        $thirdTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+
         $policy = new FirstInFirstOutPolicy();
 
         self::assertSame([
             'foo' => $secondTask,
+            'random' => $thirdTask,
             'app' => $task,
-        ], $policy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $policy->sort(['foo' => $secondTask, 'app' => $task, 'random' => $thirdTask]));
     }
 }

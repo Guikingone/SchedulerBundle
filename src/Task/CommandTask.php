@@ -20,7 +20,7 @@ final class CommandTask extends AbstractTask
             'arguments' => $arguments,
             'options' => $options,
         ], [
-            'command' => ['string'],
+            'command' => 'string',
             'arguments' => ['array', 'string[]'],
             'options' => ['array', 'string[]'],
         ]);

@@ -48,6 +48,9 @@ _Introduced in `0.3`_
 
 _Description: Yield a task_
 
+**More information**: The behaviour behind "yielding" a task is to un-schedule it 
+then immediately re-schedule it.
+
 ```bash
 $ bin/console scheduler:yield **task**
 ```

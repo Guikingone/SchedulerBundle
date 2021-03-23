@@ -10,6 +10,7 @@ use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
+use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +25,7 @@ final class TaskExecutionTrackerTest extends TestCase
         $tracker = new TaskExecutionTracker(new Stopwatch());
 
         $tracker->startTracking($task);
-        \sleep(1);
+        sleep(1);
         $tracker->endTracking($task);
 
         self::assertNull($task->getExecutionComputationTime());
@@ -38,7 +39,7 @@ final class TaskExecutionTrackerTest extends TestCase
         $tracker = new TaskExecutionTracker(new Stopwatch());
 
         $tracker->startTracking($task);
-        \sleep(1);
+        sleep(1);
         $tracker->endTracking($task);
 
         self::assertNotNull($task->getExecutionComputationTime());

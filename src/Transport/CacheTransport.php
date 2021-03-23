@@ -119,8 +119,11 @@ final class CacheTransport extends AbstractTransport
         }
 
         $item = $this->pool->getItem($name);
-        $item->set($this->serializer->serialize($updatedTask, 'json'));
+        if (!$item->isHit()) {
+            return;
+        }
 
+        $item->set($this->serializer->serialize($updatedTask, 'json'));
         $this->pool->save($item);
     }
 

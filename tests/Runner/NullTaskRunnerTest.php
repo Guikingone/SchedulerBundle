@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle\Runner;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Task\NullTask;
-use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 

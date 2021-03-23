@@ -70,22 +70,22 @@ final class ConsumeTasksCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command consumes due tasks.
+                    The <info>%command.name%</info> command consumes due tasks.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the --limit option to limit the number of tasks consumed:
-    <info>php %command.full_name% --limit=10</info>
+                    Use the --limit option to limit the number of tasks consumed:
+                        <info>php %command.full_name% --limit=10</info>
 
-Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
-    <info>php %command.full_name% --time-limit=3600</info>
+                    Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
+                        <info>php %command.full_name% --time-limit=3600</info>
 
-Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
-    <info>php %command.full_name% --failure-limit=5</info>
+                    Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
+                        <info>php %command.full_name% --failure-limit=5</info>
 
-Use the --wait option to set the worker to wait for tasks every minutes:
-    <info>php %command.full_name% --wait</info>
-EOF
+                    Use the --wait option to set the worker to wait for tasks every minutes:
+                        <info>php %command.full_name% --wait</info>
+                    EOF
             )
         ;
     }
@@ -124,7 +124,10 @@ EOF
         if (0 !== count($stopOptions)) {
             $last = array_pop($stopOptions);
             $stopsWhen = (0 !== count($stopOptions) ? implode(', ', $stopOptions).' or ' : '').$last;
-            $style->comment(sprintf('The worker will automatically exit once %s.', $stopsWhen));
+            $style->comment([
+                'The worker will automatically exit once:',
+                sprintf('- %s', $stopsWhen),
+            ]);
         }
 
         if ($input->getOption('wait')) {

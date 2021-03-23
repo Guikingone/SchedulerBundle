@@ -61,22 +61,22 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame(
             $command->getHelp(),
             <<<'EOF'
-The <info>%command.name%</info> command consumes due tasks.
+                The <info>%command.name%</info> command consumes due tasks.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Use the --limit option to limit the number of tasks consumed:
-    <info>php %command.full_name% --limit=10</info>
+                Use the --limit option to limit the number of tasks consumed:
+                    <info>php %command.full_name% --limit=10</info>
 
-Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
-    <info>php %command.full_name% --time-limit=3600</info>
+                Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
+                    <info>php %command.full_name% --time-limit=3600</info>
 
-Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
-    <info>php %command.full_name% --failure-limit=5</info>
+                Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
+                    <info>php %command.full_name% --failure-limit=5</info>
 
-Use the --wait option to set the worker to wait for tasks every minutes:
-    <info>php %command.full_name% --wait</info>
-EOF
+                Use the --wait option to set the worker to wait for tasks every minutes:
+                    <info>php %command.full_name% --wait</info>
+                EOF
         );
     }
 
@@ -175,7 +175,8 @@ EOF
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('The worker will automatically exit once 10 tasks has been consumed', $tester->getDisplay());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('- 10 tasks has been consumed', $tester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
@@ -212,7 +213,8 @@ EOF
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('The worker will automatically exit once it has been running for 10 seconds', $tester->getDisplay());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('- it has been running for 10 seconds', $tester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
@@ -220,7 +222,7 @@ EOF
     /**
      * @dataProvider providerFailureLimitContext
      */
-    public function testCommandCanConsumeSchedulersWithFailureLimit(int $failureLimit, string $note): void
+    public function testCommandCanConsumeSchedulersWithFailureLimit(int $failureLimit): void
     {
         $logger = $this->createMock(LoggerInterface::class);
 
@@ -245,7 +247,45 @@ EOF
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString($note, $tester->getDisplay());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('have failed', $tester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
+    }
+
+    public function testCommandCanConsumeSchedulersWithFailureLimitAndTaskLimit(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::exactly(2))->method('addSubscriber')
+            ->withConsecutive(
+                [new StopWorkerOnTaskLimitSubscriber(10, $logger)],
+                [new StopWorkerOnFailureLimitSubscriber(10, $logger)]
+            )
+        ;
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::never())->method('getName');
+
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::exactly(2))->method('count')->willReturn(1);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn($taskList);
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('execute');
+
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
+        $tester->execute([
+            '--failure-limit' => 10,
+            '--limit' => 10,
+        ]);
+
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('- 10 tasks has been consumed or 10 tasks have failed', $tester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $tester->getDisplay());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
@@ -282,7 +322,47 @@ EOF
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $tester->getDisplay());
     }
 
-    public function testCommandCanDisplayTaskOutput(): void
+    public function testCommandCannotDisplayTaskOutputWithoutVeryVerbose(): void
+    {
+        $eventDispatcher = new EventDispatcher();
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
+        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
+
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
+        $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([$task]));
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn($taskList);
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->willReturn(true);
+        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
+
+        $tester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
+        $tester->execute([
+            '--limit' => 1,
+        ], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('- 1 tasks has been consumed', $tester->getDisplay());
+        self::assertStringNotContainsString('Output for task "foo":', $tester->getDisplay());
+        self::assertStringNotContainsString('Success output', $tester->getDisplay());
+        self::assertStringContainsString('Task "foo" succeed', $tester->getDisplay());
+        self::assertStringContainsString('Duration: < 1 sec', $tester->getDisplay());
+        self::assertStringContainsString('Memory used: 9.1 MiB', $tester->getDisplay());
+        self::assertStringNotContainsString('Task failed: "foo"', $tester->getDisplay());
+    }
+
+    public function testCommandCanDisplayTaskOutputWithVeryVerboseOutput(): void
     {
         $eventDispatcher = new EventDispatcher();
 
@@ -312,7 +392,8 @@ EOF
         ], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('The worker will automatically exit once 1 tasks has been consumed.', $tester->getDisplay());
+        self::assertStringContainsString('The worker will automatically exit once:', $tester->getDisplay());
+        self::assertStringContainsString('- 1 tasks has been consumed', $tester->getDisplay());
         self::assertStringContainsString('Output for task "foo":', $tester->getDisplay());
         self::assertStringContainsString('Success output', $tester->getDisplay());
         self::assertStringContainsString('Task "foo" succeed', $tester->getDisplay());
@@ -323,8 +404,8 @@ EOF
 
     public function providerFailureLimitContext(): Generator
     {
-        yield 'Multiple tasks' => [10, 'The worker will automatically exit once 10 tasks have failed'];
-        yield 'Single task' => [1, 'The worker will automatically exit once 1 task have failed'];
+        yield 'Multiple tasks' => [10];
+        yield 'Single task' => [1];
     }
 
     public function provideLimitOption(): Generator

@@ -50,16 +50,16 @@ final class RemoveFailedTaskCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command remove a failed task.
+                    The <info>%command.name%</info> command remove a failed task.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the task-name argument to specify the task to remove:
-    <info>php %command.full_name% <task-name></info>
+                    Use the task-name argument to specify the task to remove:
+                        <info>php %command.full_name% <task-name></info>
 
-Use the --force option to force the task deletion without asking for confirmation:
-    <info>php %command.full_name% <task-name> --force</info>
-EOF
+                    Use the --force option to force the task deletion without asking for confirmation:
+                        <info>php %command.full_name% <task-name> --force</info>
+                    EOF
             )
         ;
     }

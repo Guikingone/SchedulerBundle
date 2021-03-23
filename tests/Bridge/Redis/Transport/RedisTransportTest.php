@@ -56,7 +56,7 @@ final class RedisTransportTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 new NotificationTaskBagNormalizer($objectNormalizer)
-            ), $objectNormalizer
+            ), $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 

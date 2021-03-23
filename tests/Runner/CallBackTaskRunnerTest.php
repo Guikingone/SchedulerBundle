@@ -31,13 +31,13 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCannotExecuteInvalidTask(): void
     {
         $runner = new CallbackTaskRunner();
-        $secondTask = new ShellTask('foo', ['echo', 'Symfony!']);
+        $task = new ShellTask('foo', ['echo', 'Symfony!']);
 
-        $output = $runner->run($secondTask);
+        $output = $runner->run($task);
         self::assertSame(Output::ERROR, $output->getType());
-        self::assertSame(TaskInterface::ERRORED, $secondTask->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
         self::assertNull($output->getOutput());
-        self::assertSame($secondTask, $output->getTask());
+        self::assertSame($task, $output->getTask());
     }
 
     public function testRunnerCanExecuteValidTaskWithExtraSpacedOutput(): void

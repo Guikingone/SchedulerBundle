@@ -62,7 +62,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -91,7 +91,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
         $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
@@ -119,7 +119,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -148,7 +148,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -178,7 +178,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -211,7 +211,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -240,7 +240,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -269,7 +269,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -301,7 +301,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -329,7 +329,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -359,7 +359,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -389,7 +389,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
         $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
@@ -418,7 +418,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
         $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
@@ -447,7 +447,7 @@ final class CacheTransportTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
         $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([

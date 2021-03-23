@@ -13,6 +13,8 @@ use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Messenger\TaskMessage;
+use SchedulerBundle\Messenger\TaskToPauseMessage;
+use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
@@ -180,7 +182,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, null, );
+        ]), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -244,7 +246,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, null);
+        ]), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -317,8 +319,8 @@ final class SchedulerTest extends TestCase
         $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher, $bus);
 
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher, $bus);
         $scheduler->schedule($task);
     }
 
@@ -332,11 +334,17 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch');
 
-        $messageBus = new SchedulerMessageBus();
         $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher, $messageBus);
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::once())->method('dispatch')
+            ->with(new TaskMessage($task))
+            ->willReturn(new Envelope(new stdClass()))
+        ;
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher, $bus);
 
         $task->setQueued(true);
         $scheduler->schedule($task);
@@ -372,8 +380,11 @@ final class SchedulerTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$task->getName() => $task]);
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator);
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator),
+            new SchedulerMiddlewareStack()
+        );
 
         $scheduler->schedule($task);
 
@@ -494,8 +505,11 @@ final class SchedulerTest extends TestCase
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects(self::once())->method('pause')->with(self::equalTo('foo'));
 
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
-        $scheduler->pause('foo');
+        $scheduler->pause('foo', true);
     }
 
     public function testSchedulerCanPauseTaskWithMessageBus(): void
@@ -503,7 +517,13 @@ final class SchedulerTest extends TestCase
         $transport = $this->createMock(TransportInterface::class);
         $transport->expects(self::never())->method('pause');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, new SchedulerMessageBus());
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::once())->method('dispatch')
+            ->with(new TaskToPauseMessage('foo'))
+            ->willReturn(new Envelope(new stdClass()))
+        ;
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, $bus);
         $scheduler->pause('foo', true);
     }
 
@@ -589,7 +609,7 @@ final class SchedulerTest extends TestCase
         $scheduler->yieldTask('foo');
     }
 
-    public function testSchedulerCanYieldTaskAsynchronouslyWithoutMessageBus(): void
+    public function testSchedulerCannotYieldTaskAsynchronouslyWithoutMessageBus(): void
     {
         $timezone = new DateTimeZone('UTC');
 
@@ -604,6 +624,9 @@ final class SchedulerTest extends TestCase
         $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
         $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
         $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
 
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
         $scheduler->schedule($task);
@@ -625,7 +648,13 @@ final class SchedulerTest extends TestCase
         $transport->expects(self::never())->method('create');
         $transport->expects(self::never())->method('delete');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, new SchedulerMessageBus());
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::once())->method('dispatch')
+            ->with(new TaskToYieldMessage('foo'))
+            ->willReturn(new Envelope(new stdClass()))
+        ;
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, $bus);
         $scheduler->yieldTask('foo', true);
     }
 
@@ -635,13 +664,5 @@ final class SchedulerTest extends TestCase
             new ShellTask('Bar', ['echo', 'Symfony']),
             new ShellTask('Foo', ['echo', 'Symfony']),
         ];
-    }
-}
-
-final class SchedulerMessageBus implements MessageBusInterface
-{
-    public function dispatch($message, array $stamps = []): Envelope
-    {
-        return new Envelope($message, $stamps);
     }
 }

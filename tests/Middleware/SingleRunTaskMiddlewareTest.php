@@ -14,6 +14,14 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class SingleRunTaskMiddlewareTest extends TestCase
 {
+    public function testMiddlewareIsConfigured(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $middleware = new SingleRunTaskMiddleware($scheduler);
+        self::assertSame(9, $middleware->getPriority());
+    }
+
     public function testMiddlewareCannotHandleInvalidTask(): void
     {
         $task = $this->createMock(TaskInterface::class);

@@ -223,12 +223,7 @@ final class Scheduler implements SchedulerInterface
     {
         $initializationDelay = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
         if ($initializationDelay->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $initializationDelay->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
-            throw new RuntimeException(sprintf(
-                'The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]',
-                $initializationDelay->f,
-                self::MIN_SYNCHRONIZATION_DELAY,
-                self::MAX_SYNCHRONIZATION_DELAY
-            ));
+            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $initializationDelay->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
         return $this->initializationDate->add($initializationDelay);

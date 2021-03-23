@@ -19,9 +19,9 @@ final class FailedTask extends AbstractTask
             'reason' => $reason,
             'failed_at' => new DateTimeImmutable(),
         ], [
-            'task' => [TaskInterface::class],
-            'reason' => ['string'],
-            'failed_at' => [DateTimeImmutable::class],
+            'task' => TaskInterface::class,
+            'reason' => 'string',
+            'failed_at' => DateTimeImmutable::class,
         ]);
 
         parent::__construct(sprintf('%s.failed', $task->getName()));

@@ -17,17 +17,6 @@ use SchedulerBundle\Transport\TransportInterface;
  */
 final class LongTailTransportTest extends TestCase
 {
-    public function testTransportIsConfigured(): void
-    {
-        $transport = new LongTailTransport([]);
-
-        self::assertCount(2, $transport->getOptions());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertNull($transport->getOptions()['path']);
-    }
-
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
         $transport = new LongTailTransport([]);

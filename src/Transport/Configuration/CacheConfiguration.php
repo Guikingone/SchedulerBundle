@@ -25,11 +25,7 @@ final class CacheConfiguration implements ConfigurationInterface
     public function set(string $key, $value): void
     {
         if ($this->pool->hasItem($key)) {
-            throw new InvalidArgumentException(sprintf(
-                'The key "%s" already exist, consider using %s::update()',
-                $key,
-                self::class
-            ));
+            throw new InvalidArgumentException(sprintf('The key "%s" already exist, consider using %s::update()', $key, self::class));
         }
 
         $item = $this->pool->getItem($key);

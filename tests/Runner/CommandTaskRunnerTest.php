@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\ShellTask;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -32,6 +33,18 @@ final class CommandTaskRunnerTest extends TestCase
 
         self::assertFalse($runner->support(new NullTask('foo')));
         self::assertTrue($runner->support(new CommandTask('foo', 'app:foo')));
+    }
+
+    public function testRunnerCannotRunInvalidTask(): void
+    {
+        $application = new Application();
+
+        $runner = new CommandTaskRunner($application);
+        $output = $runner->run(new ShellTask('foo', []));
+
+        self::assertSame(Output::ERROR, $output->getType());
+        self::assertNull($output->getOutput());
+        self::assertInstanceOf(ShellTask::class, $output->getTask());
     }
 
     public function testApplicationIsUsed(): void

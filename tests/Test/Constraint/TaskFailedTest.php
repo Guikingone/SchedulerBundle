@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Test\Constraint;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskFailed;
@@ -29,10 +30,9 @@ final class TaskFailedTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $failedTask = new FailedTask($task, 'error');
-
         $list = new TaskEventList();
-        $list->addEvent(new TaskFailedEvent($failedTask));
+        $list->addEvent(new TaskUnscheduledEvent('foo'));
+        $list->addEvent(new TaskFailedEvent(new FailedTask($task, 'error')));
 
         $constraint = new TaskFailed(1);
 

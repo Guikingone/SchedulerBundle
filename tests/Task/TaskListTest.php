@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
-use ArrayIterator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use stdClass;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -56,6 +57,16 @@ final class TaskListTest extends TestCase
         self::assertSame(2, $list->count());
     }
 
+    public function testListCannotBeHydratedUsingInvalidOffset(): void
+    {
+        $list = new TaskList();
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('A task must be given, received "object"');
+        self::expectExceptionCode(0);
+        $list->offsetSet('foo', new stdClass());
+    }
+
     public function testListCanBeHydratedUsingEmptyOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -100,6 +111,13 @@ final class TaskListTest extends TestCase
         self::assertTrue($list->offsetExists('foo'));
     }
 
+    public function testListCannotReturnUndefinedTask(): void
+    {
+        $list = new TaskList([]);
+
+        self::assertNull($list->get('foo'));
+    }
+
     public function testListCanReturnTask(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -120,17 +138,28 @@ final class TaskListTest extends TestCase
         self::assertInstanceOf(TaskInterface::class, $list->offsetGet('foo'));
     }
 
+    public function testListCannotFindUndefinedTaskByNames(): void
+    {
+        $list = new TaskList([]);
+        $tasks = $list->findByName(['foo']);
+
+        self::assertEmpty($tasks);
+    }
+
     public function testListCanFindTaskByNames(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList([$task]);
-
         $task->expects(self::any())->method('getName')->willReturn('foo');
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::any())->method('getName')->willReturn('bar');
+
+        $list = new TaskList([$task, $secondTask]);
 
         $tasks = $list->findByName(['foo']);
 
         self::assertNotEmpty($tasks);
-        self::assertInstanceOf(TaskList::class, $tasks);
+        self::assertCount(1, $tasks);
     }
 
     public function testListCanFilterTaskByNames(): void

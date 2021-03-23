@@ -57,7 +57,7 @@ final class ConnectionIntegrationTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 new NotificationTaskBagNormalizer($objectNormalizer)
-            ), $objectNormalizer
+            ), $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 

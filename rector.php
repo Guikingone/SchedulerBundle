@@ -28,7 +28,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $parameters->set(Option::SKIP, [
         __DIR__ . '/vendor',
-        CountOnNullRector::class
+        CountOnNullRector::class,
     ]);
 
     $parameters->set(Option::SETS, [

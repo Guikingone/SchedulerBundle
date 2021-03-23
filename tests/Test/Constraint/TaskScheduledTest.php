@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Test\Constraint;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskScheduled;
 
@@ -29,6 +30,7 @@ final class TaskScheduledTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $list = new TaskEventList();
+        $list->addEvent(new TaskUnscheduledEvent('foo'));
         $list->addEvent(new TaskScheduledEvent($task));
 
         $constraint = new TaskScheduled(1);

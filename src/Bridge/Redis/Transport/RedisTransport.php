@@ -39,15 +39,15 @@ final class RedisTransport extends AbstractTransport
             'transaction_mode' => null,
             'list' => '_symfony_scheduler_tasks',
         ], $options), [
-            'host' => ['string'],
+            'host' => 'string',
             'password' => ['string', 'null'],
-            'port' => ['int'],
+            'port' => 'int',
             'scheme' => ['string', 'null'],
-            'timeout' => ['int'],
+            'timeout' => 'int',
             'auth' => ['string', 'null'],
-            'dbindex' => ['int'],
+            'dbindex' => 'int',
             'transaction_mode' => ['string', 'null'],
-            'list' => ['string'],
+            'list' => 'string',
         ]);
 
         $this->connection = new Connection($this->getOptions(), $serializer);
@@ -68,9 +68,9 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): TaskInterface
+    public function get(string $name): TaskInterface
     {
-        return $this->connection->get($taskName);
+        return $this->connection->get($name);
     }
 
     /**
@@ -92,25 +92,25 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function pause(string $taskName): void
+    public function pause(string $name): void
     {
-        $this->connection->pause($taskName);
+        $this->connection->pause($name);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $taskName): void
+    public function resume(string $name): void
     {
-        $this->connection->resume($taskName);
+        $this->connection->resume($name);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskName): void
+    public function delete(string $name): void
     {
-        $this->connection->delete($taskName);
+        $this->connection->delete($name);
     }
 
     /**

@@ -36,19 +36,19 @@ final class ListTasksCommandTest extends TestCase
         self::assertSame(
             $command->getHelp(),
             <<<'EOF'
-The <info>%command.name%</info> command list tasks.
+                The <info>%command.name%</info> command list tasks.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Use the --expression option to list the tasks with a specific expression:
-    <info>php %command.full_name% --expression=* * * * *</info>
+                Use the --expression option to list the tasks with a specific expression:
+                    <info>php %command.full_name% --expression=* * * * *</info>
 
-Use the --state option to list the tasks with a specific state:
-    <info>php %command.full_name% --state=paused</info>
+                Use the --state option to list the tasks with a specific state:
+                    <info>php %command.full_name% --state=paused</info>
 
-Use the -s option to list the tasks with a specific state:
-    <info>php %command.full_name% -s=paused</info>
-EOF
+                Use the -s option to list the tasks with a specific state:
+                    <info>php %command.full_name% -s=paused</info>
+                EOF
         );
     }
 
@@ -109,16 +109,14 @@ EOF
         self::assertStringContainsString('Last execution date', $tester->getDisplay());
         self::assertStringContainsString('Next execution date', $tester->getDisplay());
         self::assertStringContainsString('Last execution duration', $tester->getDisplay());
+        self::assertStringContainsString('Not tracked', $tester->getDisplay());
         self::assertStringContainsString('State', $tester->getDisplay());
         self::assertStringContainsString(TaskInterface::ENABLED, $tester->getDisplay());
         self::assertStringContainsString('Tags', $tester->getDisplay());
         self::assertStringContainsString('app, slow', $tester->getDisplay());
     }
 
-    /**
-     * @dataProvider provideExpressionOption
-     */
-    public function testCommandCanListTaskWithSpecificExpression(string $expressionOption): void
+    public function testCommandCanListTaskWithSpecificExpression(): void
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
@@ -143,7 +141,7 @@ EOF
 
         $tester = new CommandTester(new ListTasksCommand($scheduler));
         $tester->execute([
-            $expressionOption => '* * * * *',
+            '--expression' => '* * * * *',
         ]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -165,6 +163,7 @@ EOF
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -184,10 +183,12 @@ EOF
         self::assertStringContainsString('Description', $tester->getDisplay());
         self::assertStringContainsString('Expression', $tester->getDisplay());
         self::assertStringContainsString('Last execution date', $tester->getDisplay());
+        self::assertStringContainsString('1 sec', $tester->getDisplay());
         self::assertStringContainsString('Next execution date', $tester->getDisplay());
         self::assertStringContainsString('Last execution duration', $tester->getDisplay());
         self::assertStringContainsString('State', $tester->getDisplay());
         self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertStringContainsString('app, slow', $tester->getDisplay());
     }
 
     /**
@@ -313,11 +314,6 @@ EOF
     {
         yield ['--state'];
         yield ['-s'];
-    }
-
-    public function provideExpressionOption(): Generator
-    {
-        yield ['--expression'];
     }
 
     public function provideOptions(): Generator

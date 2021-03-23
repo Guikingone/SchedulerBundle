@@ -6,6 +6,8 @@ namespace Tests\SchedulerBundle\Command;
 
 use ArrayIterator;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -15,6 +17,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,13 +40,13 @@ final class RebootSchedulerCommandTest extends TestCase
         self::assertSame(
             $command->getHelp(),
             <<<'EOF'
-The <info>%command.name%</info> command reboot the scheduler.
+                The <info>%command.name%</info> command reboot the scheduler.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Use the --dry-run option to list the tasks executed when the scheduler reboot:
-    <info>php %command.full_name% --dry-run</info>
-EOF
+                Use the --dry-run option to list the tasks executed when the scheduler reboot:
+                    <info>php %command.full_name% --dry-run</info>
+                EOF
         );
     }
 
@@ -94,10 +97,17 @@ EOF
         self::assertStringContainsString('Be sure that the tasks use the "@reboot" expression', $tester->getDisplay());
     }
 
+    /**
+     * @group time-sensitive
+     *
+     * @throws Throwable
+     */
     public function testCommandCannotRebootSchedulerWithRunningWorker(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('addSubscriber');
+        $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
@@ -121,7 +131,7 @@ EOF
         $worker->expects(self::exactly(2))->method('isRunning')->willReturnOnConsecutiveCalls(true, false);
         $worker->expects(self::once())->method('execute')->with([], self::equalTo($task));
 
-        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
+        $tester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher, $logger));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

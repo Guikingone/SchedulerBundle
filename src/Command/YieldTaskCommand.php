@@ -47,19 +47,19 @@ final class YieldTaskCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command yield a task.
+                    The <info>%command.name%</info> command yield a task.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the name argument to specify the task to yield:
-    <info>php %command.full_name% <name></info>
+                    Use the name argument to specify the task to yield:
+                        <info>php %command.full_name% <name></info>
 
-Use the --async option to perform the yield using the message bus:
-    <info>php %command.full_name% <name> --async</info>
+                    Use the --async option to perform the yield using the message bus:
+                        <info>php %command.full_name% <name> --async</info>
 
-Use the --force option to force the task yield without asking for confirmation:
-    <info>php %command.full_name% <name> --force</info>
-EOF
+                    Use the --force option to force the task yield without asking for confirmation:
+                        <info>php %command.full_name% <name> --force</info>
+                    EOF
             )
         ;
     }

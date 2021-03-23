@@ -32,6 +32,10 @@ final class SchedulerPassTest extends TestCase
     {
         $container = new ContainerBuilder();
         $container->register('scheduler.task_builder', stdClass::class);
+        $container->register('scheduler.bar_task', TaskInterface::class)->addTag('scheduler.extra', [
+            'require' => 'http_client',
+            'tag' => 'scheduler.tag',
+        ]);
         $container->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
             'require' => 'scheduler.task_builder',
             'tag' => 'scheduler.tag',
@@ -41,5 +45,6 @@ final class SchedulerPassTest extends TestCase
 
         self::assertTrue($container->hasDefinition('scheduler.foo_task'));
         self::assertTrue($container->getDefinition('scheduler.foo_task')->hasTag('scheduler.tag'));
+        self::assertFalse($container->hasDefinition('scheduler.bar_task'));
     }
 }

@@ -58,16 +58,16 @@ final class RetryFailedTaskCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command retry a failed task.
+                    The <info>%command.name%</info> command retry a failed task.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the task-name argument to specify the task to retry:
-    <info>php %command.full_name% <task-name></info>
+                    Use the task-name argument to specify the task to retry:
+                        <info>php %command.full_name% <task-name></info>
 
-Use the --force option to force the task retry without asking for confirmation:
-    <info>php %command.full_name% <task-name> --force</info>
-EOF
+                    Use the --force option to force the task retry without asking for confirmation:
+                        <info>php %command.full_name% <task-name> --force</info>
+                    EOF
             )
         ;
     }

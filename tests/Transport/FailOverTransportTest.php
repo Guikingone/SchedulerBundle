@@ -26,6 +26,8 @@ final class FailOverTransportTest extends TestCase
 
         self::assertArrayHasKey('mode', $transport->getOptions());
         self::assertSame('normal', $transport->getOptions()['mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
     }
 
     public function testTransportCannotBeCreatedWithInvalidConfiguration(): void
@@ -84,7 +86,7 @@ final class FailOverTransportTest extends TestCase
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('get')
+        $secondTransport->expects(self::exactly(2))->method('get')
             ->with(self::equalTo('foo'))
             ->willReturn($task)
         ;
@@ -94,6 +96,7 @@ final class FailOverTransportTest extends TestCase
             $secondTransport,
         ]);
 
+        self::assertSame($task, $transport->get('foo'));
         self::assertSame($task, $transport->get('foo'));
     }
 

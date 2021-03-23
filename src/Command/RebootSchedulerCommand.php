@@ -63,13 +63,13 @@ final class RebootSchedulerCommand extends Command
             ->setDescription('Reboot the scheduler')
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command reboot the scheduler.
+                    The <info>%command.name%</info> command reboot the scheduler.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the --dry-run option to list the tasks executed when the scheduler reboot:
-    <info>php %command.full_name% --dry-run</info>
-EOF
+                    Use the --dry-run option to list the tasks executed when the scheduler reboot:
+                        <info>php %command.full_name% --dry-run</info>
+                    EOF
             )
         ;
     }

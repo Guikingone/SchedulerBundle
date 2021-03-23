@@ -7,6 +7,7 @@ namespace SchedulerBundle\Bridge\Doctrine\SchemaListener;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\DBAL\Event\SchemaCreateTableEventArgs;
 use Doctrine\DBAL\Events;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Tools\Event\GenerateSchemaEventArgs;
 use Doctrine\ORM\Tools\ToolEvents;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
@@ -38,6 +39,11 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
         $this->transport->configureSchema($event->getSchema(), $event->getEntityManager()->getConnection());
     }
 
+    /**
+     * @param SchemaCreateTableEventArgs $event
+     *
+     * @throws Exception
+     */
     public function onSchemaCreateTable(SchemaCreateTableEventArgs $event): void
     {
         $table = $event->getTable();
