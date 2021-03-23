@@ -898,7 +898,7 @@ final class WorkerTest extends TestCase
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new MaxExecutionMiddleware(new RateLimiterFactory([

@@ -65,13 +65,13 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $middleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
-        $middleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task));
+        $middleware->expects(self::never())->method('preScheduling');
 
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
         $thirdMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
-        $thirdMiddleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task));
+        $thirdMiddleware->expects(self::never())->method('preScheduling');
 
         $fourthMiddleware = new class() implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
             public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
