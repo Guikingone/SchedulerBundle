@@ -188,18 +188,24 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(FailOverTransportFactory::class));
         self::assertFalse($container->getDefinition(FailOverTransportFactory::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(FailOverTransportFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(FailOverTransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(FailOverTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(FailOverTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(FailOverTransportFactory::class, $container->getDefinition(FailOverTransportFactory::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(LongTailTransportFactory::class));
         self::assertFalse($container->getDefinition(LongTailTransportFactory::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(LongTailTransportFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(LongTailTransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(LongTailTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(LongTailTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(LongTailTransportFactory::class, $container->getDefinition(LongTailTransportFactory::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RoundRobinTransportFactory::class));
         self::assertFalse($container->getDefinition(RoundRobinTransportFactory::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(RoundRobinTransportFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(RoundRobinTransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(RoundRobinTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(RoundRobinTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(RoundRobinTransportFactory::class, $container->getDefinition(RoundRobinTransportFactory::class)->getTag('container.preload')[0]['class']);

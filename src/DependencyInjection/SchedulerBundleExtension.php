@@ -190,6 +190,9 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(FailOverTransportFactory::class, FailOverTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.transport_factory'),
+            ])
             ->setPublic(false)
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
@@ -198,6 +201,9 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(LongTailTransportFactory::class, LongTailTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.transport_factory'),
+            ])
             ->setPublic(false)
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
@@ -206,6 +212,9 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(RoundRobinTransportFactory::class, RoundRobinTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.transport_factory'),
+            ])
             ->setPublic(false)
             ->addTag('scheduler.transport_factory')
             ->addTag('container.preload', [
