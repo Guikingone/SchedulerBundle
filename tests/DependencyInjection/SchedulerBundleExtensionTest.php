@@ -875,22 +875,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testDoctrineBridgeIsConfigured(): void
     {
-        $extension = new SchedulerBundleExtension();
-
-        $container = new ContainerBuilder();
-        $container->register('doctrine', stdClass::class);
-
-        $extension->load([
-            'scheduler_bundle' => [
-                'path' => '/_foo',
-                'timezone' => 'Europe/Paris',
-                'transport' => [
-                    'dsn' => 'memory://first_in_first_out',
-                ],
-                'tasks' => [],
-                'lock_store' => null,
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'doctrine://default',
             ],
-        ], $container);
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
 
         self::assertTrue($container->hasDefinition(SchedulerTransportDoctrineSchemaSubscriber::class));
         self::assertFalse($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->isPublic());
@@ -904,6 +897,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertFalse($container->getDefinition(DoctrineTransportFactory::class)->isPublic());
         self::assertCount(1, $container->getDefinition(DoctrineTransportFactory::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(DoctrineTransportFactory::class)->getArgument(0));
+        self::assertSame('doctrine', (string) $container->getDefinition(DoctrineTransportFactory::class)->getArgument(0));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(DoctrineTransportFactory::class, $container->getDefinition(DoctrineTransportFactory::class)->getTag('container.preload')[0]['class']);

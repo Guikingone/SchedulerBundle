@@ -133,7 +133,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerTracker($container);
         $this->registerWorker($container, $config);
         $this->registerTasks($container, $config);
-        $this->registerDoctrineBridge($container);
+        $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
         $this->registerDataCollector($container);
@@ -809,9 +809,9 @@ final class SchedulerBundleExtension extends Extension
         }
     }
 
-    private function registerDoctrineBridge(ContainerBuilder $container): void
+    private function registerDoctrineBridge(ContainerBuilder $container, array $configuration): void
     {
-        if (!$container->hasDefinition('doctrine')) {
+        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://')) {
             return;
         }
 
