@@ -1,6 +1,22 @@
 CHANGELOG
 =========
 
+0.3.3
+-----
+
+* Doctrine bridge improvements (see https://github.com/Guikingone/SchedulerBundle/pull/36)
+
+0.3.2
+-----
+
+* Compound factories fixed (see https://github.com/Guikingone/SchedulerBundle/pull/34)
+
+0.3.1
+-----
+
+* Scheduler definitions fix (see https://github.com/Guikingone/SchedulerBundle/pull/29)
+* Expression builders definition fix (see https://github.com/Guikingone/SchedulerBundle/pull/30)
+
 0.3.0
 -----
 
