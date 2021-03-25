@@ -817,7 +817,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(SchedulerTransportDoctrineSchemaSubscriber::class, SchedulerTransportDoctrineSchemaSubscriber::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.transport'),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag('doctrine.event_subscriber')

@@ -25,7 +25,9 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([]);
+        $transport = $this->createMock(TransportInterface::class);
+
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber($transport);
 
         self::assertContains(ToolEvents::postGenerateSchema, $subscriber->getSubscribedEvents());
         self::assertContains(Events::onSchemaCreateTable, $subscriber->getSubscribedEvents());
@@ -33,7 +35,7 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
 
     public function testPostGenerateSchemaCannotBeCalledWithoutValidTransport(): void
     {
-        $secondTransport = $this->createMock(TransportInterface::class);
+        $invalidTransport = $this->createMock(TransportInterface::class);
 
         $transport = $this->createMock(DoctrineTransport::class);
         $transport->expects(self::never())->method('configureSchema');
@@ -42,33 +44,7 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
         $event->expects(self::never())->method('getEntityManager');
         $event->expects(self::never())->method('getSchema');
 
-        $otherTransport = $this->createMock(TransportInterface::class);
-        $otherTransport->expects(self::never())->method(self::anything());
-
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$secondTransport]);
-        $subscriber->postGenerateSchema($event);
-    }
-
-    public function testPostGenerateSchemaWithMultipleInvalidTransport(): void
-    {
-        $otherTransport = $this->createMock(TransportInterface::class);
-        $otherTransport->expects(self::never())->method(self::anything());
-
-        $secondInvalidTransport = $this->createMock(TransportInterface::class);
-        $secondInvalidTransport->expects(self::never())->method(self::anything());
-
-        $schema = new Schema();
-        $connection = $this->createMock(Connection::class);
-
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects(self::once())->method('getConnection')->willReturn($connection);
-
-        $event = new GenerateSchemaEventArgs($entityManager, $schema);
-
-        $doctrineTransport = $this->createMock(DoctrineTransport::class);
-        $doctrineTransport->expects(self::once())->method('configureSchema')->with($schema, $connection);
-
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport, $secondInvalidTransport]);
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber($invalidTransport);
         $subscriber->postGenerateSchema($event);
     }
 
@@ -85,29 +61,8 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
         $doctrineTransport = $this->createMock(DoctrineTransport::class);
         $doctrineTransport->expects(self::once())->method('configureSchema')->with($schema, $connection);
 
-        $otherTransport = $this->createMock(TransportInterface::class);
-        $otherTransport->expects(self::never())->method(self::anything());
-
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport]);
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber($doctrineTransport);
         $subscriber->postGenerateSchema($event);
-    }
-
-    public function testOnSchemaCreateTableCannotBeCalledWithoutTableOption(): void
-    {
-        $table = $this->createMock(Table::class);
-        $table->expects(self::once())->method('hasOption')
-            ->with(self::equalTo(SchedulerTransportDoctrineSchemaSubscriber::class.':processing'))
-            ->willReturn(false)
-        ;
-        $table->expects(self::never())->method('addOption');
-
-        $event = $this->createMock(SchemaCreateTableEventArgs::class);
-        $event->expects(self::never())->method('addSql');
-        $event->expects(self::never())->method('preventDefault');
-        $event->expects(self::once())->method('getTable')->willReturn($table);
-
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([]);
-        $subscriber->onSchemaCreateTable($event);
     }
 
     public function testOnSchemaCreateTableCannotBeCalledWithoutValidTransport(): void
@@ -124,38 +79,8 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
         $event = $this->createMock(SchemaCreateTableEventArgs::class);
         $event->expects(self::once())->method('getTable')->willReturn($table);
 
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$transport]);
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber($transport);
         $subscriber->onSchemaCreateTable($event);
-    }
-
-    public function testOnSchemaCreateTableWithASingleInvalidTransport(): void
-    {
-        $otherTransport = $this->createMock(TransportInterface::class);
-        $doctrineTransport = $this->createMock(DoctrineTransport::class);
-        $platform = $this->createMock(AbstractPlatform::class);
-
-        $table = $this->createMock(Table::class);
-        $table->expects(self::once())->method('addOption')
-            ->with(
-                self::equalTo(SchedulerTransportDoctrineSchemaSubscriber::class.':processing'),
-                self::equalTo(true)
-            )
-        ;
-
-        $event = new SchemaCreateTableEventArgs($table, [], [], $platform);
-
-        // we use the platform to generate the full create table sql
-        $platform->expects(self::once())
-            ->method('getCreateTableSQL')
-            ->with($table)
-            ->willReturn('CREATE TABLE pizza (id integer NOT NULL)')
-        ;
-
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport]);
-        $subscriber->onSchemaCreateTable($event);
-
-        self::assertTrue($event->isDefaultPrevented());
-        self::assertSame(['CREATE TABLE pizza (id integer NOT NULL)'], $event->getSql());
     }
 
     public function testOnSchemaCreateTable(): void
@@ -172,9 +97,6 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
 
         $event = new SchemaCreateTableEventArgs($table, [], [], $platform);
 
-        $otherTransport = $this->createMock(TransportInterface::class);
-        $otherTransport->expects(self::never())->method(self::anything());
-
         $doctrineTransport = $this->createMock(DoctrineTransport::class);
 
         // we use the platform to generate the full create table sql
@@ -184,7 +106,7 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
             ->willReturn('CREATE TABLE pizza (id integer NOT NULL)')
         ;
 
-        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber([$otherTransport, $doctrineTransport]);
+        $subscriber = new SchedulerTransportDoctrineSchemaSubscriber($doctrineTransport);
         $subscriber->onSchemaCreateTable($event);
 
         self::assertTrue($event->isDefaultPrevented());

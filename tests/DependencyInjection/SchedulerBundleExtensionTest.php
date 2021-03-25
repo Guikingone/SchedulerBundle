@@ -888,7 +888,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(SchedulerTransportDoctrineSchemaSubscriber::class));
         self::assertFalse($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->isPublic());
         self::assertCount(1, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArguments());
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArgument(0));
+        self::assertSame(TransportInterface::class, (string) $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getArgument(0));
         self::assertTrue($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->hasTag('doctrine.event_subscriber'));
         self::assertTrue($container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->hasTag('container.preload'));
         self::assertSame(SchedulerTransportDoctrineSchemaSubscriber::class, $container->getDefinition(SchedulerTransportDoctrineSchemaSubscriber::class)->getTag('container.preload')[0]['class']);
