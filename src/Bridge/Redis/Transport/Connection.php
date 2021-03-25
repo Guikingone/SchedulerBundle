@@ -70,13 +70,13 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskTaskName): TaskInterface
+    public function get(string $taskName): TaskInterface
     {
-        if (!$this->connection->hExists($this->list, $taskTaskName)) {
-            throw new TransportException(sprintf('The task "%s" does not exist', $taskTaskName));
+        if (!$this->connection->hExists($this->list, $taskName)) {
+            throw new TransportException(sprintf('The task "%s" does not exist', $taskName));
         }
 
-        $task = $this->connection->hGet($this->list, $taskTaskName);
+        $task = $this->connection->hGet($this->list, $taskName);
 
         return $this->serializer->deserialize($task, TaskInterface::class, 'json');
     }
@@ -150,10 +150,10 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskTaskName): void
+    public function delete(string $taskName): void
     {
-        if (0 === $this->connection->hDel($this->list, $taskTaskName)) {
-            throw new TransportException(sprintf('The task "%s" cannot be deleted as it does not exist', $taskTaskName));
+        if (0 === $this->connection->hDel($this->list, $taskName)) {
+            throw new TransportException(sprintf('The task "%s" cannot be deleted as it does not exist', $taskName));
         }
     }
 

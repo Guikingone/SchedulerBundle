@@ -19,7 +19,7 @@ interface ConnectionInterface
      */
     public function list(): TaskListInterface;
 
-    public function get(string $taskTaskName): TaskInterface;
+    public function get(string $taskName): TaskInterface;
 
     public function update(string $taskName, TaskInterface $updatedTask): void;
 
@@ -27,7 +27,7 @@ interface ConnectionInterface
 
     public function resume(string $taskName): void;
 
-    public function delete(string $taskTaskName): void;
+    public function delete(string $taskName): void;
 
     public function empty(): void;
 }
