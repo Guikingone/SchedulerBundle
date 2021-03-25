@@ -156,16 +156,16 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function pause(string $name): void
+    public function pause(string $taskName): void
     {
         try {
-            $task = $this->get($name);
+            $task = $this->get($taskName);
             if (TaskInterface::PAUSED === $task->getState()) {
-                throw new LogicException(sprintf('The task "%s" is already paused', $name));
+                throw new LogicException(sprintf('The task "%s" is already paused', $taskName));
             }
 
             $task->setState(AbstractTask::PAUSED);
-            $this->update($name, $task);
+            $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -174,16 +174,16 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function resume(string $name): void
+    public function resume(string $taskName): void
     {
         try {
-            $task = $this->get($name);
+            $task = $this->get($taskName);
             if (TaskInterface::ENABLED === $task->getState()) {
-                throw new LogicException(sprintf('The task "%s" is already enabled', $name));
+                throw new LogicException(sprintf('The task "%s" is already enabled', $taskName));
             }
 
             $task->setState(AbstractTask::ENABLED);
-            $this->update($name, $task);
+            $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
