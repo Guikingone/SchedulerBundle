@@ -12,6 +12,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -108,12 +109,12 @@ final class ConnectionIntegrationTest extends TestCase
     public function testTaskCannotBeCreatedTwice(): void
     {
         $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
 
-        self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" has already been scheduled!');
-        self::expectExceptionCode(0);
         $this->connection->create(new NullTask('foo'));
+        self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
+
+        $this->connection->create(new ShellTask('foo', []));
+        self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
     }
 
     public function testTaskCanBeCreated(): void

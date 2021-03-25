@@ -22,28 +22,20 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
      */
     private const PROCESSING_TABLE_FLAG = self::class.':processing';
 
-    /**
-     * @var iterable|TransportInterface[]
-     */
-    private iterable $transports;
+    private TransportInterface $transport;
 
-    /**
-     * @param iterable|TransportInterface[] $transports
-     */
-    public function __construct(iterable $transports)
+    public function __construct(TransportInterface $transport)
     {
-        $this->transports = $transports;
+        $this->transport = $transport;
     }
 
     public function postGenerateSchema(GenerateSchemaEventArgs $event): void
     {
-        foreach ($this->transports as $transport) {
-            if (!$transport instanceof DoctrineTransport) {
-                continue;
-            }
-
-            $transport->configureSchema($event->getSchema(), $event->getEntityManager()->getConnection());
+        if (!$this->transport instanceof DoctrineTransport) {
+            return;
         }
+
+        $this->transport->configureSchema($event->getSchema(), $event->getEntityManager()->getConnection());
     }
 
     public function onSchemaCreateTable(SchemaCreateTableEventArgs $event): void
@@ -54,19 +46,11 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
             return;
         }
 
-        foreach ($this->transports as $transport) {
-            if (!$transport instanceof DoctrineTransport) {
-                continue;
-            }
+        $table->addOption(self::PROCESSING_TABLE_FLAG, true);
+        $createTableSql = $event->getPlatform()->getCreateTableSQL($table);
 
-            $table->addOption(self::PROCESSING_TABLE_FLAG, true);
-            $createTableSql = $event->getPlatform()->getCreateTableSQL($table);
-
-            $event->addSql($createTableSql);
-            $event->preventDefault();
-
-            return;
-        }
+        $event->addSql($createTableSql);
+        $event->preventDefault();
     }
 
     /**

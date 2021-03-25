@@ -34,7 +34,7 @@ use function sprintf;
 final class Connection implements ConnectionInterface
 {
     private bool $autoSetup;
-    private array $configuration = [];
+    private array $configuration;
     private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
 
@@ -72,12 +72,12 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $taskName): TaskInterface
     {
         try {
             $queryBuilder = $this->createQueryBuilder()
                 ->where('t.task_name = :name')
-                ->setParameter(':name', $name, ParameterType::STRING)
+                ->setParameter(':name', $taskName, ParameterType::STRING)
             ;
 
             $statement = $this->executeQuery(
@@ -110,13 +110,13 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':name', $task->getName(), ParameterType::STRING)
                 ;
 
-                $existingTasks = $connection->executeQuery(
+                $existingTask = $connection->executeQuery(
                     $existingTaskQuery->getSQL().' '.$connection->getDatabasePlatform()->getReadLockSQL(),
                     $existingTaskQuery->getParameters(),
                     $existingTaskQuery->getParameterTypes()
                 )->fetch();
-                if ('0' !== $existingTasks['task_count']) {
-                    throw new LogicException(sprintf('The task "%s" has already been scheduled!', $task->getName()));
+                if ('0' !== $existingTask['task_count']) {
+                    return;
                 }
 
                 $query = $this->createQueryBuilder()
@@ -156,16 +156,16 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function pause(string $name): void
+    public function pause(string $taskName): void
     {
         try {
-            $task = $this->get($name);
+            $task = $this->get($taskName);
             if (TaskInterface::PAUSED === $task->getState()) {
-                throw new LogicException(sprintf('The task "%s" is already paused', $name));
+                throw new LogicException(sprintf('The task "%s" is already paused', $taskName));
             }
 
             $task->setState(AbstractTask::PAUSED);
-            $this->update($name, $task);
+            $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -174,16 +174,16 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function resume(string $name): void
+    public function resume(string $taskName): void
     {
         try {
-            $task = $this->get($name);
+            $task = $this->get($taskName);
             if (TaskInterface::ENABLED === $task->getState()) {
-                throw new LogicException(sprintf('The task "%s" is already enabled', $name));
+                throw new LogicException(sprintf('The task "%s" is already enabled', $taskName));
             }
 
             $task->setState(AbstractTask::ENABLED);
-            $this->update($name, $task);
+            $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -192,14 +192,14 @@ final class Connection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function delete(string $name): void
+    public function delete(string $taskName): void
     {
         try {
-            $this->driverConnection->transactional(function (DBALConnection $connection) use ($name): void {
+            $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
                 $query = $this->createQueryBuilder()
                     ->delete($this->configuration['table_name'])
                     ->where('task_name = :name')
-                    ->setParameter(':name', $name, ParameterType::STRING)
+                    ->setParameter(':name', $taskName, ParameterType::STRING)
                 ;
 
                 /** @var Statement $statement */
@@ -234,11 +234,14 @@ final class Connection implements ConnectionInterface
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function setup(): void
     {
         $configuration = $this->driverConnection->getConfiguration();
         $assetFilter = $configuration->getSchemaAssetsFilter();
-        $configuration->setSchemaAssetsFilter(null);
+        $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
         $configuration->setSchemaAssetsFilter($assetFilter);
 
@@ -258,6 +261,9 @@ final class Connection implements ConnectionInterface
         $this->addTableToSchema($schema);
     }
 
+    /**
+     * @throws Exception
+     */
     private function updateSchema(): void
     {
         $comparator = new Comparator();
@@ -304,6 +310,10 @@ final class Connection implements ConnectionInterface
         ;
     }
 
+    /**
+     * @throws Exception
+     * @throws Throwable
+     */
     private function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
         try {
