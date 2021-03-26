@@ -14,9 +14,9 @@ final class CacheConfiguration implements ConfigurationInterface
 {
     private CacheItemPoolInterface $pool;
 
-    public function __construct(CacheItemPoolInterface $pool)
+    public function __construct(CacheItemPoolInterface $cacheItemPool)
     {
-        $this->pool = $pool;
+        $this->pool = $cacheItemPool;
     }
 
     /**

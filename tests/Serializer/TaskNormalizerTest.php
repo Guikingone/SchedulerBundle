@@ -41,10 +41,10 @@ final class TaskNormalizerTest extends TestCase
 {
     public function testNormalizerSupportNormalize(): void
     {
-        $normalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer(), new NotificationTaskBagNormalizer(new ObjectNormalizer()));
+        $taskNormalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer(), new NotificationTaskBagNormalizer(new ObjectNormalizer()));
 
-        self::assertFalse($normalizer->supportsNormalization(new stdClass()));
-        self::assertTrue($normalizer->supportsNormalization(new NullTask('foo')));
+        self::assertFalse($taskNormalizer->supportsNormalization(new stdClass()));
+        self::assertTrue($taskNormalizer->supportsNormalization(new NullTask('foo')));
     }
 
     public function testNormalizerCanNormalizeValidObject(): void
@@ -95,7 +95,7 @@ final class TaskNormalizerTest extends TestCase
 
     public function testCallbackTaskCannotBeDenormalizedWithClosure(): void
     {
-        $normalizer = new TaskNormalizer(
+        $taskNormalizer = new TaskNormalizer(
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
             new DateIntervalNormalizer(),
@@ -106,7 +106,7 @@ final class TaskNormalizerTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
         self::expectExceptionCode(0);
-        $normalizer->normalize(new CallbackTask('foo', function (): void {
+        $taskNormalizer->normalize(new CallbackTask('foo', function (): void {
             echo 'Symfony!';
         }));
     }
@@ -132,13 +132,13 @@ final class TaskNormalizerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']);
+        $callbackTask = new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']);
 
         $body = $serializer->serialize(new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']), 'json');
         $deserializedTask = $serializer->deserialize($body, TaskInterface::class, 'json');
 
         self::assertInstanceOf(CallbackTask::class, $deserializedTask);
-        self::assertEquals($task->getCallback(), $deserializedTask->getCallback());
+        self::assertEquals($callbackTask->getCallback(), $deserializedTask->getCallback());
     }
 
     public function testCommandTaskCanBeDenormalized(): void
@@ -207,14 +207,14 @@ final class TaskNormalizerTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeScheduling(fn (): int => 1 * 1);
-        $task->setScheduledAt(new DateTimeImmutable());
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->beforeScheduling(fn (): int => 1 * 1);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The callback cannot be normalized as its a Closure instance');
         self::expectExceptionCode(0);
-        $serializer->serialize($task, 'json');
+        $serializer->serialize($shellTask, 'json');
     }
 
     public function testShellTaskWithBeforeSchedulingCallbackCanBeNormalized(): void
@@ -247,14 +247,14 @@ final class TaskNormalizerTest extends TestCase
         $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterScheduling(fn (): int => 1 * 1);
-        $task->setScheduledAt(new DateTimeImmutable());
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->afterScheduling(fn (): int => 1 * 1);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The callback cannot be normalized as its a Closure instance');
         self::expectExceptionCode(0);
-        $serializer->serialize($task, 'json');
+        $serializer->serialize($shellTask, 'json');
     }
 
     public function testShellTaskWithAfterSchedulingCallbackCanBeNormalized(): void
@@ -287,14 +287,14 @@ final class TaskNormalizerTest extends TestCase
         $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeExecuting(fn (): int => 1 * 1);
-        $task->setScheduledAt(new DateTimeImmutable());
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->beforeExecuting(fn (): int => 1 * 1);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The callback cannot be normalized as its a Closure instance');
         self::expectExceptionCode(0);
-        $serializer->serialize($task, 'json');
+        $serializer->serialize($shellTask, 'json');
     }
 
     public function testShellTaskWithBeforeExecutingCallbackCanBeNormalized(): void
@@ -327,14 +327,14 @@ final class TaskNormalizerTest extends TestCase
         $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterExecuting(fn (): int => 1 * 1);
-        $task->setScheduledAt(new DateTimeImmutable());
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->afterExecuting(fn (): int => 1 * 1);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The callback cannot be normalized as its a Closure instance');
         self::expectExceptionCode(0);
-        $serializer->serialize($task, 'json');
+        $serializer->serialize($shellTask, 'json');
     }
 
     public function testShellTaskWithAfterExecutingCallbackCanBeNormalized(): void

@@ -18,12 +18,12 @@ final class ExpressionBuilderTest extends TestCase
 {
     public function testBuilderCannotBuildExpressionWithoutBuilders(): void
     {
-        $builder = new ExpressionBuilder([]);
+        $expressionBuilder = new ExpressionBuilder([]);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('No builder found');
         self::expectExceptionCode(0);
-        $builder->build('* * * * *');
+        $expressionBuilder->build('* * * * *');
     }
 
     public function testBuilderCannotBuildExpressionWithoutSupportingBuilder(): void

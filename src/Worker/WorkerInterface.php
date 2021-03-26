@@ -37,7 +37,7 @@ interface WorkerInterface
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      */
-    public function execute(array $options = [], TaskInterface ...$tasks): void;
+    public function execute(array $options = [], TaskInterface ...$task): void;
 
     public function stop(): void;
 

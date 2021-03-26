@@ -544,21 +544,21 @@ final class WorkerTest extends TestCase
         $store = $this->createMock(BlockingStoreInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->setExpression('* * * * *');
-        $task->setSingleRun(true);
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->setExpression('* * * * *');
+        $shellTask->setSingleRun(true);
 
         $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
-        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
+        $runner->expects(self::once())->method('support')->with($shellTask)->willReturn(true);
+        $runner->expects(self::once())->method('run')->with($shellTask)->willReturn(new Output($shellTask, null));
 
         $secondRunner = $this->createMock(RunnerInterface::class);
         $secondRunner->expects(self::never())->method('support')->willReturn(true);
-        $secondRunner->expects(self::never())->method('run')->willReturn(new Output($task, null));
+        $secondRunner->expects(self::never())->method('run')->willReturn(new Output($shellTask, null));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$shellTask]));
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
@@ -566,7 +566,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger, $store);
         $worker->execute();
 
-        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
 
     public function testWorkerCanHandleFailedTask(): void

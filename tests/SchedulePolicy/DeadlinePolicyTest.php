@@ -16,10 +16,10 @@ final class DeadlinePolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new DeadlinePolicy();
+        $deadlinePolicy = new DeadlinePolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('deadline'));
+        self::assertFalse($deadlinePolicy->support('test'));
+        self::assertTrue($deadlinePolicy->support('deadline'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -30,8 +30,8 @@ final class DeadlinePolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
 
-        $policy = new DeadlinePolicy();
+        $deadlinePolicy = new DeadlinePolicy();
 
-        self::assertSame(['bar' => $task, 'foo' => $secondTask], $policy->sort(['foo' => $secondTask, 'bar' => $task]));
+        self::assertSame(['bar' => $task, 'foo' => $secondTask], $deadlinePolicy->sort(['foo' => $secondTask, 'bar' => $task]));
     }
 }

@@ -18,8 +18,8 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $middleware = new SingleRunTaskMiddleware($scheduler);
-        self::assertSame(9, $middleware->getPriority());
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        self::assertSame(9, $singleRunTaskMiddleware->getPriority());
     }
 
     public function testMiddlewareCannotHandleInvalidTask(): void
@@ -31,8 +31,8 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('unschedule');
 
-        $middleware = new SingleRunTaskMiddleware($scheduler);
-        $middleware->postExecute($task);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCanHandleSingleRunTask(): void
@@ -44,7 +44,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('unschedule')->with(self::equalTo('foo'));
 
-        $middleware = new SingleRunTaskMiddleware($scheduler);
-        $middleware->postExecute($task);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware->postExecute($task);
     }
 }

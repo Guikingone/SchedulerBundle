@@ -19,8 +19,8 @@ final class TaskToPauseMessageHandler implements MessageHandlerInterface
         $this->scheduler = $scheduler;
     }
 
-    public function __invoke(TaskToPauseMessage $message): void
+    public function __invoke(TaskToPauseMessage $taskToPauseMessage): void
     {
-        $this->scheduler->pause($message->getTask());
+        $this->scheduler->pause($taskToPauseMessage->getTask());
     }
 }

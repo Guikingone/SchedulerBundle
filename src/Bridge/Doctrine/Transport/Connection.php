@@ -47,13 +47,13 @@ final class Connection implements ConnectionInterface
      */
     public function __construct(
         array $configuration,
-        DbalConnection $driverConnection,
+        DbalConnection $dbalConnection,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
         $this->configuration = $configuration;
-        $this->driverConnection = $driverConnection;
+        $this->driverConnection = $dbalConnection;
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
         $this->logger = $logger ?? new NullLogger();
@@ -296,9 +296,9 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection): void {
-                $deleteQuery = $this->createQueryBuilder()->delete($this->configuration['table_name']);
+                $queryBuilder = $this->createQueryBuilder()->delete($this->configuration['table_name']);
 
-                $connection->executeQuery($deleteQuery->getSQL());
+                $connection->executeQuery($queryBuilder->getSQL());
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
@@ -311,17 +311,17 @@ final class Connection implements ConnectionInterface
     public function setup(): void
     {
         $configuration = $this->driverConnection->getConfiguration();
-        $assetFilter = $configuration->getSchemaAssetsFilter();
+        $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
-        $configuration->setSchemaAssetsFilter($assetFilter);
+        $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
 
         $this->configuration['auto_setup'] = false;
     }
 
-    public function configureSchema(Schema $schema, DbalConnection $connection): void
+    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
-        if ($connection !== $this->driverConnection) {
+        if ($dbalConnection !== $this->driverConnection) {
             return;
         }
 

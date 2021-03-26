@@ -77,11 +77,11 @@ final class ListTasksCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getTasks();
         if (0 === count($tasks->toArray())) {
-            $style->warning('No tasks found');
+            $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
@@ -96,12 +96,12 @@ final class ListTasksCommand extends Command
 
         $tasks = $tasks->toArray();
         if (0 === count($tasks)) {
-            $style->warning('No tasks found');
+            $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
 
-        $style->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
+        $symfonyStyle->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Description', 'Expression', 'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);

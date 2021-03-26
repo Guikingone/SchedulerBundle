@@ -17,8 +17,8 @@ final class WorkerRestartedEventTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $event = new WorkerRestartedEvent($worker);
+        $workerRestartedEvent = new WorkerRestartedEvent($worker);
 
-        self::assertSame($worker, $event->getWorker());
+        self::assertSame($worker, $workerRestartedEvent->getWorker());
     }
 }

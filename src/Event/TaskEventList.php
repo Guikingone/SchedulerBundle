@@ -18,9 +18,9 @@ final class TaskEventList implements Countable
      */
     private array $events = [];
 
-    public function addEvent(TaskEventInterface $event): void
+    public function addEvent(TaskEventInterface $taskEvent): void
     {
-        $this->events[] = $event;
+        $this->events[] = $taskEvent;
     }
 
     /**

@@ -15,10 +15,10 @@ final class ExecutionDurationPolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new ExecutionDurationPolicy();
+        $executionDurationPolicy = new ExecutionDurationPolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('execution_duration'));
+        self::assertFalse($executionDurationPolicy->support('test'));
+        self::assertTrue($executionDurationPolicy->support('execution_duration'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -29,11 +29,11 @@ final class ExecutionDurationPolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getExecutionComputationTime')->willReturn(12.0);
 
-        $policy = new ExecutionDurationPolicy();
+        $executionDurationPolicy = new ExecutionDurationPolicy();
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $policy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $executionDurationPolicy->sort(['foo' => $secondTask, 'app' => $task]));
     }
 }

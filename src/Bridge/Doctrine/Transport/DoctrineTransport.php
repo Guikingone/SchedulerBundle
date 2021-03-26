@@ -25,7 +25,7 @@ class DoctrineTransport extends AbstractTransport
      */
     public function __construct(
         array $options,
-        DbalConnection $driverConnection,
+        DbalConnection $dbalConnection,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
@@ -42,7 +42,7 @@ class DoctrineTransport extends AbstractTransport
 
         $this->connection = new Connection(
             $this->getOptions(),
-            $driverConnection,
+            $dbalConnection,
             $serializer,
             $schedulePolicyOrchestrator,
             $logger
@@ -113,8 +113,8 @@ class DoctrineTransport extends AbstractTransport
         $this->connection->empty();
     }
 
-    public function configureSchema(Schema $schema, DbalConnection $connection): void
+    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
-        $this->connection->configureSchema($schema, $connection);
+        $this->connection->configureSchema($schema, $dbalConnection);
     }
 }

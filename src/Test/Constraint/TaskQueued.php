@@ -37,15 +37,15 @@ final class TaskQueued extends Constraint
         return $this->expectedCount === $this->countQueuedTasks($eventsList);
     }
 
-    private function countQueuedTasks(TaskEventList $eventsList): int
+    private function countQueuedTasks(TaskEventList $taskEventList): int
     {
         $count = 0;
-        foreach ($eventsList->getEvents() as $event) {
-            if (!$event instanceof TaskScheduledEvent) {
+        foreach ($taskEventList->getEvents() as $taskEvent) {
+            if (!$taskEvent instanceof TaskScheduledEvent) {
                 continue;
             }
 
-            if (!$event->getTask()->isQueued()) {
+            if (!$taskEvent->getTask()->isQueued()) {
                 continue;
             }
 

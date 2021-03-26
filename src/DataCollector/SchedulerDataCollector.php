@@ -24,15 +24,15 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
 
     private TaskEventList $events;
 
-    public function __construct(TaskLoggerSubscriber $logger)
+    public function __construct(TaskLoggerSubscriber $taskLoggerSubscriber)
     {
-        $this->events = $logger->getEvents();
+        $this->events = $taskLoggerSubscriber->getEvents();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, Throwable $exception = null): void
+    public function collect(Request $request, Response $response, Throwable $throwable = null): void
     {
         // As data can comes from Messenger, local or remote schedulers|workers, we should collect it as late as possible.
     }

@@ -38,13 +38,13 @@ final class CacheTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $transport = new CacheTransport([
+        $cacheTransport = new CacheTransport([
             'execution_mode' => 'nice',
         ], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertSame('nice', $transport->getExecutionMode());
+        self::assertSame('nice', $cacheTransport->getExecutionMode());
     }
 
     public function testTransportCannotReturnUndefinedTask(): void
@@ -66,14 +66,14 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $cacheTransport->get('foo');
     }
 
     public function testTransportCannotReturnInternalTaskList(): void
@@ -94,14 +94,14 @@ final class CacheTransportTest extends TestCase
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('This key is internal and cannot be accessed');
         self::expectExceptionCode(0);
-        $transport->get('_scheduler_task_list');
+        $cacheTransport->get('_scheduler_task_list');
     }
 
     public function testTransportCanReturnTask(): void
@@ -123,12 +123,12 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
-        $task = $transport->get('foo');
+        $task = $cacheTransport->get('foo');
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }
@@ -152,12 +152,12 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
-        $list = $transport->list();
+        $list = $cacheTransport->list();
 
         self::assertNotEmpty($list);
         self::assertSame('foo', $list->get('foo')->getName());
@@ -188,12 +188,12 @@ final class CacheTransportTest extends TestCase
             ->willReturnOnConsecutiveCalls([true], [false], [true])
         ;
 
-        $transport = new CacheTransport([], $pool, $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], $pool, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create(new NullTask('foo'));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
     }
 
     public function testTransportCannotUpdateUndefinedTask(): void
@@ -215,14 +215,14 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
-        $transport->update('foo', new NullTask('foo'));
+        $cacheTransport->update('foo', new NullTask('foo'));
     }
 
     public function testTransportCanUpdateTask(): void
@@ -244,14 +244,14 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
-        $transport->update('foo', new ShellTask('foo', []));
+        $cacheTransport->update('foo', new ShellTask('foo', []));
 
-        self::assertInstanceOf(ShellTask::class, $transport->get('foo'));
+        self::assertInstanceOf(ShellTask::class, $cacheTransport->get('foo'));
     }
 
     public function testTransportCannotPauseAlreadyPausedTask(): void
@@ -273,17 +273,17 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
-        $transport->pause('foo');
+        $cacheTransport->pause('foo');
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task "foo" is already paused');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $cacheTransport->pause('foo');
     }
 
     public function testTransportCanPauseTask(): void
@@ -305,13 +305,13 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
-        $transport->pause('foo');
+        $cacheTransport->create(new NullTask('foo'));
+        $cacheTransport->pause('foo');
 
-        self::assertSame(TaskInterface::PAUSED, $transport->get('foo')->getState());
+        self::assertSame(TaskInterface::PAUSED, $cacheTransport->get('foo')->getState());
     }
 
     public function testTransportCannotResumeAlreadyResumedTask(): void
@@ -333,15 +333,15 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task "foo" is already enabled');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $cacheTransport->resume('foo');
     }
 
     public function testTransportCanResumePausedTask(): void
@@ -363,15 +363,15 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
-        $transport->pause('foo');
-        self::assertSame(TaskInterface::PAUSED, $transport->get('foo')->getState());
+        $cacheTransport->create(new NullTask('foo'));
+        $cacheTransport->pause('foo');
+        self::assertSame(TaskInterface::PAUSED, $cacheTransport->get('foo')->getState());
 
-        $transport->resume('foo');
-        self::assertSame(TaskInterface::ENABLED, $transport->get('foo')->getState());
+        $cacheTransport->resume('foo');
+        self::assertSame(TaskInterface::ENABLED, $cacheTransport->get('foo')->getState());
     }
 
     public function testTransportCannotDeleteUndefinedTask(): void
@@ -392,15 +392,15 @@ final class CacheTransportTest extends TestCase
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create(new NullTask('foo'));
-        self::assertNotEmpty($transport->list());
+        $cacheTransport->create(new NullTask('foo'));
+        self::assertNotEmpty($cacheTransport->list());
 
-        $transport->delete('bar');
-        self::assertNotEmpty($transport->list());
+        $cacheTransport->delete('bar');
+        self::assertNotEmpty($cacheTransport->list());
     }
 
     public function testTransportCanDeleteTask(): void
@@ -421,15 +421,15 @@ final class CacheTransportTest extends TestCase
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create(new NullTask('foo'));
-        self::assertNotEmpty($transport->list());
+        $cacheTransport->create(new NullTask('foo'));
+        self::assertNotEmpty($cacheTransport->list());
 
-        $transport->delete('foo');
-        self::assertEmpty($transport->list());
+        $cacheTransport->delete('foo');
+        self::assertEmpty($cacheTransport->list());
     }
 
     public function testTransportCanClear(): void
@@ -450,12 +450,12 @@ final class CacheTransportTest extends TestCase
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-        $transport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $transport->create(new NullTask('foo'));
+        $cacheTransport->create(new NullTask('foo'));
 
-        $transport->clear();
-        self::assertEmpty($transport->list());
+        $cacheTransport->clear();
+        self::assertEmpty($cacheTransport->list());
     }
 }

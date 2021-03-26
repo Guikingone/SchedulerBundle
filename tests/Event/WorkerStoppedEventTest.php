@@ -17,7 +17,7 @@ final class WorkerStoppedEventTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $event = new WorkerStoppedEvent($worker);
-        self::assertSame($worker, $event->getWorker());
+        $workerStoppedEvent = new WorkerStoppedEvent($worker);
+        self::assertSame($worker, $workerStoppedEvent->getWorker());
     }
 }

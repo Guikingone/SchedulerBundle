@@ -50,11 +50,11 @@ final class ListFailedTasksCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $failedTasksList = $this->worker->getFailedTasks()->toArray();
         if ([] === $failedTasksList) {
-            $style->warning('No failed task has been found');
+            $symfonyStyle->warning('No failed task has been found');
 
             return self::SUCCESS;
         }
@@ -64,7 +64,7 @@ final class ListFailedTasksCommand extends Command
 
         $table->addRows(array_map(fn (FailedTask $task): array => [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)], $failedTasksList));
 
-        $style->success(sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : ''));
+        $symfonyStyle->success(sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : ''));
         $table->render();
 
         return self::SUCCESS;

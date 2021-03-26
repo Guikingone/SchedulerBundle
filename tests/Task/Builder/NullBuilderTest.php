@@ -22,14 +22,14 @@ final class NullBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new NullBuilder(new ExpressionBuilder([
+        $nullBuilder = new NullBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support('null'));
+        self::assertFalse($nullBuilder->support('test'));
+        self::assertTrue($nullBuilder->support('null'));
     }
 
     /**
@@ -37,14 +37,14 @@ final class NullBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new NullBuilder(new ExpressionBuilder([
+        $nullBuilder = new NullBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
 
-        $task = $builder->build($propertyAccessor, $options);
+        $task = $nullBuilder->build($propertyAccessor, $options);
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame($options['name'], $task->getName());

@@ -14,16 +14,16 @@ final class CronExpressionBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new CronExpressionBuilder();
+        $cronExpressionBuilder = new CronExpressionBuilder();
 
-        self::assertFalse($builder->support('next monday'));
-        self::assertTrue($builder->support('* * * * *'));
+        self::assertFalse($cronExpressionBuilder->support('next monday'));
+        self::assertTrue($cronExpressionBuilder->support('* * * * *'));
     }
 
     public function testBuilderCanBuildExpression(): void
     {
-        $builder = new CronExpressionBuilder();
-        $expression = $builder->build('* * * * *');
+        $cronExpressionBuilder = new CronExpressionBuilder();
+        $expression = $cronExpressionBuilder->build('* * * * *');
 
         self::assertSame('* * * * *', $expression->getExpression());
     }

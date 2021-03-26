@@ -14,8 +14,8 @@ final class TaskToYieldMessageTest extends TestCase
 {
     public function testTaskCanBeRetrieved(): void
     {
-        $message = new TaskToYieldMessage('foo');
+        $taskToYieldMessage = new TaskToYieldMessage('foo');
 
-        self::assertSame('foo', $message->getName());
+        self::assertSame('foo', $taskToYieldMessage->getName());
     }
 }

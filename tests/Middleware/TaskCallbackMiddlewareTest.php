@@ -18,9 +18,9 @@ final class TaskCallbackMiddlewareTest extends TestCase
 {
     public function testMiddlewareIsConfigured(): void
     {
-        $middleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
-        self::assertSame(1, $middleware->getPriority());
+        self::assertSame(1, $taskCallbackMiddleware->getPriority());
     }
 
     public function testMiddlewareCannotBeCalledOnEmptyBeforeCallback(): void
@@ -30,8 +30,8 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->preScheduling($task, $scheduler);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->preScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCanBeCalledOnErroredBeforeCallback(): void
@@ -41,12 +41,12 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): bool => false);
 
-        $middleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('The task cannot be scheduled as an error occurred on the before scheduling callback');
         self::expectExceptionCode(0);
-        $middleware->preScheduling($task, $scheduler);
+        $taskCallbackMiddleware->preScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCanBeCalledOnValidBeforeCallback(): void
@@ -56,8 +56,8 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): bool => true);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->preScheduling($task, $scheduler);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->preScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCannotBeCalledOnEmptyAfterCallback(): void
@@ -67,8 +67,8 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->postScheduling($task, $scheduler);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->postScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCanBeCalledOnErroredAfterCallback(): void
@@ -80,12 +80,12 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => false);
 
-        $middleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('The task has encountered an error after scheduling, it has been unscheduled');
         self::expectExceptionCode(0);
-        $middleware->postScheduling($task, $scheduler);
+        $taskCallbackMiddleware->postScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCanBeCalledOnValidAfterCallback(): void
@@ -95,8 +95,8 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => true);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->postScheduling($task, $scheduler);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->postScheduling($task, $scheduler);
     }
 
     public function testMiddlewareCannotPreExecuteEmptyBeforeExecutingCallback(): void
@@ -104,22 +104,22 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->preExecute($task);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotPreExecuteErroredBeforeExecutingCallback(): void
     {
-        $task = new NullTask('foo', [
+        $nullTask = new NullTask('foo', [
             'before_executing' => fn (): bool => false,
         ]);
 
-        $middleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('The task "foo" has encountered an error when executing the SchedulerBundle\Task\NullTask::getBeforeExecuting() callback.');
         self::expectExceptionCode(0);
-        $middleware->preExecute($task);
+        $taskCallbackMiddleware->preExecute($nullTask);
     }
 
     public function testMiddlewareCanPreExecuteWithValidBeforeExecutingCallback(): void
@@ -128,8 +128,8 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task->expects(self::never())->method('getName');
         $task->expects(self::exactly(2))->method('getBeforeExecuting')->willReturn(fn (): bool => true);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->preExecute($task);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotPostExecuteEmptyAfterExecutingCallback(): void
@@ -137,22 +137,22 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getAfterExecuting')->willReturn(null);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->postExecute($task);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCannotPostExecuteErroredAfterExecutingCallback(): void
     {
-        $task = new NullTask('foo', [
+        $nullTask = new NullTask('foo', [
             'after_executing' => fn (): bool => false,
         ]);
 
-        $middleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('The task "foo" has encountered an error when executing the SchedulerBundle\Task\NullTask::getAfterExecuting() callback.');
         self::expectExceptionCode(0);
-        $middleware->postExecute($task);
+        $taskCallbackMiddleware->postExecute($nullTask);
     }
 
     public function testMiddlewareCanPostExecuteWithValidAfterExecutingCallback(): void
@@ -161,7 +161,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $task->expects(self::never())->method('getName');
         $task->expects(self::exactly(2))->method('getAfterExecuting')->willReturn(fn (): bool => true);
 
-        $middleware = new TaskCallbackMiddleware();
-        $middleware->postExecute($task);
+        $taskCallbackMiddleware = new TaskCallbackMiddleware();
+        $taskCallbackMiddleware->postExecute($task);
     }
 }

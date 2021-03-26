@@ -21,28 +21,28 @@ abstract class AbstractTransport implements TransportInterface
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
-        $resolver = new OptionsResolver();
-        $resolver->setDefaults([
+        $optionsResolver = new OptionsResolver();
+        $optionsResolver->setDefaults([
             'execution_mode' => 'first_in_first_out',
             'path' => null,
         ]);
 
-        $resolver->setAllowedTypes('execution_mode', ['string', 'null']);
-        $resolver->setAllowedTypes('path', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('execution_mode', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('path', ['string', 'null']);
 
-        $resolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
-        $resolver->setInfo('path', 'The path used to store the task (mainly used by FilesystemTransport)');
+        $optionsResolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
+        $optionsResolver->setInfo('path', 'The path used to store the task (mainly used by FilesystemTransport)');
 
         if ($additionalOptions === []) {
-            $this->options = $resolver->resolve($options);
+            $this->options = $optionsResolver->resolve($options);
         }
 
         foreach ($additionalOptions as $additionalOption => $allowedTypes) {
-            $resolver->setDefined($additionalOption);
-            $resolver->setAllowedTypes($additionalOption, $allowedTypes);
+            $optionsResolver->setDefined($additionalOption);
+            $optionsResolver->setAllowedTypes($additionalOption, $allowedTypes);
         }
 
-        $this->options = $resolver->resolve($options);
+        $this->options = $optionsResolver->resolve($options);
     }
 
     public function getExecutionMode(): string

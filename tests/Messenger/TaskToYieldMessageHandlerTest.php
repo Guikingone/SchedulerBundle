@@ -16,12 +16,12 @@ final class TaskToYieldMessageHandlerTest extends TestCase
 {
     public function testHandlerCanYieldTask(): void
     {
-        $message = new TaskToYieldMessage('foo');
+        $taskToYieldMessage = new TaskToYieldMessage('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'));
 
-        $handler = new TaskToYieldMessageHandler($scheduler);
-        ($handler)($message);
+        $taskToYieldMessageHandler = new TaskToYieldMessageHandler($scheduler);
+        ($taskToYieldMessageHandler)($taskToYieldMessage);
     }
 }

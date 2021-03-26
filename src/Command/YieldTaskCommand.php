@@ -69,15 +69,15 @@ final class YieldTaskCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
 
-        if ($input->getOption('force') || $style->confirm('Do you want to yield this task?', false)) {
+        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to yield this task?', false)) {
             try {
                 $this->scheduler->yieldTask($name, $input->getOption('async'));
             } catch (Throwable $throwable) {
-                $style->error([
+                $symfonyStyle->error([
                     'An error occurred when trying to yield the task:',
                     $throwable->getMessage(),
                 ]);
@@ -85,12 +85,12 @@ final class YieldTaskCommand extends Command
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been yielded', $name));
+            $symfonyStyle->success(sprintf('The task "%s" has been yielded', $name));
 
             return self::SUCCESS;
         }
 
-        $style->warning(sprintf('The task "%s" has not been yielded', $name));
+        $symfonyStyle->warning(sprintf('The task "%s" has not been yielded', $name));
 
         return self::FAILURE;
     }

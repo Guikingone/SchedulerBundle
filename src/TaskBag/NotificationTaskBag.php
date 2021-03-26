@@ -21,10 +21,10 @@ final class NotificationTaskBag implements TaskBagInterface
 
     public function __construct(
         Notification $notification,
-        Recipient ...$recipients
+        Recipient ...$recipient
     ) {
         $this->notification = $notification;
-        $this->recipients = $recipients;
+        $this->recipients = $recipient;
     }
 
     public function getNotification(): Notification

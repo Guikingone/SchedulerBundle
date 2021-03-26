@@ -42,8 +42,8 @@ abstract class AbstractTask implements TaskInterface
      */
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
-        $resolver = new OptionsResolver();
-        $resolver->setDefaults([
+        $optionsResolver = new OptionsResolver();
+        $optionsResolver->setDefaults([
             'arrival_time' => null,
             'background' => false,
             'before_scheduling' => null,
@@ -85,91 +85,91 @@ abstract class AbstractTask implements TaskInterface
             'type' => null,
         ]);
 
-        $resolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('background', ['bool']);
-        $resolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
-        $resolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
-        $resolver->setAllowedTypes('after_scheduling_notification', [NotificationTaskBag::class, 'null']);
-        $resolver->setAllowedTypes('before_executing_notification', [NotificationTaskBag::class, 'null']);
-        $resolver->setAllowedTypes('after_executing_notification', [NotificationTaskBag::class, 'null']);
-        $resolver->setAllowedTypes('after_scheduling', ['callable', 'array', 'null']);
-        $resolver->setAllowedTypes('before_executing', ['callable', 'array', 'null']);
-        $resolver->setAllowedTypes('after_executing', ['callable', 'array', 'null']);
-        $resolver->setAllowedTypes('description', ['string', 'null']);
-        $resolver->setAllowedTypes('expression', ['string']);
-        $resolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
-        $resolver->setAllowedTypes('execution_computation_time', ['float', 'null']);
-        $resolver->setAllowedTypes('execution_delay', ['int', 'null']);
-        $resolver->setAllowedTypes('execution_memory_usage', ['int', 'null']);
-        $resolver->setAllowedTypes('execution_relative_deadline', [DateInterval::class, 'null']);
-        $resolver->setAllowedTypes('execution_start_date', ['string', 'null']);
-        $resolver->setAllowedTypes('execution_end_date', ['string', 'null']);
-        $resolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('max_duration', ['float', 'null']);
-        $resolver->setAllowedTypes('max_executions', ['int', 'null']);
-        $resolver->setAllowedTypes('max_retries', ['int', 'null']);
-        $resolver->setAllowedTypes('nice', ['int', 'null']);
-        $resolver->setAllowedTypes('output', ['bool']);
-        $resolver->setAllowedTypes('output_to_store', ['bool']);
-        $resolver->setAllowedTypes('priority', ['int']);
-        $resolver->setAllowedTypes('queued', ['bool']);
-        $resolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
-        $resolver->setAllowedTypes('single_run', ['bool']);
-        $resolver->setAllowedTypes('state', ['string']);
-        $resolver->setAllowedTypes('execution_state', ['null', 'string']);
-        $resolver->setAllowedTypes('tags', ['string[]']);
-        $resolver->setAllowedTypes('tracked', ['bool']);
-        $resolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
+        $optionsResolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('background', ['bool']);
+        $optionsResolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
+        $optionsResolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
+        $optionsResolver->setAllowedTypes('after_scheduling_notification', [NotificationTaskBag::class, 'null']);
+        $optionsResolver->setAllowedTypes('before_executing_notification', [NotificationTaskBag::class, 'null']);
+        $optionsResolver->setAllowedTypes('after_executing_notification', [NotificationTaskBag::class, 'null']);
+        $optionsResolver->setAllowedTypes('after_scheduling', ['callable', 'array', 'null']);
+        $optionsResolver->setAllowedTypes('before_executing', ['callable', 'array', 'null']);
+        $optionsResolver->setAllowedTypes('after_executing', ['callable', 'array', 'null']);
+        $optionsResolver->setAllowedTypes('description', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('expression', ['string']);
+        $optionsResolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_computation_time', ['float', 'null']);
+        $optionsResolver->setAllowedTypes('execution_delay', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('execution_memory_usage', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('execution_relative_deadline', [DateInterval::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_start_date', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
+        $optionsResolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('max_duration', ['float', 'null']);
+        $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('max_retries', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('nice', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('output', ['bool']);
+        $optionsResolver->setAllowedTypes('output_to_store', ['bool']);
+        $optionsResolver->setAllowedTypes('priority', ['int']);
+        $optionsResolver->setAllowedTypes('queued', ['bool']);
+        $optionsResolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('single_run', ['bool']);
+        $optionsResolver->setAllowedTypes('state', ['string']);
+        $optionsResolver->setAllowedTypes('execution_state', ['null', 'string']);
+        $optionsResolver->setAllowedTypes('tags', ['string[]']);
+        $optionsResolver->setAllowedTypes('tracked', ['bool']);
+        $optionsResolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
-        $resolver->setAllowedValues('expression', fn (string $expression): bool => $this->validateExpression($expression));
-        $resolver->setAllowedValues('execution_start_date', fn (string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
-        $resolver->setAllowedValues('execution_end_date', fn (string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
-        $resolver->setAllowedValues('nice', fn (int $nice = null): bool => $this->validateNice($nice));
-        $resolver->setAllowedValues('priority', fn (int $priority): bool => $this->validatePriority($priority));
-        $resolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
-        $resolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
+        $optionsResolver->setAllowedValues('expression', fn (string $expression): bool => $this->validateExpression($expression));
+        $optionsResolver->setAllowedValues('execution_start_date', fn (string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
+        $optionsResolver->setAllowedValues('execution_end_date', fn (string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
+        $optionsResolver->setAllowedValues('nice', fn (int $nice = null): bool => $this->validateNice($nice));
+        $optionsResolver->setAllowedValues('priority', fn (int $priority): bool => $this->validatePriority($priority));
+        $optionsResolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
+        $optionsResolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
 
-        $resolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
+        $optionsResolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
 
-        $resolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
-        $resolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
-        $resolver->setInfo('execution_computation_time', '[Internal] Used to store the execution duration of a task');
-        $resolver->setInfo('execution_delay', 'The delay in microseconds applied before the task execution');
-        $resolver->setInfo('execution_memory_usage', '[INTERNAL] The amount of memory used described as an integer');
-        $resolver->setInfo('execution_period', '[Internal] Used to store the period during a task has been executed thanks to deadline sort');
-        $resolver->setInfo('execution_relative_deadline', 'The estimated ending date of the task execution, must be a \DateInterval');
-        $resolver->setInfo('execution_start_time', 'The start date since the task can be executed');
-        $resolver->setInfo('execution_end_time', 'The limit date since the task must not be executed');
-        $resolver->setInfo('execution_start_time', '[Internal] The start time of the task execution, mostly used by the internal sort process');
-        $resolver->setInfo('execution_end_time', '[Internal] The date where the execution is finished, mostly used by the internal sort process');
-        $resolver->setInfo('last_execution', 'Define the last execution date of the task');
-        $resolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
-        $resolver->setInfo('max_executions', 'Define the maximum amount of execution of a task');
-        $resolver->setInfo('max_retries', 'Define the maximum amount of retry of a task if this one fail, this value SHOULD NOT be higher than "max_execution"');
-        $resolver->setInfo('nice', 'Define a priority for this task inside a runner, a high value means a lower priority in the runner');
-        $resolver->setInfo('output', 'Define if the output of the task must be returned by the worker');
-        $resolver->setInfo('output_to_store', 'Define if the output of the task must be stored');
-        $resolver->setInfo('scheduled_at', 'Define the date where the task has been scheduled');
-        $resolver->setInfo('single_run', 'Define if the task must run only once, if so, the task is unscheduled from the scheduler once executed');
-        $resolver->setInfo('state', 'Define the state of the task, mainly used by the worker and transports to execute enabled tasks');
-        $resolver->setInfo('execution_state', '[INTERNAL] Define the state of the task during the execution phase, mainly used by the worker');
-        $resolver->setInfo('queued', 'Define if the task need to be dispatched to a "symfony/messenger" queue');
-        $resolver->setInfo('tags', 'A set of tag that can be used to sort tasks');
-        $resolver->setInfo('tracked', 'Define if the task will be tracked during execution, this option enable the "duration" sort');
-        $resolver->setInfo('timezone', 'Define the timezone used by the task, this value is set by the Scheduler and can be overridden');
+        $optionsResolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
+        $optionsResolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
+        $optionsResolver->setInfo('execution_computation_time', '[Internal] Used to store the execution duration of a task');
+        $optionsResolver->setInfo('execution_delay', 'The delay in microseconds applied before the task execution');
+        $optionsResolver->setInfo('execution_memory_usage', '[INTERNAL] The amount of memory used described as an integer');
+        $optionsResolver->setInfo('execution_period', '[Internal] Used to store the period during a task has been executed thanks to deadline sort');
+        $optionsResolver->setInfo('execution_relative_deadline', 'The estimated ending date of the task execution, must be a \DateInterval');
+        $optionsResolver->setInfo('execution_start_time', 'The start date since the task can be executed');
+        $optionsResolver->setInfo('execution_end_time', 'The limit date since the task must not be executed');
+        $optionsResolver->setInfo('execution_start_time', '[Internal] The start time of the task execution, mostly used by the internal sort process');
+        $optionsResolver->setInfo('execution_end_time', '[Internal] The date where the execution is finished, mostly used by the internal sort process');
+        $optionsResolver->setInfo('last_execution', 'Define the last execution date of the task');
+        $optionsResolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
+        $optionsResolver->setInfo('max_executions', 'Define the maximum amount of execution of a task');
+        $optionsResolver->setInfo('max_retries', 'Define the maximum amount of retry of a task if this one fail, this value SHOULD NOT be higher than "max_execution"');
+        $optionsResolver->setInfo('nice', 'Define a priority for this task inside a runner, a high value means a lower priority in the runner');
+        $optionsResolver->setInfo('output', 'Define if the output of the task must be returned by the worker');
+        $optionsResolver->setInfo('output_to_store', 'Define if the output of the task must be stored');
+        $optionsResolver->setInfo('scheduled_at', 'Define the date where the task has been scheduled');
+        $optionsResolver->setInfo('single_run', 'Define if the task must run only once, if so, the task is unscheduled from the scheduler once executed');
+        $optionsResolver->setInfo('state', 'Define the state of the task, mainly used by the worker and transports to execute enabled tasks');
+        $optionsResolver->setInfo('execution_state', '[INTERNAL] Define the state of the task during the execution phase, mainly used by the worker');
+        $optionsResolver->setInfo('queued', 'Define if the task need to be dispatched to a "symfony/messenger" queue');
+        $optionsResolver->setInfo('tags', 'A set of tag that can be used to sort tasks');
+        $optionsResolver->setInfo('tracked', 'Define if the task will be tracked during execution, this option enable the "duration" sort');
+        $optionsResolver->setInfo('timezone', 'Define the timezone used by the task, this value is set by the Scheduler and can be overridden');
 
         if ($additionalOptions === []) {
-            $this->options = $resolver->resolve($options);
+            $this->options = $optionsResolver->resolve($options);
         }
 
         foreach ($additionalOptions as $additionalOption => $allowedTypes) {
-            $resolver->setDefined($additionalOption);
-            $resolver->setAllowedTypes($additionalOption, $allowedTypes);
+            $optionsResolver->setDefined($additionalOption);
+            $optionsResolver->setAllowedTypes($additionalOption, $allowedTypes);
         }
 
-        $this->options = $resolver->resolve($options);
+        $this->options = $optionsResolver->resolve($options);
     }
 
     public function setName(string $name): TaskInterface
@@ -184,9 +184,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->name;
     }
 
-    public function setArrivalTime(DateTimeImmutable $arrivalTime = null): TaskInterface
+    public function setArrivalTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
     {
-        $this->options['arrival_time'] = $arrivalTime;
+        $this->options['arrival_time'] = $dateTimeImmutable;
 
         return $this;
     }
@@ -224,9 +224,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['before_scheduling'];
     }
 
-    public function beforeSchedulingNotificationBag(NotificationTaskBag $beforeSchedulingNotificationBag = null): TaskInterface
+    public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
     {
-        $this->options['before_scheduling_notification'] = $beforeSchedulingNotificationBag;
+        $this->options['before_scheduling_notification'] = $notificationTaskBag;
 
         return $this;
     }
@@ -236,9 +236,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['before_scheduling_notification'];
     }
 
-    public function afterSchedulingNotificationBag(NotificationTaskBag $afterSchedulingNotificationBag = null): TaskInterface
+    public function afterSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
     {
-        $this->options['after_scheduling_notification'] = $afterSchedulingNotificationBag;
+        $this->options['after_scheduling_notification'] = $notificationTaskBag;
 
         return $this;
     }
@@ -248,9 +248,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['after_scheduling_notification'];
     }
 
-    public function beforeExecutingNotificationBag(NotificationTaskBag $beforeExecutingNotificationBag = null): TaskInterface
+    public function beforeExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
     {
-        $this->options['before_executing_notification'] = $beforeExecutingNotificationBag;
+        $this->options['before_executing_notification'] = $notificationTaskBag;
 
         return $this;
     }
@@ -260,9 +260,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['before_executing_notification'];
     }
 
-    public function afterExecutingNotificationBag(NotificationTaskBag $afterExecutingNotificationBag = null): TaskInterface
+    public function afterExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
     {
-        $this->options['after_executing_notification'] = $afterExecutingNotificationBag;
+        $this->options['after_executing_notification'] = $notificationTaskBag;
 
         return $this;
     }
@@ -336,9 +336,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['expression'];
     }
 
-    public function setExecutionAbsoluteDeadline(DateInterval $executionAbsoluteDeadline = null): TaskInterface
+    public function setExecutionAbsoluteDeadline(DateInterval $dateInterval = null): TaskInterface
     {
-        $this->options['execution_absolute_deadline'] = $executionAbsoluteDeadline;
+        $this->options['execution_absolute_deadline'] = $dateInterval;
 
         return $this;
     }
@@ -404,9 +404,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_relative_deadline'];
     }
 
-    public function setExecutionRelativeDeadline(DateInterval $executionRelativeDeadline = null): TaskInterface
+    public function setExecutionRelativeDeadline(DateInterval $dateInterval = null): TaskInterface
     {
-        $this->options['execution_relative_deadline'] = $executionRelativeDeadline;
+        $this->options['execution_relative_deadline'] = $dateInterval;
 
         return $this;
     }
@@ -443,9 +443,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_end_date'];
     }
 
-    public function setExecutionStartTime(DateTimeImmutable $executionStartTime = null): TaskInterface
+    public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
     {
-        $this->options['execution_start_time'] = $executionStartTime;
+        $this->options['execution_start_time'] = $dateTimeImmutable;
 
         return $this;
     }
@@ -455,9 +455,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_start_time'];
     }
 
-    public function setExecutionEndTime(DateTimeImmutable $executionStartTime = null): TaskInterface
+    public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
     {
-        $this->options['execution_end_time'] = $executionStartTime;
+        $this->options['execution_end_time'] = $dateTimeImmutable;
 
         return $this;
     }
@@ -467,9 +467,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_end_time'];
     }
 
-    public function setLastExecution(DateTimeImmutable $lastExecution = null): TaskInterface
+    public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
     {
-        $this->options['last_execution'] = $lastExecution;
+        $this->options['last_execution'] = $dateTimeImmutable;
 
         return $this;
     }
@@ -671,9 +671,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['timezone'];
     }
 
-    public function setTimezone(DateTimeZone $timezone = null): TaskInterface
+    public function setTimezone(DateTimeZone $dateTimeZone = null): TaskInterface
     {
-        $this->options['timezone'] = $timezone;
+        $this->options['timezone'] = $dateTimeZone;
 
         return $this;
     }

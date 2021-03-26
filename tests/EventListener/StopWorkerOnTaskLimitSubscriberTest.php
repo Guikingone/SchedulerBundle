@@ -25,10 +25,10 @@ final class StopWorkerOnTaskLimitSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
 
-        $event = new WorkerRunningEvent($worker, true);
+        $workerRunningEvent = new WorkerRunningEvent($worker, true);
 
-        $subscriber = new StopWorkerOnTaskLimitSubscriber(10);
-        $subscriber->onWorkerRunning($event);
+        $stopWorkerOnTaskLimitSubscriber = new StopWorkerOnTaskLimitSubscriber(10);
+        $stopWorkerOnTaskLimitSubscriber->onWorkerRunning($workerRunningEvent);
     }
 
     public function testWorkerCanBeStoppedWithoutLogger(): void
@@ -36,11 +36,11 @@ final class StopWorkerOnTaskLimitSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
 
-        $event = new WorkerRunningEvent($worker, false);
-        $subscriber = new StopWorkerOnTaskLimitSubscriber(10);
+        $workerRunningEvent = new WorkerRunningEvent($worker, false);
+        $stopWorkerOnTaskLimitSubscriber = new StopWorkerOnTaskLimitSubscriber(10);
 
         for ($i = 0; $i < 10; ++$i) {
-            $subscriber->onWorkerRunning($event);
+            $stopWorkerOnTaskLimitSubscriber->onWorkerRunning($workerRunningEvent);
         }
     }
 
@@ -57,11 +57,11 @@ final class StopWorkerOnTaskLimitSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
 
-        $event = new WorkerRunningEvent($worker, false);
-        $subscriber = new StopWorkerOnTaskLimitSubscriber(10, $logger);
+        $workerRunningEvent = new WorkerRunningEvent($worker, false);
+        $stopWorkerOnTaskLimitSubscriber = new StopWorkerOnTaskLimitSubscriber(10, $logger);
 
         for ($i = 0; $i < 10; ++$i) {
-            $subscriber->onWorkerRunning($event);
+            $stopWorkerOnTaskLimitSubscriber->onWorkerRunning($workerRunningEvent);
         }
     }
 }

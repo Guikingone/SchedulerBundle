@@ -28,24 +28,24 @@ final class NotificationTaskRunnerTest extends TestCase
 
         $task = new BarTask('test');
 
-        $runner = new NotificationTaskRunner();
-        self::assertFalse($runner->support($task));
+        $notificationTaskRunner = new NotificationTaskRunner();
+        self::assertFalse($notificationTaskRunner->support($task));
 
         $task = new NotificationTask('test', $notification, $recipient);
-        self::assertTrue($runner->support($task));
+        self::assertTrue($notificationTaskRunner->support($task));
     }
 
     public function testRunnerCannotRunInvalidTask(): void
     {
-        $task = new ShellTask('foo', ['ls', '-al']);
+        $shellTask = new ShellTask('foo', ['ls', '-al']);
 
-        $runner = new NotificationTaskRunner();
-        $output = $runner->run($task);
+        $notificationTaskRunner = new NotificationTaskRunner();
+        $output = $notificationTaskRunner->run($shellTask);
 
-        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame(Output::ERROR, $output->getType());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($shellTask, $output->getTask());
     }
 
     public function testRunnerCanReturnOutputWithoutNotifier(): void
@@ -53,13 +53,13 @@ final class NotificationTaskRunnerTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('test', $notification, $recipient);
+        $notificationTask = new NotificationTask('test', $notification, $recipient);
 
-        $runner = new NotificationTaskRunner();
+        $notificationTaskRunner = new NotificationTaskRunner();
 
-        $output = $runner->run($task);
+        $output = $notificationTaskRunner->run($notificationTask);
         self::assertSame('The task cannot be handled as the notifier is not defined', $output->getOutput());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
@@ -71,13 +71,13 @@ final class NotificationTaskRunnerTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('test', $notification, $recipient);
+        $notificationTask = new NotificationTask('test', $notification, $recipient);
 
-        $runner = new NotificationTaskRunner($notifier);
+        $notificationTaskRunner = new NotificationTaskRunner($notifier);
 
-        $output = $runner->run($task);
+        $output = $notificationTaskRunner->run($notificationTask);
         self::assertSame('An error occurred', $output->getOutput());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
@@ -89,13 +89,13 @@ final class NotificationTaskRunnerTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('test', $notification, $recipient);
+        $notificationTask = new NotificationTask('test', $notification, $recipient);
 
-        $runner = new NotificationTaskRunner($notifier);
+        $notificationTaskRunner = new NotificationTaskRunner($notifier);
 
-        $output = $runner->run($task);
+        $output = $notificationTaskRunner->run($notificationTask);
         self::assertNull($output->getOutput());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 }

@@ -47,8 +47,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => null,
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerRestarted(): void
@@ -69,8 +69,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => 'foo',
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerRunningWithoutExecutedTask(): void
@@ -89,8 +89,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'idle' => false,
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRunning(new WorkerRunningEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerRunning(new WorkerRunningEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerRunning(): void
@@ -112,8 +112,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'idle' => false,
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRunning(new WorkerRunningEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerRunning(new WorkerRunningEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerStartedWithoutExecutedTask(): void
@@ -131,8 +131,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => null,
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStarted(new WorkerStartedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerStarted(new WorkerStartedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerStarted(): void
@@ -153,8 +153,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => 'foo',
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStarted(new WorkerStartedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerStarted(new WorkerStartedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerStoppedWithoutExecutedTask(): void
@@ -172,8 +172,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => null,
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerStopped(): void
@@ -194,7 +194,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
             'lastExecutedTask' => 'foo',
         ]));
 
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
     }
 }

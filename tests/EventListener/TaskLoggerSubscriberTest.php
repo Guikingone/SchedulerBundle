@@ -46,29 +46,29 @@ final class TaskLoggerSubscriberTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $event = new TaskScheduledEvent($task);
+        $taskScheduledEvent = new TaskScheduledEvent($task);
 
-        $subscriber = new TaskLoggerSubscriber();
-        $subscriber->onTask($event);
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber->onTask($taskScheduledEvent);
 
-        self::assertNotEmpty($subscriber->getEvents()->getEvents());
-        self::assertNotEmpty($subscriber->getEvents()->getScheduledTaskEvents());
-        self::assertEmpty($subscriber->getEvents()->getFailedTaskEvents());
-        self::assertEmpty($subscriber->getEvents()->getExecutedTaskEvents());
-        self::assertEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
-        self::assertEmpty($subscriber->getEvents()->getQueuedTaskEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getScheduledTaskEvents());
+        self::assertEmpty($taskLoggerSubscriber->getEvents()->getFailedTaskEvents());
+        self::assertEmpty($taskLoggerSubscriber->getEvents()->getExecutedTaskEvents());
+        self::assertEmpty($taskLoggerSubscriber->getEvents()->getUnscheduledTaskEvents());
+        self::assertEmpty($taskLoggerSubscriber->getEvents()->getQueuedTaskEvents());
     }
 
     public function testExecutedTaskCanBeRetrieved(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $event = new TaskExecutedEvent($task);
+        $taskExecutedEvent = new TaskExecutedEvent($task);
 
-        $subscriber = new TaskLoggerSubscriber();
-        $subscriber->onTask($event);
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber->onTask($taskExecutedEvent);
 
-        self::assertNotEmpty($subscriber->getEvents()->getEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getEvents());
     }
 
     public function testFailedTaskCanBeRetrieved(): void
@@ -77,12 +77,12 @@ final class TaskLoggerSubscriberTest extends TestCase
 
         $failedTask = new FailedTask($task, 'error');
 
-        $event = new TaskFailedEvent($failedTask);
+        $taskFailedEvent = new TaskFailedEvent($failedTask);
 
-        $subscriber = new TaskLoggerSubscriber();
-        $subscriber->onTask($event);
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber->onTask($taskFailedEvent);
 
-        self::assertNotEmpty($subscriber->getEvents()->getEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getEvents());
     }
 
     public function testQueuedTaskCanBeRetrieved(): void
@@ -90,21 +90,21 @@ final class TaskLoggerSubscriberTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('isQueued')->willReturn(true);
 
-        $event = new TaskScheduledEvent($task);
+        $taskScheduledEvent = new TaskScheduledEvent($task);
 
-        $subscriber = new TaskLoggerSubscriber();
-        $subscriber->onTask($event);
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber->onTask($taskScheduledEvent);
 
-        self::assertNotEmpty($subscriber->getEvents()->getQueuedTaskEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getQueuedTaskEvents());
     }
 
     public function testUnscheduledTaskCanBeRetrieved(): void
     {
-        $event = new TaskUnscheduledEvent('foo');
+        $taskUnscheduledEvent = new TaskUnscheduledEvent('foo');
 
-        $subscriber = new TaskLoggerSubscriber();
-        $subscriber->onTask($event);
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber->onTask($taskUnscheduledEvent);
 
-        self::assertNotEmpty($subscriber->getEvents()->getUnscheduledTaskEvents());
+        self::assertNotEmpty($taskLoggerSubscriber->getEvents()->getUnscheduledTaskEvents());
     }
 }

@@ -14,8 +14,8 @@ final class TaskUnscheduledEventTest extends TestCase
 {
     public function testEventCanReturnTaskName(): void
     {
-        $event = new TaskUnscheduledEvent('foo');
+        $taskUnscheduledEvent = new TaskUnscheduledEvent('foo');
 
-        self::assertSame('foo', $event->getTask());
+        self::assertSame('foo', $taskUnscheduledEvent->getTask());
     }
 }

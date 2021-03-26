@@ -13,8 +13,8 @@ final class TaskToPauseMessageTest extends TestCase
 {
     public function testTaskCanBeRetrieved(): void
     {
-        $message = new TaskToPauseMessageTest('foo');
+        $taskToPauseMessageTest = new TaskToPauseMessageTest('foo');
 
-        self::assertSame('foo', $message->getName());
+        self::assertSame('foo', $taskToPauseMessageTest->getName());
     }
 }

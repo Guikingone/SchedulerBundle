@@ -22,11 +22,11 @@ final class TaskExecutionTrackerTest extends TestCase
      */
     public function testTrackerCannotTrackInvalidTask(TaskInterface $task): void
     {
-        $tracker = new TaskExecutionTracker(new Stopwatch());
+        $taskExecutionTracker = new TaskExecutionTracker(new Stopwatch());
 
-        $tracker->startTracking($task);
+        $taskExecutionTracker->startTracking($task);
         sleep(1);
-        $tracker->endTracking($task);
+        $taskExecutionTracker->endTracking($task);
 
         self::assertNull($task->getExecutionComputationTime());
     }
@@ -36,11 +36,11 @@ final class TaskExecutionTrackerTest extends TestCase
      */
     public function testTrackerCanTrack(TaskInterface $task): void
     {
-        $tracker = new TaskExecutionTracker(new Stopwatch());
+        $taskExecutionTracker = new TaskExecutionTracker(new Stopwatch());
 
-        $tracker->startTracking($task);
+        $taskExecutionTracker->startTracking($task);
         sleep(1);
-        $tracker->endTracking($task);
+        $taskExecutionTracker->endTracking($task);
 
         self::assertNotNull($task->getExecutionComputationTime());
         self::assertNotNull($task->getExecutionMemoryUsage());

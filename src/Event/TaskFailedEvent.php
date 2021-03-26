@@ -14,9 +14,9 @@ final class TaskFailedEvent extends Event implements TaskEventInterface
 {
     private FailedTask $task;
 
-    public function __construct(FailedTask $task)
+    public function __construct(FailedTask $failedTask)
     {
-        $this->task = $task;
+        $this->task = $failedTask;
     }
 
     public function getTask(): FailedTask

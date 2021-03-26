@@ -22,14 +22,14 @@ final class HttpBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new HttpBuilder(new ExpressionBuilder([
+        $httpBuilder = new HttpBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support('http'));
+        self::assertFalse($httpBuilder->support('test'));
+        self::assertTrue($httpBuilder->support('http'));
     }
 
     /**
@@ -37,13 +37,13 @@ final class HttpBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new HttpBuilder(new ExpressionBuilder([
+        $httpBuilder = new HttpBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
+        $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
         self::assertInstanceOf(HttpTask::class, $task);
         self::assertSame($options['name'], $task->getName());

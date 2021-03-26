@@ -19,23 +19,23 @@ final class TaskFailedTest extends TestCase
 {
     public function testConstraintCannotMatch(): void
     {
-        $list = new TaskEventList();
+        $taskEventList = new TaskEventList();
 
-        $constraint = new TaskFailed(1);
+        $taskFailed = new TaskFailed(1);
 
-        self::assertFalse($constraint->evaluate($list, '', true));
+        self::assertFalse($taskFailed->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskUnscheduledEvent('foo'));
-        $list->addEvent(new TaskFailedEvent(new FailedTask($task, 'error')));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskUnscheduledEvent('foo'));
+        $taskEventList->addEvent(new TaskFailedEvent(new FailedTask($task, 'error')));
 
-        $constraint = new TaskFailed(1);
+        $taskFailed = new TaskFailed(1);
 
-        self::assertTrue($constraint->evaluate($list, '', true));
+        self::assertTrue($taskFailed->evaluate($taskEventList, '', true));
     }
 }

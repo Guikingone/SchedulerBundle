@@ -43,11 +43,11 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('info');
 
-        $subscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
-        $event = new WorkerRunningEvent($worker);
+        $stopWorkerOnTimeLimitSubscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
+        $workerRunningEvent = new WorkerRunningEvent($worker);
 
-        $subscriber->onWorkerStarted();
-        $subscriber->onWorkerRunning($event);
+        $stopWorkerOnTimeLimitSubscriber->onWorkerStarted();
+        $stopWorkerOnTimeLimitSubscriber->onWorkerRunning($workerRunningEvent);
     }
 
     /**
@@ -72,12 +72,12 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
             ]
         );
 
-        $subscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
-        $event = new WorkerRunningEvent($worker);
+        $stopWorkerOnTimeLimitSubscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
+        $workerRunningEvent = new WorkerRunningEvent($worker);
 
-        $subscriber->onWorkerStarted();
+        $stopWorkerOnTimeLimitSubscriber->onWorkerStarted();
         sleep($timeLimit + 1);
-        $subscriber->onWorkerRunning($event);
+        $stopWorkerOnTimeLimitSubscriber->onWorkerRunning($workerRunningEvent);
     }
 
     public function provideTimeLimit(): Generator

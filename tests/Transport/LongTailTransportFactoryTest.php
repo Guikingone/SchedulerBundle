@@ -20,11 +20,11 @@ final class LongTailTransportFactoryTest extends TestCase
 {
     public function testFactoryCanSupportTransport(): void
     {
-        $factory = new LongTailTransportFactory([]);
+        $longTailTransportFactory = new LongTailTransportFactory([]);
 
-        self::assertFalse($factory->support('test://'));
-        self::assertTrue($factory->support('longtail://'));
-        self::assertTrue($factory->support('lt://'));
+        self::assertFalse($longTailTransportFactory->support('test://'));
+        self::assertTrue($longTailTransportFactory->support('longtail://'));
+        self::assertTrue($longTailTransportFactory->support('lt://'));
     }
 
     /**
@@ -34,10 +34,10 @@ final class LongTailTransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new LongTailTransportFactory([
+        $longTailTransportFactory = new LongTailTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $longTailTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
         self::assertInstanceOf(LongTailTransport::class, $transport);
     }

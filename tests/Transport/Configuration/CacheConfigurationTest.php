@@ -16,72 +16,72 @@ final class CacheConfigurationTest extends TestCase
 {
     public function testConfigurationCannotSetWithExistingKey(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The key "foo" already exist, consider using SchedulerBundle\Transport\Configuration\CacheConfiguration::update()');
         self::expectExceptionCode(0);
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration->set('foo', 'bar');
     }
 
     public function testConfigurationCanSet(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
 
-        self::assertSame('bar', $configuration->get('foo'));
+        self::assertSame('bar', $cacheConfiguration->get('foo'));
     }
 
     public function testConfigurationCannotUpdateUndefinedKey(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The configuration key "foo" does not exist');
         self::expectExceptionCode(0);
-        $configuration->update('foo', 'bar');
+        $cacheConfiguration->update('foo', 'bar');
     }
 
     public function testConfigurationCanUpdate(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
 
-        $configuration->update('foo', 'foo');
+        $cacheConfiguration->update('foo', 'foo');
 
-        self::assertSame('foo', $configuration->get('foo'));
+        self::assertSame('foo', $cacheConfiguration->get('foo'));
     }
 
     public function testConfigurationCannotReturnUndefinedKey(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The configuration key "foo" does not exist');
         self::expectExceptionCode(0);
-        $configuration->get('foo');
+        $cacheConfiguration->get('foo');
     }
 
     public function testConfigurationCanRemove(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
 
-        self::assertSame('bar', $configuration->get('foo'));
-        $configuration->remove('foo');
+        self::assertSame('bar', $cacheConfiguration->get('foo'));
+        $cacheConfiguration->remove('foo');
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The configuration key "foo" does not exist');
         self::expectExceptionCode(0);
-        $configuration->get('foo');
+        $cacheConfiguration->get('foo');
     }
 
     public function testConfigurationCanReturnAll(): void
     {
-        $configuration = new CacheConfiguration(new ArrayAdapter());
-        $configuration->set('foo', 'bar');
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
 
-        self::assertNotEmpty($configuration->getOptions());
+        self::assertNotEmpty($cacheConfiguration->getOptions());
     }
 }

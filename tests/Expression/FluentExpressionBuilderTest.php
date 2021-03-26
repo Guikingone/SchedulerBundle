@@ -15,10 +15,10 @@ final class FluentExpressionBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new FluentExpressionBuilder();
+        $fluentExpressionBuilder = new FluentExpressionBuilder();
 
-        self::assertFalse($builder->support('* * * * *'));
-        self::assertTrue($builder->support('next monday'));
+        self::assertFalse($fluentExpressionBuilder->support('* * * * *'));
+        self::assertTrue($fluentExpressionBuilder->support('next monday'));
     }
 
     /**
@@ -26,8 +26,8 @@ final class FluentExpressionBuilderTest extends TestCase
      */
     public function testBuilderCanBuild(string $expression, string $endExpression): void
     {
-        $builder = new FluentExpressionBuilder();
-        $finalExpression = $builder->build($expression);
+        $fluentExpressionBuilder = new FluentExpressionBuilder();
+        $finalExpression = $fluentExpressionBuilder->build($expression);
 
         self::assertSame($finalExpression->getExpression(), $endExpression);
     }
@@ -37,8 +37,8 @@ final class FluentExpressionBuilderTest extends TestCase
      */
     public function testBuilderCanBuildWithTimezone(string $expression, string $endExpression): void
     {
-        $builder = new FluentExpressionBuilder();
-        $finalExpression = $builder->build($expression, 'UTC');
+        $fluentExpressionBuilder = new FluentExpressionBuilder();
+        $finalExpression = $fluentExpressionBuilder->build($expression, 'UTC');
 
         self::assertSame($finalExpression->getExpression(), $endExpression);
     }

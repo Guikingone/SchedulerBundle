@@ -37,6 +37,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         SetList::DEAD_DOC_BLOCK,
         SetList::DOCTRINE_DBAL_211,
         SetList::EARLY_RETURN,
+        SetList::NAMING,
         SetList::PHP_70,
         SetList::PHP_71,
         SetList::PHP_72,

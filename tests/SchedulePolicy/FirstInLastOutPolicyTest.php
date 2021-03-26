@@ -16,10 +16,10 @@ final class FirstInLastOutPolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new FirstInLastOutPolicy();
+        $firstInLastOutPolicy = new FirstInLastOutPolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('first_in_last_out'));
+        self::assertFalse($firstInLastOutPolicy->support('test'));
+        self::assertTrue($firstInLastOutPolicy->support('first_in_last_out'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -30,11 +30,11 @@ final class FirstInLastOutPolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
-        $policy = new FirstInLastOutPolicy();
+        $firstInLastOutPolicy = new FirstInLastOutPolicy();
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $policy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $firstInLastOutPolicy->sort(['foo' => $secondTask, 'app' => $task]));
     }
 }

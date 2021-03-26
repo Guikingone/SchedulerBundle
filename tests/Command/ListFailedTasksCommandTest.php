@@ -23,10 +23,10 @@ final class ListFailedTasksCommandTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $command = new ListFailedTasksCommand($worker);
+        $listFailedTasksCommand = new ListFailedTasksCommand($worker);
 
-        self::assertSame('scheduler:list:failed', $command->getName());
-        self::assertSame('List all the failed tasks', $command->getDescription());
+        self::assertSame('scheduler:list:failed', $listFailedTasksCommand->getName());
+        self::assertSame('List all the failed tasks', $listFailedTasksCommand->getDescription());
     }
 
     public function testCommandCannotListEmptyFailedTasks(): void
@@ -37,16 +37,16 @@ final class ListFailedTasksCommandTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTasks);
 
-        $command = new ListFailedTasksCommand($worker);
+        $listFailedTasksCommand = new ListFailedTasksCommand($worker);
 
         $application = new Application();
-        $application->add($command);
+        $application->add($listFailedTasksCommand);
 
-        $tester = new CommandTester($application->get('scheduler:list:failed'));
-        $tester->execute([]);
+        $commandTester = new CommandTester($application->get('scheduler:list:failed'));
+        $commandTester->execute([]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('No failed task has been found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('No failed task has been found', $commandTester->getDisplay());
     }
 
     public function testCommandCanListFailedTasks(): void
@@ -63,22 +63,22 @@ final class ListFailedTasksCommandTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTasks);
 
-        $command = new ListFailedTasksCommand($worker);
+        $listFailedTasksCommand = new ListFailedTasksCommand($worker);
 
         $application = new Application();
-        $application->add($command);
+        $application->add($listFailedTasksCommand);
 
-        $tester = new CommandTester($application->get('scheduler:list:failed'));
-        $tester->execute([]);
+        $commandTester = new CommandTester($application->get('scheduler:list:failed'));
+        $commandTester->execute([]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 task found', $tester->getDisplay());
-        self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('foo.failed', $tester->getDisplay());
-        self::assertStringContainsString('Expression', $tester->getDisplay());
-        self::assertStringContainsString('* * * * *', $tester->getDisplay());
-        self::assertStringContainsString('Reason', $tester->getDisplay());
-        self::assertStringContainsString('Foo error occurred', $tester->getDisplay());
-        self::assertStringContainsString('Date', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('foo.failed', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
+        self::assertStringContainsString('Reason', $commandTester->getDisplay());
+        self::assertStringContainsString('Foo error occurred', $commandTester->getDisplay());
+        self::assertStringContainsString('Date', $commandTester->getDisplay());
     }
 }

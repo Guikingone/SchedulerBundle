@@ -15,9 +15,9 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
 {
     private Stopwatch $watch;
 
-    public function __construct(Stopwatch $watch)
+    public function __construct(Stopwatch $stopwatch)
     {
-        $this->watch = $watch;
+        $this->watch = $stopwatch;
     }
 
     /**
@@ -47,7 +47,7 @@ final class TaskExecutionTracker implements TaskExecutionTrackerInterface
             return;
         }
 
-        $event = $this->watch->stop(sprintf('task_execution.%s', $task->getName()));
-        $task->setExecutionComputationTime($event->getDuration());
+        $stopwatchEvent = $this->watch->stop(sprintf('task_execution.%s', $task->getName()));
+        $task->setExecutionComputationTime($stopwatchEvent->getDuration());
     }
 }

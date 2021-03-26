@@ -16,9 +16,9 @@ final class CacheTransportFactory implements TransportFactoryInterface
 {
     private CacheItemPoolInterface $pool;
 
-    public function __construct(CacheItemPoolInterface $pool)
+    public function __construct(CacheItemPoolInterface $cacheItemPool)
     {
-        $this->pool = $pool;
+        $this->pool = $cacheItemPool;
     }
 
     /**

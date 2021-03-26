@@ -22,12 +22,12 @@ final class FailOverTransportTest extends TestCase
 {
     public function testTransportIsConfigured(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
-        self::assertArrayHasKey('mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['mode']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('mode', $failOverTransport->getOptions());
+        self::assertSame('normal', $failOverTransport->getOptions()['mode']);
+        self::assertArrayHasKey('execution_mode', $failOverTransport->getOptions());
+        self::assertSame('first_in_first_out', $failOverTransport->getOptions()['execution_mode']);
     }
 
     public function testTransportCannotBeCreatedWithInvalidConfiguration(): void
@@ -42,12 +42,12 @@ final class FailOverTransportTest extends TestCase
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $failOverTransport->get('foo');
     }
 
     public function testTransportCannotGetWithFailingTransports(): void
@@ -64,7 +64,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -72,7 +72,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $failOverTransport->get('foo');
     }
 
     public function testTransportCanRetrieveTask(): void
@@ -91,23 +91,23 @@ final class FailOverTransportTest extends TestCase
             ->willReturn($task)
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertSame($task, $transport->get('foo'));
-        self::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $failOverTransport->get('foo'));
+        self::assertSame($task, $failOverTransport->get('foo'));
     }
 
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->list();
+        $failOverTransport->list();
     }
 
     public function testTransportCannotListWithFailingTransports(): void
@@ -122,7 +122,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -130,7 +130,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->list();
+        $failOverTransport->list();
     }
 
     public function testTransportCanRetrieveTaskList(): void
@@ -143,24 +143,24 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('list')->willReturn($taskList);
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertEmpty($transport->list());
+        self::assertEmpty($failOverTransport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->create($task);
+        $failOverTransport->create($task);
     }
 
     public function testTransportCannotCreateWithFailingTransports(): void
@@ -173,14 +173,14 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('create')->with($task)->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
-        $transport->create($task);
+        $failOverTransport->create($task);
     }
 
     public function testTransportCanCreateTask(): void
@@ -194,24 +194,24 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('create')->with($task);
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->create($task);
+        $failOverTransport->create($task);
     }
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $failOverTransport->update('foo', $task);
     }
 
     public function testTransportCannotUpdateWithFailingTransports(): void
@@ -224,7 +224,7 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -232,7 +232,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $failOverTransport->update('foo', $task);
     }
 
     public function testTransportCanUpdateTask(): void
@@ -246,22 +246,22 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task);
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->update('foo', $task);
+        $failOverTransport->update('foo', $task);
     }
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $failOverTransport->delete('foo');
     }
 
     public function testTransportCannotDeleteWithFailingTransports(): void
@@ -272,7 +272,7 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -280,7 +280,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $failOverTransport->delete('foo');
     }
 
     public function testTransportCanDeleteTask(): void
@@ -291,22 +291,22 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->delete('foo');
+        $failOverTransport->delete('foo');
     }
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $failOverTransport->pause('foo');
     }
 
     public function testTransportCannotPauseWithFailingTransports(): void
@@ -323,7 +323,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -331,7 +331,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $failOverTransport->pause('foo');
     }
 
     public function testTransportCanPauseTask(): void
@@ -347,22 +347,22 @@ final class FailOverTransportTest extends TestCase
             ->with(self::equalTo('foo'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->pause('foo');
+        $failOverTransport->pause('foo');
     }
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $failOverTransport->resume('foo');
     }
 
     public function testTransportCannotResumeWithFailingTransports(): void
@@ -379,7 +379,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -387,7 +387,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $failOverTransport->resume('foo');
     }
 
     public function testTransportCanResumeTask(): void
@@ -403,22 +403,22 @@ final class FailOverTransportTest extends TestCase
             ->with(self::equalTo('foo'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->resume('foo');
+        $failOverTransport->resume('foo');
     }
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $transport = new FailOverTransport([]);
+        $failOverTransport = new FailOverTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $failOverTransport->clear();
     }
 
     public function testTransportCannotClearWithFailingTransports(): void
@@ -433,7 +433,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -441,7 +441,7 @@ final class FailOverTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $failOverTransport->clear();
     }
 
     public function testTransportCanClearTasks(): void
@@ -454,11 +454,11 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('clear');
 
-        $transport = new FailOverTransport([
+        $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->clear();
+        $failOverTransport->clear();
     }
 }

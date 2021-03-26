@@ -568,8 +568,8 @@ final class ConnectionTest extends TestCase
 
     public function testConnectionCanResumeATask(): void
     {
-        $task = new NullTask('foo');
-        $task->setState(TaskInterface::PAUSED);
+        $nullTask = new NullTask('foo');
+        $nullTask->setState(TaskInterface::PAUSED);
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');

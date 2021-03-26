@@ -23,18 +23,18 @@ final class ListTasksCommandTest extends TestCase
     public function testCommandIsCorrectlyConfigured(): void
     {
         $schedulerRegistry = $this->createMock(SchedulerInterface::class);
-        $command = new ListTasksCommand($schedulerRegistry);
+        $listTasksCommand = new ListTasksCommand($schedulerRegistry);
 
-        self::assertSame('scheduler:list', $command->getName());
-        self::assertSame('List the tasks', $command->getDescription());
-        self::assertTrue($command->getDefinition()->hasOption('expression'));
-        self::assertSame('The expression of the tasks', $command->getDefinition()->getOption('expression')->getDescription());
-        self::assertNull($command->getDefinition()->getOption('expression')->getShortcut());
-        self::assertTrue($command->getDefinition()->hasOption('state'));
-        self::assertSame('The state of the tasks', $command->getDefinition()->getOption('state')->getDescription());
-        self::assertSame('s', $command->getDefinition()->getOption('state')->getShortcut());
+        self::assertSame('scheduler:list', $listTasksCommand->getName());
+        self::assertSame('List the tasks', $listTasksCommand->getDescription());
+        self::assertTrue($listTasksCommand->getDefinition()->hasOption('expression'));
+        self::assertSame('The expression of the tasks', $listTasksCommand->getDefinition()->getOption('expression')->getDescription());
+        self::assertNull($listTasksCommand->getDefinition()->getOption('expression')->getShortcut());
+        self::assertTrue($listTasksCommand->getDefinition()->hasOption('state'));
+        self::assertSame('The state of the tasks', $listTasksCommand->getDefinition()->getOption('state')->getDescription());
+        self::assertSame('s', $listTasksCommand->getDefinition()->getOption('state')->getShortcut());
         self::assertSame(
-            $command->getHelp(),
+            $listTasksCommand->getHelp(),
             <<<'EOF'
                 The <info>%command.name%</info> command list tasks.
 
@@ -60,11 +60,11 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([]);
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
     /**
@@ -93,27 +93,27 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             $stateOption => TaskInterface::ENABLED,
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('foo', $tester->getDisplay());
-        self::assertStringContainsString('Description', $tester->getDisplay());
-        self::assertStringContainsString('A random task', $tester->getDisplay());
-        self::assertStringContainsString('Expression', $tester->getDisplay());
-        self::assertStringContainsString('* * * * *', $tester->getDisplay());
-        self::assertStringContainsString('Last execution date', $tester->getDisplay());
-        self::assertStringContainsString('Next execution date', $tester->getDisplay());
-        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        self::assertStringContainsString('Not tracked', $tester->getDisplay());
-        self::assertStringContainsString('State', $tester->getDisplay());
-        self::assertStringContainsString(TaskInterface::ENABLED, $tester->getDisplay());
-        self::assertStringContainsString('Tags', $tester->getDisplay());
-        self::assertStringContainsString('app, slow', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('foo', $commandTester->getDisplay());
+        self::assertStringContainsString('Description', $commandTester->getDisplay());
+        self::assertStringContainsString('A random task', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
+        self::assertStringContainsString('State', $commandTester->getDisplay());
+        self::assertStringContainsString(TaskInterface::ENABLED, $commandTester->getDisplay());
+        self::assertStringContainsString('Tags', $commandTester->getDisplay());
+        self::assertStringContainsString('app, slow', $commandTester->getDisplay());
     }
 
     public function testCommandCanListTaskWithSpecificExpression(): void
@@ -139,21 +139,21 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             '--expression' => '* * * * *',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('Description', $tester->getDisplay());
-        self::assertStringContainsString('Expression', $tester->getDisplay());
-        self::assertStringContainsString('Last execution date', $tester->getDisplay());
-        self::assertStringContainsString('Next execution date', $tester->getDisplay());
-        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        self::assertStringContainsString('State', $tester->getDisplay());
-        self::assertStringContainsString('Tags', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('Description', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('State', $commandTester->getDisplay());
+        self::assertStringContainsString('Tags', $commandTester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithoutFilter(): void
@@ -174,21 +174,21 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([]);
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] 1 task found', $tester->getDisplay());
-        self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('Description', $tester->getDisplay());
-        self::assertStringContainsString('Expression', $tester->getDisplay());
-        self::assertStringContainsString('Last execution date', $tester->getDisplay());
-        self::assertStringContainsString('1 sec', $tester->getDisplay());
-        self::assertStringContainsString('Next execution date', $tester->getDisplay());
-        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        self::assertStringContainsString('State', $tester->getDisplay());
-        self::assertStringContainsString('Tags', $tester->getDisplay());
-        self::assertStringContainsString('app, slow', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('Description', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('1 sec', $commandTester->getDisplay());
+        self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('State', $commandTester->getDisplay());
+        self::assertStringContainsString('Tags', $commandTester->getDisplay());
+        self::assertStringContainsString('app, slow', $commandTester->getDisplay());
     }
 
     /**
@@ -219,34 +219,34 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             $expressionOption => '* * * * *',
             $stateOption => TaskInterface::ENABLED,
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] 2 tasks found', $tester->getDisplay());
-        self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('foo', $tester->getDisplay());
-        self::assertStringContainsString('bar', $tester->getDisplay());
-        self::assertStringContainsString('Description', $tester->getDisplay());
-        self::assertStringContainsString('A random task', $tester->getDisplay());
-        self::assertStringContainsString('A second random task', $tester->getDisplay());
-        self::assertStringContainsString('Expression', $tester->getDisplay());
-        self::assertStringContainsString('* * * * *', $tester->getDisplay());
-        self::assertStringContainsString('* * * * *', $tester->getDisplay());
-        self::assertStringContainsString('Last execution date', $tester->getDisplay());
-        self::assertStringContainsString('Next execution date', $tester->getDisplay());
-        self::assertStringContainsString('Last execution duration', $tester->getDisplay());
-        self::assertStringContainsString('Not tracked', $tester->getDisplay());
-        self::assertStringContainsString('Last execution memory usage', $tester->getDisplay());
-        self::assertStringContainsString('State', $tester->getDisplay());
-        self::assertStringContainsString('Tags', $tester->getDisplay());
-        self::assertStringContainsString('app', $tester->getDisplay());
-        self::assertStringContainsString('slow', $tester->getDisplay());
-        self::assertStringContainsString('app', $tester->getDisplay());
-        self::assertStringContainsString('fast', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] 2 tasks found', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('foo', $commandTester->getDisplay());
+        self::assertStringContainsString('bar', $commandTester->getDisplay());
+        self::assertStringContainsString('Description', $commandTester->getDisplay());
+        self::assertStringContainsString('A random task', $commandTester->getDisplay());
+        self::assertStringContainsString('A second random task', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
+        self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution memory usage', $commandTester->getDisplay());
+        self::assertStringContainsString('State', $commandTester->getDisplay());
+        self::assertStringContainsString('Tags', $commandTester->getDisplay());
+        self::assertStringContainsString('app', $commandTester->getDisplay());
+        self::assertStringContainsString('slow', $commandTester->getDisplay());
+        self::assertStringContainsString('app', $commandTester->getDisplay());
+        self::assertStringContainsString('fast', $commandTester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidExpressionFilter(): void
@@ -260,13 +260,13 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             '--expression' => '0 * * * *',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidStateFilter(): void
@@ -280,13 +280,13 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             '--state' => 'test',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
     public function testCommandCanReturnTasksWithInvalidStateAndExpressionFilter(): void
@@ -300,14 +300,14 @@ final class ListTasksCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
-        $tester = new CommandTester(new ListTasksCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([
             '--expression' => '0 * * * *',
             '--state' => 'started',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
     public function provideStateOption(): Generator

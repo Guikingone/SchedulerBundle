@@ -18,23 +18,23 @@ final class FailOverConfigurationTest extends TestCase
 {
     public function testTransportCannotSetAValueWithoutConfigurations(): void
     {
-        $transport = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration([]);
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $transport->set('foo', 'bar');
+        $failOverConfiguration->set('foo', 'bar');
     }
 
     public function testTransportCanSetValue(): void
     {
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             new InMemoryConfiguration(),
         ]);
 
-        $transport->set('foo', 'bar');
+        $failOverConfiguration->set('foo', 'bar');
 
-        self::assertSame('bar', $transport->get('foo'));
+        self::assertSame('bar', $failOverConfiguration->get('foo'));
     }
 
     public function testTransportCanSetValueWithAFailingConfiguration(): void
@@ -45,102 +45,102 @@ final class FailOverConfigurationTest extends TestCase
             ->willThrowException(new InvalidArgumentException('An error occurred'))
         ;
 
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             $failingTransport,
             new InMemoryConfiguration(),
         ]);
 
-        $transport->set('foo', 'bar');
-        self::assertSame('bar', $transport->get('foo'));
+        $failOverConfiguration->set('foo', 'bar');
+        self::assertSame('bar', $failOverConfiguration->get('foo'));
     }
 
     public function testTransportCannotUpdateAValueWithoutConfigurations(): void
     {
-        $transport = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration([]);
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $transport->update('foo', 'bar');
+        $failOverConfiguration->update('foo', 'bar');
     }
 
     public function testTransportCanUpdateValue(): void
     {
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             new InMemoryConfiguration(),
         ]);
 
-        $transport->set('foo', 'bar');
-        self::assertSame('bar', $transport->get('foo'));
+        $failOverConfiguration->set('foo', 'bar');
+        self::assertSame('bar', $failOverConfiguration->get('foo'));
 
-        $transport->update('foo', 'random');
-        self::assertSame('random', $transport->get('foo'));
+        $failOverConfiguration->update('foo', 'random');
+        self::assertSame('random', $failOverConfiguration->get('foo'));
     }
 
     public function testTransportCannotRetrieveValueWithoutConfigurations(): void
     {
-        $transport = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration([]);
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $failOverConfiguration->get('foo');
     }
 
     public function testTransportCanRetrieveValue(): void
     {
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             new InMemoryConfiguration(),
         ]);
 
-        self::assertNull($transport->get('foo'));
+        self::assertNull($failOverConfiguration->get('foo'));
 
-        $transport->set('foo', 'bar');
+        $failOverConfiguration->set('foo', 'bar');
 
-        self::assertSame('bar', $transport->get('foo'));
+        self::assertSame('bar', $failOverConfiguration->get('foo'));
     }
 
     public function testTransportCannotRemoveValueWithoutConfigurations(): void
     {
-        $transport = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration([]);
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $transport->remove('foo');
+        $failOverConfiguration->remove('foo');
     }
 
     public function testTransportCanRemoveValue(): void
     {
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             new InMemoryConfiguration(),
         ]);
 
-        $transport->set('foo', 'bar');
-        self::assertSame('bar', $transport->get('foo'));
+        $failOverConfiguration->set('foo', 'bar');
+        self::assertSame('bar', $failOverConfiguration->get('foo'));
 
-        $transport->remove('foo');
-        self::assertNull($transport->get('foo'));
+        $failOverConfiguration->remove('foo');
+        self::assertNull($failOverConfiguration->get('foo'));
     }
 
     public function testTransportCannotRetrieveOptionsWithoutConfigurations(): void
     {
-        $transport = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration([]);
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $transport->getOptions();
+        $failOverConfiguration->getOptions();
     }
 
     public function testTransportCanRetrieveOptions(): void
     {
-        $transport = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration([
             new InMemoryConfiguration(),
         ]);
 
-        $transport->set('foo', 'bar');
-        self::assertArrayHasKey('foo', $transport->getOptions());
-        self::assertSame('bar', $transport->getOptions()['foo']);
+        $failOverConfiguration->set('foo', 'bar');
+        self::assertArrayHasKey('foo', $failOverConfiguration->getOptions());
+        self::assertSame('bar', $failOverConfiguration->getOptions()['foo']);
     }
 }

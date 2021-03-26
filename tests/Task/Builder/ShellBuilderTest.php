@@ -22,14 +22,14 @@ final class ShellBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new ShellBuilder(new ExpressionBuilder([
+        $shellBuilder = new ShellBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support('shell'));
+        self::assertFalse($shellBuilder->support('test'));
+        self::assertTrue($shellBuilder->support('shell'));
     }
 
     /**
@@ -37,13 +37,13 @@ final class ShellBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new ShellBuilder(new ExpressionBuilder([
+        $shellBuilder = new ShellBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
+        $task = $shellBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
         self::assertInstanceOf(ShellTask::class, $task);
         self::assertSame($options['name'], $task->getName());
@@ -59,7 +59,7 @@ final class ShellBuilderTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
 
         /** @var ShellTask $task */
-        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+        $task = $shellBuilder->build(PropertyAccess::createPropertyAccessor(), [
             'name' => 'foo',
             'command' => ['ls', '-al'],
         ]);

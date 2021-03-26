@@ -47,12 +47,12 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_foo');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
         $expected = $request->attributes->all();
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber->onKernelRequest($requestEvent);
 
         self::assertSame($expected, $request->attributes->all());
     }
@@ -67,14 +67,14 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('A GET request should at least contain a task name or its expression!');
         self::expectExceptionCode(0);
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber->onKernelRequest($requestEvent);
     }
 
     public function testValidPathCanBeHandledWithValidName(): void
@@ -100,10 +100,10 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?name=app.bar');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $taskSubscriber->onKernelRequest($requestEvent);
 
         self::assertArrayHasKey('task_filter', $request->attributes->all());
         self::assertSame('app.bar', $request->attributes->get('task_filter'));
@@ -131,13 +131,13 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $taskSubscriber->onKernelRequest($requestEvent);
 
         self::assertArrayHasKey('task_filter', $request->attributes->all());
         self::assertSame('* * * * *', $request->attributes->get('task_filter'));
@@ -161,20 +161,20 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber');
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
+        $taskSubscriber->onKernelRequest($requestEvent);
 
-        self::assertTrue($event->hasResponse());
-        self::assertInstanceOf(JsonResponse::class, $event->getResponse());
-        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertArrayHasKey('message', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertArrayHasKey('trace', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()->getStatusCode());
+        self::assertTrue($requestEvent->hasResponse());
+        self::assertInstanceOf(JsonResponse::class, $requestEvent->getResponse());
+        self::assertArrayHasKey('code', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('message', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('trace', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $requestEvent->getResponse()->getStatusCode());
     }
 
     public function testResponseIsSetWhenWorkerSucceed(): void
@@ -196,7 +196,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $event = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
+        $requestEvent = new RequestEvent($kernel, $request, HttpKernelInterface::MASTER_REQUEST);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
@@ -204,15 +204,15 @@ final class TaskSubscriberTest extends TestCase
         $serializer = $this->createMock(Serializer::class);
         $serializer->expects(self::once())->method('normalize')->with([$task], self::equalTo('json'))->willReturn([]);
 
-        $subscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer, $logger);
-        $subscriber->onKernelRequest($event);
+        $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer, $logger);
+        $taskSubscriber->onKernelRequest($requestEvent);
 
-        self::assertTrue($event->hasResponse());
-        self::assertInstanceOf(JsonResponse::class, $event->getResponse());
-        self::assertSame(JsonResponse::HTTP_OK, $event->getResponse()->getStatusCode());
-        self::assertArrayHasKey('code', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertSame(Response::HTTP_OK, json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['code']);
-        self::assertArrayHasKey('tasks', json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertEmpty(json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['tasks']);
+        self::assertTrue($requestEvent->hasResponse());
+        self::assertInstanceOf(JsonResponse::class, $requestEvent->getResponse());
+        self::assertSame(JsonResponse::HTTP_OK, $requestEvent->getResponse()->getStatusCode());
+        self::assertArrayHasKey('code', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame(Response::HTTP_OK, json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['code']);
+        self::assertArrayHasKey('tasks', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
+        self::assertEmpty(json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['tasks']);
     }
 }

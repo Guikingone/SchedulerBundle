@@ -24,7 +24,7 @@ final class TaskUpdateMiddlewareTest extends TestCase
             ->with(self::equalTo('foo'), self::equalTo($task))
         ;
 
-        $middleware = new TaskUpdateMiddleware($scheduler);
-        $middleware->postExecute($task);
+        $taskUpdateMiddleware = new TaskUpdateMiddleware($scheduler);
+        $taskUpdateMiddleware->postExecute($task);
     }
 }

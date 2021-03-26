@@ -17,20 +17,20 @@ final class NullTaskRunnerTest extends TestCase
 {
     public function testRunnerSupport(): void
     {
-        $task = new BarTask('test');
+        $barTask = new BarTask('test');
 
-        $runner = new NullTaskRunner();
+        $nullTaskRunner = new NullTaskRunner();
 
-        self::assertFalse($runner->support($task));
-        self::assertTrue($runner->support(new NullTask('foo')));
+        self::assertFalse($nullTaskRunner->support($barTask));
+        self::assertTrue($nullTaskRunner->support(new NullTask('foo')));
     }
 
     public function testOutputIsReturned(): void
     {
-        $task = new NullTask('test');
+        $nullTask = new NullTask('test');
 
-        $runner = new NullTaskRunner();
-        $output = $runner->run($task);
+        $nullTaskRunner = new NullTaskRunner();
+        $output = $nullTaskRunner->run($nullTask);
 
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

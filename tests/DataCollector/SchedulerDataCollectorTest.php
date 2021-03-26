@@ -15,18 +15,18 @@ final class SchedulerDataCollectorTest extends TestCase
 {
     public function testSchedulerDataCollectorIsValid(): void
     {
-        $logger = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
 
-        self::assertSame('scheduler', (new SchedulerDataCollector($logger))->getName());
+        self::assertSame('scheduler', (new SchedulerDataCollector($taskLoggerSubscriber))->getName());
     }
 
     public function testTasksCanBeCollected(): void
     {
-        $logger = new TaskLoggerSubscriber();
+        $taskLoggerSubscriber = new TaskLoggerSubscriber();
 
-        $dataCollector = new SchedulerDataCollector($logger);
-        $dataCollector->lateCollect();
+        $schedulerDataCollector = new SchedulerDataCollector($taskLoggerSubscriber);
+        $schedulerDataCollector->lateCollect();
 
-        self::assertEmpty($dataCollector->getEvents());
+        self::assertEmpty($schedulerDataCollector->getEvents());
     }
 }

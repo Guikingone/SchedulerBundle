@@ -52,9 +52,9 @@ final class TaskSubscriber implements EventSubscriberInterface
         $this->tasksPath = $tasksPath;
     }
 
-    public function onKernelRequest(RequestEvent $event): void
+    public function onKernelRequest(RequestEvent $requestEvent): void
     {
-        $request = $event->getRequest();
+        $request = $requestEvent->getRequest();
         if ($this->tasksPath !== rawurldecode($request->getPathInfo())) {
             return;
         }
@@ -83,7 +83,7 @@ final class TaskSubscriber implements EventSubscriberInterface
         try {
             $this->worker->execute([], ...$tasks);
         } catch (Throwable $throwable) {
-            $event->setResponse(new JsonResponse([
+            $requestEvent->setResponse(new JsonResponse([
                 'code' => JsonResponse::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => $throwable->getMessage(),
                 'trace' => $throwable->getTraceAsString(),
@@ -92,7 +92,7 @@ final class TaskSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $event->setResponse(new JsonResponse([
+        $requestEvent->setResponse(new JsonResponse([
             'code' => JsonResponse::HTTP_OK,
             'tasks' => $this->serializer->normalize($tasks, 'json'),
         ]));

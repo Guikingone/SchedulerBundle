@@ -19,21 +19,21 @@ final class YieldTaskCommandTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $command = new YieldTaskCommand($scheduler);
+        $yieldTaskCommand = new YieldTaskCommand($scheduler);
 
-        self::assertSame('scheduler:yield', $command->getName());
-        self::assertSame('Yield a task', $command->getDescription());
-        self::assertTrue($command->getDefinition()->hasArgument('name'));
-        self::assertSame('The task to yield', $command->getDefinition()->getArgument('name')->getDescription());
-        self::assertTrue($command->getDefinition()->getArgument('name')->isRequired());
-        self::assertTrue($command->getDefinition()->hasOption('async'));
-        self::assertSame('Yield the task using the message bus', $command->getDefinition()->getOption('async')->getDescription());
-        self::assertSame('a', $command->getDefinition()->getOption('async')->getShortcut());
-        self::assertTrue($command->getDefinition()->hasOption('force'));
-        self::assertSame('Force the operation without confirmation', $command->getDefinition()->getOption('force')->getDescription());
-        self::assertSame('f', $command->getDefinition()->getOption('force')->getShortcut());
+        self::assertSame('scheduler:yield', $yieldTaskCommand->getName());
+        self::assertSame('Yield a task', $yieldTaskCommand->getDescription());
+        self::assertTrue($yieldTaskCommand->getDefinition()->hasArgument('name'));
+        self::assertSame('The task to yield', $yieldTaskCommand->getDefinition()->getArgument('name')->getDescription());
+        self::assertTrue($yieldTaskCommand->getDefinition()->getArgument('name')->isRequired());
+        self::assertTrue($yieldTaskCommand->getDefinition()->hasOption('async'));
+        self::assertSame('Yield the task using the message bus', $yieldTaskCommand->getDefinition()->getOption('async')->getDescription());
+        self::assertSame('a', $yieldTaskCommand->getDefinition()->getOption('async')->getShortcut());
+        self::assertTrue($yieldTaskCommand->getDefinition()->hasOption('force'));
+        self::assertSame('Force the operation without confirmation', $yieldTaskCommand->getDefinition()->getOption('force')->getDescription());
+        self::assertSame('f', $yieldTaskCommand->getDefinition()->getOption('force')->getShortcut());
         self::assertSame(
-            $command->getHelp(),
+            $yieldTaskCommand->getHelp(),
             <<<'EOF'
                 The <info>%command.name%</info> command yield a task.
 
@@ -56,13 +56,13 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('yieldTask');
 
-        $tester = new CommandTester(new YieldTaskCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('[WARNING] The task "foo" has not been yielded', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] The task "foo" has not been yielded', $commandTester->getDisplay());
     }
 
     public function testCommandCanYieldWithConfirmation(): void
@@ -70,14 +70,14 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(false));
 
-        $tester = new CommandTester(new YieldTaskCommand($scheduler));
-        $tester->setInputs(['yes']);
-        $tester->execute([
+        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
+        $commandTester->setInputs(['yes']);
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
     }
 
     public function testCommandCanYieldWithForceOption(): void
@@ -85,14 +85,14 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(false));
 
-        $tester = new CommandTester(new YieldTaskCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
+        $commandTester->execute([
             'name' => 'foo',
             '--force' => true,
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
     }
 
     public function testCommandCanYieldUsingAsyncOption(): void
@@ -100,14 +100,14 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(true));
 
-        $tester = new CommandTester(new YieldTaskCommand($scheduler));
-        $tester->execute([
+        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
+        $commandTester->execute([
             'name' => 'foo',
             '--async' => true,
             '--force' => true,
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
     }
 }

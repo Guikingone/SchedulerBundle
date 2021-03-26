@@ -25,12 +25,12 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
      * @param iterable|BuilderInterface[] $builders
      */
     public function __construct(
-        ExpressionBuilderInterface $builder,
+        ExpressionBuilderInterface $expressionBuilder,
         iterable $builders = []
     ) {
         $this->builders = $builders;
 
-        parent::__construct($builder);
+        parent::__construct($expressionBuilder);
     }
 
     /**
@@ -38,7 +38,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $task = new ChainedTask($options['name'], ...array_map(function (array $task) use ($propertyAccessor): TaskInterface {
+        $chainedTask = new ChainedTask($options['name'], ...array_map(function (array $task) use ($propertyAccessor): TaskInterface {
             foreach ($this->builders as $builder) {
                 if (!$builder->support($task['type'])) {
                     continue;
@@ -52,7 +52,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
 
         unset($options['tasks']);
 
-        return $this->handleTaskAttributes($task, $options, $propertyAccessor);
+        return $this->handleTaskAttributes($chainedTask, $options, $propertyAccessor);
     }
 
     /**

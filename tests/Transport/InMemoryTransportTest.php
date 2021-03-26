@@ -40,14 +40,14 @@ final class InMemoryTransportTest extends TestCase
 
     public function testTransportCannotReturnInvalidTask(): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $inMemoryTransport->get('foo');
     }
 
     /**
@@ -55,13 +55,13 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
+        $inMemoryTransport->create($task);
 
-        $storedTask = $transport->get($task->getName());
+        $storedTask = $inMemoryTransport->get($task->getName());
 
         self::assertSame($storedTask, $task);
         self::assertSame($storedTask->getName(), $task->getName());
@@ -72,12 +72,12 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanCreateATask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
     }
 
     public function testTransportCannotCreateATaskTwice(): void
@@ -88,13 +88,13 @@ final class InMemoryTransportTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getName')->willReturn('foo');
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        $transport->create($secondTask);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        $inMemoryTransport->create($secondTask);
+        self::assertCount(1, $inMemoryTransport->list());
     }
 
     public function testTransportCanAddTaskAndSortAList(): void
@@ -107,18 +107,18 @@ final class InMemoryTransportTest extends TestCase
         $secondTask->expects(self::any())->method('getName')->willReturn('foo');
         $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($secondTask);
-        $transport->create($task);
+        $inMemoryTransport->create($secondTask);
+        $inMemoryTransport->create($task);
 
-        self::assertNotEmpty($transport->list());
+        self::assertNotEmpty($inMemoryTransport->list());
         self::assertSame([
             'foo' => $secondTask,
             'bar' => $task,
-        ], $transport->list()->toArray());
+        ], $inMemoryTransport->list()->toArray());
     }
 
     /**
@@ -126,27 +126,27 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanCreateIfAnUpdatedTaskDoesNotExist(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->update($task->getName(), $task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->update($task->getName(), $task);
+        self::assertCount(1, $inMemoryTransport->list());
         self::assertEmpty($task->getTags());
     }
 
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
 
-        $transport->update($task->getName(), $task);
+        $inMemoryTransport->update($task->getName(), $task);
 
-        self::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $inMemoryTransport->get('foo'));
     }
 
     /**
@@ -154,17 +154,17 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanUpdateATask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
 
         $task->setTags(['test']);
 
-        $transport->update($task->getName(), $task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->update($task->getName(), $task);
+        self::assertCount(1, $inMemoryTransport->list());
         self::assertContains('test', $task->getTags());
     }
 
@@ -173,15 +173,15 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
 
-        $transport->delete('bar');
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->delete('bar');
+        self::assertCount(1, $inMemoryTransport->list());
     }
 
     /**
@@ -189,15 +189,15 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
 
-        $transport->delete($task->getName());
-        self::assertCount(0, $transport->list());
+        $inMemoryTransport->delete($task->getName());
+        self::assertCount(0, $inMemoryTransport->list());
     }
 
     /**
@@ -205,14 +205,14 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotPauseUndefinedTask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
         self::expectExceptionCode(0);
-        $transport->pause($task->getName());
+        $inMemoryTransport->pause($task->getName());
     }
 
     /**
@@ -220,18 +220,18 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotPausePausedTask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
-        $transport->pause($task->getName());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
+        $inMemoryTransport->pause($task->getName());
 
         self::expectException(LogicException::class);
         self::expectExceptionMessage(sprintf('The task "%s" is already paused', $task->getName()));
         self::expectExceptionCode(0);
-        $transport->pause($task->getName());
+        $inMemoryTransport->pause($task->getName());
     }
 
     /**
@@ -239,17 +239,17 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanPauseATask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
         self::assertSame(TaskInterface::ENABLED, $task->getState());
 
-        $transport->pause($task->getName());
+        $inMemoryTransport->pause($task->getName());
 
-        $pausedTask = $transport->get($task->getName());
+        $pausedTask = $inMemoryTransport->get($task->getName());
         self::assertSame(TaskInterface::PAUSED, $pausedTask->getState());
     }
 
@@ -258,19 +258,19 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanResumeAPausedTask(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
 
-        $transport->pause($task->getName());
-        $pausedTask = $transport->get($task->getName());
+        $inMemoryTransport->pause($task->getName());
+        $pausedTask = $inMemoryTransport->get($task->getName());
         self::assertSame(TaskInterface::PAUSED, $pausedTask->getState());
 
-        $transport->resume($task->getName());
-        $resumedTask = $transport->get($task->getName());
+        $inMemoryTransport->resume($task->getName());
+        $resumedTask = $inMemoryTransport->get($task->getName());
         self::assertSame(TaskInterface::ENABLED, $resumedTask->getState());
     }
 
@@ -279,15 +279,15 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanEmptyAList(TaskInterface $task): void
     {
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
-        self::assertCount(1, $transport->list());
+        $inMemoryTransport->create($task);
+        self::assertCount(1, $inMemoryTransport->list());
 
-        $transport->clear();
-        self::assertCount(0, $transport->list());
+        $inMemoryTransport->clear();
+        self::assertCount(0, $inMemoryTransport->list());
     }
 
     public function provideTasks(): Generator

@@ -43,16 +43,19 @@ use function sprintf;
 final class Worker implements WorkerInterface
 {
     /**
-     * @var array<string, int|bool>
+     * @var mixed|bool
      */
+    public ?bool $isRunning;
     private const DEFAULT_OPTIONS = [
         'sleepDurationDelay' => 1,
         'sleepUntilNextMinute' => false,
     ];
 
-    private iterable $runners = [];
+    /**
+     * @var iterable|RunnerInterface[]
+     */
+    private iterable $runners;
     private ?array $options = [];
-    private bool $running = false;
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
@@ -69,25 +72,22 @@ final class Worker implements WorkerInterface
     public function __construct(
         SchedulerInterface $scheduler,
         iterable $runners,
-        TaskExecutionTrackerInterface $tracker,
-        WorkerMiddlewareStack $middlewareStack,
+        TaskExecutionTrackerInterface $taskExecutionTracker,
+        WorkerMiddlewareStack $workerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher = null,
         LoggerInterface $logger = null,
-        PersistingStoreInterface $store = null
+        PersistingStoreInterface $persistingStore = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = $runners;
-        $this->tracker = $tracker;
-        $this->middlewareStack = $middlewareStack;
+        $this->tracker = $taskExecutionTracker;
+        $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
-        $this->store = $store;
+        $this->store = $persistingStore;
         $this->failedTasks = new TaskList();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
         if (0 === count($this->runners)) {
@@ -126,8 +126,8 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if ($lockedTask->acquire() && !$this->running) {
-                            $this->running = true;
+                        if ($lockedTask->acquire() && !$this->isRunning) {
+                            $this->isRunning = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
@@ -139,7 +139,7 @@ final class Worker implements WorkerInterface
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
                         $lockedTask->release();
-                        $this->running = false;
+                        $this->isRunning = false;
                         $this->lastExecutedTask = $task;
                         $this->dispatch(new WorkerRunningEvent($this, true));
 
@@ -166,54 +166,36 @@ final class Worker implements WorkerInterface
         $this->dispatch(new WorkerStoppedEvent($this));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function restart(): void
     {
         $this->stop();
-        $this->running = false;
+        $this->isRunning = false;
         $this->failedTasks = new TaskList();
         $this->shouldStop = false;
 
         $this->dispatch(new WorkerRestartedEvent($this));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function stop(): void
     {
         $this->shouldStop = true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isRunning(): bool
     {
-        return $this->running;
+        return $this->isRunning;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFailedTasks(): TaskListInterface
     {
         return $this->failedTasks;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLastExecutedTask(): ?TaskInterface
     {
         return $this->lastExecutedTask;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getOptions(): ?array
     {
         return $this->options;
@@ -261,15 +243,15 @@ final class Worker implements WorkerInterface
             $this->store = new FlockStore();
         }
 
-        $factory = new LockFactory($this->store);
+        $lockFactory = new LockFactory($this->store);
 
-        return $factory->createLock($task->getName());
+        return $lockFactory->createLock($task->getName());
     }
 
     private function getSleepDuration(): int
     {
-        $nextExecutionDate = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $nextExecutionDate->setTime((int) $nextExecutionDate->format('H'), (int) $nextExecutionDate->format('i'));
+        $dateTimeImmutable = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
+        $updatedNextExecutionDate = $dateTimeImmutable->setTime((int) $dateTimeImmutable->format('H'), (int) $dateTimeImmutable->format('i'));
 
         return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
     }

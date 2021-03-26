@@ -20,9 +20,9 @@ final class TaskExecutedTest extends TestCase
     {
         $taskEventList = new TaskEventList();
 
-        $constraint = new TaskExecuted(1);
+        $taskExecuted = new TaskExecuted(1);
 
-        self::assertFalse($constraint->evaluate($taskEventList, '', true));
+        self::assertFalse($taskExecuted->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCannotMatchWithoutValidEvent(): void
@@ -33,9 +33,9 @@ final class TaskExecutedTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        $constraint = new TaskExecuted(1);
+        $taskExecuted = new TaskExecuted(1);
 
-        self::assertFalse($constraint->evaluate($taskEventList, '', true));
+        self::assertFalse($taskExecuted->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
@@ -47,8 +47,8 @@ final class TaskExecutedTest extends TestCase
         $taskEventList->addEvent(new TaskScheduledEvent($task));
         $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        $constraint = new TaskExecuted(1);
+        $taskExecuted = new TaskExecuted(1);
 
-        self::assertTrue($constraint->evaluate($taskEventList, '', true));
+        self::assertTrue($taskExecuted->evaluate($taskEventList, '', true));
     }
 }

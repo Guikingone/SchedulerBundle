@@ -16,12 +16,12 @@ final class TaskToPauseMessageHandlerTest extends TestCase
 {
     public function testHandlerCanYieldTask(): void
     {
-        $message = new TaskToPauseMessage('foo');
+        $taskToPauseMessage = new TaskToPauseMessage('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('pause')->with(self::equalTo('foo'));
 
-        $handler = new TaskToPauseMessageHandler($scheduler);
-        ($handler)($message);
+        $taskToPauseMessageHandler = new TaskToPauseMessageHandler($scheduler);
+        ($taskToPauseMessageHandler)($taskToPauseMessage);
     }
 }

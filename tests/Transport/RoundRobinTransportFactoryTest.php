@@ -20,11 +20,11 @@ final class RoundRobinTransportFactoryTest extends TestCase
 {
     public function testFactoryCanSupportTransport(): void
     {
-        $factory = new RoundRobinTransportFactory([]);
+        $roundRobinTransportFactory = new RoundRobinTransportFactory([]);
 
-        self::assertFalse($factory->support('test://'));
-        self::assertTrue($factory->support('roundrobin://'));
-        self::assertTrue($factory->support('rr://'));
+        self::assertFalse($roundRobinTransportFactory->support('test://'));
+        self::assertTrue($roundRobinTransportFactory->support('roundrobin://'));
+        self::assertTrue($roundRobinTransportFactory->support('rr://'));
     }
 
     /**
@@ -34,10 +34,10 @@ final class RoundRobinTransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new RoundRobinTransportFactory([
+        $roundRobinTransportFactory = new RoundRobinTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
         self::assertInstanceOf(RoundRobinTransport::class, $transport);
         self::assertSame('first_in_first_out', $transport->getExecutionMode());

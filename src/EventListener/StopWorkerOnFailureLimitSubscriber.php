@@ -33,11 +33,11 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         ++$this->failedTasks;
     }
 
-    public function onWorkerStarted(WorkerRunningEvent $event): void
+    public function onWorkerStarted(WorkerRunningEvent $workerRunningEvent): void
     {
-        $worker = $event->getWorker();
+        $worker = $workerRunningEvent->getWorker();
 
-        if ($event->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
+        if ($workerRunningEvent->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
             $this->failedTasks = 0;
             $worker->stop();
             $this->logger->info(sprintf(

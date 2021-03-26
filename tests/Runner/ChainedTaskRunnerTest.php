@@ -20,17 +20,17 @@ final class ChainedTaskRunnerTest extends TestCase
 {
     public function testRunnerSupportTask(): void
     {
-        $runner = new ChainedTaskRunner([]);
+        $chainedTaskRunner = new ChainedTaskRunner([]);
 
-        self::assertFalse($runner->support(new ShellTask('foo', ['ls', '-al'])));
-        self::assertTrue($runner->support(new ChainedTask('foo')));
+        self::assertFalse($chainedTaskRunner->support(new ShellTask('foo', ['ls', '-al'])));
+        self::assertTrue($chainedTaskRunner->support(new ChainedTask('foo')));
     }
 
     public function testRunnerCannotRunInvalidTask(): void
     {
-        $runner = new ChainedTaskRunner([]);
+        $chainedTaskRunner = new ChainedTaskRunner([]);
 
-        $output = $runner->run(new ShellTask('foo', ['ls', '-al']));
+        $output = $chainedTaskRunner->run(new ShellTask('foo', ['ls', '-al']));
 
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
@@ -39,17 +39,17 @@ final class ChainedTaskRunnerTest extends TestCase
 
     public function testRunnerCanRunTaskWithError(): void
     {
-        $task = new ShellTask('foo', ['ls', '-al']);
+        $shellTask = new ShellTask('foo', ['ls', '-al']);
 
         $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(true);
-        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willThrowException(new RuntimeException('An error occurred'));
+        $runner->expects(self::once())->method('support')->with(self::equalTo($shellTask))->willReturn(true);
+        $runner->expects(self::once())->method('run')->with(self::equalTo($shellTask))->willThrowException(new RuntimeException('An error occurred'));
 
-        $chainedRunner = new ChainedTaskRunner([
+        $chainedTaskRunner = new ChainedTaskRunner([
             $runner,
         ]);
 
-        $output = $chainedRunner->run(new ChainedTask('bar', $task));
+        $output = $chainedTaskRunner->run(new ChainedTask('bar', $shellTask));
 
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());

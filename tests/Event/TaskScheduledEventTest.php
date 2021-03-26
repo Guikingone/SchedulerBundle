@@ -17,7 +17,7 @@ final class TaskScheduledEventTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $event = new TaskScheduledEvent($task);
-        self::assertSame($task, $event->getTask());
+        $taskScheduledEvent = new TaskScheduledEvent($task);
+        self::assertSame($task, $taskScheduledEvent->getTask());
     }
 }

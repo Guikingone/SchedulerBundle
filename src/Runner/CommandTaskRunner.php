@@ -46,24 +46,24 @@ final class CommandTaskRunner implements RunnerInterface
         $this->application->setAutoExit(false);
 
         $input = $this->buildInput($task);
-        $output = new BufferedOutput();
+        $bufferedOutput = new BufferedOutput();
 
         $task->setExecutionState(TaskInterface::RUNNING);
 
         try {
-            $statusCode = $this->application->run($input, $output);
+            $statusCode = $this->application->run($input, $bufferedOutput);
             if (Command::FAILURE === $statusCode) {
-                return new Output($task, $output->fetch(), Output::ERROR);
+                return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
             }
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
 
-            return new Output($task, $output->fetch(), Output::ERROR);
+            return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
         }
 
         $task->setExecutionState(TaskInterface::SUCCEED);
 
-        return new Output($task, $output->fetch());
+        return new Output($task, $bufferedOutput->fetch());
     }
 
     /**
@@ -74,18 +74,18 @@ final class CommandTaskRunner implements RunnerInterface
         return $task instanceof CommandTask;
     }
 
-    private function buildInput(CommandTask $task): InputInterface
+    private function buildInput(CommandTask $commandTask): InputInterface
     {
-        $command = $this->findCommand($task->getCommand());
-        $options = $this->buildOptions($task);
+        $command = $this->findCommand($commandTask->getCommand());
+        $options = $this->buildOptions($commandTask);
 
-        return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $task->getArguments()), implode(' ', $options)));
+        return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $commandTask->getArguments()), implode(' ', $options)));
     }
 
-    private function buildOptions(CommandTask $task): array
+    private function buildOptions(CommandTask $commandTask): array
     {
         $options = [];
-        foreach ($task->getOptions() as $key => $option) {
+        foreach ($commandTask->getOptions() as $key => $option) {
             if (is_int($key)) {
                 $options[] = 0 === strpos($option, '--') ? $option : sprintf('--%s', $option);
 

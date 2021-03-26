@@ -14,18 +14,18 @@ final class MessengerTaskTest extends TestCase
 {
     public function testTaskCanBeCreated(): void
     {
-        $task = new MessengerTask('foo', new FooMessage());
+        $messengerTask = new MessengerTask('foo', new FooMessage());
 
-        self::assertInstanceOf(FooMessage::class, $task->getMessage());
+        self::assertInstanceOf(FooMessage::class, $messengerTask->getMessage());
     }
 
     public function testTaskCanBeCreatedAndMessageChangedLater(): void
     {
-        $task = new MessengerTask('foo', new FooMessage());
-        self::assertInstanceOf(FooMessage::class, $task->getMessage());
+        $messengerTask = new MessengerTask('foo', new FooMessage());
+        self::assertInstanceOf(FooMessage::class, $messengerTask->getMessage());
 
-        $task->setMessage(new BarMessage());
-        self::assertInstanceOf(BarMessage::class, $task->getMessage());
+        $messengerTask->setMessage(new BarMessage());
+        self::assertInstanceOf(BarMessage::class, $messengerTask->getMessage());
     }
 }
 

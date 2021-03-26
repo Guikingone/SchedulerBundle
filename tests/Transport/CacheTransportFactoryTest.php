@@ -20,10 +20,10 @@ final class CacheTransportFactoryTest extends TestCase
     {
         $pool = $this->createMock(CacheItemPoolInterface::class);
 
-        $factory = new CacheTransportFactory($pool);
+        $cacheTransportFactory = new CacheTransportFactory($pool);
 
-        self::assertFalse($factory->support('test://'));
-        self::assertTrue($factory->support('cache://'));
+        self::assertFalse($cacheTransportFactory->support('test://'));
+        self::assertTrue($cacheTransportFactory->support('cache://'));
     }
 
     public function testFactoryCanCreateTransport(): void
@@ -34,9 +34,9 @@ final class CacheTransportFactoryTest extends TestCase
         $pool = $this->createMock(CacheItemPoolInterface::class);
         $pool->expects(self::once())->method('hasItem')->willReturn(true);
 
-        $factory = new CacheTransportFactory($pool);
+        $cacheTransportFactory = new CacheTransportFactory($pool);
 
-        $transport = $factory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), [], $serializer, $orchestrator);
+        $transport = $cacheTransportFactory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), [], $serializer, $orchestrator);
         self::assertSame('normal', $transport->getOptions()['execution_mode']);
     }
 }

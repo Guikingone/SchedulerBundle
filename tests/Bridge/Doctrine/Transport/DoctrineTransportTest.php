@@ -67,16 +67,16 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $connection = $this->createMock(Connection::class);
 
-        $transport = new DoctrineTransport([], $connection, $serializer, new SchedulePolicyOrchestrator([
+        $doctrineTransport = new DoctrineTransport([], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertTrue($transport->getOptions()['auto_setup']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
+        self::assertArrayHasKey('execution_mode', $doctrineTransport->getOptions());
+        self::assertSame('first_in_first_out', $doctrineTransport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $doctrineTransport->getOptions());
+        self::assertTrue($doctrineTransport->getOptions()['auto_setup']);
+        self::assertArrayHasKey('table_name', $doctrineTransport->getOptions());
+        self::assertSame('_symfony_scheduler_tasks', $doctrineTransport->getOptions()['table_name']);
     }
 
     public function testTransportCanBeConfigured(): void
@@ -84,7 +84,7 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $connection = $this->createMock(Connection::class);
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => false,
             'table_name' => '_custom_table_name_scheduler_tasks',
@@ -92,12 +92,12 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertFalse($transport->getOptions()['auto_setup']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertSame('_custom_table_name_scheduler_tasks', $transport->getOptions()['table_name']);
+        self::assertArrayHasKey('execution_mode', $doctrineTransport->getOptions());
+        self::assertSame('normal', $doctrineTransport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $doctrineTransport->getOptions());
+        self::assertFalse($doctrineTransport->getOptions()['auto_setup']);
+        self::assertArrayHasKey('table_name', $doctrineTransport->getOptions());
+        self::assertSame('_custom_table_name_scheduler_tasks', $doctrineTransport->getOptions()['table_name']);
     }
 
     /**
@@ -206,7 +206,7 @@ final class DoctrineTransportTest extends TestCase
         $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $connection->expects(self::any())->method('getDatabasePlatform');
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -214,7 +214,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $doctrineTransport->get('foo'));
     }
 
     public function testTransportCannotCreateAnExistingTask(): void
@@ -346,7 +346,7 @@ final class DoctrineTransportTest extends TestCase
         $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $connection->expects(self::once())->method('transactional');
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -354,7 +354,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->create($task);
+        $doctrineTransport->create($task);
     }
 
     public function testTransportCanUpdateATask(): void
@@ -365,7 +365,7 @@ final class DoctrineTransportTest extends TestCase
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('transactional');
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -373,7 +373,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->update('foo', $task);
+        $doctrineTransport->update('foo', $task);
     }
 
     /**
@@ -434,7 +434,7 @@ final class DoctrineTransportTest extends TestCase
         $connection->expects(self::any())->method('getDatabasePlatform');
         $connection->expects(self::exactly(2))->method('transactional')->willReturn($task);
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -442,7 +442,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->pause('foo');
+        $doctrineTransport->pause('foo');
     }
 
     /**
@@ -506,7 +506,7 @@ final class DoctrineTransportTest extends TestCase
         $connection->expects(self::any())->method('getDatabasePlatform');
         $connection->expects(self::exactly(2))->method('transactional')->willReturn($task);
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -514,7 +514,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->resume('foo');
+        $doctrineTransport->resume('foo');
     }
 
     public function testTransportCanDeleteATask(): void
@@ -524,7 +524,7 @@ final class DoctrineTransportTest extends TestCase
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('transactional')->willReturnSelf();
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -532,7 +532,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->delete('foo');
+        $doctrineTransport->delete('foo');
     }
 
     public function testTransportCanEmptyTheTaskList(): void
@@ -542,7 +542,7 @@ final class DoctrineTransportTest extends TestCase
 
         $connection->expects(self::once())->method('transactional');
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -550,7 +550,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $transport->clear();
+        $doctrineTransport->clear();
     }
 
     public function testTransportCanReturnOptions(): void
@@ -558,7 +558,7 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $connection = $this->createMock(Connection::class);
 
-        $transport = new DoctrineTransport([
+        $doctrineTransport = new DoctrineTransport([
             'execution_mode' => 'normal',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
@@ -566,7 +566,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertNotEmpty($transport->getOptions());
+        self::assertNotEmpty($doctrineTransport->getOptions());
     }
 
     /**

@@ -22,11 +22,11 @@ final class WorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postExecute')->with($task);
 
-        $stack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack([
             $middleware,
         ]);
 
-        $stack->runPreExecutionMiddleware($task);
+        $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
 
     public function testStackCanRunPreMiddlewareList(): void
@@ -39,12 +39,12 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postExecute')->with($task);
 
-        $stack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack([
             $middleware,
             $secondMiddleware,
         ]);
 
-        $stack->runPreExecutionMiddleware($task);
+        $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
 
     public function testStackCanRunEmptyPostMiddlewareList(): void
@@ -54,11 +54,11 @@ final class WorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('preExecute')->with($task);
 
-        $stack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack([
             $middleware,
         ]);
 
-        $stack->runPostExecutionMiddleware($task);
+        $workerMiddlewareStack->runPostExecutionMiddleware($task);
     }
 
     public function testStackCanRunPostMiddlewareList(): void
@@ -71,11 +71,11 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preExecute')->with($task);
 
-        $stack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack([
             $middleware,
             $secondMiddleware,
         ]);
 
-        $stack->runPostExecutionMiddleware($task);
+        $workerMiddlewareStack->runPostExecutionMiddleware($task);
     }
 }

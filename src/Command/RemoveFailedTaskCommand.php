@@ -69,22 +69,22 @@ final class RemoveFailedTaskCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
-            $style->error(sprintf('The task "%s" does not fails', $name));
+            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $style->confirm('Do you want to permanently remove this task?', false)) {
+        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to permanently remove this task?', false)) {
             try {
                 $this->scheduler->unschedule($toRemoveTask->getName());
             } catch (Throwable $throwable) {
-                $style->error([
+                $symfonyStyle->error([
                     'An error occurred when trying to unschedule the task:',
                     $throwable->getMessage(),
                 ]);
@@ -92,12 +92,12 @@ final class RemoveFailedTaskCommand extends Command
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $symfonyStyle->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
         }
 
-        $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+        $symfonyStyle->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
 
         return self::FAILURE;
     }

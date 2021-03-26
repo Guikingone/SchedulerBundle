@@ -31,12 +31,12 @@ final class CacheTransport extends AbstractTransport
 
     public function __construct(
         array $options,
-        CacheItemPoolInterface $pool,
+        CacheItemPoolInterface $cacheItemPool,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->defineOptions($options);
-        $this->pool = $pool;
+        $this->pool = $cacheItemPool;
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
 

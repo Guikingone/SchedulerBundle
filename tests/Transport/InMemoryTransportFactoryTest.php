@@ -19,10 +19,10 @@ final class InMemoryTransportFactoryTest extends TestCase
 {
     public function testTransportCanSupport(): void
     {
-        $factory = new InMemoryTransportFactory();
+        $inMemoryTransportFactory = new InMemoryTransportFactory();
 
-        self::assertFalse($factory->support('test://'));
-        self::assertTrue($factory->support('memory://'));
+        self::assertFalse($inMemoryTransportFactory->support('test://'));
+        self::assertTrue($inMemoryTransportFactory->support('memory://'));
     }
 
     /**
@@ -33,8 +33,8 @@ final class InMemoryTransportFactoryTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new InMemoryTransportFactory();
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $inMemoryTransportFactory = new InMemoryTransportFactory();
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
@@ -49,8 +49,8 @@ final class InMemoryTransportFactoryTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new InMemoryTransportFactory();
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $inMemoryTransportFactory = new InMemoryTransportFactory();
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());

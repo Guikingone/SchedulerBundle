@@ -15,10 +15,10 @@ final class BatchPolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new BatchPolicy();
+        $batchPolicy = new BatchPolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('batch'));
+        self::assertFalse($batchPolicy->support('test'));
+        self::assertTrue($batchPolicy->support('batch'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -31,8 +31,8 @@ final class BatchPolicyTest extends TestCase
         $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
         $secondTask->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
 
-        $policy = new BatchPolicy();
-        $list = $policy->sort([$secondTask, $task]);
+        $batchPolicy = new BatchPolicy();
+        $list = $batchPolicy->sort([$secondTask, $task]);
 
         self::assertCount(2, $list);
         self::assertEquals([$task, $secondTask], $list);

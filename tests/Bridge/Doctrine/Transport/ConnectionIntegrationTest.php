@@ -183,13 +183,13 @@ final class ConnectionIntegrationTest extends TestCase
     public function testTaskCannotBeUpdatedIfUndefined(): void
     {
         $this->connection->setup();
-        $task = new NullTask('foo');
-        $task->setExpression('0 * * * *');
+        $nullTask = new NullTask('foo');
+        $nullTask->setExpression('0 * * * *');
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The given task cannot be updated as the identifier or the body is invalid');
         self::expectExceptionCode(0);
-        $this->connection->update('foo', $task);
+        $this->connection->update('foo', $nullTask);
     }
 
     public function testTaskCanBeUpdated(): void

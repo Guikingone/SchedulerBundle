@@ -15,10 +15,10 @@ final class NicePolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new NicePolicy();
+        $nicePolicy = new NicePolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('nice'));
+        self::assertFalse($nicePolicy->support('test'));
+        self::assertTrue($nicePolicy->support('nice'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -29,11 +29,11 @@ final class NicePolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getNice')->willReturn(5);
 
-        $policy = new NicePolicy();
+        $nicePolicy = new NicePolicy();
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $policy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $nicePolicy->sort(['foo' => $secondTask, 'app' => $task]));
     }
 }

@@ -23,8 +23,8 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getMaxExecutions');
 
-        $middleware = new MaxExecutionMiddleware();
-        $middleware->preExecute($task);
+        $maxExecutionMiddleware = new MaxExecutionMiddleware();
+        $maxExecutionMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotPreExecuteWithoutMaxExecutionLimit(): void
@@ -34,11 +34,11 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
-        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
+        $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
         ], $storage));
-        $middleware->preExecute($task);
+        $maxExecutionMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotPreExecuteWithoutReservationSupportingPolicy(): void
@@ -52,7 +52,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
-        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
+        $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'sliding_window',
             'limit' => 10,
@@ -62,7 +62,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('Reserving tokens is not supported by "Symfony\Component\RateLimiter\Policy\SlidingWindowLimiter');
         self::expectExceptionCode(0);
-        $middleware->preExecute($task);
+        $maxExecutionMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCanPreExecuteWithReservationSupportingPolicy(): void
@@ -76,7 +76,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
 
-        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
+        $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
             'limit' => 10,
@@ -85,7 +85,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
             ],
         ], $storage), $logger);
 
-        $middleware->preExecute($task);
+        $maxExecutionMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotPostExecuteWithoutRateLimiter(): void
@@ -93,8 +93,8 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getMaxExecutions');
 
-        $middleware = new MaxExecutionMiddleware();
-        $middleware->postExecute($task);
+        $maxExecutionMiddleware = new MaxExecutionMiddleware();
+        $maxExecutionMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCannotPostExecuteWithoutMaxExecutionLimit(): void
@@ -104,16 +104,16 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getMaxExecutions')->willReturn(null);
 
-        $middleware = new MaxExecutionMiddleware(new RateLimiterFactory([
+        $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
         ], $storage));
-        $middleware->postExecute($task);
+        $maxExecutionMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCannotPostExecuteWithoutAcceptedTokenConsumption(): void
     {
-        $factory = new RateLimiterFactory([
+        $rateLimiterFactory = new RateLimiterFactory([
             'id' => 'foo',
             'policy' => 'token_bucket',
             'limit' => 1,
@@ -121,7 +121,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
                 'interval' => '5 seconds',
             ],
         ], new InMemoryStorage());
-        $factory->create('foo');
+        $rateLimiterFactory->create('foo');
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical')->with(self::equalTo('The execution limit for task "foo" has been exceeded'));
@@ -130,13 +130,13 @@ final class MaxExecutionMiddlewareTest extends TestCase
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(0);
 
-        $middleware = new MaxExecutionMiddleware($factory, $logger);
+        $maxExecutionMiddleware = new MaxExecutionMiddleware($rateLimiterFactory, $logger);
 
-        $middleware->postExecute($task);
+        $maxExecutionMiddleware->postExecute($task);
 
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('Rate Limit Exceeded');
         self::expectExceptionCode(0);
-        $middleware->postExecute($task);
+        $maxExecutionMiddleware->postExecute($task);
     }
 }

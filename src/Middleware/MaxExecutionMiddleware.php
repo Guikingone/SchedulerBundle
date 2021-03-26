@@ -23,10 +23,10 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
     private LoggerInterface $logger;
 
     public function __construct(
-        ?RateLimiterFactory $rateLimiter = null,
+        ?RateLimiterFactory $rateLimiterFactory = null,
         ?LoggerInterface $logger = null
     ) {
-        $this->rateLimiter = $rateLimiter;
+        $this->rateLimiter = $rateLimiterFactory;
         $this->logger = $logger ?? new NullLogger();
     }
 

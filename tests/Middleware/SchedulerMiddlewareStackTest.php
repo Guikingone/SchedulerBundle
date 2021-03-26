@@ -33,11 +33,11 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preScheduling');
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
         ]);
 
-        $stack->runPreSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCanRunPreMiddlewareList(): void
@@ -51,12 +51,12 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
             $secondMiddleware,
         ]);
 
-        $stack->runPreSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCannotRunPreMiddlewareListWithErroredOrderedMiddleware(): void
@@ -85,7 +85,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
             }
         };
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
             $secondMiddleware,
             $thirdMiddleware,
@@ -95,7 +95,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('An error occurred');
         self::expectExceptionCode(0);
-        $stack->runPreSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCanRunOrderedPreMiddlewareList(): void
@@ -125,7 +125,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
             $secondMiddleware,
             $orderedMiddleware,
@@ -134,7 +134,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
             $fourthOrderedMiddleware,
         ]);
 
-        $stack->runPreSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCanRunSingleOrderedPreMiddlewareList(): void
@@ -152,13 +152,13 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
             $secondMiddleware,
             $orderedMiddleware,
         ]);
 
-        $stack->runPreSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCanRunEmptyPostMiddlewareList(): void
@@ -172,11 +172,11 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preScheduling');
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $secondMiddleware,
         ]);
 
-        $stack->runPostSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
     }
 
     public function testStackCanRunPostMiddlewareList(): void
@@ -190,11 +190,11 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::once())->method('postScheduling')->with(self::equalTo($task));
 
-        $stack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
             $middleware,
             $secondMiddleware,
         ]);
 
-        $stack->runPostSchedulingMiddleware($task, $scheduler);
+        $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
     }
 }

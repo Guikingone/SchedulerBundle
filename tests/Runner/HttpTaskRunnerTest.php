@@ -23,38 +23,38 @@ final class HttpTaskRunnerTest extends TestCase
 {
     public function testRunnerSupport(): void
     {
-        $runner = new HttpTaskRunner();
+        $httpTaskRunner = new HttpTaskRunner();
 
-        self::assertFalse($runner->support(new NullTask('foo')));
-        self::assertTrue($runner->support(new HttpTask('foo', 'https://symfony.com', 'GET')));
+        self::assertFalse($httpTaskRunner->support(new NullTask('foo')));
+        self::assertTrue($httpTaskRunner->support(new HttpTask('foo', 'https://symfony.com', 'GET')));
     }
 
     public function testRunnerCannotSupportInvalidTask(): void
     {
         $httpClient = $this->createMock(HttpClientInterface::class);
 
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
 
-        $runner = new HttpTaskRunner($httpClient);
-        $output = $runner->run($task);
+        $httpTaskRunner = new HttpTaskRunner($httpClient);
+        $output = $httpTaskRunner->run($shellTask);
 
-        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($shellTask, $output->getTask());
     }
 
     public function testRunnerCanGenerateErrorOutput(): void
     {
-        $httpClient = new MockHttpClient([
+        $mockHttpClient = new MockHttpClient([
             new MockResponse(json_encode([
                 'error' => 404,
                 'message' => 'Resource not found',
             ], JSON_THROW_ON_ERROR), ['http_code' => 404]),
         ]);
 
-        $runner = new HttpTaskRunner($httpClient);
-        $output = $runner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
+        $httpTaskRunner = new HttpTaskRunner($mockHttpClient);
+        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
 
         self::assertSame('HTTP 404 returned for "https://symfony.com/".', $output->getOutput());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
@@ -62,14 +62,14 @@ final class HttpTaskRunnerTest extends TestCase
 
     public function testRunnerCanGenerateSuccessOutput(): void
     {
-        $httpClient = new MockHttpClient([
+        $mockHttpClient = new MockHttpClient([
             new MockResponse(json_encode([
                 'body' => 'test',
             ], JSON_THROW_ON_ERROR), ['http_code' => 200]),
         ]);
 
-        $runner = new HttpTaskRunner($httpClient);
-        $output = $runner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
+        $httpTaskRunner = new HttpTaskRunner($mockHttpClient);
+        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
 
         self::assertSame('{"body":"test"}', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

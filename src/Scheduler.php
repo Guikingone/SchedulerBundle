@@ -49,16 +49,16 @@ final class Scheduler implements SchedulerInterface
     public function __construct(
         string $timezone,
         TransportInterface $transport,
-        SchedulerMiddlewareStack $middlewareStack,
+        SchedulerMiddlewareStack $schedulerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher = null,
-        MessageBusInterface $bus = null
+        MessageBusInterface $messageBus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
         $this->transport = $transport;
-        $this->middlewareStack = $middlewareStack;
+        $this->middlewareStack = $schedulerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
-        $this->bus = $bus;
+        $this->bus = $messageBus;
     }
 
     /**
@@ -221,11 +221,11 @@ final class Scheduler implements SchedulerInterface
 
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
-        $initializationDelay = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
-        if ($initializationDelay->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $initializationDelay->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
-            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $initializationDelay->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
+        $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
+        if ($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
+            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
-        return $this->initializationDate->add($initializationDelay);
+        return $this->initializationDate->add($dateInterval);
     }
 }

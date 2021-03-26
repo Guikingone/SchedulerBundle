@@ -248,12 +248,12 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     public function testTransportIsRegistered(): void
     {
-        $extension = new SchedulerBundleExtension();
+        $schedulerBundleExtension = new SchedulerBundleExtension();
 
-        $container = new ContainerBuilder();
-        $container->register(SerializerInterface::class, SerializerInterface::class);
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->register(SerializerInterface::class, SerializerInterface::class);
 
-        $extension->load([
+        $schedulerBundleExtension->load([
             'scheduler_bundle' => [
                 'path' => '/_foo',
                 'timezone' => 'Europe/Paris',
@@ -263,24 +263,24 @@ final class SchedulerBundleExtensionTest extends TestCase
                 'tasks' => [],
                 'lock_store' => null,
             ],
-        ], $container);
+        ], $containerBuilder);
 
-        self::assertTrue($container->hasDefinition('scheduler.transport'));
-        self::assertTrue($container->hasAlias(TransportInterface::class));
-        self::assertCount(4, $container->getDefinition('scheduler.transport')->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.transport')->getFactory()[0]);
-        self::assertSame('createTransport', $container->getDefinition('scheduler.transport')->getFactory()[1]);
-        self::assertSame('memory://first_in_first_out', $container->getDefinition('scheduler.transport')->getArgument(0));
+        self::assertTrue($containerBuilder->hasDefinition('scheduler.transport'));
+        self::assertTrue($containerBuilder->hasAlias(TransportInterface::class));
+        self::assertCount(4, $containerBuilder->getDefinition('scheduler.transport')->getArguments());
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getFactory()[0]);
+        self::assertSame('createTransport', $containerBuilder->getDefinition('scheduler.transport')->getFactory()[1]);
+        self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
         self::assertSame([
             'execution_mode' => 'first_in_first_out',
             'path' => '%kernel.project_dir%/var/tasks',
-        ], $container->getDefinition('scheduler.transport')->getArgument(1));
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.transport')->getArgument(2));
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.transport')->getArgument(3));
-        self::assertTrue($container->getDefinition('scheduler.transport')->isShared());
-        self::assertFalse($container->getDefinition('scheduler.transport')->isPublic());
-        self::assertTrue($container->getDefinition('scheduler.transport')->hasTag('container.preload'));
-        self::assertSame(TransportInterface::class, $container->getDefinition('scheduler.transport')->getTag('container.preload')[0]['class']);
+        ], $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
+        self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->isShared());
+        self::assertFalse($containerBuilder->getDefinition('scheduler.transport')->isPublic());
+        self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->hasTag('container.preload'));
+        self::assertSame(TransportInterface::class, $containerBuilder->getDefinition('scheduler.transport')->getTag('container.preload')[0]['class']);
     }
 
     public function testSchedulerIsRegistered(): void
@@ -1097,15 +1097,15 @@ final class SchedulerBundleExtensionTest extends TestCase
 
     private function getContainer(array $configuration = []): ContainerBuilder
     {
-        $container = new ContainerBuilder();
-        $container->registerExtension(new SchedulerBundleExtension());
-        $container->loadFromExtension('scheduler_bundle', $configuration);
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->registerExtension(new SchedulerBundleExtension());
+        $containerBuilder->loadFromExtension('scheduler_bundle', $configuration);
 
-        $container->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
-        $container->getCompilerPassConfig()->setRemovingPasses([]);
-        $container->getCompilerPassConfig()->setAfterRemovingPasses([]);
-        $container->compile();
+        $containerBuilder->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
+        $containerBuilder->getCompilerPassConfig()->setRemovingPasses([]);
+        $containerBuilder->getCompilerPassConfig()->setAfterRemovingPasses([]);
+        $containerBuilder->compile();
 
-        return $container;
+        return $containerBuilder;
     }
 }

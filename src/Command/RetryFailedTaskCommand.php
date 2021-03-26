@@ -77,24 +77,24 @@ final class RetryFailedTaskCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
 
         $task = $this->worker->getFailedTasks()->get($name);
         if (!$task instanceof TaskInterface) {
-            $style->error(sprintf('The task "%s" does not fails', $name));
+            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $style->confirm('Do you want to retry this task?', false)) {
+        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to retry this task?', false)) {
             $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(1, $this->logger));
 
             try {
                 $this->worker->execute([], $task);
             } catch (Throwable $throwable) {
-                $style->error([
+                $symfonyStyle->error([
                     'An error occurred when trying to retry the task:',
                     $throwable->getMessage(),
                 ]);
@@ -102,12 +102,12 @@ final class RetryFailedTaskCommand extends Command
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been retried', $task->getName()));
+            $symfonyStyle->success(sprintf('The task "%s" has been retried', $task->getName()));
 
             return self::SUCCESS;
         }
 
-        $style->warning(sprintf('The task "%s" has not been retried', $task->getName()));
+        $symfonyStyle->warning(sprintf('The task "%s" has not been retried', $task->getName()));
 
         return self::FAILURE;
     }
