@@ -163,7 +163,10 @@ final class Scheduler implements SchedulerInterface
             }
 
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable) {
-                return $task->getExecutionStartDate() === $synchronizedCurrentDate || $task->getExecutionStartDate() < $synchronizedCurrentDate;
+                if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
+                    return true;
+                }
+                return $task->getExecutionStartDate() < $synchronizedCurrentDate;
             }
 
             if ($task->getExecutionEndDate() instanceof DateTimeImmutable) {

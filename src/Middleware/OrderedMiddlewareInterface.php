@@ -13,8 +13,6 @@ interface OrderedMiddlewareInterface
      * Defines the priority of the middleware when filtering it in the corresponding stack.
      *
      * The closer the priority to 1, the earlier the middleware is called.
-     *
-     * @return int
      */
     public function getPriority(): int;
 }

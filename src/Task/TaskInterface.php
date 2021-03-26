@@ -120,8 +120,6 @@ interface TaskInterface
 
     /**
      * @param null|callable|array $afterSchedulingCallable
-     *
-     * @return TaskInterface
      */
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface;
 
@@ -132,8 +130,6 @@ interface TaskInterface
 
     /**
      * @param null|callable|array $beforeExecutingCallable
-     *
-     * @return TaskInterface
      */
     public function beforeExecuting($beforeExecutingCallable = null): TaskInterface;
 
@@ -215,9 +211,7 @@ interface TaskInterface
     public function setNice(int $nice = null): self;
 
     /**
-     * @param string     $key
      * @param mixed|null $default
-     *
      * @return mixed
      */
     public function get(string $key, $default = null);

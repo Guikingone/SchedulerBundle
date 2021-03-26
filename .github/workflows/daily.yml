@@ -63,7 +63,7 @@ jobs:
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
-        run: php vendor/bin/rector process --dry-run --clear-cache
+        run: php vendor/bin/rector --dry-run --clear-cache
 
       # —— Psalm —————————————————————————————————————————————————————————
       - name: Run Psalm

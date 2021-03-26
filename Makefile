@@ -42,11 +42,11 @@ psalm: psalm.xml
 
 rector-dry: ## Run Rector in --dry-run mode
 rector-dry: rector.php
-	$(PHP) vendor/bin/rector process --dry-run --config rector.php --clear-cache
+	$(PHP) vendor/bin/rector --dry-run --clear-cache
 
 rector: ## Run Rector
 rector: rector.php
-	$(PHP) vendor/bin/rector process --config rector.php --clear-cache
+	$(PHP) vendor/bin/rector --clear-cache
 
 ##
 ## Tests

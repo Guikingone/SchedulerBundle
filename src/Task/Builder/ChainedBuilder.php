@@ -22,7 +22,6 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
     private iterable $builders;
 
     /**
-     * @param ExpressionBuilderInterface  $builder
      * @param iterable|BuilderInterface[] $builders
      */
     public function __construct(

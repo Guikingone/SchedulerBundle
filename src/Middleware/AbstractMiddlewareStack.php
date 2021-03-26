@@ -64,7 +64,6 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
     /**
      * @param PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[] $middlewareList
-     * @param Closure                                                                                                                                                                  $func
      */
     protected function runMiddleware(array $middlewareList, Closure $func): void
     {
