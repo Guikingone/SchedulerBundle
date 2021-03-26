@@ -112,11 +112,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'afterSchedulingNotificationBag' => $notificationTaskBagCallback,
                 'beforeExecutingNotificationBag' => $notificationTaskBagCallback,
                 'afterExecutingNotificationBag' => $notificationTaskBagCallback,
-                'recipients' => function (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    return array_map(function (Recipient $recipient) use ($format, $context): array {
-                        return $this->objectNormalizer->normalize($recipient, $format, $context);
-                    }, $innerObject);
-                },
+                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => $this->objectNormalizer->normalize($recipient, $format, $context), $innerObject),
                 'notification' => fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                     'subject' => $innerObject->getSubject(),
                     'content' => $innerObject->getContent(),
@@ -133,13 +129,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'method' => $innerObject[1],
                     'type' => get_class($innerObject[0]),
                 ],
-                'tasks' => fn (array $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(function (TaskInterface $task) use ($format, $context): array {
-                    return $this->normalize($task, $format, array_merge($context, [
-                        AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
-                            'options' => [],
-                        ],
-                    ]));
-                }, $innerObject),
+                'tasks' => fn (array $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, array_merge($context, [
+                    AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
+                        'options' => [],
+                    ],
+                ])), $innerObject),
             ]
         ];
 
@@ -206,9 +200,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ChainedTask::class => [
                         'name' => $body['name'],
-                        'tasks' => array_map(function (array $task) use ($type, $format, $context): TaskInterface {
-                            return $this->denormalize($task, $type, $format, $context);
-                        }, $body['tasks']),
+                        'tasks' => array_map(fn (array $task): TaskInterface => $this->denormalize($task, $type, $format, $context), $body['tasks']),
                     ],
                 ],
             ]);
@@ -257,9 +249,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     NotificationTask::class => [
                         'name' => $body['name'],
                         'notification' => $this->objectNormalizer->denormalize($body['notification'], Notification::class, $format, $context),
-                        'recipients' => array_map(function (array $recipient) use ($format, $context): Recipient {
-                            return $this->objectNormalizer->denormalize($recipient, Recipient::class, $format, $context);
-                        }, $body['recipients']),
+                        'recipients' => array_map(fn (array $recipient): Recipient => $this->objectNormalizer->denormalize($recipient, Recipient::class, $format, $context), $body['recipients']),
                     ],
                 ],
             ]);

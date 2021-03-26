@@ -26,7 +26,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     ]);
 
     $parameters->set(Option::SKIP, [
-        __DIR__ . '/src/Serializer',
         __DIR__ . '/vendor',
         CountOnNullRector::class
     ]);
