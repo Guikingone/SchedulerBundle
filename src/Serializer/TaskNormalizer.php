@@ -131,7 +131,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'options' => [],
                     ],
                 ])), $innerObject),
-            ]
+            ],
         ];
 
         return [

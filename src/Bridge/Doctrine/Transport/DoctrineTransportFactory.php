@@ -14,6 +14,7 @@ use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 use function sprintf;
 use function strpos;
 

@@ -12,14 +12,14 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotificationTask extends AbstractTask
 {
-    public function __construct(string $name, Notification $notification, Recipient ...$recipient)
+    public function __construct(string $name, Notification $notification, Recipient ...$recipients)
     {
         $this->defineOptions([
             'notification' => $notification,
-            'recipients' => $recipient,
+            'recipients' => $recipients,
         ], [
             'notification' => Notification::class,
-            'recipients' => ['Symfony\Component\Notifier\Recipient\Recipient[]', Recipient::class, 'null'],
+            'recipients' => ['array', 'Symfony\Component\Notifier\Recipient\Recipient[]', Recipient::class, 'null'],
         ]);
 
         parent::__construct($name);
@@ -52,9 +52,9 @@ final class NotificationTask extends AbstractTask
         return $this;
     }
 
-    public function setRecipients(Recipient ...$recipient): self
+    public function setRecipients(Recipient ...$recipients): self
     {
-        $this->options['recipients'] = $recipient;
+        $this->options['recipients'] = $recipients;
 
         return $this;
     }

@@ -56,8 +56,8 @@ final class FilesystemTransport extends AbstractTransport
         $finder = new Finder();
 
         $finder->files()->in($this->options['path'])->name('*.json');
-        foreach ($finder as $task) {
-            $tasks[] = $this->get(strtr($task->getFilename(), ['.json' => '']));
+        foreach ($finder as $singleFinder) {
+            $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
         }
 
         return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
@@ -155,8 +155,8 @@ final class FilesystemTransport extends AbstractTransport
         $finder = new Finder();
 
         $finder->files()->in($this->options['path'])->name('*.json');
-        foreach ($finder as $task) {
-            $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], strtr($task->getFilename(), ['.json' => ''])));
+        foreach ($finder as $singleFinder) {
+            $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
     }
 

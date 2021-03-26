@@ -29,7 +29,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     /**
      * {@inheritdoc}
      */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): array
     {
         return [
             'bag' => NotificationTaskBag::class,
@@ -51,7 +51,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization($data, string $format = null): bool
     {
         return $data instanceof NotificationTaskBag;
     }
@@ -59,7 +59,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, string $type, string $format = null, array $context = [])
+    public function denormalize($data, string $type, string $format = null, array $context = []): NotificationTaskBag
     {
         return $this->objectNormalizer->denormalize($data['body'], $type, $format, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
@@ -74,7 +74,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null)
+    public function supportsDenormalization($data, string $type, string $format = null): bool
     {
         return NotificationTaskBag::class === $type;
     }

@@ -29,7 +29,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('unschedule');
+        $scheduler->expects(self::never())->method('pause');
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
         $singleRunTaskMiddleware->postExecute($task);
@@ -42,7 +42,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $task->expects(self::once())->method('isSingleRun')->willReturn(true);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('unschedule')->with(self::equalTo('foo'));
+        $scheduler->expects(self::once())->method('pause')->with(self::equalTo('foo'));
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
         $singleRunTaskMiddleware->postExecute($task);

@@ -42,10 +42,7 @@ use function sprintf;
  */
 final class Worker implements WorkerInterface
 {
-    /**
-     * @var mixed|bool
-     */
-    public ?bool $isRunning;
+    public ?bool $isRunning = null;
     private const DEFAULT_OPTIONS = [
         'sleepDurationDelay' => 1,
         'sleepUntilNextMinute' => false,
@@ -234,7 +231,6 @@ final class Worker implements WorkerInterface
         $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
-        $this->handleSingleRunTask($task);
     }
 
     private function getLock(TaskInterface $task): LockInterface

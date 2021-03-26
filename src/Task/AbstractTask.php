@@ -8,6 +8,7 @@ use Cron\CronExpression;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
@@ -86,7 +87,7 @@ abstract class AbstractTask implements TaskInterface
         ]);
 
         $optionsResolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
-        $optionsResolver->setAllowedTypes('background', ['bool']);
+        $optionsResolver->setAllowedTypes('background', 'bool');
         $optionsResolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
         $optionsResolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
         $optionsResolver->setAllowedTypes('after_scheduling_notification', [NotificationTaskBag::class, 'null']);
@@ -96,7 +97,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('before_executing', ['callable', 'array', 'null']);
         $optionsResolver->setAllowedTypes('after_executing', ['callable', 'array', 'null']);
         $optionsResolver->setAllowedTypes('description', ['string', 'null']);
-        $optionsResolver->setAllowedTypes('expression', ['string']);
+        $optionsResolver->setAllowedTypes('expression', 'string');
         $optionsResolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_computation_time', ['float', 'null']);
         $optionsResolver->setAllowedTypes('execution_delay', ['int', 'null']);
@@ -111,16 +112,16 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
         $optionsResolver->setAllowedTypes('max_retries', ['int', 'null']);
         $optionsResolver->setAllowedTypes('nice', ['int', 'null']);
-        $optionsResolver->setAllowedTypes('output', ['bool']);
-        $optionsResolver->setAllowedTypes('output_to_store', ['bool']);
-        $optionsResolver->setAllowedTypes('priority', ['int']);
-        $optionsResolver->setAllowedTypes('queued', ['bool']);
+        $optionsResolver->setAllowedTypes('output', 'bool');
+        $optionsResolver->setAllowedTypes('output_to_store', 'bool');
+        $optionsResolver->setAllowedTypes('priority', 'int');
+        $optionsResolver->setAllowedTypes('queued', 'bool');
         $optionsResolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
-        $optionsResolver->setAllowedTypes('single_run', ['bool']);
-        $optionsResolver->setAllowedTypes('state', ['string']);
+        $optionsResolver->setAllowedTypes('single_run', 'bool');
+        $optionsResolver->setAllowedTypes('state', 'string');
         $optionsResolver->setAllowedTypes('execution_state', ['null', 'string']);
-        $optionsResolver->setAllowedTypes('tags', ['string[]']);
-        $optionsResolver->setAllowedTypes('tracked', ['bool']);
+        $optionsResolver->setAllowedTypes('tags', 'string[]');
+        $optionsResolver->setAllowedTypes('tracked', 'bool');
         $optionsResolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
         $optionsResolver->setAllowedValues('expression', fn (string $expression): bool => $this->validateExpression($expression));
@@ -411,6 +412,9 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     public function setExecutionStartDate(string $executionStartDate = null): TaskInterface
     {
         if (!$this->validateDate($executionStartDate)) {
@@ -427,6 +431,9 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_start_date'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function setExecutionEndDate(string $executionEndDate = null): TaskInterface
     {
         if (!$this->validateDate($executionEndDate)) {
@@ -727,6 +734,9 @@ abstract class AbstractTask implements TaskInterface
         return null === $executionState ? true : in_array($executionState, TaskInterface::EXECUTION_STATES, true);
     }
 
+    /**
+     * @throws Exception
+     */
     private function validateDate(?string $date = null): bool
     {
         if (null === $date) {

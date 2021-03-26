@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Transport;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Transport\Dsn;
 
 /**
@@ -13,6 +14,14 @@ use SchedulerBundle\Transport\Dsn;
  */
 final class DsnTest extends TestCase
 {
+    public function testDsnCannotBeCreatedWithInvalidDsn(): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The "foo://" scheduler DSN is invalid.');
+        self::expectExceptionCode(0);
+        Dsn::fromString('foo://');
+    }
+
     /**
      * @dataProvider provideDsn
      */

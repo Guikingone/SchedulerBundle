@@ -432,7 +432,19 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->serialize(new NotificationTask('foo', new Notification('bar', ['email']), new Recipient('test@test.fr', '')), 'json');

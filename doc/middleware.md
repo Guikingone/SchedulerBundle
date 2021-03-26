@@ -5,7 +5,7 @@ _Introduced in `0.3`_
 - [Scheduling](#Scheduling)
 - [Execution](#Execution)
 - [Order](#Order)
-- [Required middleware](#)
+- [Required middleware](#required-middleware)
 
 This bundle defines middleware related to execution and scheduling phases.
 
@@ -127,4 +127,10 @@ _Note: The lower the priority, the earlier the middleware is called._
 
 _Introduced in `0.4`_
 
-// TODO
+[RequiredMiddlewareInterface](../src/Middleware/RequiredMiddlewareInterface.php) is a special interface
+that brings the idea of "failure independent" middleware, the idea is to specify which middleware must be 
+executed even if an error occurs.
+
+**Note**: The important thing to keep in mind is that a required middleware can be executed twice 
+depending on the priority defined (if defined), in the core, 
+the required middlewares use a lower priority to prevent this edge case.

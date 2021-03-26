@@ -485,8 +485,11 @@ final class SchedulerTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::exactly(4))->method('sort')->willReturn([$task->getName() => $task]);
 
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator);
-        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack());
+        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), null, $bus);
         $scheduler->schedule($task);
 
         self::assertNotEmpty($scheduler->getTasks());
@@ -603,7 +606,10 @@ final class SchedulerTest extends TestCase
         $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
         $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, $bus);
         $scheduler->schedule($task);
 
         $scheduler->yieldTask('foo');

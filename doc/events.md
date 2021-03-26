@@ -4,19 +4,19 @@ The following events are dispatched
 
 ## Scheduler
 
-| Event                                                                         | Description                                                                     |
-| ------------------------------------------------------------------------------| ------------------------------------------------------------------------------- |
-| [`SchedulerRebootedEvent`](../src/Event/SchedulerRebootedEvent.php)           | Runs once the scheduler has been rebooted                                       |
+| Event                                                                         | Description                               |
+| ------------------------------------------------------------------------------| ------------------------------------------|
+| [`SchedulerRebootedEvent`](../src/Event/SchedulerRebootedEvent.php)           | Runs once the scheduler has been rebooted |
 
 ## Task
 
-| Event                                                                         | Description                                                                     |
-| ------------------------------------------------------------------------------| ------------------------------------------------------------------------------- |
-| [`TaskExecutedEvent`](../src/Event/TaskExecutedEvent.php)                     | Runs once a task has been executed                                              |
-| [`TaskExecutingEvent`](../src/Event/TaskExecutingEvent.php)                   | Runs when a task is currently executed (in details, just before the execution   |
-| [`TaskFailedEvent`](../src/Event/TaskFailedEvent.php)                         | Runs when a task failed during execution                                        |
-| [`TaskScheduledEvent`](../src/Event/TaskScheduledEvent.php)                   | Runs when a task has been scheduled                                             |
-| [`TaskUnscheduledEvent`](../src/Event/TaskUnscheduledEvent.php)               | Runs when a task has been removed from the scheduler                            |
+| Event                                                                         | Description                                                                   |
+| ------------------------------------------------------------------------------| ------------------------------------------------------------------------------|
+| [`TaskExecutedEvent`](../src/Event/TaskExecutedEvent.php)                     | Runs once a task has been executed                                            |
+| [`TaskExecutingEvent`](../src/Event/TaskExecutingEvent.php)                   | Runs when a task is currently executed (in details, just before the execution |
+| [`TaskFailedEvent`](../src/Event/TaskFailedEvent.php)                         | Runs when a task failed during execution                                      |
+| [`TaskScheduledEvent`](../src/Event/TaskScheduledEvent.php)                   | Runs when a task has been scheduled                                           |
+| [`TaskUnscheduledEvent`](../src/Event/TaskUnscheduledEvent.php)               | Runs when a task has been removed from the scheduler                          |
 
 ## Worker
 

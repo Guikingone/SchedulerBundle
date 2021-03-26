@@ -69,9 +69,7 @@ final class InMemoryTransport extends AbstractTransport
     public function update(string $name, TaskInterface $updatedTask): void
     {
         if (!array_key_exists($name, $this->tasks)) {
-            $this->create($updatedTask);
-
-            return;
+            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
         }
 
         $this->tasks[$name] = $updatedTask;

@@ -73,18 +73,18 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
         $requiredMiddlewareList = array_filter($middlewareList, fn (object $middleware): bool => $middleware instanceof RequiredMiddlewareInterface);
 
         try {
-            foreach ($middlewareList as $middleware) {
-                $func($middleware);
+            foreach ($middlewareList as $singleMiddlewareList) {
+                $func($singleMiddlewareList);
 
-                $this->executedMiddleware->attach($middleware);
+                $this->executedMiddleware->attach($singleMiddlewareList);
             }
         } catch (Throwable $throwable) {
-            foreach ($requiredMiddlewareList as $requiredMiddleware) {
-                if ($this->executedMiddleware->contains($requiredMiddleware)) {
+            foreach ($requiredMiddlewareList as $singleRequiredMiddlewareList) {
+                if ($this->executedMiddleware->contains($singleRequiredMiddlewareList)) {
                     continue;
                 }
 
-                $func($requiredMiddleware);
+                $func($singleRequiredMiddlewareList);
             }
 
             throw $throwable;

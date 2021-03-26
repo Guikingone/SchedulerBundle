@@ -36,6 +36,7 @@ final class NullTaskTest extends TestCase
         self::assertTrue($nullTask->mustRunInBackground());
         self::assertNull($nullTask->getDescription());
         self::assertSame(TaskInterface::DISABLED, $nullTask->getState());
+        self::assertFalse($nullTask->isSingleRun());
     }
 
     public function testTaskCannotBeCreatedWithInvalidArrivalTime(): void
@@ -148,13 +149,23 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
-    public function testTaskCannotBeCreatedWithInvalidExpression(): void
+    public function testTaskCannotBeCreatedWithInvalidExpressionType(): void
     {
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "expression" with value 354 is expected to be of type "string", but is of type "int"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'expression' => 354,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExpression(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "expression" with value "foo" is invalid.');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'expression' => 'foo',
         ]);
     }
 
@@ -245,6 +256,136 @@ final class NullTaskTest extends TestCase
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'max_executions' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionRelativeDeadline(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_relative_deadline" with value 135 is expected to be of type "DateInterval" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_relative_deadline' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionStartDate(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_start_date" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_start_date' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionEndDate(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_end_date" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_end_date' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionStartTime(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_start_time" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_start_time' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionEndTime(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_end_time" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_end_time' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidLastExecution(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "last_execution" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'last_execution' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidMaxDuration(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "max_duration" with value 135 is expected to be of type "float" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'max_duration' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidNiceType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "nice" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'nice' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidScheduledAt(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "scheduled_at" with value "foo" is expected to be of type "DateTimeImmutable" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'scheduled_at' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidSingleRun(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "single_run" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'single_run' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidState(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "state" with value 135 is expected to be of type "string", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'state' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidTags(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "tags" with value "foo" is expected to be of type "string[]", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'tags' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidTimezone(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "timezone" with value "foo" is expected to be of type "DateTimeZone" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'timezone' => 'foo',
         ]);
     }
 

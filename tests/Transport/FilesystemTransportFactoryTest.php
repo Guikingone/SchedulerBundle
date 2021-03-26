@@ -38,6 +38,7 @@ final class FilesystemTransportFactoryTest extends TestCase
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertSame('first_in_first_out', $transport->getExecutionMode());
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
         self::assertArrayHasKey('path', $transport->getOptions());
         self::assertSame(sys_get_temp_dir(), $transport->getOptions()['path']);
         self::assertArrayHasKey('filename_mask', $transport->getOptions());

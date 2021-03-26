@@ -79,15 +79,15 @@ final class FailOverConfiguration implements ConfigurationInterface
             throw new ConfigurationException('No configuration found');
         }
 
-        foreach ($this->configurationStorages as $configuration) {
-            if ($this->failedConfigurations->contains($configuration)) {
+        foreach ($this->configurationStorages as $configurationStorage) {
+            if ($this->failedConfigurations->contains($configurationStorage)) {
                 continue;
             }
 
             try {
-                return $func($configuration);
+                return $func($configurationStorage);
             } catch (Throwable $throwable) {
-                $this->failedConfigurations->attach($configuration);
+                $this->failedConfigurations->attach($configurationStorage);
 
                 continue;
             }

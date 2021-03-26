@@ -82,6 +82,9 @@ final class RedisTransportTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeListedWhenEmpty(): void
     {
         $list = $this->transport->list();
@@ -92,6 +95,8 @@ final class RedisTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable
      */
     public function testTasksCanBeListed(TaskInterface $task): void
     {

@@ -121,20 +121,6 @@ final class InMemoryTransportTest extends TestCase
         ], $inMemoryTransport->list()->toArray());
     }
 
-    /**
-     * @dataProvider provideTasks
-     */
-    public function testTransportCanCreateIfAnUpdatedTaskDoesNotExist(TaskInterface $task): void
-    {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ]));
-
-        $inMemoryTransport->update($task->getName(), $task);
-        self::assertCount(1, $inMemoryTransport->list());
-        self::assertEmpty($task->getTags());
-    }
-
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
     {
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
@@ -142,11 +128,12 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
 
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionCode(0);
         $inMemoryTransport->update($task->getName(), $task);
-
-        self::assertSame($task, $inMemoryTransport->get('foo'));
     }
 
     /**

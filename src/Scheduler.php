@@ -22,6 +22,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 use function sprintf;
 
 /**
@@ -203,8 +204,8 @@ final class Scheduler implements SchedulerInterface
 
         $this->transport->clear();
 
-        foreach ($rebootTasks as $task) {
-            $this->transport->create($task);
+        foreach ($rebootTasks as $rebootTask) {
+            $this->transport->create($rebootTask);
         }
 
         $this->dispatch(new SchedulerRebootedEvent($this));
@@ -219,6 +220,9 @@ final class Scheduler implements SchedulerInterface
         $this->eventDispatcher->dispatch($event);
     }
 
+    /**
+     * @throws Throwable
+     */
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
         $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));

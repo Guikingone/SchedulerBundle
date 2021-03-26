@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Rector\Core\Configuration\Option;
 use Rector\Core\ValueObject\PhpVersion;
+use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\Php71\Rector\FuncCall\CountOnNullRector;
+use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -32,20 +34,25 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     ]);
 
     $parameters->set(Option::SETS, [
+        DoctrineSetList::DOCTRINE_DBAL_211,
+        PHPUnitSetList::PHPUNIT_EXCEPTION,
+        PHPUnitSetList::PHPUNIT_MOCK,
+        PHPUnitSetList::PHPUNIT_SPECIFIC_METHOD,
+        PHPUnitSetList::PHPUNIT_91,
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
-        SetList::DEAD_DOC_BLOCK,
-        SetList::DOCTRINE_DBAL_211,
         SetList::EARLY_RETURN,
-        SetList::NAMING,
         SetList::PHP_70,
         SetList::PHP_71,
         SetList::PHP_72,
         SetList::PHP_73,
         SetList::PHP_74,
+        SetList::UNWRAP_COMPAT,
         SymfonySetList::SYMFONY_50,
+        SymfonySetList::SYMFONY_50_TYPES,
         SymfonySetList::SYMFONY_52,
     ]);
 
     $parameters->set(Option::ENABLE_CACHE, true);
+    $parameters->set(Option::PHPSTAN_FOR_RECTOR_PATH, __DIR__.'/phpstan.neon.dist');
 };

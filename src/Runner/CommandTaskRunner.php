@@ -6,7 +6,6 @@ namespace SchedulerBundle\Runner;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use SchedulerBundle\Exception\UnrecognizedCommandException;
@@ -74,7 +73,7 @@ final class CommandTaskRunner implements RunnerInterface
         return $task instanceof CommandTask;
     }
 
-    private function buildInput(CommandTask $commandTask): InputInterface
+    private function buildInput(CommandTask $commandTask): StringInput
     {
         $command = $this->findCommand($commandTask->getCommand());
         $options = $this->buildOptions($commandTask);

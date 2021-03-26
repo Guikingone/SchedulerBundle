@@ -22,7 +22,7 @@ final class ShellTask extends AbstractTask
             'command' => ['string[]', 'array'],
             'cwd' => ['string', 'null'],
             'environment_variables' => ['string[]', 'array'],
-            'timeout' => ['float'],
+            'timeout' => 'float',
         ]);
 
         parent::__construct($name);

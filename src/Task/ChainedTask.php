@@ -12,10 +12,10 @@ use function array_key_exists;
  */
 final class ChainedTask extends AbstractTask
 {
-    public function __construct(string $name, TaskInterface ...$task)
+    public function __construct(string $name, TaskInterface ...$tasks)
     {
         $this->defineOptions([
-            'tasks' => $task,
+            'tasks' => $tasks,
         ], [
             'tasks' => ['SchedulerBundle\Task\TaskInterface[]', 'null'],
         ]);
@@ -30,9 +30,9 @@ final class ChainedTask extends AbstractTask
         return $this;
     }
 
-    public function setTasks(TaskInterface ...$task): self
+    public function setTasks(TaskInterface ...$tasks): self
     {
-        $this->options['tasks'] = $task;
+        $this->options['tasks'] = $tasks;
 
         return $this;
     }
