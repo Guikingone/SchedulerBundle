@@ -166,6 +166,7 @@ final class Scheduler implements SchedulerInterface
                 if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
                     return true;
                 }
+
                 return $task->getExecutionStartDate() < $synchronizedCurrentDate;
             }
 
