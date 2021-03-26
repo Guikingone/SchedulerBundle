@@ -115,7 +115,6 @@ final class RoundRobinTransport extends AbstractTransport
     }
 
     /**
-     * @param Closure $func
      *
      * @return mixed
      */

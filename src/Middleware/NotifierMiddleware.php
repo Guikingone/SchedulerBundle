@@ -79,7 +79,6 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
     }
 
     /**
-     * @param Notification $notification
      * @param Recipient[]  $recipients
      */
     private function notify(Notification $notification, array $recipients): void

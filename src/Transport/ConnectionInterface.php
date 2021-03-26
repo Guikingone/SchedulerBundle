@@ -31,8 +31,6 @@ interface ConnectionInterface
      * Return a single task using its {@param string $taskName}.
      *
      * {@internal If possible (or supported by the connection), the task MUST be returned using a transaction or similar}
-     *
-     * @return TaskInterface
      */
     public function get(string $taskName): TaskInterface;
 

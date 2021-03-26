@@ -18,7 +18,6 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     /**
      * Add a new task|a set of tasks in the list, by default, the name of the task is used as the key.
      *
-     * @param TaskInterface ...$tasks
      *
      * @throws Throwable if a task cannot be added|created in a local or remote transport,
      *                   the task is removed from the list and the exception thrown
@@ -28,18 +27,14 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     /**
      * Return if the task exist in the list using its name.
      *
-     * @param string $taskName
      *
-     * @return bool
      */
     public function has(string $taskName): bool;
 
     /**
      * Return the desired task if found using its name, otherwise, null.
      *
-     * @param string $taskName
      *
-     * @return TaskInterface|null
      */
     public function get(string $taskName): ?TaskInterface;
 
@@ -55,7 +50,6 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     /**
      * Allow to filter the list using a custom filter, the $filter receive the task name and the TaskInterface object (in this order).
      *
-     * @param Closure $filter
      *
      * @return TaskListInterface<string, TaskInterface>
      */
@@ -63,15 +57,12 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * Remove the task in the actual list if the name is a valid one.
-     *
-     * @param string $taskName
      */
     public function remove(string $taskName): void;
 
     /**
      * Return the list as an array (using tasks name's as keys), if $keepKeys is false, the array is returned with indexed keys.
      *
-     * @param bool $keepKeys
      *
      * @return array<string|int, TaskInterface>
      */

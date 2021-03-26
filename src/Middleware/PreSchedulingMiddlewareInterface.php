@@ -17,7 +17,6 @@ interface PreSchedulingMiddlewareInterface
      * Allow to execute logic before scheduling the task
      * (the @param TaskInterface $task is the one passed through {@see SchedulerInterface::schedule()} and BEFORE any modification).
      *
-     * @param SchedulerInterface $scheduler
      *
      * @throws Throwable If an error|exception occurs, it must be thrown back.
      */

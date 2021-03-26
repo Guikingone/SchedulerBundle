@@ -34,7 +34,6 @@ interface WorkerInterface
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
      * @param array<string, int|string> $options
-     * @param TaskInterface             ...$tasks
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      */
