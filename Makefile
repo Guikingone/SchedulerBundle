@@ -60,4 +60,4 @@ tests: phpunit.xml.dist
 
 infection: ## Launch Infection
 infection: infection.json.dist
-	$(PHP) vendor/bin/infection --min-covered-msi=80 --min-msi=75
+	$(PHP) vendor/bin/infection
