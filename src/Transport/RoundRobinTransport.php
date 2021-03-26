@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use Closure;
-use Countable;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -13,7 +12,6 @@ use SplObjectStorage;
 use Throwable;
 use function array_merge;
 use function count;
-use function is_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -127,7 +125,7 @@ final class RoundRobinTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== (is_array($this->transports) || $this->transports instanceof Countable ? count($this->transports) : 0)) {
+        while ($this->sleepingTransports->count() !== count($this->transports)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;

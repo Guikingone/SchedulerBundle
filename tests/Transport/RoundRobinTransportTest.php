@@ -71,7 +71,7 @@ final class RoundRobinTransportTest extends TestCase
         $transport->get('foo');
     }
 
-    public function testTransportCanRetrieveTask(): void
+    public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
@@ -83,11 +83,17 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
+            ->willThrowException(new RuntimeException('Task not found'));
+
+        $thirdTransport = $this->createMock(TransportInterface::class);
+        $thirdTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'))
             ->willReturn($task);
 
         $transport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+            $thirdTransport,
         ]);
 
         self::assertSame($task, $transport->get('foo'));

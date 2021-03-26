@@ -34,6 +34,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set(Option::SETS, [
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
+        SetList::DEAD_DOC_BLOCK,
+        SetList::DOCTRINE_DBAL_211,
         SetList::EARLY_RETURN,
         SetList::PHP_70,
         SetList::PHP_71,

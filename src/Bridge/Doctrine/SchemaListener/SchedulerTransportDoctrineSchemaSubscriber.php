@@ -40,7 +40,6 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
     }
 
     /**
-     * @param SchemaCreateTableEventArgs $event
      *
      * @throws Exception
      */
