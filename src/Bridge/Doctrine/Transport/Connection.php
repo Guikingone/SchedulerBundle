@@ -13,6 +13,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Query\Expr;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
@@ -57,13 +58,29 @@ final class Connection implements ConnectionInterface
      */
     public function list(): TaskListInterface
     {
+        $existingTasksCount = $this->createQueryBuilder()
+            ->select((new Expr())->countDistinct('t.id'))
+        ;
+
+        $statement = $this->executeQuery(
+            $existingTasksCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTasksCount->getParameters(),
+            $existingTasksCount->getParameterTypes()
+        )->fetchOne();
+
+        if ('0' === $statement) {
+            return new TaskList();
+        }
+
         try {
-            $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
+            return $this->driverConnection->transactional(function (DBALConnection $connection): TaskListInterface {
+                $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
 
-            $statement = $this->executeQuery($query->getSQL());
-            $tasks = $statement->fetchAllAssociative();
+                $statement = $connection->executeQuery($query->getSQL());
+                $tasks = $statement->fetchAllAssociative();
 
-            return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+                return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+            });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -74,26 +91,26 @@ final class Connection implements ConnectionInterface
      */
     public function get(string $taskName): TaskInterface
     {
-        $countTaskQuery = $this->createQueryBuilder()
-            ->select('COUNT(t.id) as task_count')
-            ->where('t.task_name = :name')
+        $qb = $this->createQueryBuilder();
+        $existingTaskCount = $qb->select((new Expr())->countDistinct('t.id'))
+            ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter(':name', $taskName, ParameterType::STRING)
         ;
 
         $statement = $this->executeQuery(
-            $countTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
-            $countTaskQuery->getParameters(),
-            $countTaskQuery->getParameterTypes()
-        )->fetchAssociative();
+            $existingTaskCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskCount->getParameters(),
+            $existingTaskCount->getParameterTypes()
+        )->fetchOne();
 
-        if ('0' === $statement['task_count']) {
+        if ('0' === $statement) {
             throw new TransportException(sprintf('The task "%s" does not exist', $taskName));
         }
 
         try {
             return $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): TaskInterface {
-                $queryBuilder = $this->createQueryBuilder()
-                    ->where('t.task_name = :name')
+                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder->where($queryBuilder->expr()->eq('t.task_name', ':name'))
                     ->setParameter(':name', $taskName, ParameterType::STRING)
                 ;
 
@@ -120,9 +137,9 @@ final class Connection implements ConnectionInterface
      */
     public function create(TaskInterface $task): void
     {
-        $existingTaskQuery = $this->createQueryBuilder()
-            ->select('COUNT(t.id) as task_count')
-            ->where('t.task_name = :name')
+        $qb = $this->createQueryBuilder();
+        $existingTaskQuery = $qb->select((new Expr())->countDistinct('t.id'))
+            ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter(':name', $task->getName(), ParameterType::STRING)
         ;
 
@@ -130,9 +147,9 @@ final class Connection implements ConnectionInterface
             $existingTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
-        )->fetch();
+        )->fetchOne();
 
-        if ('0' !== $existingTask['task_count']) {
+        if ('0' !== $existingTask) {
             return;
         }
 
@@ -215,17 +232,17 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
-                $query = $this->createQueryBuilder()
-                    ->delete($this->configuration['table_name'])
-                    ->where('task_name = :name')
+                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder->delete($this->configuration['table_name'])
+                    ->where($queryBuilder->expr()->eq('task_name', ':name'))
                     ->setParameter(':name', $taskName, ParameterType::STRING)
                 ;
 
                 /** @var Statement $statement */
                 $statement = $connection->executeQuery(
-                    $query->getSQL(),
-                    $query->getParameters(),
-                    $query->getParameterTypes()
+                    $queryBuilder->getSQL(),
+                    $queryBuilder->getParameters(),
+                    $queryBuilder->getParameterTypes()
                 );
 
                 if (1 !== $statement->rowCount()) {
@@ -297,10 +314,10 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($name, $task): void {
-                $query = $this->createQueryBuilder()
-                    ->update($this->configuration['table_name'])
+                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder->update($this->configuration['table_name'])
                     ->set('body', ':body')
-                    ->where('task_name = :name')
+                    ->where($queryBuilder->expr()->eq('task_name', ':name'))
                     ->setParameter(':name', $name, ParameterType::STRING)
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;

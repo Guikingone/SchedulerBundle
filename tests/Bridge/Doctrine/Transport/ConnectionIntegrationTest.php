@@ -97,7 +97,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->setup();
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -301,7 +301,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -315,7 +315,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
