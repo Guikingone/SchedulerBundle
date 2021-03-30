@@ -74,24 +74,42 @@ final class Connection implements ConnectionInterface
      */
     public function get(string $taskName): TaskInterface
     {
+        $countTaskQuery = $this->createQueryBuilder()
+            ->select('COUNT(t.id) as task_count')
+            ->where('t.task_name = :name')
+            ->setParameter(':name', $taskName, ParameterType::STRING)
+        ;
+
+        $statement = $this->executeQuery(
+            $countTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $countTaskQuery->getParameters(),
+            $countTaskQuery->getParameterTypes()
+        )->fetchAssociative();
+
+        if ('0' === $statement['task_count']) {
+            throw new TransportException(sprintf('The task "%s" does not exist', $taskName));
+        }
+
         try {
-            $queryBuilder = $this->createQueryBuilder()
-                ->where('t.task_name = :name')
-                ->setParameter(':name', $taskName, ParameterType::STRING)
-            ;
+            return $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): TaskInterface {
+                $queryBuilder = $this->createQueryBuilder()
+                    ->where('t.task_name = :name')
+                    ->setParameter(':name', $taskName, ParameterType::STRING)
+                ;
 
-            $statement = $this->executeQuery(
-                $queryBuilder->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
-                $queryBuilder->getParameters(),
-                $queryBuilder->getParameterTypes()
-            );
+                $statement = $connection->executeQuery(
+                    $queryBuilder->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+                    $queryBuilder->getParameters(),
+                    $queryBuilder->getParameterTypes()
+                );
 
-            $data = $statement->fetchAssociative();
-            if (false === $data || (is_countable($data) && 0 === count($data))) {
-                throw new LogicException('The desired task cannot be found.');
-            }
+                $data = $statement->fetchAssociative();
+                if (false === $data || (is_countable($data) && 0 === count($data))) {
+                    throw new LogicException('The desired task cannot be found.');
+                }
 
-            return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
+                return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
+            });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -102,23 +120,24 @@ final class Connection implements ConnectionInterface
      */
     public function create(TaskInterface $task): void
     {
+        $existingTaskQuery = $this->createQueryBuilder()
+            ->select('COUNT(t.id) as task_count')
+            ->where('t.task_name = :name')
+            ->setParameter(':name', $task->getName(), ParameterType::STRING)
+        ;
+
+        $existingTask = $this->executeQuery(
+            $existingTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskQuery->getParameters(),
+            $existingTaskQuery->getParameterTypes()
+        )->fetch();
+
+        if ('0' !== $existingTask['task_count']) {
+            return;
+        }
+
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($task): void {
-                $existingTaskQuery = $this->createQueryBuilder()
-                    ->select('COUNT(t.id) as task_count')
-                    ->where('t.task_name = :name')
-                    ->setParameter(':name', $task->getName(), ParameterType::STRING)
-                ;
-
-                $existingTask = $connection->executeQuery(
-                    $existingTaskQuery->getSQL().' '.$connection->getDatabasePlatform()->getReadLockSQL(),
-                    $existingTaskQuery->getParameters(),
-                    $existingTaskQuery->getParameterTypes()
-                )->fetch();
-                if ('0' !== $existingTask['task_count']) {
-                    return;
-                }
-
                 $query = $this->createQueryBuilder()
                     ->insert($this->configuration['table_name'])
                     ->values([
