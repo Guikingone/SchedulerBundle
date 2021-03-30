@@ -220,7 +220,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::exactly(2))->method('getBeforeExecuting')->willReturn(fn (): bool => false);
-        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::never())->method('isSingleRun');
         $task->expects(self::never())->method('setArrivalTime');
         $task->expects(self::never())->method('setExecutionStartTime');
         $task->expects(self::never())->method('setExecutionEndTime');
@@ -259,7 +259,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::exactly(2))->method('getBeforeExecuting')->willReturn(fn (): bool => false);
-        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::never())->method('isSingleRun');
         $task->expects(self::never())->method('setArrivalTime');
         $task->expects(self::never())->method('setExecutionStartTime');
         $task->expects(self::never())->method('setExecutionEndTime');
@@ -918,7 +918,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::never())->method('isSingleRun');
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::never())->method('setExecutionEndTime');
