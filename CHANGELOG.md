@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+0.3.4
+-----
+
+* Composer dependencies improvement (see https://github.com/Guikingone/SchedulerBundle/pull/37)
+* Infection configuration improved (see https://github.com/Guikingone/SchedulerBundle/pull/38)
+* Rector upgraded (see https://github.com/Guikingone/SchedulerBundle/pull/39)
+* fix(bridge): Doctrine configuration fixed (see https://github.com/Guikingone/SchedulerBundle/pull/42)
+
 0.3.3
 -----
 
