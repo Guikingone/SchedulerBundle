@@ -55,6 +55,14 @@ jobs:
         if: matrix.composer-dependencies == 'lowest'
         run: composer update --no-suggest --prefer-lowest
 
+      # —— Security ——————————————————————————————————————————————————————
+      - name: Run Snyk to check for vulnerabilities # See https://github.com/snyk/actions/tree/master/php
+        uses: snyk/actions/php@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+
       # —— Style —————————————————————————————————————————————————————————
       - name: PHP-CS-FIXER
         uses: docker://oskarstark/php-cs-fixer-ga
