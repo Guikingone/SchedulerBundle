@@ -1,12 +1,6 @@
 CHANGELOG
 =========
 
-0.3.5
------
-
-* Doctrine bridge improvements (see https://github.com/Guikingone/SchedulerBundle/pull/46)
-* Worker lifecycle fix (see https://github.com/Guikingone/SchedulerBundle/pull/46)
-
 0.3.4
 -----
 
