@@ -11,6 +11,11 @@ This bundle provides multiple type of tasks:
 - [NotificationTask](#NotificationTask)
 - [NullTask](#NullTask)
 
+## Lifecycle
+
+- [Scheduling](#scheduling-lifecycle)
+- [Execution](#execution-lifecycle)
+
 ## Extra
 
 - [Task callbacks](#Callbacks)
@@ -153,6 +158,25 @@ scheduler_bundle:
             type: 'null'
             # ...
 ```
+
+## Scheduling lifecycle
+
+Once defined via the configuration or scheduled via `$scheduler->schedule(...);`, 
+a task is sent to the specified transport which is responsible for storing the task (no matter the stored format),
+before sending it, the "pre-scheduling" middleware are executed (if an error occurs, the task is not sent).
+
+Once stored, the "post-scheduling" middleware are executed, if an error occurs, the task is unscheduled.
+
+## Execution lifecycle
+
+Tasks are executed thanks to the [worker](../src/Worker/Worker.php), the [scheduler](../src/Scheduler.php) is used
+to retrieve the "due tasks", once retrieved, each task is checked against every runner to see if a runner can execute it.
+
+If so, every task obtains a fresh lock (if an execution delay is set, the worker wait for a specific amount of time),
+once locked, the "pre-executing" middleware are executed, if an error occurs, the task is marked as failed.
+
+Once executed, the fact that a task is marked as "single_run" is checked, if so, the task is paused, after this check,
+the "post-executing" middleware are executed then the lock is released.
 
 ## Callbacks
 

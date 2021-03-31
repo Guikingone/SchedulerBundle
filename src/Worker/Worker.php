@@ -118,7 +118,6 @@ final class Worker implements WorkerInterface
                         continue;
                     }
 
-                    $this->handleSingleRunTask($task);
                     $lockedTask = $this->getLock($task);
 
                     if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
@@ -254,6 +253,7 @@ final class Worker implements WorkerInterface
         $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
+        $this->handleSingleRunTask($task);
     }
 
     private function handleSingleRunTask(TaskInterface $task): void
