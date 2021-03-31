@@ -11,6 +11,11 @@ This bundle provides multiple type of tasks:
 - [NotificationTask](#NotificationTask)
 - [NullTask](#NullTask)
 
+## Lifecycle
+
+- [Scheduling](#scheduling-lifecycle)
+- [Execution](#execution-lifecycle)
+
 ## Extra
 
 - [Task callbacks](#Callbacks)
@@ -153,6 +158,14 @@ scheduler_bundle:
             type: 'null'
             # ...
 ```
+
+## Scheduling lifecycle
+
+// TODO
+
+## Execution lifecycle
+
+// TODO
 
 ## Callbacks
 

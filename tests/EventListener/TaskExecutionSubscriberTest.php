@@ -28,7 +28,7 @@ final class TaskExecutionSubscriberTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('unschedule')->with(self::equalTo('foo'));
+        $scheduler->expects(self::once())->method('pause')->with(self::equalTo('foo'));
 
         $event = new SingleRunTaskExecutedEvent($task);
 

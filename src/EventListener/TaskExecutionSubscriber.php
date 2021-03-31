@@ -25,7 +25,7 @@ final class TaskExecutionSubscriber implements EventSubscriberInterface
     {
         $task = $event->getTask();
 
-        $this->scheduler->unschedule($task->getName());
+        $this->scheduler->pause($task->getName());
     }
 
     public function onTaskExecuted(TaskExecutedEvent $event): void
