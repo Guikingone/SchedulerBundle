@@ -40,11 +40,11 @@ final class Connection implements ConnectionInterface
         }
 
         if (null !== $options['auth'] && !$this->connection->auth($options['auth'])) {
-            throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
+            throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $this->connection->getLastError() ?? ''));
         }
 
         if (!$this->connection->select($options['dbindex'] ?? 0)) {
-            throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $redis->getLastError() ?? ''));
+            throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $this->connection->getLastError() ?? ''));
         }
 
         $this->serializer = $serializer;

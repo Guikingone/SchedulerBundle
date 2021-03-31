@@ -324,9 +324,9 @@ final class Connection implements ConnectionInterface
 
                 /** @var Statement $statement */
                 $statement = $connection->executeQuery(
-                    $query->getSQL(),
-                    $query->getParameters(),
-                    $query->getParameterTypes()
+                    $queryBuilder->getSQL(),
+                    $queryBuilder->getParameters(),
+                    $queryBuilder->getParameterTypes()
                 );
 
                 if (1 !== $statement->rowCount()) {
