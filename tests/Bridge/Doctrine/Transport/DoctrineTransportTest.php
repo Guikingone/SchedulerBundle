@@ -12,9 +12,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaConfig;
-use Doctrine\DBAL\Statement;
 use JsonException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +20,6 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -281,10 +278,12 @@ final class DoctrineTransportTest extends TestCase
 
         $transport = new DoctrineTransport([
             'connection' => 'default',
-            'execution_mode' => 'normal',
+            'execution_mode' => 'first_in_first_out',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $connection, $serializer, $logger);
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]), $logger);
 
         $transport->create($task);
     }

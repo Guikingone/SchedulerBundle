@@ -46,6 +46,9 @@ final class ChainedTask extends AbstractTask
         return $this->options['tasks'][$index];
     }
 
+    /**
+     * @return TaskInterface[]
+     */
     public function getTasks(): array
     {
         return $this->options['tasks'];

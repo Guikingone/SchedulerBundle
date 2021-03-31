@@ -309,6 +309,16 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidExecutionStateType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_state" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_state' => 135,
+        ]);
+    }
+
     public function testTaskCannotBeCreatedWithInvalidLastExecution(): void
     {
         self::expectException(InvalidOptionsException::class);
@@ -336,6 +346,26 @@ final class NullTaskTest extends TestCase
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'nice' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidOutputType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "output" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'output' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidQueuedType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "queued" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'queued' => 'foo',
         ]);
     }
 

@@ -119,7 +119,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('single_run', 'bool');
         $optionsResolver->setAllowedTypes('state', 'string');
-        $optionsResolver->setAllowedTypes('execution_state', ['null', 'string']);
+        $optionsResolver->setAllowedTypes('execution_state', ['string', 'null']);
         $optionsResolver->setAllowedTypes('tags', 'string[]');
         $optionsResolver->setAllowedTypes('tracked', 'bool');
         $optionsResolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);

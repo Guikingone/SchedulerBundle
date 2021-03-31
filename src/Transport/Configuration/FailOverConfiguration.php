@@ -15,6 +15,9 @@ use function count;
  */
 final class FailOverConfiguration implements ConfigurationInterface
 {
+    /**
+     * @var iterable|ConfigurationInterface[]
+     */
     private iterable $configurationStorages;
     private SplObjectStorage $failedConfigurations;
 

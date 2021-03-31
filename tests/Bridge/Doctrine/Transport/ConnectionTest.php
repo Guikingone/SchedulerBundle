@@ -115,7 +115,6 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $taskList = $connection->list();
 
         self::assertEmpty($connection->list());
     }
@@ -291,10 +290,6 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]), $logger);
-
-        self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" has already been scheduled!');
-        self::expectExceptionCode(0);
         $connection->create($task);
     }
 
@@ -608,7 +603,7 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
-        $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($task);
+        $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($nullTask);
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
