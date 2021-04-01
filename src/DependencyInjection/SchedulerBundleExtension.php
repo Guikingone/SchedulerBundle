@@ -829,6 +829,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(DoctrineTransportFactory::class, DoctrineTransportFactory::class)
             ->setArguments([
                 new Reference('doctrine', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag('scheduler.transport_factory')

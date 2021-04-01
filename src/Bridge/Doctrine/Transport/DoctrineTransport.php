@@ -6,6 +6,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
@@ -25,19 +26,20 @@ class DoctrineTransport extends AbstractTransport
     public function __construct(
         array $options,
         DbalConnection $driverConnection,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ?LoggerInterface $logger = null
     ) {
         $this->defineOptions(array_merge([
             'auto_setup' => $options['auto_setup'] ?? true,
             'connection' => $options['connection'] ?? null,
             'table_name' => '_symfony_scheduler_tasks',
         ], $options), [
-            'auto_setup' => ['bool'],
+            'auto_setup' => 'bool',
             'connection' => ['string', 'null'],
-            'table_name' => ['string'],
+            'table_name' => 'string',
         ]);
 
-        $this->connection = new Connection($this->getOptions(), $driverConnection, $serializer);
+        $this->connection = new Connection($this->getOptions(), $driverConnection, $serializer, $logger);
     }
 
     /**

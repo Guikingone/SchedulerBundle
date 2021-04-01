@@ -81,15 +81,31 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertEmpty($list);
     }
 
-    public function testConnectionCanListHydratedTasks(): void
+    public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
     {
-        $this->connection->setup();
         $this->connection->create(new NullTask('foo'));
+        $this->connection->create(new NullTask('bar'));
 
         $list = $this->connection->list();
 
         self::assertNotEmpty($list);
+        self::assertCount(2, $list);
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertInstanceOf(NullTask::class, $list->get('bar'));
+    }
+
+    public function testConnectionCanListHydratedTasks(): void
+    {
+        $this->connection->setup();
+        $this->connection->create(new NullTask('foo'));
+        $this->connection->create(new NullTask('bar'));
+
+        $list = $this->connection->list();
+
+        self::assertNotEmpty($list);
+        self::assertCount(2, $list);
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 
     public function testConnectionCannotRetrieveAnUndefinedTask(): void
@@ -97,7 +113,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->setup();
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -301,7 +317,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -315,7 +331,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }

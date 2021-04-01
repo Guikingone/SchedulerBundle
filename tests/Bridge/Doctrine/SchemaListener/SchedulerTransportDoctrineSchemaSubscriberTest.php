@@ -99,7 +99,6 @@ final class SchedulerTransportDoctrineSchemaSubscriberTest extends TestCase
 
         $doctrineTransport = $this->createMock(DoctrineTransport::class);
 
-        // we use the platform to generate the full create table sql
         $platform->expects(self::once())
             ->method('getCreateTableSQL')
             ->with($table)
