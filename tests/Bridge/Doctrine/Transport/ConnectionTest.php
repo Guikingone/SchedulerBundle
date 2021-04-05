@@ -21,9 +21,9 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection as DoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -230,21 +230,51 @@ final class ConnectionTest extends TestCase
     public function testConnectionCannotInsertASingleTaskWithExistingIdentifier(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')
+            ->with(self::equalTo('The task "foo" cannot be created as an existing one has been found'))
+        ;
+
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('foo'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
-        $driverConnection->expects(self::once())->method('transactional')
-            ->willThrowException(new LogicException('The task "foo" has already been scheduled!'))
-        ;
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer);
-
-        self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" has already been scheduled!');
-        self::expectExceptionCode(0);
+        ], $driverConnection, $serializer, $logger);
         $connection->create($task);
     }
 
@@ -365,7 +395,14 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
         $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::once())->method('where')
             ->with(self::equalTo('t.task_name = :name'))
         ;
@@ -382,9 +419,13 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+
         $driverConnection = $this->getDBALConnectionMock();
-        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($this->getStatementMock([]));
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -392,7 +433,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "bar" cannot be found');
         self::expectExceptionCode(0);
         $connection->pause('bar');
     }
@@ -452,7 +493,14 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
         $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::once())->method('where')
             ->with(self::equalTo('t.task_name = :name'))
         ;
@@ -469,9 +517,13 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+
         $driverConnection = $this->getDBALConnectionMock();
-        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($this->getStatementMock([]));
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -479,7 +531,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $connection->resume('foo');
     }
@@ -710,7 +762,10 @@ final class ConnectionTest extends TestCase
         $connection->setup();
     }
 
-    private function getDBALConnectionMock(): MockObject
+    /**
+     * @return MockObject|Connection
+     */
+    private function getDBALConnectionMock()
     {
         $platform = $this->createMock(AbstractPlatform::class);
         $platform->method('getWriteLockSQL')->willReturn('FOR UPDATE');
@@ -751,20 +806,5 @@ final class ConnectionTest extends TestCase
         $queryBuilder->method('setParameters')->willReturnSelf();
 
         return $queryBuilder;
-    }
-
-    /**
-     * @return Result|MockObject
-     */
-    private function getStatementMock($expectedResult, bool $list = false): MockObject
-    {
-        $statement = $this->createMock(Result::class);
-
-        $list
-            ? $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult)
-            : $statement->expects(self::once())->method('fetchAssociative')->willReturn($expectedResult)
-        ;
-
-        return $statement;
     }
 }
