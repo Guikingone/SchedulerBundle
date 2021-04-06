@@ -36,6 +36,6 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
      */
     public function getPriority(): int
     {
-        return 9;
+        return 15;
     }
 }
