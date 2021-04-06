@@ -14,6 +14,15 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class TaskUpdateMiddlewareTest extends TestCase
 {
+    public function testMiddlewareIsConfigured(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $middleware = new TaskUpdateMiddleware($scheduler);
+
+        self::assertSame(10, $middleware->getPriority());
+    }
+
     public function testMiddlewareCanUpdate(): void
     {
         $task = $this->createMock(TaskInterface::class);

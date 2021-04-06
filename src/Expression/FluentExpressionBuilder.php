@@ -14,9 +14,9 @@ use function strtotime;
  */
 final class FluentExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression, ?string $timezone = null): Expression
+    public function build(string $expression, ?string $timezone = 'UTC'): Expression
     {
-        $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression), new DateTimeZone($timezone ?? 'UTC'));
+        $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression), new DateTimeZone($timezone));
 
         $expression = new Expression();
         $expression->setExpression(sprintf(

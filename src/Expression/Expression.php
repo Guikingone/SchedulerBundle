@@ -186,7 +186,7 @@ final class Expression
         return $this->expression;
     }
 
-    public function setMacro(string $macro): string
+    private function setMacro(string $macro): string
     {
         if (!array_key_exists($macro, self::ALLOWED_MACROS)) {
             throw new InvalidExpressionException(sprintf('The desired macro "%s" is not supported!', $macro));

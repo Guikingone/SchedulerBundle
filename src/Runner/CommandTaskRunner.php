@@ -47,8 +47,6 @@ final class CommandTaskRunner implements RunnerInterface
         $input = $this->buildInput($task);
         $bufferedOutput = new BufferedOutput();
 
-        $task->setExecutionState(TaskInterface::RUNNING);
-
         try {
             $statusCode = $this->application->run($input, $bufferedOutput);
             if (Command::FAILURE === $statusCode) {

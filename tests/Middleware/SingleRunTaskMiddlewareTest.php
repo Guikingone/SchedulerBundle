@@ -19,7 +19,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
-        self::assertSame(9, $singleRunTaskMiddleware->getPriority());
+        self::assertSame(15, $singleRunTaskMiddleware->getPriority());
     }
 
     public function testMiddlewareCannotHandleInvalidTask(): void
