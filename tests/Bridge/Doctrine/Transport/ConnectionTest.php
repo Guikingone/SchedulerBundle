@@ -165,10 +165,9 @@ final class ConnectionTest extends TestCase
         $connection->get('foo');
     }
 
-    public function testConnectionCanReturnASingleTask(): void
+    public function testConnectionCanReturnATask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::never())->method('deserialize');
 
         $expressionBuilder = $this->createMock(ExpressionBuilder::class);
         $expressionBuilder->expects(self::once())->method('eq')
@@ -180,6 +179,10 @@ final class ConnectionTest extends TestCase
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
             ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('from')
+            ->with(self::equalTo('_symfony_scheduler_tasks'), self::equalTo('t'))
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -204,12 +207,8 @@ final class ConnectionTest extends TestCase
         $statement = $this->createMock(Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
-        $abstractPlatform = $this->createMock(AbstractPlatform::class);
-        $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
-
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $driverConnection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
         $driverConnection->expects(self::once())->method('executeQuery')->with(
             self::equalTo('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE'),
             self::equalTo([':name' => 'foo']),
@@ -223,6 +222,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $task = $connection->get('foo');
 
+        self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }
@@ -322,9 +322,9 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
-        $driverConnection->expects(self::exactly(2))
+        $driverConnection->expects(self::once())
             ->method('transactional')
-            ->willReturnOnConsecutiveCalls($statement, self::throwException(new Exception('The given data are invalid.')))
+            ->willThrowException(new Exception('The given data are invalid.'))
         ;
 
         $connection = new DoctrineConnection([
