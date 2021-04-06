@@ -120,6 +120,18 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('cache://app', $configuration['transport']['dsn']);
     }
 
+    public function testProbeIsDisabledByDefault(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'probe' => [],
+            ],
+        ]);
+
+        self::assertArrayHasKey('probe', $configuration);
+        self::assertFalse($configuration['probe']['enabled']);
+    }
+
     public function testConfigurationCanDefineProbe(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
@@ -189,8 +201,6 @@ final class SchedulerBundleConfigurationTest extends TestCase
                         ],
                         'foo' => [
                             'externalProbePath' => '/_external_probe',
-                            'errorOnFailedTasks' => true,
-                            'delay' => 1000,
                         ],
                     ],
                 ],
@@ -209,8 +219,8 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame(2000, $configuration['probe']['clients']['bar']['delay']);
         self::assertArrayHasKey('foo', $configuration['probe']['clients']);
         self::assertSame('/_external_probe', $configuration['probe']['clients']['foo']['externalProbePath']);
-        self::assertTrue($configuration['probe']['clients']['foo']['errorOnFailedTasks']);
-        self::assertSame(1000, $configuration['probe']['clients']['foo']['delay']);
+        self::assertFalse($configuration['probe']['clients']['foo']['errorOnFailedTasks']);
+        self::assertSame(0, $configuration['probe']['clients']['foo']['delay']);
 
         self::assertCount(2, $configuration['tasks']);
         self::assertArrayHasKey('foo', $configuration['tasks']);
