@@ -140,6 +140,40 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertCount(0, $configuration['tasks']);
     }
 
+    public function testConfigurationCanEnableProbeWithTasks(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'probe' => [
+                    'enabled' => true,
+                    'path' => '/_foo',
+                ],
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'command',
+                        'command' => 'cache:clear',
+                        'expression' => '*/5 * * * *',
+                        'description' => 'A simple cache clear task',
+                        'options' => [
+                            'env' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('probe', $configuration);
+        self::assertTrue($configuration['probe']['enabled']);
+        self::assertSame('/_foo', $configuration['probe']['path']);
+        self::assertArrayHasKey('clients', $configuration['probe']);
+        self::assertEmpty($configuration['probe']['clients']);
+
+        self::assertCount(1, $configuration['tasks']);
+    }
+
     public function testConfigurationCanDefineProbeClients(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [

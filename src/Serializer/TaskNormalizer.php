@@ -10,6 +10,7 @@ use DatetimeInterface;
 use DateTimeZone;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -261,6 +262,19 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'url' => $body['url'],
                         'method' => $body['method'],
                         'clientOptions' => $body['clientOptions'],
+                    ],
+                ],
+            ]);
+        }
+
+        if (ProbeTask::class === $objectType) {
+            return $this->objectNormalizer->denormalize($body, $objectType, $format, [
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProbeTask::class => [
+                        'name' => $body['name'],
+                        'externalProbePath' => $body['externalProbePath'],
+                        'errorOnFailedTasks' => $body['errorOnFailedTasks'] ?? false,
+                        'delay' => $body['delay'] ?? 0,
                     ],
                 ],
             ]);

@@ -55,8 +55,8 @@ to launch the probe clients.
 
 **_Note: By default, the runner will return the task as failed if the response returns a 3/4/5xx status code._**
 
-**_Notice: As each client is transformed into a `ProbeTask`, the name of the client is used as the task name, 
-to prevent any error when merging both probe clients and default tasks, using a unique name is highly recommended._**
+**_Notice: As each client is transformed into a `ProbeTask`, the name of the client is used as the task name.
+To prevent any errors when merging both probe clients and default tasks, using a unique name is highly recommended._**
 
 ## DataCollector integration
 

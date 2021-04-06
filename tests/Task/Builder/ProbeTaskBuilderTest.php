@@ -49,6 +49,27 @@ final class ProbeTaskBuilderTest extends TestCase
         self::assertSame($options['externalProbePath'], $task->getExternalProbePath());
     }
 
+    public function testTaskCanBeBuiltWithoutExtraInformations(): void
+    {
+        $builder = new ProbeTaskBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'bar',
+            'type' => 'probe',
+            'externalProbePath' => '/_probe',
+        ]);
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('bar', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
+    }
+
     /**
      * @return Generator<array<int, array<string, mixed>>>
      */

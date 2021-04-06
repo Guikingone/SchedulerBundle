@@ -101,7 +101,7 @@ final class ProbeTaskRunnerTest extends TestCase
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
-    public function testRunnerCanRunTaskWithValidProbeState(): void
+    public function testRunnerCanRunTaskWithValidProbeStateAndErrorOnFailedTasksEnabled(): void
     {
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::once())->method('toArray')->with(self::equalTo(true))->willReturn([
@@ -115,7 +115,7 @@ final class ProbeTaskRunnerTest extends TestCase
         ;
 
         $runner = new ProbeTaskRunner($httpClient);
-        $output = $runner->run(new ProbeTask('foo', '/_probe'));
+        $output = $runner->run(new ProbeTask('foo', '/_probe', true));
 
         self::assertSame(Output::SUCCESS, $output->getType());
         self::assertSame('The probe succeed', $output->getOutput());

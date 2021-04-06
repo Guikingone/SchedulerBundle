@@ -9,6 +9,7 @@ use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use stdClass;
 use Symfony\Component\Notifier\Notification\Notification;
@@ -787,6 +788,68 @@ final class TaskNormalizerTest extends TestCase
         self::assertNotEmpty($bag->getRecipients());
 
         self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    public function testProbeTaskCanBeDenormalized(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->serialize(new ProbeTask('foo', '/_probe', true, 10), 'json');
+        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertTrue($task->getErrorOnFailedTasks());
+        self::assertSame(10, $task->getDelay());
+    }
+
+    public function testProbeTaskCanBeDenormalizedWithoutExtraInformations(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->serialize(new ProbeTask('foo', '/_probe'), 'json');
+        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
     }
 }
 

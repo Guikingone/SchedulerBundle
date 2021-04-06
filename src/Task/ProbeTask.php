@@ -20,9 +20,9 @@ final class ProbeTask extends AbstractTask
             'errorOnFailedTasks' => $errorOnFailedTasks,
             'delay' => $delay,
         ], [
-            'externalProbePath' => ['string'],
-            'errorOnFailedTasks' => ['bool'],
-            'delay' => ['int'],
+            'externalProbePath' => 'string',
+            'errorOnFailedTasks' => 'bool',
+            'delay' => 'int',
         ]);
 
         parent::__construct($name);
