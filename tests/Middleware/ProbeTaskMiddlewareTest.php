@@ -12,6 +12,8 @@ use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @group time-sensitive
  */
 final class ProbeTaskMiddlewareTest extends TestCase
 {
@@ -22,7 +24,7 @@ final class ProbeTaskMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
 
-        $middleware = new ProbeTaskMiddleware($worker);
+        $middleware = new ProbeTaskMiddleware();
         $middleware->preExecute($task);
     }
 
@@ -33,29 +35,18 @@ final class ProbeTaskMiddlewareTest extends TestCase
 
         $task = new ProbeTask('foo', '/_probe');
 
-        $middleware = new ProbeTaskMiddleware($worker);
+        $middleware = new ProbeTaskMiddleware();
         $middleware->preExecute($task);
     }
 
-    public function testMiddlewareCannotBeCalledOnTaskWithDelayButWithoutARunningWorker(): void
+    public function testMiddlewareCannotBeCalledOnTaskWithDelay(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('isRunning')->willReturn(true);
+        $worker->expects(self::never())->method('isRunning');
 
         $task = new ProbeTask('foo', '/_probe', false, 1000);
 
-        $middleware = new ProbeTaskMiddleware($worker);
-        $middleware->preExecute($task);
-    }
-
-    public function testMiddlewareCannotBeCalledOnTaskWithDelayAndWithRunningWorker(): void
-    {
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('isRunning')->willReturn(false);
-
-        $task = new ProbeTask('foo', '/_probe', false, 1000);
-
-        $middleware = new ProbeTaskMiddleware($worker);
+        $middleware = new ProbeTaskMiddleware();
         $middleware->preExecute($task);
     }
 }

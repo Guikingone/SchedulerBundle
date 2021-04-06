@@ -35,15 +35,11 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportIsConfigured(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([
-            'execution_mode' => 'last_in_first_out',
-        ]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::assertCount(3, $roundRobinTransport->getOptions());
         self::assertArrayHasKey('quantum', $roundRobinTransport->getOptions());
         self::assertSame(2, $roundRobinTransport->getOptions()['quantum']);
-        self::assertArrayHasKey('execution_mode', $roundRobinTransport->getOptions());
-        self::assertSame('last_in_first_out', $transport->getOptions()['execution_mode']);
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void

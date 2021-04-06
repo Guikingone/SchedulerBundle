@@ -255,8 +255,6 @@ interface TaskInterface
 
     /**
      * @param array<int, string> $tags
-     *
-     * @return $this
      */
     public function setTags(array $tags): self;
 

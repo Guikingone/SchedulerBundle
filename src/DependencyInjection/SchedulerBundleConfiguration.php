@@ -120,7 +120,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                 $chainedTasks = array_filter($taskConfiguration, fn (array $configuration): bool => 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']));
 
                                 if (0 === count($chainedTasks)) {
-                                    return $configuration;
+                                    return $taskConfiguration;
                                 }
 
                                 $updatedChainedTasks = array_map(function (array $chainedTaskConfiguration): array {
@@ -133,7 +133,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                     return $chainedTaskConfiguration;
                                 }, $chainedTasks);
 
-                                return array_replace($configuration, $updatedChainedTasks);
+                                return array_replace($taskConfiguration, $updatedChainedTasks);
                             })
                         ->end()
                         ->useAttributeAsKey('name')

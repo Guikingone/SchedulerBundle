@@ -155,7 +155,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerParameters(ContainerBuilder $container, array $configuration): void
@@ -261,7 +260,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerTransport(ContainerBuilder $container, array $configuration): void
@@ -813,7 +811,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerWorker(ContainerBuilder $container, array $configuration): void
@@ -840,7 +837,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerTasks(ContainerBuilder $container, array $configuration): void
@@ -907,7 +903,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerMiddlewareStacks(ContainerBuilder $container, array $configuration): void
@@ -993,7 +988,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerProbeContext(ContainerBuilder $container, array $configuration): void

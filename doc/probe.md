@@ -9,7 +9,7 @@ and fetch external applications state.
 
 ## Returning current state
 
-First, the probe must be enabled then a path defined (default to `/_probe`):
+First, the probe must be enabled and optionally a path defined (default to `/_probe`):
 
 ```yaml
 scheduler_bundle:
