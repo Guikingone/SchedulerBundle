@@ -38,7 +38,7 @@ final class FluentExpressionBuilderTest extends TestCase
     public function testBuilderCanBuildWithTimezone(string $expression, string $endExpression): void
     {
         $fluentExpressionBuilder = new FluentExpressionBuilder();
-        $finalExpression = $fluentExpressionBuilder->build($expression, 'UTC');
+        $finalExpression = $fluentExpressionBuilder->build($expression);
 
         self::assertSame($finalExpression->getExpression(), $endExpression);
     }
