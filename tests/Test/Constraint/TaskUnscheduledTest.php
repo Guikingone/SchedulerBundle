@@ -6,7 +6,9 @@ namespace Tests\SchedulerBundle\Test\Constraint;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
+use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskUnscheduled;
 
 /**
@@ -16,20 +18,23 @@ final class TaskUnscheduledTest extends TestCase
 {
     public function testConstraintCannotMatch(): void
     {
-        $list = new TaskEventList();
+        $taskEventList = new TaskEventList();
 
-        $constraint = new TaskUnscheduled(1);
+        $taskUnscheduled = new TaskUnscheduled(1);
 
-        self::assertFalse($constraint->evaluate($list, '', true));
+        self::assertFalse($taskUnscheduled->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
     {
-        $list = new TaskEventList();
-        $list->addEvent(new TaskUnscheduledEvent('foo'));
+        $task = $this->createMock(TaskInterface::class);
 
-        $constraint = new TaskUnscheduled(1);
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskScheduledEvent($task));
+        $taskEventList->addEvent(new TaskUnscheduledEvent('foo'));
 
-        self::assertTrue($constraint->evaluate($list, '', true));
+        $taskUnscheduled = new TaskUnscheduled(1);
+
+        self::assertTrue($taskUnscheduled->evaluate($taskEventList, '', true));
     }
 }

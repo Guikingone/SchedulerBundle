@@ -90,7 +90,7 @@ interface TaskInterface
 
     public function setName(string $name): self;
 
-    public function setArrivalTime(DateTimeImmutable $arrivalTime = null): self;
+    public function setArrivalTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getArrivalTime(): ?DateTimeImmutable;
 
@@ -102,19 +102,19 @@ interface TaskInterface
 
     public function getBeforeScheduling();
 
-    public function beforeSchedulingNotificationBag(NotificationTaskBag $beforeSchedulingNotificationBag = null): TaskInterface;
+    public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag;
 
-    public function afterSchedulingNotificationBag(NotificationTaskBag $afterSchedulingNotificationBag = null): TaskInterface;
+    public function afterSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag;
 
-    public function beforeExecutingNotificationBag(NotificationTaskBag $beforeExecutingNotificationBag = null): TaskInterface;
+    public function beforeExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag;
 
-    public function afterExecutingNotificationBag(NotificationTaskBag $afterExecutingNotificationBag = null): TaskInterface;
+    public function afterExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
@@ -150,7 +150,7 @@ interface TaskInterface
 
     public function getExpression(): string;
 
-    public function setExecutionAbsoluteDeadline(DateInterval $executionAbsoluteDeadline = null): self;
+    public function setExecutionAbsoluteDeadline(DateInterval $dateInterval = null): self;
 
     public function getExecutionAbsoluteDeadline(): ?DateInterval;
 
@@ -172,7 +172,7 @@ interface TaskInterface
 
     public function getExecutionRelativeDeadline(): ?DateInterval;
 
-    public function setExecutionRelativeDeadline(DateInterval $executionRelativeDeadline = null): self;
+    public function setExecutionRelativeDeadline(DateInterval $dateInterval = null): self;
 
     public function setExecutionStartDate(string $executionStartDate = null): self;
 
@@ -182,15 +182,15 @@ interface TaskInterface
 
     public function getExecutionEndDate(): ?DateTimeImmutable;
 
-    public function setExecutionStartTime(DateTimeImmutable $executionStartTime = null): self;
+    public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getExecutionStartTime(): ?DateTimeImmutable;
 
-    public function setExecutionEndTime(DateTimeImmutable $executionStartTime = null): self;
+    public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getExecutionEndTime(): ?DateTimeImmutable;
 
-    public function setLastExecution(DateTimeImmutable $lastExecution = null): self;
+    public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getLastExecution(): ?DateTimeImmutable;
 
@@ -256,7 +256,7 @@ interface TaskInterface
 
     public function getTimezone(): ?DateTimeZone;
 
-    public function setTimezone(DateTimeZone $timezone = null): self;
+    public function setTimezone(DateTimeZone $dateTimeZone = null): self;
 
     public function isTracked(): bool;
 

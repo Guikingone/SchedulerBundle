@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -14,71 +15,71 @@ final class ShellTaskTest extends TestCase
 {
     public function testTaskCanBeCreated(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!']);
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!']);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame('* * * * *', $task->getExpression());
-        self::assertNotEmpty($task->getCommand());
-        self::assertContainsEquals('echo', $task->getCommand());
-        self::assertContainsEquals('Symfony!', $task->getCommand());
-        self::assertSame(60.0, $task->getTimeout());
-        self::assertSame(0, $task->getPriority());
+        self::assertSame('foo', $shellTask->getName());
+        self::assertSame('* * * * *', $shellTask->getExpression());
+        self::assertNotEmpty($shellTask->getCommand());
+        self::assertContainsEquals('echo', $shellTask->getCommand());
+        self::assertContainsEquals('Symfony!', $shellTask->getCommand());
+        self::assertSame(60.0, $shellTask->getTimeout());
+        self::assertSame(0, $shellTask->getPriority());
     }
 
     public function testTaskCanBeCreatedWithSpecificCwd(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
 
-        self::assertSame('/srv/app', $task->getCwd());
+        self::assertSame('/srv/app', $shellTask->getCwd());
     }
 
     public function testTaskCanBeCreatedWithSpecificCwdAndChangedLater(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
-        self::assertSame('/srv/app', $task->getCwd());
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
+        self::assertSame('/srv/app', $shellTask->getCwd());
 
-        $task->setCwd(\sys_get_temp_dir());
-        self::assertSame(\sys_get_temp_dir(), $task->getCwd());
+        $shellTask->setCwd(sys_get_temp_dir());
+        self::assertSame(sys_get_temp_dir(), $shellTask->getCwd());
     }
 
     public function testTaskCanBeCreatedWithSpecificEnvironmentVariables(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!'], null, [
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], null, [
             'APP_ENV' => 'test',
         ]);
 
-        self::assertArrayHasKey('APP_ENV', $task->getEnvironmentVariables());
-        self::assertSame('test', $task->getEnvironmentVariables()['APP_ENV']);
+        self::assertArrayHasKey('APP_ENV', $shellTask->getEnvironmentVariables());
+        self::assertSame('test', $shellTask->getEnvironmentVariables()['APP_ENV']);
     }
 
     public function testTaskCanBeCreatedWithSpecificEnvironmentVariablesAndChangedLater(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!'], null, [
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], null, [
             'APP_ENV' => 'test',
         ]);
-        self::assertArrayHasKey('APP_ENV', $task->getEnvironmentVariables());
-        self::assertSame('test', $task->getEnvironmentVariables()['APP_ENV']);
+        self::assertArrayHasKey('APP_ENV', $shellTask->getEnvironmentVariables());
+        self::assertSame('test', $shellTask->getEnvironmentVariables()['APP_ENV']);
 
-        $task->setEnvironmentVariables([
+        $shellTask->setEnvironmentVariables([
             'APP_ENV' => 'prod',
         ]);
-        self::assertArrayHasKey('APP_ENV', $task->getEnvironmentVariables());
-        self::assertSame('prod', $task->getEnvironmentVariables()['APP_ENV']);
+        self::assertArrayHasKey('APP_ENV', $shellTask->getEnvironmentVariables());
+        self::assertSame('prod', $shellTask->getEnvironmentVariables()['APP_ENV']);
     }
 
     public function testTaskCanDefineBeforeSchedulingCallable(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->beforeScheduling(fn (): bool => false);
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!']);
+        $shellTask->beforeScheduling(fn (): bool => false);
 
-        self::assertNotNull($task->getBeforeScheduling());
+        self::assertNotNull($shellTask->getBeforeScheduling());
     }
 
     public function testTaskCanDefineAfterSchedulingCallable(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        $task->afterScheduling(fn (): bool => false);
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!']);
+        $shellTask->afterScheduling(fn (): bool => false);
 
-        self::assertNotNull($task->getAfterScheduling());
+        self::assertNotNull($shellTask->getAfterScheduling());
     }
 }

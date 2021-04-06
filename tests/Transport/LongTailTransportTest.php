@@ -17,25 +17,14 @@ use SchedulerBundle\Transport\TransportInterface;
  */
 final class LongTailTransportTest extends TestCase
 {
-    public function testTransportIsConfigured(): void
-    {
-        $transport = new LongTailTransport([]);
-
-        self::assertCount(2, $transport->getOptions());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertNull($transport->getOptions()['path']);
-    }
-
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $longTailTransport->get('foo');
     }
 
     public function testTransportCannotGetWithFailingTransports(): void
@@ -61,7 +50,7 @@ final class LongTailTransportTest extends TestCase
         $thirdTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $thirdTransport->expects(self::never())->method('get');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
             $thirdTransport,
@@ -70,7 +59,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $longTailTransport->get('foo');
     }
 
     public function testTransportCanRetrieveTask(): void
@@ -94,22 +83,22 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('get');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $longTailTransport->get('foo'));
     }
 
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->list();
+        $longTailTransport->list();
     }
 
     public function testTransportCannotReturnAListWithFailingTransports(): void
@@ -129,7 +118,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -137,7 +126,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->list();
+        $longTailTransport->list();
     }
 
     public function testTransportCanReturnList(): void
@@ -154,24 +143,24 @@ final class LongTailTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertSame($taskList, $transport->list());
+        self::assertSame($taskList, $longTailTransport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->create($task);
+        $longTailTransport->create($task);
     }
 
     public function testTransportCannotCreateWithFailingTransports(): void
@@ -194,7 +183,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('create');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -202,7 +191,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->create($task);
+        $longTailTransport->create($task);
     }
 
     public function testTransportCanCreate(): void
@@ -223,24 +212,24 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('create');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->create($task);
+        $longTailTransport->create($task);
     }
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $longTailTransport->update('foo', $task);
     }
 
     public function testTransportCannotUpdateWithFailingTransports(): void
@@ -263,7 +252,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('update');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -271,7 +260,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $longTailTransport->update('foo', $task);
     }
 
     public function testTransportCanUpdate(): void
@@ -292,22 +281,22 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('update');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->update('foo', $task);
+        $longTailTransport->update('foo', $task);
     }
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $longTailTransport->delete('foo');
     }
 
     public function testTransportCannotDeleteWithFailingTransports(): void
@@ -328,7 +317,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('delete');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -336,7 +325,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $longTailTransport->delete('foo');
     }
 
     public function testTransportCanDelete(): void
@@ -355,22 +344,22 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('delete');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->delete('foo');
+        $longTailTransport->delete('foo');
     }
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $longTailTransport->pause('foo');
     }
 
     public function testTransportCannotPauseWithFailingTransports(): void
@@ -391,7 +380,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('pause');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -399,7 +388,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $longTailTransport->pause('foo');
     }
 
     public function testTransportCanPause(): void
@@ -418,21 +407,21 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('pause');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->pause('foo');
+        $longTailTransport->pause('foo');
     }
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
-        $transport->resume('foo');
+        $longTailTransport->resume('foo');
     }
 
     public function testTransportCannotResumeWithFailingTransports(): void
@@ -453,7 +442,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('resume');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -461,7 +450,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $longTailTransport->resume('foo');
     }
 
     public function testTransportCanResume(): void
@@ -480,22 +469,22 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('resume');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->resume('foo');
+        $longTailTransport->resume('foo');
     }
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $transport = new LongTailTransport([]);
+        $longTailTransport = new LongTailTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $longTailTransport->clear();
     }
 
     public function testTransportCannotClearWithFailingTransports(): void
@@ -516,7 +505,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('clear');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -524,7 +513,7 @@ final class LongTailTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $longTailTransport->clear();
     }
 
     public function testTransportCanClear(): void
@@ -543,11 +532,11 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('clear');
 
-        $transport = new LongTailTransport([
+        $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->clear();
+        $longTailTransport->clear();
     }
 }

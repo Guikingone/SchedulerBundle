@@ -17,29 +17,34 @@ final class SchedulerPassTest extends TestCase
 {
     public function testSchedulerExtraCannotBeRegisteredWithoutDependency(): void
     {
-        $container = new ContainerBuilder();
-        $container->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
             'require' => 'scheduler.task_builder',
             'tag' => 'scheduler.tag',
         ]);
 
-        (new SchedulerPass())->process($container);
+        (new SchedulerPass())->process($containerBuilder);
 
-        self::assertFalse($container->hasDefinition('scheduler.foo_task'));
+        self::assertFalse($containerBuilder->hasDefinition('scheduler.foo_task'));
     }
 
     public function testSchedulerExtraCanBeRegisteredWithDependency(): void
     {
-        $container = new ContainerBuilder();
-        $container->register('scheduler.task_builder', stdClass::class);
-        $container->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->register('scheduler.task_builder', stdClass::class);
+        $containerBuilder->register('scheduler.bar_task', TaskInterface::class)->addTag('scheduler.extra', [
+            'require' => 'http_client',
+            'tag' => 'scheduler.tag',
+        ]);
+        $containerBuilder->register('scheduler.foo_task', TaskInterface::class)->addTag('scheduler.extra', [
             'require' => 'scheduler.task_builder',
             'tag' => 'scheduler.tag',
         ]);
 
-        (new SchedulerPass())->process($container);
+        (new SchedulerPass())->process($containerBuilder);
 
-        self::assertTrue($container->hasDefinition('scheduler.foo_task'));
-        self::assertTrue($container->getDefinition('scheduler.foo_task')->hasTag('scheduler.tag'));
+        self::assertTrue($containerBuilder->hasDefinition('scheduler.foo_task'));
+        self::assertTrue($containerBuilder->getDefinition('scheduler.foo_task')->hasTag('scheduler.tag'));
+        self::assertFalse($containerBuilder->hasDefinition('scheduler.bar_task'));
     }
 }

@@ -26,16 +26,16 @@ final class TaskMessageHandler implements MessageHandlerInterface
     /**
      * @throws Exception
      */
-    public function __invoke(TaskMessage $message): void
+    public function __invoke(TaskMessage $taskMessage): void
     {
-        $task = $message->getTask();
+        $task = $taskMessage->getTask();
 
         if (!(new CronExpression($task->getExpression()))->isDue(new DateTimeImmutable('now', $task->getTimezone()), $task->getTimezone()->getName())) {
             return;
         }
 
         while ($this->worker->isRunning()) {
-            sleep($message->getWorkerTimeout());
+            sleep($taskMessage->getWorkerTimeout());
         }
 
         $this->worker->execute([], $task);

@@ -18,7 +18,7 @@ final class NotificationTask extends AbstractTask
             'notification' => $notification,
             'recipients' => $recipients,
         ], [
-            'notification' => [Notification::class],
+            'notification' => Notification::class,
             'recipients' => ['array', 'Symfony\Component\Notifier\Recipient\Recipient[]', Recipient::class, 'null'],
         ]);
 

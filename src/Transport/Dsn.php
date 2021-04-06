@@ -28,7 +28,7 @@ final class Dsn
     /**
      * @var mixed[]
      */
-    private array $options = [];
+    private array $options;
 
     private ?string $path;
 

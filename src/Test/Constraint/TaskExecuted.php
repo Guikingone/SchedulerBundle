@@ -38,15 +38,15 @@ final class TaskExecuted extends Constraint
         return $this->expectedCount === $this->countExecutedTasks($eventsList);
     }
 
-    private function countExecutedTasks(TaskEventList $eventsList): int
+    private function countExecutedTasks(TaskEventList $taskEventList): int
     {
         $count = 0;
-        foreach ($eventsList->getEvents() as $event) {
-            if (!$event instanceof TaskExecutedEvent) {
+        foreach ($taskEventList->getEvents() as $taskEvent) {
+            if (!$taskEvent instanceof TaskExecutedEvent) {
                 continue;
             }
 
-            if (TaskInterface::SUCCEED !== $event->getTask()->getExecutionState()) {
+            if (TaskInterface::SUCCEED !== $taskEvent->getTask()->getExecutionState()) {
                 continue;
             }
 

@@ -15,6 +15,9 @@ use function count;
  */
 final class FailOverConfiguration implements ConfigurationInterface
 {
+    /**
+     * @var iterable|ConfigurationInterface[]
+     */
     private iterable $configurationStorages;
     private SplObjectStorage $failedConfigurations;
 
@@ -68,7 +71,7 @@ final class FailOverConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getOptions(): iterable
     {
         return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
     }
@@ -79,15 +82,15 @@ final class FailOverConfiguration implements ConfigurationInterface
             throw new ConfigurationException('No configuration found');
         }
 
-        foreach ($this->configurationStorages as $configuration) {
-            if ($this->failedConfigurations->contains($configuration)) {
+        foreach ($this->configurationStorages as $configurationStorage) {
+            if ($this->failedConfigurations->contains($configurationStorage)) {
                 continue;
             }
 
             try {
-                return $func($configuration);
+                return $func($configurationStorage);
             } catch (Throwable $throwable) {
-                $this->failedConfigurations->attach($configuration);
+                $this->failedConfigurations->attach($configurationStorage);
 
                 continue;
             }

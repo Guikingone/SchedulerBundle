@@ -22,47 +22,47 @@ final class TaskEventListTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskExecutedEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertNotEmpty($list->getEvents());
-        self::assertSame(1, $list->count());
-        self::assertEmpty($list->getScheduledTaskEvents());
-        self::assertEmpty($list->getFailedTaskEvents());
-        self::assertNotEmpty($list->getExecutedTaskEvents());
-        self::assertEmpty($list->getUnscheduledTaskEvents());
-        self::assertEmpty($list->getQueuedTaskEvents());
+        self::assertNotEmpty($taskEventList->getEvents());
+        self::assertSame(1, $taskEventList->count());
+        self::assertEmpty($taskEventList->getScheduledTaskEvents());
+        self::assertEmpty($taskEventList->getFailedTaskEvents());
+        self::assertNotEmpty($taskEventList->getExecutedTaskEvents());
+        self::assertEmpty($taskEventList->getUnscheduledTaskEvents());
+        self::assertEmpty($taskEventList->getQueuedTaskEvents());
     }
 
     public function testScheduledTaskEventsCanBeRetrieved(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskScheduledEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        self::assertNotEmpty($list->getScheduledTaskEvents());
-        self::assertSame($task, $list->getScheduledTaskEvents()[0]->getTask());
+        self::assertNotEmpty($taskEventList->getScheduledTaskEvents());
+        self::assertSame($task, $taskEventList->getScheduledTaskEvents()[0]->getTask());
     }
 
     public function testUnscheduledTaskEventsCanBeRetrieved(): void
     {
-        $list = new TaskEventList();
-        $list->addEvent(new TaskUnscheduledEvent('foo'));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskUnscheduledEvent('foo'));
 
-        self::assertNotEmpty($list->getUnscheduledTaskEvents());
-        self::assertSame('foo', $list->getUnscheduledTaskEvents()[0]->getTask());
+        self::assertNotEmpty($taskEventList->getUnscheduledTaskEvents());
+        self::assertSame('foo', $taskEventList->getUnscheduledTaskEvents()[0]->getTask());
     }
 
     public function testExecutedTaskEventsCanBeRetrieved(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskExecutedEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertNotEmpty($list->getExecutedTaskEvents());
-        self::assertSame($task, $list->getExecutedTaskEvents()[0]->getTask());
+        self::assertNotEmpty($taskEventList->getExecutedTaskEvents());
+        self::assertSame($task, $taskEventList->getExecutedTaskEvents()[0]->getTask());
     }
 
     public function testFailedTaskEventsCanBeRetrieved(): void
@@ -70,12 +70,12 @@ final class TaskEventListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $failedTask = new FailedTask($task, 'error');
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskFailedEvent($failedTask));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskFailedEvent($failedTask));
 
-        self::assertNotEmpty($list->getFailedTaskEvents());
-        self::assertSame($failedTask, $list->getFailedTaskEvents()[0]->getTask());
-        self::assertSame($task, $list->getFailedTaskEvents()[0]->getTask()->getTask());
+        self::assertNotEmpty($taskEventList->getFailedTaskEvents());
+        self::assertSame($failedTask, $taskEventList->getFailedTaskEvents()[0]->getTask());
+        self::assertSame($task, $taskEventList->getFailedTaskEvents()[0]->getTask()->getTask());
     }
 
     public function testQueuedTaskEventsCanBeRetrievedWithoutValidEvent(): void
@@ -83,10 +83,10 @@ final class TaskEventListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('isQueued')->willReturn(true);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskExecutedEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertEmpty($list->getQueuedTaskEvents());
+        self::assertEmpty($taskEventList->getQueuedTaskEvents());
     }
 
     public function testQueuedTaskEventsCanBeRetrieved(): void
@@ -94,10 +94,10 @@ final class TaskEventListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('isQueued')->willReturn(true);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskScheduledEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        self::assertNotEmpty($list->getQueuedTaskEvents());
-        self::assertSame($task, $list->getQueuedTaskEvents()[0]->getTask());
+        self::assertNotEmpty($taskEventList->getQueuedTaskEvents());
+        self::assertSame($task, $taskEventList->getQueuedTaskEvents()[0]->getTask());
     }
 }

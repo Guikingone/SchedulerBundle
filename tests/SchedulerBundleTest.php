@@ -16,9 +16,9 @@ final class SchedulerBundleTest extends TestCase
 {
     public function testExtensionIsReturned(): void
     {
-        $bundle = new SchedulerBundle();
+        $schedulerBundle = new SchedulerBundle();
 
-        self::assertInstanceOf(SchedulerBundleExtension::class, $bundle->getContainerExtension());
+        self::assertInstanceOf(SchedulerBundleExtension::class, $schedulerBundle->getContainerExtension());
     }
 
     public function testCompilerPassIsConfigured(): void
@@ -26,7 +26,7 @@ final class SchedulerBundleTest extends TestCase
         $container = $this->createMock(ContainerBuilder::class);
         $container->expects(self::once())->method('addCompilerPass');
 
-        $bundle = new SchedulerBundle();
-        $bundle->build($container);
+        $schedulerBundle = new SchedulerBundle();
+        $schedulerBundle->build($container);
     }
 }

@@ -15,10 +15,10 @@ final class IdlePolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new IdlePolicy();
+        $idlePolicy = new IdlePolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('idle'));
+        self::assertFalse($idlePolicy->support('test'));
+        self::assertTrue($idlePolicy->support('idle'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -29,8 +29,8 @@ final class IdlePolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(-20);
 
-        $policy = new IdlePolicy();
-        $tasks = $policy->sort(['app' => $secondTask, 'foo' => $task]);
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
 
         self::assertCount(2, $tasks);
         self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);

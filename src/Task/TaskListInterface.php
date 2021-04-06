@@ -22,7 +22,7 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * @throws Throwable if a task cannot be added|created in a local or remote transport,
      *                   the task is removed from the list and the exception thrown
      */
-    public function add(TaskInterface ...$tasks): void;
+    public function add(TaskInterface ...$task): void;
 
     /**
      * Return if the task exist in the list using its name.

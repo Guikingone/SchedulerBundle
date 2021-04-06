@@ -24,29 +24,29 @@ final class RemoveFailedTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $worker = $this->createMock(WorkerInterface::class);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
 
-        self::assertSame('scheduler:remove:failed', $command->getName());
-        self::assertSame('Remove given task from the scheduler', $command->getDescription());
-        self::assertTrue($command->getDefinition()->hasArgument('name'));
-        self::assertSame('The name of the task to remove', $command->getDefinition()->getArgument('name')->getDescription());
-        self::assertTrue($command->getDefinition()->getArgument('name')->isRequired());
-        self::assertTrue($command->getDefinition()->hasOption('force'));
-        self::assertSame('Force the operation without confirmation', $command->getDefinition()->getOption('force')->getDescription());
-        self::assertSame('f', $command->getDefinition()->getOption('force')->getShortcut());
+        self::assertSame('scheduler:remove:failed', $removeFailedTaskCommand->getName());
+        self::assertSame('Remove given task from the scheduler', $removeFailedTaskCommand->getDescription());
+        self::assertTrue($removeFailedTaskCommand->getDefinition()->hasArgument('name'));
+        self::assertSame('The name of the task to remove', $removeFailedTaskCommand->getDefinition()->getArgument('name')->getDescription());
+        self::assertTrue($removeFailedTaskCommand->getDefinition()->getArgument('name')->isRequired());
+        self::assertTrue($removeFailedTaskCommand->getDefinition()->hasOption('force'));
+        self::assertSame('Force the operation without confirmation', $removeFailedTaskCommand->getDefinition()->getOption('force')->getDescription());
+        self::assertSame('f', $removeFailedTaskCommand->getDefinition()->getOption('force')->getShortcut());
         self::assertSame(
-            $command->getHelp(),
+            $removeFailedTaskCommand->getHelp(),
             <<<'EOF'
-The <info>%command.name%</info> command remove a failed task.
+                The <info>%command.name%</info> command remove a failed task.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Use the task-name argument to specify the task to remove:
-    <info>php %command.full_name% <task-name></info>
+                Use the task-name argument to specify the task to remove:
+                    <info>php %command.full_name% <task-name></info>
 
-Use the --force option to force the task deletion without asking for confirmation:
-    <info>php %command.full_name% <task-name> --force</info>
-EOF
+                Use the --force option to force the task deletion without asking for confirmation:
+                    <info>php %command.full_name% <task-name> --force</info>
+                EOF
         );
     }
 
@@ -60,14 +60,14 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
-        $tester = new CommandTester($command);
-        $tester->execute([
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $commandTester = new CommandTester($removeFailedTaskCommand);
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('[ERROR] The task "foo" does not fails', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        self::assertStringContainsString('[ERROR] The task "foo" does not fails', $commandTester->getDisplay());
     }
 
     public function testCommandCannotRemoveTaskWithException(): void
@@ -83,16 +83,16 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
-        $tester = new CommandTester($command);
-        $tester->setInputs(['yes']);
-        $tester->execute([
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $commandTester = new CommandTester($removeFailedTaskCommand);
+        $commandTester->setInputs(['yes']);
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('[ERROR] An error occurred when trying to unschedule the task:', $tester->getDisplay());
-        self::assertStringContainsString('Random error', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        self::assertStringContainsString('[ERROR] An error occurred when trying to unschedule the task:', $commandTester->getDisplay());
+        self::assertStringContainsString('Random error', $commandTester->getDisplay());
     }
 
     public function testCommandCannotRemoveWithoutConfirmationOrForceOption(): void
@@ -109,14 +109,14 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
-        $tester = new CommandTester($command);
-        $tester->execute([
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $commandTester = new CommandTester($removeFailedTaskCommand);
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('[NOTE] The task "foo" has not been unscheduled', $tester->getDisplay());
+        self::assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        self::assertStringContainsString('[NOTE] The task "foo" has not been unscheduled', $commandTester->getDisplay());
     }
 
     public function testCommandCanRemoveTaskWithForceOption(): void
@@ -133,15 +133,15 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
-        $tester = new CommandTester($command);
-        $tester->execute([
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $commandTester = new CommandTester($removeFailedTaskCommand);
+        $commandTester->execute([
             'name' => 'foo',
             '--force' => true,
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $commandTester->getDisplay());
     }
 
     public function testCommandCanRemoveTask(): void
@@ -158,14 +158,14 @@ EOF
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
 
-        $command = new RemoveFailedTaskCommand($scheduler, $worker);
-        $tester = new CommandTester($command);
-        $tester->setInputs(['yes']);
-        $tester->execute([
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $commandTester = new CommandTester($removeFailedTaskCommand);
+        $commandTester->setInputs(['yes']);
+        $commandTester->execute([
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $tester->getDisplay());
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $commandTester->getDisplay());
     }
 }

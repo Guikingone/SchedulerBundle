@@ -14,7 +14,7 @@ final class MessengerTask extends AbstractTask
         $this->defineOptions([
             'message' => $message,
         ], [
-            'message' => ['object'],
+            'message' => 'object',
         ]);
 
         parent::__construct($name);

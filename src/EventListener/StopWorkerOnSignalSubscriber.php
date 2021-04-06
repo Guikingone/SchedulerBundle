@@ -19,19 +19,19 @@ use const SIGTERM;
  */
 final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
-    public function onWorkerStarted(WorkerStartedEvent $event): void
+    public function onWorkerStarted(WorkerStartedEvent $workerStartedEvent): void
     {
         foreach ([SIGTERM, SIGINT, SIGQUIT] as $signal) {
-            pcntl_signal($signal, static function () use ($event): void {
-                $event->getWorker()->stop();
+            pcntl_signal($signal, static function () use ($workerStartedEvent): void {
+                $workerStartedEvent->getWorker()->stop();
             });
         }
     }
 
-    public function onWorkerRunning(WorkerRunningEvent $event): void
+    public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
-        pcntl_signal(SIGHUP, static function () use ($event): void {
-            $event->getWorker()->restart();
+        pcntl_signal(SIGHUP, static function () use ($workerRunningEvent): void {
+            $workerRunningEvent->getWorker()->restart();
         });
     }
 

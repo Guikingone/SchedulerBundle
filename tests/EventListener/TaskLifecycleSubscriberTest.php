@@ -41,8 +41,8 @@ final class TaskLifecycleSubscriberTest extends TestCase
             'task' => 'foo',
         ]));
 
-        $subscriber = new TaskLifecycleSubscriber($logger);
-        $subscriber->onTaskScheduled(new TaskScheduledEvent($task));
+        $taskLifecycleSubscriber = new TaskLifecycleSubscriber($logger);
+        $taskLifecycleSubscriber->onTaskScheduled(new TaskScheduledEvent($task));
     }
 
     public function testSubscriberCanLogWhenATaskIsUnscheduled(): void
@@ -52,8 +52,8 @@ final class TaskLifecycleSubscriberTest extends TestCase
             'task' => 'foo',
         ]));
 
-        $subscriber = new TaskLifecycleSubscriber($logger);
-        $subscriber->onTaskUnscheduled(new TaskUnscheduledEvent('foo'));
+        $taskLifecycleSubscriber = new TaskLifecycleSubscriber($logger);
+        $taskLifecycleSubscriber->onTaskUnscheduled(new TaskUnscheduledEvent('foo'));
     }
 
     public function testSubscriberCanLogWhenATaskIsExecuted(): void
@@ -66,8 +66,8 @@ final class TaskLifecycleSubscriberTest extends TestCase
             'task' => 'foo',
         ]));
 
-        $subscriber = new TaskLifecycleSubscriber($logger);
-        $subscriber->onTaskExecuted(new TaskExecutedEvent($task));
+        $taskLifecycleSubscriber = new TaskLifecycleSubscriber($logger);
+        $taskLifecycleSubscriber->onTaskExecuted(new TaskExecutedEvent($task));
     }
 
     public function testSubscriberCanLogWhenATaskHasFailed(): void
@@ -80,7 +80,7 @@ final class TaskLifecycleSubscriberTest extends TestCase
             'task' => 'foo',
         ]));
 
-        $subscriber = new TaskLifecycleSubscriber($logger);
-        $subscriber->onTaskFailed(new TaskFailedEvent(new FailedTask($task, 'random error')));
+        $taskLifecycleSubscriber = new TaskLifecycleSubscriber($logger);
+        $taskLifecycleSubscriber->onTaskFailed(new TaskFailedEvent(new FailedTask($task, 'random error')));
     }
 }

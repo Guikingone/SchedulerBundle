@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
-use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;

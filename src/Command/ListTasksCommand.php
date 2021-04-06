@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use function array_walk;
+use function array_map;
 use function count;
 use function implode;
 use function sprintf;
@@ -55,19 +55,19 @@ final class ListTasksCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command list tasks.
+                    The <info>%command.name%</info> command list tasks.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the --expression option to list the tasks with a specific expression:
-    <info>php %command.full_name% --expression=* * * * *</info>
+                    Use the --expression option to list the tasks with a specific expression:
+                        <info>php %command.full_name% --expression=* * * * *</info>
 
-Use the --state option to list the tasks with a specific state:
-    <info>php %command.full_name% --state=paused</info>
+                    Use the --state option to list the tasks with a specific state:
+                        <info>php %command.full_name% --state=paused</info>
 
-Use the -s option to list the tasks with a specific state:
-    <info>php %command.full_name% -s=paused</info>
-EOF
+                    Use the -s option to list the tasks with a specific state:
+                        <info>php %command.full_name% -s=paused</info>
+                    EOF
             )
         ;
     }
@@ -77,11 +77,11 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getTasks();
         if (0 === count($tasks->toArray())) {
-            $style->warning('No tasks found');
+            $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
@@ -96,32 +96,27 @@ EOF
 
         $tasks = $tasks->toArray();
         if (0 === count($tasks)) {
-            $style->warning('No tasks found');
+            $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
 
-        $style->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
+        $symfonyStyle->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Description', 'Expression', 'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
+        $table->addRows(array_map(fn (TaskInterface $task): array => [
+            $task->getName(),
+            $task->getDescription() ?? 'No description set',
+            $task->getExpression(),
+            null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+            (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
+            null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
+            null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+            $task->getState(),
+            implode(', ', $task->getTags()) ?? 'No tags set',
+        ], $tasks));
 
-        $tableRows = [];
-        array_walk($tasks, function (TaskInterface $task) use (&$tableRows): void {
-            $tableRows[] = [
-                $task->getName(),
-                $task->getDescription() ?? 'No description set',
-                $task->getExpression(),
-                null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
-                (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
-                null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
-                $task->getState(),
-                implode(', ', $task->getTags()) ?? 'No tags set',
-            ];
-        });
-
-        $table->addRows($tableRows);
         $table->render();
 
         return self::SUCCESS;

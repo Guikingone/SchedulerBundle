@@ -6,6 +6,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -25,8 +26,9 @@ class DoctrineTransport extends AbstractTransport
      */
     public function __construct(
         array $options,
-        DbalConnection $driverConnection,
+        DbalConnection $dbalConnection,
         SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
         $this->defineOptions(array_merge([
@@ -39,7 +41,13 @@ class DoctrineTransport extends AbstractTransport
             'table_name' => 'string',
         ]);
 
-        $this->connection = new Connection($this->getOptions(), $driverConnection, $serializer, $logger);
+        $this->connection = new Connection(
+            $this->getOptions(),
+            $dbalConnection,
+            $serializer,
+            $schedulePolicyOrchestrator,
+            $logger
+        );
     }
 
     /**
@@ -106,8 +114,8 @@ class DoctrineTransport extends AbstractTransport
         $this->connection->empty();
     }
 
-    public function configureSchema(Schema $schema, DbalConnection $connection): void
+    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
-        $this->connection->configureSchema($schema, $connection);
+        $this->connection->configureSchema($schema, $dbalConnection);
     }
 }

@@ -22,7 +22,7 @@ final class ExecutionDurationPolicy implements PolicyInterface
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() > $nextTask->getExecutionComputationTime() ? 1 : -1);
+        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() <=> $nextTask->getExecutionComputationTime());
 
         return $tasks;
     }

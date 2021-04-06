@@ -21,33 +21,33 @@ final class TaskMessageHandlerTest extends TestCase
 {
     public function testHandlerCanRunDueTask(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->setScheduledAt(new DateTimeImmutable());
-        $task->setExpression('* * * * *');
-        $task->setTimezone(new DateTimeZone('UTC'));
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
+        $shellTask->setExpression('* * * * *');
+        $shellTask->setTimezone(new DateTimeZone('UTC'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('isRunning')->willReturn(false);
-        $worker->expects(self::once())->method('execute')->with([], $task);
+        $worker->expects(self::once())->method('execute')->with([], $shellTask);
 
-        $handler = new TaskMessageHandler($worker);
+        $taskMessageHandler = new TaskMessageHandler($worker);
 
-        ($handler)(new TaskMessage($task));
+        ($taskMessageHandler)(new TaskMessage($shellTask));
     }
 
     public function testHandlerCanWaitForAvailableWorker(): void
     {
-        $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->setScheduledAt(new DateTimeImmutable());
-        $task->setExpression('* * * * *');
-        $task->setTimezone(new DateTimeZone('UTC'));
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
+        $shellTask->setExpression('* * * * *');
+        $shellTask->setTimezone(new DateTimeZone('UTC'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::exactly(3))->method('isRunning')->willReturnOnConsecutiveCalls(true, true, false);
-        $worker->expects(self::once())->method('execute')->with([], $task);
+        $worker->expects(self::once())->method('execute')->with([], $shellTask);
 
-        $handler = new TaskMessageHandler($worker);
+        $taskMessageHandler = new TaskMessageHandler($worker);
 
-        ($handler)(new TaskMessage($task, 2));
+        ($taskMessageHandler)(new TaskMessage($shellTask, 2));
     }
 }

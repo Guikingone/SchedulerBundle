@@ -15,10 +15,10 @@ final class MemoryUsagePolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new MemoryUsagePolicy();
+        $memoryUsagePolicy = new MemoryUsagePolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('memory_usage'));
+        self::assertFalse($memoryUsagePolicy->support('test'));
+        self::assertTrue($memoryUsagePolicy->support('memory_usage'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -29,11 +29,11 @@ final class MemoryUsagePolicyTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->method('getExecutionMemoryUsage')->willReturn(15);
 
-        $policy = new MemoryUsagePolicy();
+        $memoryUsagePolicy = new MemoryUsagePolicy();
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $policy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $memoryUsagePolicy->sort(['foo' => $secondTask, 'app' => $task]));
     }
 }

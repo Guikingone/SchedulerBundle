@@ -17,7 +17,6 @@ use function array_merge;
 use function file_get_contents;
 use function sprintf;
 use function strtr;
-use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -25,17 +24,21 @@ use function sys_get_temp_dir;
 final class FilesystemTransport extends AbstractTransport
 {
     private Filesystem $filesystem;
-    private ?SchedulePolicyOrchestratorInterface $orchestrator;
-    private ?SerializerInterface $serializer;
+    private SchedulePolicyOrchestratorInterface $orchestrator;
+    private SerializerInterface $serializer;
 
-    public function __construct(string $path = null, array $options = [], SerializerInterface $serializer = null, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator = null)
-    {
+    public function __construct(
+        string $path = null,
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ) {
         $this->defineOptions(array_merge([
-            'path' => $path ?? sys_get_temp_dir(),
+            'path' => $path,
             'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], $options), [
-            'path' => ['string'],
-            'filename_mask' => ['string'],
+            'path' => 'string',
+            'filename_mask' => 'string',
         ]);
 
         $this->filesystem = new Filesystem();
@@ -53,23 +56,23 @@ final class FilesystemTransport extends AbstractTransport
         $finder = new Finder();
 
         $finder->files()->in($this->options['path'])->name('*.json');
-        foreach ($finder as $task) {
-            $tasks[] = $this->get(strtr($task->getFilename(), ['.json' => '']));
+        foreach ($finder as $singleFinder) {
+            $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
         }
 
-        return new TaskList(null !== $this->orchestrator ? $this->orchestrator->sort($this->options['execution_mode'], $tasks) : $tasks);
+        return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): TaskInterface
+    public function get(string $name): TaskInterface
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        return $this->serializer->deserialize(file_get_contents(sprintf($this->options['filename_mask'], $this->options['path'], $taskName)), TaskInterface::class, 'json');
+        return $this->serializer->deserialize(file_get_contents(sprintf($this->options['filename_mask'], $this->options['path'], $name)), TaskInterface::class, 'json');
     }
 
     /**
@@ -103,45 +106,45 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function pause(string $taskName): void
+    public function pause(string $name): void
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::PAUSED === $task->getState()) {
-            throw new LogicException(sprintf('The task "%s" is already paused', $taskName));
+            throw new LogicException(sprintf('The task "%s" is already paused', $name));
         }
 
         $task->setState(TaskInterface::PAUSED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $taskName): void
+    public function resume(string $name): void
     {
-        if (!$this->fileExist($taskName)) {
-            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $taskName));
+        if (!$this->fileExist($name)) {
+            throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        $task = $this->get($taskName);
+        $task = $this->get($name);
         if (TaskInterface::ENABLED === $task->getState()) {
-            throw new LogicException(sprintf('The task "%s" is already enabled', $taskName));
+            throw new LogicException(sprintf('The task "%s" is already enabled', $name));
         }
 
         $task->setState(TaskInterface::ENABLED);
-        $this->update($taskName, $task);
+        $this->update($name, $task);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskName): void
+    public function delete(string $name): void
     {
-        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $taskName));
+        $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], $name));
     }
 
     /**
@@ -152,8 +155,8 @@ final class FilesystemTransport extends AbstractTransport
         $finder = new Finder();
 
         $finder->files()->in($this->options['path'])->name('*.json');
-        foreach ($finder as $task) {
-            $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], strtr($task->getFilename(), ['.json' => ''])));
+        foreach ($finder as $singleFinder) {
+            $this->filesystem->remove(sprintf($this->options['filename_mask'], $this->options['path'], strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
     }
 

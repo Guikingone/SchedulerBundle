@@ -14,6 +14,7 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
+use function count;
 use function sprintf;
 use function strpos;
 
@@ -32,7 +33,6 @@ final class Connection implements ConnectionInterface
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
-
         $this->connection->connect($options['host'], $options['port'], $options['timeout']);
 
         if (0 !== strpos($this->list = $options['list'], '_')) {
@@ -76,9 +76,11 @@ final class Connection implements ConnectionInterface
             throw new TransportException(sprintf('The task "%s" does not exist', $taskName));
         }
 
-        $task = $this->connection->hGet($this->list, $taskName);
-
-        return $this->serializer->deserialize($task, TaskInterface::class, 'json');
+        return $this->serializer->deserialize(
+            $this->connection->hGet($this->list, $taskName),
+            TaskInterface::class,
+            'json'
+        );
     }
 
     /**
@@ -163,14 +165,12 @@ final class Connection implements ConnectionInterface
     public function empty(): void
     {
         $keys = $this->connection->hKeys($this->list);
+        if (0 === count($keys)) {
+            return;
+        }
 
         if (!$this->connection->hDel($this->list, ...$keys)) {
             throw new TransportException('The list cannot be emptied');
         }
-    }
-
-    public function clean(): void
-    {
-        $this->connection->unlink($this->list);
     }
 }

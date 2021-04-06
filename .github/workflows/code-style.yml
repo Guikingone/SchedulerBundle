@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   php-cs-fixer:
@@ -14,8 +16,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: [ '7.4', '8.0' ]
-        composer-dependencies: [ 'highest', 'lowest' ]
+        php-versions: ['7.4', '8.0']
+        composer-dependencies: ['highest', 'lowest']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -36,4 +38,4 @@ jobs:
       - name: PHP CS Fixer
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
-            args: --dry-run . --diff-format=udiff
+            args: --allow-risky=yes --dry-run --diff-format=udiff .

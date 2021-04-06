@@ -25,9 +25,9 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
-    public function onWorkerRestarted(WorkerRestartedEvent $event): void
+    public function onWorkerRestarted(WorkerRestartedEvent $workerRestartedEvent): void
     {
-        $worker = $event->getWorker();
+        $worker = $workerRestartedEvent->getWorker();
 
         $this->logger->info('The worker has been restarted', [
             'failedTasks' => $worker->getFailedTasks()->count(),
@@ -35,20 +35,20 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         ]);
     }
 
-    public function onWorkerRunning(WorkerRunningEvent $event): void
+    public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
-        $worker = $event->getWorker();
+        $worker = $workerRunningEvent->getWorker();
 
         $this->logger->info('The worker is currently running', [
             'failedTasks' => $worker->getFailedTasks()->count(),
             'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
-            'idle' => $event->isIdle(),
+            'idle' => $workerRunningEvent->isIdle(),
         ]);
     }
 
-    public function onWorkerStarted(WorkerStartedEvent $event): void
+    public function onWorkerStarted(WorkerStartedEvent $workerStartedEvent): void
     {
-        $worker = $event->getWorker();
+        $worker = $workerStartedEvent->getWorker();
 
         $this->logger->info('The worker has been started', [
             'failedTasks' => $worker->getFailedTasks()->count(),
@@ -56,9 +56,9 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         ]);
     }
 
-    public function onWorkerStopped(WorkerStoppedEvent $event): void
+    public function onWorkerStopped(WorkerStoppedEvent $workerStoppedEvent): void
     {
-        $worker = $event->getWorker();
+        $worker = $workerStoppedEvent->getWorker();
 
         $this->logger->info('The worker has been stopped', [
             'failedTasks' => $worker->getFailedTasks()->count(),

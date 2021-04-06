@@ -9,6 +9,8 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
@@ -60,7 +62,10 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection = new Connection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $this->driverConnection, $serializer);
+            'execution_mode' => 'first_in_first_out',
+        ], $this->driverConnection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
     }
 
     /**
@@ -178,13 +183,13 @@ final class ConnectionIntegrationTest extends TestCase
     public function testTaskCannotBeUpdatedIfUndefined(): void
     {
         $this->connection->setup();
-        $task = new NullTask('foo');
-        $task->setExpression('0 * * * *');
+        $nullTask = new NullTask('foo');
+        $nullTask->setExpression('0 * * * *');
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The given task cannot be updated as the identifier or the body is invalid');
         self::expectExceptionCode(0);
-        $this->connection->update('foo', $task);
+        $this->connection->update('foo', $nullTask);
     }
 
     public function testTaskCanBeUpdated(): void

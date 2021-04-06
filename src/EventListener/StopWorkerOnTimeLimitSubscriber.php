@@ -35,10 +35,10 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
         $this->endTime = microtime(true) + $this->timeLimitInSeconds;
     }
 
-    public function onWorkerRunning(WorkerRunningEvent $event): void
+    public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
         if ($this->endTime < microtime(true)) {
-            $worker = $event->getWorker();
+            $worker = $workerRunningEvent->getWorker();
             $worker->stop();
 
             $this->logger->info(sprintf('Worker stopped due to time limit of %d seconds exceeded', $this->timeLimitInSeconds), [

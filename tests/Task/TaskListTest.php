@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
-use ArrayIterator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use stdClass;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,30 +17,30 @@ final class TaskListTest extends TestCase
 {
     public function testListCanBeCreatedWithEmptyTasks(): void
     {
-        $list = new TaskList();
+        $taskList = new TaskList();
 
-        self::assertEmpty($list);
+        self::assertEmpty($taskList);
     }
 
     public function testListCanBeCreatedWithTasks(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
     }
 
     public function testListCanBeHydrated(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList();
+        $taskList = new TaskList();
 
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $list->add($task);
+        $taskList->add($task);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
     }
 
     public function testListCanBeHydratedWithMultipleTasks(): void
@@ -47,37 +48,47 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $secondTask = $this->createMock(TaskInterface::class);
 
-        $list = new TaskList();
+        $taskList = new TaskList();
 
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $list->add($task, $secondTask);
+        $taskList->add($task, $secondTask);
 
-        self::assertNotEmpty($list);
-        self::assertSame(2, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(2, $taskList->count());
+    }
+
+    public function testListCannotBeHydratedUsingInvalidOffset(): void
+    {
+        $taskList = new TaskList();
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('A task must be given, received "object"');
+        self::expectExceptionCode(0);
+        $taskList->offsetSet('foo', new stdClass());
     }
 
     public function testListCanBeHydratedUsingEmptyOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList();
+        $taskList = new TaskList();
 
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $list->offsetSet(null, $task);
+        $taskList->offsetSet(null, $task);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
     }
 
     public function testListCanBeHydratedUsingOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList();
+        $taskList = new TaskList();
 
         $task->expects(self::any())->method('getName')->willReturn('foo');
-        $list->offsetSet('foo', $task);
+        $taskList->offsetSet('foo', $task);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
     }
 
     public function testListHasTask(): void
@@ -85,9 +96,9 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertTrue($list->has('foo'));
+        self::assertTrue($taskList->has('foo'));
     }
 
     public function testListHasTaskUsingOffset(): void
@@ -95,9 +106,16 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertTrue($list->offsetExists('foo'));
+        self::assertTrue($taskList->offsetExists('foo'));
+    }
+
+    public function testListCannotReturnUndefinedTask(): void
+    {
+        $taskList = new TaskList([]);
+
+        self::assertNull($taskList->get('foo'));
     }
 
     public function testListCanReturnTask(): void
@@ -105,9 +123,9 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertInstanceOf(TaskInterface::class, $list->get('foo'));
+        self::assertInstanceOf(TaskInterface::class, $taskList->get('foo'));
     }
 
     public function testListCanReturnTaskUsingOffset(): void
@@ -115,32 +133,43 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertInstanceOf(TaskInterface::class, $list->offsetGet('foo'));
+        self::assertInstanceOf(TaskInterface::class, $taskList->offsetGet('foo'));
+    }
+
+    public function testListCannotFindUndefinedTaskByNames(): void
+    {
+        $taskList = new TaskList([]);
+        $tasks = $taskList->findByName(['foo']);
+
+        self::assertEmpty($tasks);
     }
 
     public function testListCanFindTaskByNames(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList([$task]);
-
         $task->expects(self::any())->method('getName')->willReturn('foo');
 
-        $tasks = $list->findByName(['foo']);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::any())->method('getName')->willReturn('bar');
+
+        $taskList = new TaskList([$task, $secondTask]);
+
+        $tasks = $taskList->findByName(['foo']);
 
         self::assertNotEmpty($tasks);
-        self::assertInstanceOf(TaskList::class, $tasks);
+        self::assertCount(1, $tasks);
     }
 
     public function testListCanFilterTaskByNames(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
         $task->expects(self::any())->method('getName')->willReturn('foo');
 
-        $tasks = $list->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
+        $tasks = $taskList->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
 
         self::assertNotEmpty($tasks);
         self::assertInstanceOf(TaskList::class, $tasks);
@@ -152,15 +181,15 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
 
-        $list->remove('foo');
+        $taskList->remove('foo');
 
-        self::assertEmpty($list);
-        self::assertSame(0, $list->count());
+        self::assertEmpty($taskList);
+        self::assertSame(0, $taskList->count());
     }
 
     public function testListCanRemoveTaskUsingOffset(): void
@@ -168,15 +197,15 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertNotEmpty($list);
-        self::assertSame(1, $list->count());
+        self::assertNotEmpty($taskList);
+        self::assertSame(1, $taskList->count());
 
-        $list->offsetUnset('foo');
+        $taskList->offsetUnset('foo');
 
-        self::assertEmpty($list);
-        self::assertSame(0, $list->count());
+        self::assertEmpty($taskList);
+        self::assertSame(0, $taskList->count());
     }
 
     public function testIteratorCanBeReturned(): void
@@ -184,9 +213,9 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertNotEmpty($list->getIterator());
+        self::assertNotEmpty($taskList->getIterator());
     }
 
     public function testArrayCanBeReturned(): void
@@ -194,9 +223,9 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertCount(1, $list->toArray());
+        self::assertCount(1, $taskList->toArray());
     }
 
     public function testArrayCanBeReturnedWithoutKeys(): void
@@ -204,10 +233,10 @@ final class TaskListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = new TaskList([$task]);
+        $taskList = new TaskList([$task]);
 
-        self::assertCount(1, $list->toArray(false));
-        self::assertArrayHasKey(0, $list->toArray(false));
-        self::assertArrayNotHasKey('foo', $list->toArray(false));
+        self::assertCount(1, $taskList->toArray(false));
+        self::assertArrayHasKey(0, $taskList->toArray(false));
+        self::assertArrayNotHasKey('foo', $taskList->toArray(false));
     }
 }

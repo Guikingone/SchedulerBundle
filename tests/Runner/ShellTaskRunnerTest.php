@@ -19,61 +19,61 @@ final class ShellTaskRunnerTest extends TestCase
 {
     public function testRunnerCantSupportWrongTask(): void
     {
-        $task = new FooTask('test');
+        $fooTask = new FooTask('test');
 
-        $runner = new ShellTaskRunner();
+        $shellTaskRunner = new ShellTaskRunner();
 
-        self::assertFalse($runner->support($task));
-        self::assertTrue($runner->support(new ShellTask('test', ['echo', 'Symfony'])));
+        self::assertFalse($shellTaskRunner->support($fooTask));
+        self::assertTrue($shellTaskRunner->support(new ShellTask('test', ['echo', 'Symfony'])));
     }
 
     public function testRunnerCannotRunInvalidTask(): void
     {
-        $task = new CallbackTask('foo', ['echo', 'Symfony']);
+        $callbackTask = new CallbackTask('foo', ['echo', 'Symfony']);
 
-        $runner = new ShellTaskRunner();
-        $output = $runner->run($task);
+        $shellTaskRunner = new ShellTaskRunner();
+        $output = $shellTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
-        self::assertSame($task, $output->getTask());
+        self::assertSame($callbackTask, $output->getTask());
     }
 
     public function testRunnerCanSupportValidTaskWithoutOutput(): void
     {
-        $task = new ShellTask('test', ['echo', 'Symfony']);
-        $task->setEnvironmentVariables(['env' => 'test']);
-        $task->setTimeout(10);
+        $shellTask = new ShellTask('test', ['echo', 'Symfony']);
+        $shellTask->setEnvironmentVariables(['env' => 'test']);
+        $shellTask->setTimeout(10);
 
-        $runner = new ShellTaskRunner();
-        self::assertTrue($runner->support($task));
-        self::assertNull($runner->run($task)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $runner->run($task)->getTask()->getExecutionState());
+        $shellTaskRunner = new ShellTaskRunner();
+        self::assertTrue($shellTaskRunner->support($shellTask));
+        self::assertNull($shellTaskRunner->run($shellTask)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanSupportValidTaskWithOutput(): void
     {
-        $task = new ShellTask('test', ['echo', 'Symfony']);
-        $task->setEnvironmentVariables(['env' => 'test']);
-        $task->setOutput(true);
+        $shellTask = new ShellTask('test', ['echo', 'Symfony']);
+        $shellTask->setEnvironmentVariables(['env' => 'test']);
+        $shellTask->setOutput(true);
 
-        $runner = new ShellTaskRunner();
-        self::assertTrue($runner->support($task));
-        self::assertSame('Symfony', $runner->run($task)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $runner->run($task)->getTask()->getExecutionState());
+        $shellTaskRunner = new ShellTaskRunner();
+        self::assertTrue($shellTaskRunner->support($shellTask));
+        self::assertSame('Symfony', $shellTaskRunner->run($shellTask)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnEmptyOutputOnBackgroundTask(): void
     {
-        $task = new ShellTask('test', ['echo', 'Symfony']);
-        $task->setEnvironmentVariables(['env' => 'test']);
-        $task->setOutput(true);
-        $task->setBackground(true);
+        $shellTask = new ShellTask('test', ['echo', 'Symfony']);
+        $shellTask->setEnvironmentVariables(['env' => 'test']);
+        $shellTask->setOutput(true);
+        $shellTask->setBackground(true);
 
-        $runner = new ShellTaskRunner();
-        self::assertTrue($runner->support($task));
-        self::assertSame('Task is running in background, output is not available', $runner->run($task)->getOutput());
-        self::assertSame(TaskInterface::INCOMPLETE, $runner->run($task)->getTask()->getExecutionState());
+        $shellTaskRunner = new ShellTaskRunner();
+        self::assertTrue($shellTaskRunner->support($shellTask));
+        self::assertSame('Task is running in background, output is not available', $shellTaskRunner->run($shellTask)->getOutput());
+        self::assertSame(TaskInterface::INCOMPLETE, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
     }
 }
 

@@ -36,7 +36,7 @@ final class ConnectionTest extends TestCase
             'timeout' => 30,
             'dbindex' => 0,
             'auth' => 'root',
-            'list' => 'foo'
+            'list' => 'foo',
         ], $serializer, $redis);
     }
 
@@ -57,7 +57,7 @@ final class ConnectionTest extends TestCase
             'timeout' => 30,
             'auth' => 'root',
             'dbindex' => 'test',
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
     }
 
@@ -79,7 +79,7 @@ final class ConnectionTest extends TestCase
             'timeout' => 30,
             'auth' => 'root',
             'dbindex' => 'test',
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
     }
 
@@ -98,7 +98,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -123,7 +123,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
         $data = $connection->list();
 
@@ -162,7 +162,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
         $data = $connection->list();
 
@@ -188,7 +188,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -221,7 +221,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => $list
+            'list' => $list,
         ], $serializer, $redis);
         $connection->create($taskToCreate);
     }
@@ -242,7 +242,7 @@ final class ConnectionTest extends TestCase
             'auth' => 'root',
             'port' => 6379,
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -269,7 +269,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -299,7 +299,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => '_symfony_scheduler_tasks'
+            'list' => '_symfony_scheduler_tasks',
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -536,7 +536,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => $list
+            'list' => $list,
         ], $serializer, $redis);
         $connection->delete('foo');
     }
@@ -560,7 +560,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => $list
+            'list' => $list,
         ], $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -588,7 +588,7 @@ final class ConnectionTest extends TestCase
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
-            'list' => $list
+            'list' => $list,
         ], $serializer, $redis);
         $connection->empty();
     }

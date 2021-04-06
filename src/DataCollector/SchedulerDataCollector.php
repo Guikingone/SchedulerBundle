@@ -24,9 +24,9 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
 
     private TaskEventList $events;
 
-    public function __construct(TaskLoggerSubscriber $logger)
+    public function __construct(TaskLoggerSubscriber $taskLoggerSubscriber)
     {
-        $this->events = $logger->getEvents();
+        $this->events = $taskLoggerSubscriber->getEvents();
     }
 
     /**

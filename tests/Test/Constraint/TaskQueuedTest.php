@@ -18,23 +18,23 @@ final class TaskQueuedTest extends TestCase
 {
     public function testConstraintCannotMatch(): void
     {
-        $list = new TaskEventList();
+        $taskEventList = new TaskEventList();
 
-        $constraint = new TaskQueued(1);
+        $taskQueued = new TaskQueued(1);
 
-        self::assertFalse($constraint->evaluate($list, '', true));
+        self::assertFalse($taskQueued->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCannotMatchWithoutQueuedTask(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskExecutedEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        $constraint = new TaskQueued(1);
+        $taskQueued = new TaskQueued(1);
 
-        self::assertFalse($constraint->evaluate($list, '', true));
+        self::assertFalse($taskQueued->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
@@ -45,13 +45,13 @@ final class TaskQueuedTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::never())->method('isQueued')->willReturn(false);
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskExecutedEvent($task));
-        $list->addEvent(new TaskExecutedEvent($secondTask));
-        $list->addEvent(new TaskScheduledEvent($task));
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($secondTask));
+        $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        $constraint = new TaskQueued(1);
+        $taskQueued = new TaskQueued(1);
 
-        self::assertTrue($constraint->evaluate($list, '', true));
+        self::assertTrue($taskQueued->evaluate($taskEventList, '', true));
     }
 }

@@ -10,6 +10,7 @@ use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
+use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -21,11 +22,11 @@ final class TaskExecutionTrackerTest extends TestCase
      */
     public function testTrackerCannotTrackInvalidTask(TaskInterface $task): void
     {
-        $tracker = new TaskExecutionTracker(new Stopwatch());
+        $taskExecutionTracker = new TaskExecutionTracker(new Stopwatch());
 
-        $tracker->startTracking($task);
-        \sleep(1);
-        $tracker->endTracking($task);
+        $taskExecutionTracker->startTracking($task);
+        sleep(1);
+        $taskExecutionTracker->endTracking($task);
 
         self::assertNull($task->getExecutionComputationTime());
     }
@@ -35,11 +36,11 @@ final class TaskExecutionTrackerTest extends TestCase
      */
     public function testTrackerCanTrack(TaskInterface $task): void
     {
-        $tracker = new TaskExecutionTracker(new Stopwatch());
+        $taskExecutionTracker = new TaskExecutionTracker(new Stopwatch());
 
-        $tracker->startTracking($task);
-        \sleep(1);
-        $tracker->endTracking($task);
+        $taskExecutionTracker->startTracking($task);
+        sleep(1);
+        $taskExecutionTracker->endTracking($task);
 
         self::assertNotNull($task->getExecutionComputationTime());
         self::assertNotNull($task->getExecutionMemoryUsage());

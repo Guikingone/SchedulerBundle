@@ -33,11 +33,11 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new FilesystemTransportFactory()]);
+        $transportFactory = new TransportFactory([new FilesystemTransportFactory()]);
 
         self::assertInstanceOf(
             FilesystemTransport::class,
-            $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -48,11 +48,11 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new InMemoryTransportFactory()]);
+        $transportFactory = new TransportFactory([new InMemoryTransportFactory()]);
 
         self::assertInstanceOf(
             InMemoryTransport::class,
-            $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -63,14 +63,14 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new FailOverTransportFactory([
+        $transportFactory = new TransportFactory([new FailOverTransportFactory([
             new InMemoryTransportFactory(),
             new FilesystemTransportFactory(),
         ])]);
 
         self::assertInstanceOf(
             FailOverTransport::class,
-            $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -81,14 +81,14 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new RoundRobinTransportFactory([
+        $transportFactory = new TransportFactory([new RoundRobinTransportFactory([
             new InMemoryTransportFactory(),
             new FilesystemTransportFactory(),
         ])]);
 
         self::assertInstanceOf(
             RoundRobinTransport::class,
-            $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -99,14 +99,14 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([new LongTailTransportFactory([
+        $transportFactory = new TransportFactory([new LongTailTransportFactory([
             new InMemoryTransportFactory(),
             new FilesystemTransportFactory(),
         ])]);
 
         self::assertInstanceOf(
             LongTailTransport::class,
-            $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -114,12 +114,12 @@ final class TransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new TransportFactory([]);
+        $transportFactory = new TransportFactory([]);
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('No transport supports the given Scheduler DSN "foo://".');
         self::expectExceptionCode(0);
-        $factory->createTransport('foo://', [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transportFactory->createTransport('foo://', [], $serializer, new SchedulePolicyOrchestrator([]));
     }
 
     public function provideFilesystemDsn(): Generator

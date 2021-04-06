@@ -133,19 +133,19 @@ final class ExpressionTest extends TestCase
 
     public function testNewExpressionCanBePassed(): void
     {
-        $factory = new Expression();
-        $factory->setExpression('*/45 * * * *');
+        $expression = new Expression();
+        $expression->setExpression('*/45 * * * *');
 
-        self::assertSame('*/45 * * * *', $factory->getExpression());
-        self::assertSame('*/45 * * * *', (string) $factory);
+        self::assertSame('*/45 * * * *', $expression->getExpression());
+        self::assertSame('*/45 * * * *', (string) $expression);
     }
 
     public function testMacroCanBePassed(): void
     {
-        $factory = new Expression();
-        $factory->setExpression('@reboot');
+        $expression = new Expression();
+        $expression->setExpression('@reboot');
 
-        self::assertSame('@reboot', $factory->getExpression());
-        self::assertSame('@reboot', (string) $factory);
+        self::assertSame('@reboot', $expression->getExpression());
+        self::assertSame('@reboot', (string) $expression);
     }
 }

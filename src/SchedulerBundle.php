@@ -26,8 +26,8 @@ final class SchedulerBundle extends Bundle
     /**
      * {@inheritdoc}
      */
-    public function build(ContainerBuilder $container): void
+    public function build(ContainerBuilder $containerBuilder): void
     {
-        $container->addCompilerPass(new SchedulerPass());
+        $containerBuilder->addCompilerPass(new SchedulerPass());
     }
 }

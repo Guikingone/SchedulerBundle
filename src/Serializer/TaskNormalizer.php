@@ -73,10 +73,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     public function normalize($object, string $format = null, array $context = []): array
     {
         if ($object instanceof CallbackTask && $object->getCallback() instanceof Closure) {
-            throw new InvalidArgumentException(sprintf(
-                'CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"',
-                Worker::class
-            ));
+            throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
         $dateAttributesCallback = fn (?DatetimeInterface $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, $context) : null;
@@ -134,7 +131,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'options' => [],
                     ],
                 ])), $innerObject),
-            ]
+            ],
         ];
 
         return [

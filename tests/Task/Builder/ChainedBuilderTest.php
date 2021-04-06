@@ -24,14 +24,14 @@ final class ChainedBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new ChainedBuilder(new ExpressionBuilder([
+        $chainedBuilder = new ChainedBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support('chained'));
+        self::assertFalse($chainedBuilder->support('test'));
+        self::assertTrue($chainedBuilder->support('chained'));
     }
 
     /**
@@ -39,7 +39,7 @@ final class ChainedBuilderTest extends TestCase
      */
     public function testBuilderCanBuildWithoutBuilders(array $configuration): void
     {
-        $builder = new ChainedBuilder(new ExpressionBuilder([
+        $chainedBuilder = new ChainedBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
@@ -48,7 +48,7 @@ final class ChainedBuilderTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given task cannot be created as no related builder can be found');
         self::expectExceptionCode(0);
-        $builder->build(PropertyAccess::createPropertyAccessor(), $configuration);
+        $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
     }
 
     /**
@@ -56,7 +56,7 @@ final class ChainedBuilderTest extends TestCase
      */
     public function testBuilderCanBuild(array $configuration): void
     {
-        $builder = new ChainedBuilder(new ExpressionBuilder([
+        $chainedBuilder = new ChainedBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
@@ -68,7 +68,7 @@ final class ChainedBuilderTest extends TestCase
             ])),
         ]);
 
-        $task = $builder->build(PropertyAccess::createPropertyAccessor(), $configuration);
+        $task = $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
 
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());

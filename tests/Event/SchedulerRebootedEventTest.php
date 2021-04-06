@@ -17,7 +17,7 @@ final class SchedulerRebootedEventTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $event = new SchedulerRebootedEvent($scheduler);
-        self::assertSame($scheduler, $event->getScheduler());
+        $schedulerRebootedEvent = new SchedulerRebootedEvent($scheduler);
+        self::assertSame($scheduler, $schedulerRebootedEvent->getScheduler());
     }
 }

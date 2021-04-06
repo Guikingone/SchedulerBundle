@@ -25,17 +25,18 @@ final class NullTaskTest extends TestCase
 {
     public function testTaskCanBeCreatedWithValidInformations(): void
     {
-        $task = new NullTask('foo', [
+        $nullTask = new NullTask('foo', [
             'expression' => '* * * * *',
             'background' => true,
             'state' => TaskInterface::DISABLED,
         ]);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame('* * * * *', $task->getExpression());
-        self::assertTrue($task->mustRunInBackground());
-        self::assertNull($task->getDescription());
-        self::assertSame(TaskInterface::DISABLED, $task->getState());
+        self::assertSame('foo', $nullTask->getName());
+        self::assertSame('* * * * *', $nullTask->getExpression());
+        self::assertTrue($nullTask->mustRunInBackground());
+        self::assertNull($nullTask->getDescription());
+        self::assertSame(TaskInterface::DISABLED, $nullTask->getState());
+        self::assertFalse($nullTask->isSingleRun());
     }
 
     public function testTaskCannotBeCreatedWithInvalidArrivalTime(): void
@@ -148,13 +149,23 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
-    public function testTaskCannotBeCreatedWithInvalidExpression(): void
+    public function testTaskCannotBeCreatedWithInvalidExpressionType(): void
     {
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "expression" with value 354 is expected to be of type "string", but is of type "int"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'expression' => 354,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExpression(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "expression" with value "foo" is invalid.');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'expression' => 'foo',
         ]);
     }
 
@@ -200,12 +211,12 @@ final class NullTaskTest extends TestCase
 
     public function testTaskCannotBeCreatedWithInvalidBackgroundOption(): void
     {
-        $task = new NullTask('foo');
+        $nullTask = new NullTask('foo');
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage(sprintf('The background option is available only for task of type %s', ShellTask::class));
         self::expectExceptionCode(0);
-        $task->setBackground(true);
+        $nullTask->setBackground(true);
     }
 
     public function testTaskCannotBeCreatedWithInvalidExecutionMemoryUsage(): void
@@ -248,27 +259,187 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithInvalidExecutionRelativeDeadline(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_relative_deadline" with value 135 is expected to be of type "DateInterval" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_relative_deadline' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionStartDate(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_start_date" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_start_date' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionEndDate(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_end_date" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_end_date' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionStartTime(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_start_time" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_start_time' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionEndTime(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_end_time" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_end_time' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidExecutionStateType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_state" with value 135 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'execution_state' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidLastExecution(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "last_execution" with value 135 is expected to be of type "DateTimeImmutable" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'last_execution' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidMaxDuration(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "max_duration" with value 135 is expected to be of type "float" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'max_duration' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidNiceType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "nice" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'nice' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidOutputType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "output" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'output' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidQueuedType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "queued" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'queued' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidScheduledAt(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "scheduled_at" with value "foo" is expected to be of type "DateTimeImmutable" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'scheduled_at' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidSingleRun(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "single_run" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'single_run' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidState(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "state" with value 135 is expected to be of type "string", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'state' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidTags(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "tags" with value "foo" is expected to be of type "string[]", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'tags' => 'foo',
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidTimezone(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "timezone" with value "foo" is expected to be of type "DateTimeZone" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'timezone' => 'foo',
+        ]);
+    }
+
     /**
      * @dataProvider provideNice
      */
     public function testTaskCannotBeCreatedWithInvalidNice(int $nice): void
     {
-        $task = new NullTask('foo');
+        $nullTask = new NullTask('foo');
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The nice value is not valid');
         self::expectExceptionCode(0);
-        $task->setNice($nice);
+        $nullTask->setNice($nice);
     }
 
     public function testTaskCannotBeCreatedWithPreviousDate(): void
     {
-        $task = new NullTask('foo');
+        $nullTask = new NullTask('foo');
 
         self::expectException(LogicException::class);
         self::expectExceptionMessage('The date cannot be previous to the current date');
         self::expectExceptionCode(0);
-        $task->setExecutionStartDate('- 10 minutes');
+        $nullTask->setExecutionStartDate('- 10 minutes');
     }
 
     public function testTaskCannotBeCreatedWithInvalidOutputToStoreOption(): void
@@ -283,23 +454,23 @@ final class NullTaskTest extends TestCase
 
     public function testTaskCanDefineToStoreOutput(): void
     {
-        $task = new NullTask('foo');
-        $task->storeOutput(true);
+        $nullTask = new NullTask('foo');
+        $nullTask->storeOutput(true);
 
-        self::assertTrue($task->mustStoreOutput());
+        self::assertTrue($nullTask->mustStoreOutput());
 
-        $task->storeOutput(false);
-        self::assertFalse($task->mustStoreOutput());
+        $nullTask->storeOutput(false);
+        self::assertFalse($nullTask->mustStoreOutput());
     }
 
     public function testTaskCanBeCreatedWithDate(): void
     {
-        $task = new NullTask('foo');
-        $task->setExecutionStartDate('+ 10 minutes');
-        $task->setExecutionEndDate('+ 20 minutes');
+        $nullTask = new NullTask('foo');
+        $nullTask->setExecutionStartDate('+ 10 minutes');
+        $nullTask->setExecutionEndDate('+ 20 minutes');
 
-        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartDate());
-        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndDate());
+        self::assertInstanceOf(DateTimeImmutable::class, $nullTask->getExecutionStartDate());
+        self::assertInstanceOf(DateTimeImmutable::class, $nullTask->getExecutionEndDate());
     }
 
     public function testTaskCanBeCreatedWithBeforeSchedulingNotification(): void
@@ -307,18 +478,18 @@ final class NullTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $bag = new NotificationTaskBag($notification, $recipient);
+        $notificationTaskBag = new NotificationTaskBag($notification, $recipient);
 
-        $task = new NullTask('foo', [
-            'before_scheduling_notification' => $bag,
+        $nullTask = new NullTask('foo', [
+            'before_scheduling_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($bag, $task->getBeforeSchedulingNotificationBag());
-        self::assertSame($notification, $task->getBeforeSchedulingNotificationBag()->getNotification());
-        self::assertContains($recipient, $task->getBeforeSchedulingNotificationBag()->getRecipients());
+        self::assertSame($notificationTaskBag, $nullTask->getBeforeSchedulingNotificationBag());
+        self::assertSame($notification, $nullTask->getBeforeSchedulingNotificationBag()->getNotification());
+        self::assertContains($recipient, $nullTask->getBeforeSchedulingNotificationBag()->getRecipients());
 
-        $task->beforeSchedulingNotificationBag();
-        self::assertNull($task->getBeforeSchedulingNotificationBag());
+        $nullTask->beforeSchedulingNotificationBag();
+        self::assertNull($nullTask->getBeforeSchedulingNotificationBag());
     }
 
     public function testTaskCanBeCreatedWithAfterSchedulingNotification(): void
@@ -326,18 +497,18 @@ final class NullTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $bag = new NotificationTaskBag($notification, $recipient);
+        $notificationTaskBag = new NotificationTaskBag($notification, $recipient);
 
-        $task = new NullTask('foo', [
-            'after_scheduling_notification' => $bag,
+        $nullTask = new NullTask('foo', [
+            'after_scheduling_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($bag, $task->getAfterSchedulingNotificationBag());
-        self::assertSame($notification, $task->getAfterSchedulingNotificationBag()->getNotification());
-        self::assertContains($recipient, $task->getAfterSchedulingNotificationBag()->getRecipients());
+        self::assertSame($notificationTaskBag, $nullTask->getAfterSchedulingNotificationBag());
+        self::assertSame($notification, $nullTask->getAfterSchedulingNotificationBag()->getNotification());
+        self::assertContains($recipient, $nullTask->getAfterSchedulingNotificationBag()->getRecipients());
 
-        $task->afterSchedulingNotificationBag();
-        self::assertNull($task->getAfterSchedulingNotificationBag());
+        $nullTask->afterSchedulingNotificationBag();
+        self::assertNull($nullTask->getAfterSchedulingNotificationBag());
     }
 
     public function testTaskCanBeCreatedWithBeforeExecutingNotification(): void
@@ -345,18 +516,18 @@ final class NullTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $bag = new NotificationTaskBag($notification, $recipient);
+        $notificationTaskBag = new NotificationTaskBag($notification, $recipient);
 
-        $task = new NullTask('foo', [
-            'before_executing_notification' => $bag,
+        $nullTask = new NullTask('foo', [
+            'before_executing_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($bag, $task->getBeforeExecutingNotificationBag());
-        self::assertSame($notification, $task->getBeforeExecutingNotificationBag()->getNotification());
-        self::assertContains($recipient, $task->getBeforeExecutingNotificationBag()->getRecipients());
+        self::assertSame($notificationTaskBag, $nullTask->getBeforeExecutingNotificationBag());
+        self::assertSame($notification, $nullTask->getBeforeExecutingNotificationBag()->getNotification());
+        self::assertContains($recipient, $nullTask->getBeforeExecutingNotificationBag()->getRecipients());
 
-        $task->beforeExecutingNotificationBag();
-        self::assertNull($task->getBeforeExecutingNotificationBag());
+        $nullTask->beforeExecutingNotificationBag();
+        self::assertNull($nullTask->getBeforeExecutingNotificationBag());
     }
 
     public function testTaskCanBeCreatedWithAfterExecutingNotification(): void
@@ -364,18 +535,18 @@ final class NullTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $bag = new NotificationTaskBag($notification, $recipient);
+        $notificationTaskBag = new NotificationTaskBag($notification, $recipient);
 
-        $task = new NullTask('foo', [
-            'after_executing_notification' => $bag,
+        $nullTask = new NullTask('foo', [
+            'after_executing_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($bag, $task->getAfterExecutingNotificationBag());
-        self::assertSame($notification, $task->getAfterExecutingNotificationBag()->getNotification());
-        self::assertContains($recipient, $task->getAfterExecutingNotificationBag()->getRecipients());
+        self::assertSame($notificationTaskBag, $nullTask->getAfterExecutingNotificationBag());
+        self::assertSame($notification, $nullTask->getAfterExecutingNotificationBag()->getNotification());
+        self::assertContains($recipient, $nullTask->getAfterExecutingNotificationBag()->getRecipients());
 
-        $task->afterExecutingNotificationBag();
-        self::assertNull($task->getAfterExecutingNotificationBag());
+        $nullTask->afterExecutingNotificationBag();
+        self::assertNull($nullTask->getAfterExecutingNotificationBag());
     }
 
     public function provideNice(): Generator

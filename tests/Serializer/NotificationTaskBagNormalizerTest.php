@@ -24,10 +24,10 @@ final class NotificationTaskBagNormalizerTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $objectNormalizer = $this->createMock(ObjectNormalizer::class);
 
-        $normalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        self::assertFalse($normalizer->supportsNormalization(new stdClass()));
-        self::assertTrue($normalizer->supportsNormalization(new NotificationTaskBag($notification)));
+        self::assertFalse($notificationTaskBagNormalizer->supportsNormalization(new stdClass()));
+        self::assertTrue($notificationTaskBagNormalizer->supportsNormalization(new NotificationTaskBag($notification)));
     }
 
     public function testNormalizerCanNormalize(): void

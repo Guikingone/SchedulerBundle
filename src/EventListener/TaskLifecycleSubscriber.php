@@ -24,31 +24,31 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
-    public function onTaskScheduled(TaskScheduledEvent $event): void
+    public function onTaskScheduled(TaskScheduledEvent $taskScheduledEvent): void
     {
         $this->logger->info('A task has been scheduled', [
-            'task' => $event->getTask()->getName(),
+            'task' => $taskScheduledEvent->getTask()->getName(),
         ]);
     }
 
-    public function onTaskUnscheduled(TaskUnscheduledEvent $event): void
+    public function onTaskUnscheduled(TaskUnscheduledEvent $taskUnscheduledEvent): void
     {
         $this->logger->info('A task has been unscheduled', [
-            'task' => $event->getTask(),
+            'task' => $taskUnscheduledEvent->getTask(),
         ]);
     }
 
-    public function onTaskExecuted(TaskExecutedEvent $event): void
+    public function onTaskExecuted(TaskExecutedEvent $taskExecutedEvent): void
     {
         $this->logger->info('A task has been executed', [
-            'task' => $event->getTask()->getName(),
+            'task' => $taskExecutedEvent->getTask()->getName(),
         ]);
     }
 
-    public function onTaskFailed(TaskFailedEvent $event): void
+    public function onTaskFailed(TaskFailedEvent $taskFailedEvent): void
     {
         $this->logger->info('A task execution has failed', [
-            'task' => $event->getTask()->getTask()->getName(),
+            'task' => $taskFailedEvent->getTask()->getTask()->getName(),
         ]);
     }
 

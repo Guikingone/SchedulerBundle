@@ -19,8 +19,8 @@ final class TaskToYieldMessageHandler implements MessageHandlerInterface
         $this->scheduler = $scheduler;
     }
 
-    public function __invoke(TaskToYieldMessage $message): void
+    public function __invoke(TaskToYieldMessage $taskToYieldMessage): void
     {
-        $this->scheduler->yieldTask($message->getName());
+        $this->scheduler->yieldTask($taskToYieldMessage->getName());
     }
 }

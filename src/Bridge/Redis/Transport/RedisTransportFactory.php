@@ -46,7 +46,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'transaction_mode' => $dsn->getOption('transaction_mode'),
         ];
 
-        return new RedisTransport(array_merge($connectionOptions, $options), $serializer);
+        return new RedisTransport(array_merge($connectionOptions, $options), $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

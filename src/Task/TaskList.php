@@ -6,7 +6,7 @@ namespace SchedulerBundle\Task;
 
 use ArrayIterator;
 use Closure;
-use InvalidArgumentException;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use Throwable;
 use function array_filter;
 use function array_key_exists;
@@ -126,7 +126,7 @@ final class TaskList implements TaskListInterface
     public function offsetSet($offset, $value): void
     {
         if (!$value instanceof TaskInterface) {
-            throw new InvalidArgumentException(sprintf('A task must be given, received %s', gettype($value)));
+            throw new InvalidArgumentException(sprintf('A task must be given, received "%s"', gettype($value)));
         }
 
         null === $offset ? $this->add($value) : $this->tasks[$offset] = $value;

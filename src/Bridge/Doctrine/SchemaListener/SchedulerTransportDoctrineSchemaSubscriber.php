@@ -7,6 +7,7 @@ namespace SchedulerBundle\Bridge\Doctrine\SchemaListener;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\DBAL\Event\SchemaCreateTableEventArgs;
 use Doctrine\DBAL\Events;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Tools\Event\GenerateSchemaEventArgs;
 use Doctrine\ORM\Tools\ToolEvents;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
@@ -29,28 +30,32 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
         $this->transport = $transport;
     }
 
-    public function postGenerateSchema(GenerateSchemaEventArgs $event): void
+    public function postGenerateSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void
     {
         if (!$this->transport instanceof DoctrineTransport) {
             return;
         }
 
-        $this->transport->configureSchema($event->getSchema(), $event->getEntityManager()->getConnection());
+        $this->transport->configureSchema($generateSchemaEventArgs->getSchema(), $generateSchemaEventArgs->getEntityManager()->getConnection());
     }
 
-    public function onSchemaCreateTable(SchemaCreateTableEventArgs $event): void
+    /**
+     *
+     * @throws Exception
+     */
+    public function onSchemaCreateTable(SchemaCreateTableEventArgs $schemaCreateTableEventArgs): void
     {
-        $table = $event->getTable();
+        $table = $schemaCreateTableEventArgs->getTable();
 
         if ($table->hasOption(self::PROCESSING_TABLE_FLAG)) {
             return;
         }
 
         $table->addOption(self::PROCESSING_TABLE_FLAG, true);
-        $createTableSql = $event->getPlatform()->getCreateTableSQL($table);
+        $createTableSql = $schemaCreateTableEventArgs->getPlatform()->getCreateTableSQL($table);
 
-        $event->addSql($createTableSql);
-        $event->preventDefault();
+        $schemaCreateTableEventArgs->addSql($createTableSql);
+        $schemaCreateTableEventArgs->preventDefault();
     }
 
     /**

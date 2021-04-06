@@ -6,8 +6,11 @@ namespace Tests\SchedulerBundle\Transport;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -26,6 +29,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 use function getcwd;
 
 /**
@@ -53,22 +57,66 @@ final class FilesystemTransportTest extends TestCase
         $this->filesystem->remove(getcwd().'/assets/_symfony_scheduler_/foo.json');
     }
 
+    public function testTransportCannotBeConfiguredWithInvalidPath(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "path" with value 135 is expected to be of type "string", but is of type "int".');
+        self::expectExceptionCode(0);
+        new FilesystemTransport(null, [
+            'path' => 135,
+        ], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+    }
+
+    public function testTransportCanBeConfigured(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        self::assertArrayHasKey('path', $filesystemTransport->getOptions());
+        self::assertSame(getcwd().'/assets', $filesystemTransport->getOptions()['path']);
+        self::assertArrayHasKey('execution_mode', $filesystemTransport->getOptions());
+        self::assertSame('first_in_first_out', $filesystemTransport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('filename_mask', $filesystemTransport->getOptions());
+        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getOptions()['filename_mask']);
+    }
+
     public function testTaskListCanBeRetrieved(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $task = new NullTask('bar');
-        $task->setScheduledAt(new DateTimeImmutable());
+        $nullTask = new NullTask('bar');
+        $nullTask->setScheduledAt(new DateTimeImmutable());
 
-        $transport->create($task);
+        $filesystemTransport->create($nullTask);
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
 
-        $list = $transport->list();
+        $list = $filesystemTransport->list();
         self::assertNotEmpty($list);
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
@@ -80,19 +128,19 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $task = new NullTask('bar');
+        $nullTask = new NullTask('bar');
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$task]);
+        $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$nullTask]);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [
             'execution_mode' => 'first_in_first_out',
         ], $serializer, $schedulePolicyOrchestrator);
 
-        $transport->create($task);
+        $filesystemTransport->create($nullTask);
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
 
-        $list = $transport->list();
+        $list = $filesystemTransport->list();
         self::assertNotEmpty($list);
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
@@ -104,11 +152,13 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The "bar" task does not exist');
-        $transport->get('bar');
+        $filesystemTransport->get('bar');
     }
 
     public function testTaskCanBeRetrieved(): void
@@ -118,12 +168,14 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
@@ -136,9 +188,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
     }
 
@@ -149,11 +203,13 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->update('foo', new NullTask('foo'));
+        $filesystemTransport->update('foo', new NullTask('foo'));
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
@@ -166,17 +222,19 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new ShellTask('foo', ['echo', 'Symfony']));
+        $filesystemTransport->create(new ShellTask('foo', ['echo', 'Symfony']));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         $task->setExpression('0 * * * *');
         self::assertSame('0 * * * *', $task->getExpression());
 
-        $transport->update('foo', $task);
-        $updatedTask = $transport->get('foo');
+        $filesystemTransport->update('foo', $task);
+        $updatedTask = $filesystemTransport->get('foo');
 
         self::assertSame('0 * * * *', $updatedTask->getExpression());
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -189,12 +247,14 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $transport->delete('foo');
+        $filesystemTransport->delete('foo');
         self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
     }
 
@@ -205,19 +265,21 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $transport->pause('foo');
+        $filesystemTransport->pause('foo');
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::PAUSED, $task->getState());
 
         self::expectException(LogicException::class);
         self::expectExceptionMessage('The task "foo" is already paused');
-        $transport->pause('foo');
+        $filesystemTransport->pause('foo');
     }
 
     public function testTaskCanBePaused(): void
@@ -227,14 +289,16 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $transport->pause('foo');
+        $filesystemTransport->pause('foo');
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::PAUSED, $task->getState());
     }
 
@@ -245,23 +309,25 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $transport->pause('foo');
+        $filesystemTransport->pause('foo');
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::PAUSED, $task->getState());
 
-        $transport->resume('foo');
-        $task = $transport->get('foo');
+        $filesystemTransport->resume('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::ENABLED, $task->getState());
 
         self::expectException(LogicException::class);
         self::expectExceptionMessage('The task "foo" is already enabled');
-        $transport->resume('foo');
+        $filesystemTransport->resume('foo');
     }
 
     public function testTaskCanBeResumed(): void
@@ -271,19 +337,21 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
 
-        $transport->pause('foo');
+        $filesystemTransport->pause('foo');
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::PAUSED, $task->getState());
 
-        $transport->resume('foo');
+        $filesystemTransport->resume('foo');
 
-        $task = $transport->get('foo');
+        $task = $filesystemTransport->get('foo');
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
@@ -294,14 +362,16 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $transport = new FilesystemTransport(getcwd().'/assets', [], $serializer);
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $transport->create(new NullTask('foo'));
-        $transport->create(new NullTask('bar'));
+        $filesystemTransport->create(new NullTask('foo'));
+        $filesystemTransport->create(new NullTask('bar'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
 
-        $transport->clear();
+        $filesystemTransport->clear();
         self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
         self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
     }

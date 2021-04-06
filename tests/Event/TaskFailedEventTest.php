@@ -20,9 +20,9 @@ final class TaskFailedEventTest extends TestCase
 
         $failedTask = new FailedTask($task, 'error');
 
-        $event = new TaskFailedEvent($failedTask);
+        $taskFailedEvent = new TaskFailedEvent($failedTask);
 
-        self::assertSame($failedTask, $event->getTask());
-        self::assertSame($task, $event->getTask()->getTask());
+        self::assertSame($failedTask, $taskFailedEvent->getTask());
+        self::assertSame($task, $taskFailedEvent->getTask()->getTask());
     }
 }

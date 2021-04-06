@@ -5,11 +5,21 @@ or scheduled via the [Scheduler](../src/Scheduler.php), every task is stored via
 
 Think of transports like the transports used by the following components in Symfony:
 
-- Mailer
-- Messenger
-- Notifier
+- [Mailer](https://symfony.com/doc/current/mailer.html#transport-setup)
+- [Messenger](https://symfony.com/doc/current/messenger.html#transport-configuration)
+- [Notifier](https://symfony.com/doc/current/notifier.html)
 
 This bundle defines a set of transports, each transport has its own configuration and can be overridden if required.
+
+## List of available transports
+
+- [InMemory](#inmemory)
+- [Filesystem](#filesystem)
+- [Cache](#cache)
+- [FailOver](#failover)
+- [RoundRobin](#roundrobin)
+- [Redis](#redis)
+- [Doctrine](#doctrine)
 
 ## Informations
 
@@ -86,25 +96,45 @@ scheduler_bundle:
         dsn: 'filesystem://first_in_first_out?path=/srv/app'
 ```
 
-_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration._
-
-### Extra configuration
-
-This transport can be configured using the following keys:
-
-- `filename_mask`: The filename mask is used to define the stored file name (default to `%s/_symfony_scheduler_/%s.json`).
+- The third and optional key is the `filename_mask` which define the "mask" of every task file (default to `%s/_symfony_scheduler_/%s.json`):
 
 ```yaml
 scheduler_bundle:
     transport:
-        dsn: 'memory://first_in_first_out?filename_mask=%s/_foo_scheduler/%s.json'
-        options:
-            path: '%kernel.project_dir%/_foo'
+        dsn: 'filesystem://first_in_first_out?filename_mask=%s/_foo/%s.json'
 ```
 
-**Extra**: The options key is an extra way of configuring the parameters without using the dsn.
+**Important:** This configuration key must use the `json` file extension, 
+the mask is used in combination with the `path` configuration key to store every task.
+
+_Note: Container parameters cannot be passed here as the container is not involved in the transport configuration._
 
 _Note: Keep in mind that this directory could be versioned if required_
+
+## Cache
+
+_Introduced in `0.4`_
+
+The [CacheTransport](../src/Transport/CacheTransport.php) stores every task in a PSR compliant
+`CacheItemPoolInterface`, every cache adapter that implement this interface can be used.
+
+By default, this bundle use the ones defined in the `cache` configuration key of the `framework`:
+
+```yaml
+framework:
+    cache:
+        app: cache.adapter.filesystem
+```
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    transport:
+        dsn: 'cache://app'
+```
+
+**Configuration**: This transport requires that you provide the name of the pool to use, the `execution_mode` option is allowed.
 
 ## FailOver
 

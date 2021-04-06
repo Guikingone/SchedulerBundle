@@ -8,6 +8,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,8 +17,6 @@ interface TransportInterface
 {
     /**
      * Return a stored task, if the task does not exist, an {@see InvalidArgumentException} MUST be thrown.
-     *
-     *
      */
     public function get(string $name): TaskInterface;
 
@@ -25,6 +24,8 @@ interface TransportInterface
      * Return all the tasks as a {@see TaskListInterface}, the tasks name are used as keys.
      *
      * @return TaskListInterface<string, TaskInterface>
+     *
+     * @throws Throwable
      */
     public function list(): TaskListInterface;
 

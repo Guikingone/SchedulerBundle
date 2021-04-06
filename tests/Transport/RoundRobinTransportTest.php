@@ -30,22 +30,22 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportIsConfigured(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
-        self::assertCount(3, $transport->getOptions());
-        self::assertArrayHasKey('quantum', $transport->getOptions());
-        self::assertSame(2, $transport->getOptions()['quantum']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertCount(3, $roundRobinTransport->getOptions());
+        self::assertArrayHasKey('quantum', $roundRobinTransport->getOptions());
+        self::assertSame(2, $roundRobinTransport->getOptions()['quantum']);
+        self::assertArrayHasKey('execution_mode', $roundRobinTransport->getOptions());
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $roundRobinTransport->get('foo');
     }
 
     public function testTransportCannotGetWithFailingTransports(): void
@@ -60,7 +60,7 @@ final class RoundRobinTransportTest extends TestCase
             ->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -68,10 +68,10 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->get('foo');
+        $roundRobinTransport->get('foo');
     }
 
-    public function testTransportCanRetrieveTask(): void
+    public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
@@ -83,24 +83,30 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
+            ->willThrowException(new RuntimeException('Task not found'));
+
+        $thirdTransport = $this->createMock(TransportInterface::class);
+        $thirdTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'))
             ->willReturn($task);
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+            $thirdTransport,
         ]);
 
-        self::assertSame($task, $transport->get('foo'));
+        self::assertSame($task, $roundRobinTransport->get('foo'));
     }
 
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->list();
+        $roundRobinTransport->list();
     }
 
     public function testTransportCanRetrieveTaskList(): void
@@ -113,24 +119,24 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('list')->willReturn($taskList);
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertEmpty($transport->list());
+        self::assertEmpty($roundRobinTransport->list());
     }
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->create($task);
+        $roundRobinTransport->create($task);
     }
 
     public function testTransportCannotCreateWithFailingTransports(): void
@@ -143,7 +149,7 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('create')->with($task)->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -151,7 +157,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->create($task);
+        $roundRobinTransport->create($task);
     }
 
     public function testTransportCanCreateTask(): void
@@ -165,24 +171,24 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('create')->with($task);
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->create($task);
+        $roundRobinTransport->create($task);
     }
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $roundRobinTransport->update('foo', $task);
     }
 
     public function testTransportCannotUpdateWithFailingTransports(): void
@@ -195,7 +201,7 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -203,7 +209,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->update('foo', $task);
+        $roundRobinTransport->update('foo', $task);
     }
 
     public function testTransportCanUpdateTask(): void
@@ -217,22 +223,22 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task);
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->update('foo', $task);
+        $roundRobinTransport->update('foo', $task);
     }
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $roundRobinTransport->delete('foo');
     }
 
     public function testTransportCannotDeleteWithFailingTransports(): void
@@ -243,7 +249,7 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))->willThrowException(new RuntimeException('Task list not found'));
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -251,7 +257,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->delete('foo');
+        $roundRobinTransport->delete('foo');
     }
 
     public function testTransportCanDeleteTask(): void
@@ -262,22 +268,22 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->delete('foo');
+        $roundRobinTransport->delete('foo');
     }
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $roundRobinTransport->pause('foo');
     }
 
     public function testTransportCannotPauseWithFailingTransports(): void
@@ -294,7 +300,7 @@ final class RoundRobinTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -302,7 +308,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->pause('foo');
+        $roundRobinTransport->pause('foo');
     }
 
     public function testTransportCanPauseTask(): void
@@ -318,22 +324,22 @@ final class RoundRobinTransportTest extends TestCase
             ->with(self::equalTo('foo'))
         ;
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->pause('foo');
+        $roundRobinTransport->pause('foo');
     }
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $roundRobinTransport->resume('foo');
     }
 
     public function testTransportCannotResumeWithFailingTransports(): void
@@ -350,7 +356,7 @@ final class RoundRobinTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -358,7 +364,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->resume('foo');
+        $roundRobinTransport->resume('foo');
     }
 
     public function testTransportCanResumeTask(): void
@@ -374,22 +380,22 @@ final class RoundRobinTransportTest extends TestCase
             ->with(self::equalTo('foo'))
         ;
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->resume('foo');
+        $roundRobinTransport->resume('foo');
     }
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $transport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $roundRobinTransport->clear();
     }
 
     public function testTransportCannotClearWithFailingTransports(): void
@@ -404,7 +410,7 @@ final class RoundRobinTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task list not found'))
         ;
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
@@ -412,7 +418,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $transport->clear();
+        $roundRobinTransport->clear();
     }
 
     public function testTransportCanClearTasks(): void
@@ -425,11 +431,11 @@ final class RoundRobinTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('clear');
 
-        $transport = new RoundRobinTransport([
+        $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        $transport->clear();
+        $roundRobinTransport->clear();
     }
 }

@@ -26,6 +26,6 @@ final class NullBuilder extends AbstractTaskBuilder implements BuilderInterface
      */
     public function support(?string $type = null): bool
     {
-        return null === $type;
+        return 'null' === $type;
     }
 }

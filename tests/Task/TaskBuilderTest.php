@@ -10,6 +10,7 @@ use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\Task\Builder\BuilderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\Builder\CommandBuilder;
@@ -29,7 +30,7 @@ final class TaskBuilderTest extends TestCase
 {
     public function testBuilderCannotBuildWithoutBuilders(): void
     {
-        $builder = new TaskBuilder([
+        $taskBuilder = new TaskBuilder([
             new NullBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
                 new ComputedExpressionBuilder(),
@@ -40,7 +41,7 @@ final class TaskBuilderTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task cannot be created as no builder has been defined for "test"');
         self::expectExceptionCode(0);
-        $builder->create([
+        $taskBuilder->create([
             'type' => 'test',
         ]);
     }
@@ -50,7 +51,11 @@ final class TaskBuilderTest extends TestCase
      */
     public function testBuilderCanCreateNullTask(array $options): void
     {
-        $builder = new TaskBuilder([
+        $invalidBuilder = $this->createMock(BuilderInterface::class);
+        $invalidBuilder->expects(self::once())->method('support')->with(self::equalTo('null'))->willReturn(false);
+
+        $taskBuilder = new TaskBuilder([
+            $invalidBuilder,
             new NullBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
                 new ComputedExpressionBuilder(),
@@ -58,7 +63,7 @@ final class TaskBuilderTest extends TestCase
             ])),
         ], PropertyAccess::createPropertyAccessor());
 
-        self::assertInstanceOf(NullTask::class, $builder->create($options));
+        self::assertInstanceOf(NullTask::class, $taskBuilder->create($options));
     }
 
     /**
@@ -66,7 +71,11 @@ final class TaskBuilderTest extends TestCase
      */
     public function testBuilderCanCreateShellTask(array $options): void
     {
-        $builder = new TaskBuilder([
+        $invalidBuilder = $this->createMock(BuilderInterface::class);
+        $invalidBuilder->expects(self::once())->method('support')->with(self::equalTo('shell'))->willReturn(false);
+
+        $taskBuilder = new TaskBuilder([
+            $invalidBuilder,
             new ShellBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
                 new ComputedExpressionBuilder(),
@@ -74,7 +83,7 @@ final class TaskBuilderTest extends TestCase
             ])),
         ], PropertyAccess::createPropertyAccessor());
 
-        self::assertInstanceOf(ShellTask::class, $builder->create($options));
+        self::assertInstanceOf(ShellTask::class, $taskBuilder->create($options));
     }
 
     /**
@@ -82,7 +91,11 @@ final class TaskBuilderTest extends TestCase
      */
     public function testBuilderCanCreateCommandTask(array $options): void
     {
-        $builder = new TaskBuilder([
+        $invalidBuilder = $this->createMock(BuilderInterface::class);
+        $invalidBuilder->expects(self::once())->method('support')->with(self::equalTo('command'))->willReturn(false);
+
+        $taskBuilder = new TaskBuilder([
+            $invalidBuilder,
             new CommandBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
                 new ComputedExpressionBuilder(),
@@ -90,7 +103,7 @@ final class TaskBuilderTest extends TestCase
             ])),
         ], PropertyAccess::createPropertyAccessor());
 
-        self::assertInstanceOf(CommandTask::class, $builder->create($options));
+        self::assertInstanceOf(CommandTask::class, $taskBuilder->create($options));
     }
 
     /**
@@ -98,7 +111,11 @@ final class TaskBuilderTest extends TestCase
      */
     public function testBuilderCanCreateHttpTask(array $options): void
     {
-        $builder = new TaskBuilder([
+        $invalidBuilder = $this->createMock(BuilderInterface::class);
+        $invalidBuilder->expects(self::once())->method('support')->with(self::equalTo('http'))->willReturn(false);
+
+        $taskBuilder = new TaskBuilder([
+            $invalidBuilder,
             new HttpBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
                 new ComputedExpressionBuilder(),
@@ -106,7 +123,7 @@ final class TaskBuilderTest extends TestCase
             ])),
         ], PropertyAccess::createPropertyAccessor());
 
-        self::assertInstanceOf(HttpTask::class, $builder->create($options));
+        self::assertInstanceOf(HttpTask::class, $taskBuilder->create($options));
     }
 
     public function provideNullTaskData(): Generator
@@ -114,7 +131,7 @@ final class TaskBuilderTest extends TestCase
         yield [
             [
                 'name' => 'foo',
-                'type' => null,
+                'type' => 'null',
                 'expression' => '* * * * *',
                 'queued' => false,
                 'timezone' => 'UTC',
@@ -127,7 +144,7 @@ final class TaskBuilderTest extends TestCase
         yield [
             [
                 'name' => 'bar',
-                'type' => null,
+                'type' => 'null',
                 'expression' => '* * * * *',
                 'queued' => false,
                 'timezone' => 'UTC',

@@ -22,10 +22,15 @@ final class FailOverTransport extends AbstractTransport
      * @var SplObjectStorage<object, mixed>
      */
     private SplObjectStorage $failedTransports;
+
+    /**
+     * @var iterable|TransportInterface[]
+     */
     private iterable $transports;
 
     /**
      * @param iterable|TransportInterface[] $transports
+     * @param array<string, mixed>          $options
      */
     public function __construct(iterable $transports, array $options = [])
     {

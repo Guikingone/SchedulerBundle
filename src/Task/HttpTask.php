@@ -24,8 +24,8 @@ final class HttpTask extends AbstractTask
             'method' => $method,
             'client_options' => $clientOptions,
         ], [
-            'url' => ['string'],
-            'method' => ['string'],
+            'url' => 'string',
+            'method' => 'string',
             'client_options' => ['array', 'string[]'],
         ]);
 

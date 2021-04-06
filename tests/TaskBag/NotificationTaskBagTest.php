@@ -19,9 +19,9 @@ final class NotificationTaskBagTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $bag = new NotificationTaskBag($notification, $recipient);
+        $notificationTaskBag = new NotificationTaskBag($notification, $recipient);
 
-        self::assertSame($notification, $bag->getNotification());
-        self::assertContains($recipient, $bag->getRecipients());
+        self::assertSame($notification, $notificationTaskBag->getNotification());
+        self::assertContains($recipient, $notificationTaskBag->getRecipients());
     }
 }

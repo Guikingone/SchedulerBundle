@@ -15,29 +15,29 @@ final class HttpTaskTest extends TestCase
 {
     public function testTaskCanBeCreated(): void
     {
-        $task = new HttpTask('foo', 'https://symfony.com', 'GET');
+        $httpTask = new HttpTask('foo', 'https://symfony.com', 'GET');
 
-        self::assertSame('https://symfony.com', $task->getUrl());
-        self::assertSame('GET', $task->getMethod());
-        self::assertEmpty($task->getClientOptions());
+        self::assertSame('https://symfony.com', $httpTask->getUrl());
+        self::assertSame('GET', $httpTask->getMethod());
+        self::assertEmpty($httpTask->getClientOptions());
     }
 
     public function testTaskCanBeCreatedAndUrlChanged(): void
     {
-        $task = new HttpTask('foo', 'https://symfony.com', 'GET');
-        self::assertSame('https://symfony.com', $task->getUrl());
+        $httpTask = new HttpTask('foo', 'https://symfony.com', 'GET');
+        self::assertSame('https://symfony.com', $httpTask->getUrl());
 
-        $task->setUrl('https://symfony.com/test');
-        self::assertSame('https://symfony.com/test', $task->getUrl());
+        $httpTask->setUrl('https://symfony.com/test');
+        self::assertSame('https://symfony.com/test', $httpTask->getUrl());
     }
 
     public function testTaskCanBeCreatedAndMethodChanged(): void
     {
-        $task = new HttpTask('foo', 'https://symfony.com', 'GET');
-        self::assertSame('https://symfony.com', $task->getUrl());
+        $httpTask = new HttpTask('foo', 'https://symfony.com', 'GET');
+        self::assertSame('https://symfony.com', $httpTask->getUrl());
 
-        $task->setMethod('POST');
-        self::assertSame('POST', $task->getMethod());
+        $httpTask->setMethod('POST');
+        self::assertSame('POST', $httpTask->getMethod());
     }
 
     public function testTaskCannotBeCreatedWithInvalidOptions(): void
@@ -51,16 +51,16 @@ final class HttpTaskTest extends TestCase
 
     public function testTaskCanBeCreatedAndClientOptionsChanged(): void
     {
-        $task = new HttpTask('foo', 'https://symfony.com', 'GET', [
+        $httpTask = new HttpTask('foo', 'https://symfony.com', 'GET', [
             'http_version' => '2.0',
         ]);
-        self::assertArrayHasKey('http_version', $task->getClientOptions());
-        self::assertSame('2.0', $task->getClientOptions()['http_version']);
+        self::assertArrayHasKey('http_version', $httpTask->getClientOptions());
+        self::assertSame('2.0', $httpTask->getClientOptions()['http_version']);
 
-        $task->setClientOptions([
+        $httpTask->setClientOptions([
             'http_version' => '1.0',
         ]);
-        self::assertArrayHasKey('http_version', $task->getClientOptions());
-        self::assertSame('1.0', $task->getClientOptions()['http_version']);
+        self::assertArrayHasKey('http_version', $httpTask->getClientOptions());
+        self::assertSame('1.0', $httpTask->getClientOptions()['http_version']);
     }
 }

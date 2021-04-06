@@ -17,9 +17,9 @@ final class MessengerTaskRunner implements RunnerInterface
 {
     private ?MessageBusInterface $bus;
 
-    public function __construct(MessageBusInterface $bus = null)
+    public function __construct(MessageBusInterface $messageBus = null)
     {
-        $this->bus = $bus;
+        $this->bus = $messageBus;
     }
 
     /**

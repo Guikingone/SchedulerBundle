@@ -6,6 +6,7 @@
          bootstrap="vendor/autoload.php"
          failOnRisky="true"
          failOnWarning="true"
+         executionOrder="defects"
 >
   <coverage>
     <include>
@@ -27,5 +28,4 @@
       <directory>./tests/</directory>
     </testsuite>
   </testsuites>
-
 </phpunit>

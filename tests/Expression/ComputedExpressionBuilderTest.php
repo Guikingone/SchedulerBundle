@@ -15,10 +15,10 @@ final class ComputedExpressionBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new ComputedExpressionBuilder();
+        $computedExpressionBuilder = new ComputedExpressionBuilder();
 
-        self::assertFalse($builder->support('* * * * *'));
-        self::assertTrue($builder->support('# * * * *'));
+        self::assertFalse($computedExpressionBuilder->support('* * * * *'));
+        self::assertTrue($computedExpressionBuilder->support('# * * * *'));
     }
 
     /**
@@ -26,9 +26,9 @@ final class ComputedExpressionBuilderTest extends TestCase
      */
     public function testBuilderCanBuild(string $expression): void
     {
-        $builder = new ComputedExpressionBuilder();
+        $computedExpressionBuilder = new ComputedExpressionBuilder();
 
-        $finalExpression = $builder->build($expression);
+        $finalExpression = $computedExpressionBuilder->build($expression);
 
         self::assertNotSame($finalExpression->getExpression(), $expression);
     }

@@ -18,108 +18,108 @@ final class CallBackTaskRunnerTest extends TestCase
 {
     public function testRunnerCannotSupportInvalidTask(): void
     {
-        $runner = new CallbackTaskRunner();
+        $callbackTaskRunner = new CallbackTaskRunner();
 
         $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        self::assertFalse($runner->support($task));
+        self::assertFalse($callbackTaskRunner->support($task));
 
         $task = new CallbackTask('foo', fn (): int => 1 + 1);
 
-        self::assertTrue($runner->support($task));
+        self::assertTrue($callbackTaskRunner->support($task));
     }
 
     public function testRunnerCannotExecuteInvalidTask(): void
     {
-        $runner = new CallbackTaskRunner();
-        $secondTask = new ShellTask('foo', ['echo', 'Symfony!']);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!']);
 
-        $output = $runner->run($secondTask);
+        $output = $callbackTaskRunner->run($shellTask);
         self::assertSame(Output::ERROR, $output->getType());
-        self::assertSame(TaskInterface::ERRORED, $secondTask->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertNull($output->getOutput());
-        self::assertSame($secondTask, $output->getTask());
+        self::assertSame($shellTask, $output->getTask());
     }
 
     public function testRunnerCanExecuteValidTaskWithExtraSpacedOutput(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn (): string => '   hello');
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn (): string => '   hello');
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
         self::assertSame('hello', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTask(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn (): int => 1 + 1);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn (): int => 1 + 1);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
         self::assertSame('2', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithCallable(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', [new FooCallable(), 'echo']);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', [new FooCallable(), 'echo']);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
-        self::assertSame('Symfony', $runner->run($task)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertSame('Symfony', $callbackTaskRunner->run($callbackTask)->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithArguments(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1, 2]);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1, 2]);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
-        self::assertSame('2', $runner->run($task)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertSame('2', $callbackTaskRunner->run($callbackTask)->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteInvalidTask(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1]);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1]);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteTaskWithFalseReturn(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn (): bool => false);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn (): bool => false);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::ERRORED, $task->getExecutionState());
+        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteTaskWithTrueReturn(): void
     {
-        $runner = new CallbackTaskRunner();
-        $task = new CallbackTask('foo', fn (): bool => true);
+        $callbackTaskRunner = new CallbackTaskRunner();
+        $callbackTask = new CallbackTask('foo', fn (): bool => true);
 
-        $output = $runner->run($task);
+        $output = $callbackTaskRunner->run($callbackTask);
 
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
         self::assertSame('1', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }

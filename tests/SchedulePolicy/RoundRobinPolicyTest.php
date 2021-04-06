@@ -15,10 +15,10 @@ final class RoundRobinPolicyTest extends TestCase
 {
     public function testPolicySupport(): void
     {
-        $policy = new RoundRobinPolicy();
+        $roundRobinPolicy = new RoundRobinPolicy();
 
-        self::assertFalse($policy->support('test'));
-        self::assertTrue($policy->support('round_robin'));
+        self::assertFalse($roundRobinPolicy->support('test'));
+        self::assertTrue($roundRobinPolicy->support('round_robin'));
     }
 
     public function testTasksCanBeSorted(): void
@@ -30,8 +30,8 @@ final class RoundRobinPolicyTest extends TestCase
         $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.0);
         $secondTask->expects(self::once())->method('getMaxDuration')->willReturn(10.0);
 
-        $policy = new RoundRobinPolicy();
+        $roundRobinPolicy = new RoundRobinPolicy();
 
-        self::assertSame(['bar' => $task, 'foo' => $secondTask], $policy->sort(['foo' => $secondTask, 'bar' => $task]));
+        self::assertSame(['bar' => $task, 'foo' => $secondTask], $roundRobinPolicy->sort(['foo' => $secondTask, 'bar' => $task]));
     }
 }

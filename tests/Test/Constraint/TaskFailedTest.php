@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Test\Constraint;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskFailed;
@@ -18,24 +19,23 @@ final class TaskFailedTest extends TestCase
 {
     public function testConstraintCannotMatch(): void
     {
-        $list = new TaskEventList();
+        $taskEventList = new TaskEventList();
 
-        $constraint = new TaskFailed(1);
+        $taskFailed = new TaskFailed(1);
 
-        self::assertFalse($constraint->evaluate($list, '', true));
+        self::assertFalse($taskFailed->evaluate($taskEventList, '', true));
     }
 
     public function testConstraintCanMatch(): void
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $failedTask = new FailedTask($task, 'error');
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskUnscheduledEvent('foo'));
+        $taskEventList->addEvent(new TaskFailedEvent(new FailedTask($task, 'error')));
 
-        $list = new TaskEventList();
-        $list->addEvent(new TaskFailedEvent($failedTask));
+        $taskFailed = new TaskFailed(1);
 
-        $constraint = new TaskFailed(1);
-
-        self::assertTrue($constraint->evaluate($list, '', true));
+        self::assertTrue($taskFailed->evaluate($taskEventList, '', true));
     }
 }

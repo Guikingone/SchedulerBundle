@@ -19,6 +19,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\AbstractTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -38,6 +39,7 @@ final class Connection implements ConnectionInterface
     private array $configuration;
     private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
+    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
     private LoggerInterface $logger;
 
     /**
@@ -45,13 +47,15 @@ final class Connection implements ConnectionInterface
      */
     public function __construct(
         array $configuration,
-        DbalConnection $driverConnection,
+        DbalConnection $dbalConnection,
         SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
         $this->configuration = $configuration;
-        $this->driverConnection = $driverConnection;
+        $this->driverConnection = $dbalConnection;
         $this->serializer = $serializer;
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -83,7 +87,10 @@ final class Connection implements ConnectionInterface
                 $statement = $this->executeQuery($query->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
-                return new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+                return new TaskList($this->schedulePolicyOrchestrator->sort(
+                    $this->configuration['execution_mode'],
+                    array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks)
+                ));
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
@@ -290,9 +297,9 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection): void {
-                $deleteQuery = $this->createQueryBuilder()->delete($this->configuration['table_name']);
+                $queryBuilder = $this->createQueryBuilder()->delete($this->configuration['table_name']);
 
-                $connection->executeQuery($deleteQuery->getSQL());
+                $connection->executeQuery($queryBuilder->getSQL());
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), $throwable->getCode(), $throwable);
@@ -305,17 +312,17 @@ final class Connection implements ConnectionInterface
     public function setup(): void
     {
         $configuration = $this->driverConnection->getConfiguration();
-        $assetFilter = $configuration->getSchemaAssetsFilter();
+        $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
-        $configuration->setSchemaAssetsFilter($assetFilter);
+        $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
 
         $this->configuration['auto_setup'] = false;
     }
 
-    public function configureSchema(Schema $schema, DbalConnection $connection): void
+    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
-        if ($connection !== $this->driverConnection) {
+        if ($dbalConnection !== $this->driverConnection) {
             return;
         }
 

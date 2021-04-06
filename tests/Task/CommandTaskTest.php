@@ -23,18 +23,18 @@ final class CommandTaskTest extends TestCase
 
     public function testCommandCanBeCreatedWithoutArgumentsAndOptions(): void
     {
-        $task = new CommandTask('test', 'app:foo');
+        $commandTask = new CommandTask('test', 'app:foo');
 
-        self::assertEmpty($task->getArguments());
-        self::assertEmpty($task->getOptions());
+        self::assertEmpty($commandTask->getArguments());
+        self::assertEmpty($commandTask->getOptions());
     }
 
     public function testCommandCanBeCreatedWithValidArguments(): void
     {
-        $task = new CommandTask('test', 'app:foo', ['test'], ['--env' => 'test']);
+        $commandTask = new CommandTask('test', 'app:foo', ['test'], ['--env' => 'test']);
 
-        self::assertSame('app:foo', $task->getCommand());
-        self::assertContainsEquals('test', $task->getArguments());
-        self::assertSame(['--env' => 'test'], $task->getOptions());
+        self::assertSame('app:foo', $commandTask->getCommand());
+        self::assertContainsEquals('test', $commandTask->getArguments());
+        self::assertSame(['--env' => 'test'], $commandTask->getOptions());
     }
 }

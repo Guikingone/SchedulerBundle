@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 use function sys_get_temp_dir;
 use function strpos;
 
@@ -20,12 +19,10 @@ final class FilesystemTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        $finalOptions = array_merge([
+        return new FilesystemTransport($dsn->getOption('path', sys_get_temp_dir()), [
             'execution_mode' => $dsn->getHost(),
-            'path' => $dsn->getOption('path', sys_get_temp_dir()),
-        ], $options);
-
-        return new FilesystemTransport($finalOptions['path'], $finalOptions, $serializer, $schedulePolicyOrchestrator);
+            'filename_mask' => $dsn->getOption('filename_mask', '%s/_symfony_scheduler_/%s.json'),
+        ], $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

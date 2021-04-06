@@ -47,19 +47,19 @@ final class YieldTaskCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command yield a task.
+                    The <info>%command.name%</info> command yield a task.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the name argument to specify the task to yield:
-    <info>php %command.full_name% <name></info>
+                    Use the name argument to specify the task to yield:
+                        <info>php %command.full_name% <name></info>
 
-Use the --async option to perform the yield using the message bus:
-    <info>php %command.full_name% <name> --async</info>
+                    Use the --async option to perform the yield using the message bus:
+                        <info>php %command.full_name% <name> --async</info>
 
-Use the --force option to force the task yield without asking for confirmation:
-    <info>php %command.full_name% <name> --force</info>
-EOF
+                    Use the --force option to force the task yield without asking for confirmation:
+                        <info>php %command.full_name% <name> --force</info>
+                    EOF
             )
         ;
     }
@@ -69,15 +69,15 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
 
-        if ($input->getOption('force') || $style->confirm('Do you want to yield this task?', false)) {
+        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to yield this task?', false)) {
             try {
                 $this->scheduler->yieldTask($name, $input->getOption('async'));
             } catch (Throwable $throwable) {
-                $style->error([
+                $symfonyStyle->error([
                     'An error occurred when trying to yield the task:',
                     $throwable->getMessage(),
                 ]);
@@ -85,12 +85,12 @@ EOF
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been yielded', $name));
+            $symfonyStyle->success(sprintf('The task "%s" has been yielded', $name));
 
             return self::SUCCESS;
         }
 
-        $style->warning(sprintf('The task "%s" has not been yielded', $name));
+        $symfonyStyle->warning(sprintf('The task "%s" has not been yielded', $name));
 
         return self::FAILURE;
     }

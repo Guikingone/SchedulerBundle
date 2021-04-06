@@ -35,8 +35,8 @@ use function sprintf;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private ?Redis $redis = null;
-    private ?Connection $connection = null;
+    private Redis $redis;
+    private Connection $connection;
 
     /**
      * {@inheritdoc}
@@ -50,7 +50,15 @@ final class ConnectionIntegrationTest extends TestCase
         $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ), $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         try {
@@ -67,7 +75,7 @@ final class ConnectionIntegrationTest extends TestCase
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             ], $serializer, $this->redis);
-            $this->connection->clean();
+            $this->connection->empty();
         } catch (Throwable $throwable) {
             self::markTestSkipped($throwable->getMessage());
         }

@@ -7,6 +7,8 @@ namespace SchedulerBundle;
 use DateTimeZone;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\TransportInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -49,6 +51,8 @@ interface SchedulerInterface
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
      * @return TaskListInterface<string, TaskInterface>
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function getDueTasks(): TaskListInterface;
 
@@ -61,6 +65,8 @@ interface SchedulerInterface
      * Return every tasks scheduled.
      *
      * @return TaskListInterface<string, TaskInterface>
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function getTasks(): TaskListInterface;
 
@@ -68,6 +74,8 @@ interface SchedulerInterface
      * Remove every tasks except the ones that use the '@reboot' expression.
      *
      * The "reboot" tasks are re-scheduled and MUST be executed as soon as possible.
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function reboot(): void;
 }

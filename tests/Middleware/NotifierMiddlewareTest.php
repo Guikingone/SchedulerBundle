@@ -19,9 +19,9 @@ final class NotifierMiddlewareTest extends TestCase
 {
     public function testMiddlewareIsOrdered(): void
     {
-        $middleware = new NotifierMiddleware();
+        $notifierMiddleware = new NotifierMiddleware();
 
-        self::assertSame(2, $middleware->getPriority());
+        self::assertSame(2, $notifierMiddleware->getPriority());
     }
 
     public function testMiddlewareCannotExecutePreExecutionNotificationsWithoutNotification(): void
@@ -32,8 +32,8 @@ final class NotifierMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getBeforeExecutingNotificationBag')->willReturn(null);
 
-        $middleware = new NotifierMiddleware($notifier);
-        $middleware->preExecute($task);
+        $notifierMiddleware = new NotifierMiddleware($notifier);
+        $notifierMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotExecutePreExecutionNotificationsWithoutNotifier(): void
@@ -48,8 +48,8 @@ final class NotifierMiddlewareTest extends TestCase
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
-        $middleware = new NotifierMiddleware();
-        $middleware->preExecute($task);
+        $notifierMiddleware = new NotifierMiddleware();
+        $notifierMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCanExecutePreExecutionNotifications(): void
@@ -64,8 +64,8 @@ final class NotifierMiddlewareTest extends TestCase
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
-        $middleware = new NotifierMiddleware($notifier);
-        $middleware->preExecute($task);
+        $notifierMiddleware = new NotifierMiddleware($notifier);
+        $notifierMiddleware->preExecute($task);
     }
 
     public function testMiddlewareCannotExecutePostExecutionNotificationsWithoutNotification(): void
@@ -76,8 +76,8 @@ final class NotifierMiddlewareTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(null);
 
-        $middleware = new NotifierMiddleware($notifier);
-        $middleware->postExecute($task);
+        $notifierMiddleware = new NotifierMiddleware($notifier);
+        $notifierMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCannotExecutePostExecutionNotificationsWithoutNotifier(): void
@@ -92,8 +92,8 @@ final class NotifierMiddlewareTest extends TestCase
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
-        $middleware = new NotifierMiddleware();
-        $middleware->postExecute($task);
+        $notifierMiddleware = new NotifierMiddleware();
+        $notifierMiddleware->postExecute($task);
     }
 
     public function testMiddlewareCanExecutePostExecutionNotifications(): void
@@ -108,7 +108,7 @@ final class NotifierMiddlewareTest extends TestCase
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
-        $middleware = new NotifierMiddleware($notifier);
-        $middleware->postExecute($task);
+        $notifierMiddleware = new NotifierMiddleware($notifier);
+        $notifierMiddleware->postExecute($task);
     }
 }

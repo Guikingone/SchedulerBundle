@@ -17,7 +17,7 @@ final class WorkerRunningEventTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $event = new WorkerRunningEvent($worker);
-        self::assertSame($worker, $event->getWorker());
+        $workerRunningEvent = new WorkerRunningEvent($worker);
+        self::assertSame($worker, $workerRunningEvent->getWorker());
     }
 }

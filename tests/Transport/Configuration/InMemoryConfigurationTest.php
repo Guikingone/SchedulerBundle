@@ -14,41 +14,41 @@ final class InMemoryConfigurationTest extends TestCase
 {
     public function testConfigurationCanBeCreated(): void
     {
-        $configuration = new InMemoryConfiguration();
+        $inMemoryConfiguration = new InMemoryConfiguration();
 
-        $configuration->set('foo', 'bar');
+        $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $configuration->getOptions());
-        self::assertSame('bar', $configuration->get('foo'));
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertSame('bar', $inMemoryConfiguration->get('foo'));
     }
 
     public function testConfigurationCanBeUpdated(): void
     {
-        $configuration = new InMemoryConfiguration();
+        $inMemoryConfiguration = new InMemoryConfiguration();
 
-        $configuration->set('foo', 'bar');
+        $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $configuration->getOptions());
-        self::assertSame('bar', $configuration->get('foo'));
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
-        $configuration->update('foo', 'foo_new');
+        $inMemoryConfiguration->update('foo', 'foo_new');
 
-        self::assertArrayHasKey('foo', $configuration->getOptions());
-        self::assertSame('foo_new', $configuration->get('foo'));
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertSame('foo_new', $inMemoryConfiguration->get('foo'));
     }
 
     public function testConfigurationCanBeRemoved(): void
     {
-        $configuration = new InMemoryConfiguration();
+        $inMemoryConfiguration = new InMemoryConfiguration();
 
-        $configuration->set('foo', 'bar');
+        $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $configuration->getOptions());
-        self::assertSame('bar', $configuration->get('foo'));
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
-        $configuration->remove('foo');
+        $inMemoryConfiguration->remove('foo');
 
-        self::assertArrayNotHasKey('foo', $configuration->getOptions());
-        self::assertNull($configuration->get('foo'));
+        self::assertArrayNotHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertNull($inMemoryConfiguration->get('foo'));
     }
 }

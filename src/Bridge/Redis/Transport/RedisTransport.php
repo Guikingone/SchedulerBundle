@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -16,12 +18,16 @@ use function array_merge;
 final class RedisTransport extends AbstractTransport
 {
     private Connection $connection;
+    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
     /**
      * @param array<string, int|string> $options
      */
-    public function __construct(array $options, SerializerInterface $serializer)
-    {
+    public function __construct(
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ) {
         $this->defineOptions(array_merge([
             'host' => '127.0.0.1',
             'password' => null,
@@ -33,18 +39,19 @@ final class RedisTransport extends AbstractTransport
             'transaction_mode' => null,
             'list' => '_symfony_scheduler_tasks',
         ], $options), [
-            'host' => ['string'],
+            'host' => 'string',
             'password' => ['string', 'null'],
-            'port' => ['int'],
+            'port' => 'int',
             'scheme' => ['string', 'null'],
-            'timeout' => ['int'],
+            'timeout' => 'int',
             'auth' => ['string', 'null'],
-            'dbindex' => ['int'],
+            'dbindex' => 'int',
             'transaction_mode' => ['string', 'null'],
-            'list' => ['string'],
+            'list' => 'string',
         ]);
 
         $this->connection = new Connection($this->getOptions(), $serializer);
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
     }
 
     /**
@@ -52,15 +59,18 @@ final class RedisTransport extends AbstractTransport
      */
     public function list(): TaskListInterface
     {
-        return $this->connection->list();
+        return new TaskList($this->schedulePolicyOrchestrator->sort(
+            $this->getExecutionMode(),
+            $this->connection->list()->toArray()
+        ));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): TaskInterface
+    public function get(string $name): TaskInterface
     {
-        return $this->connection->get($taskName);
+        return $this->connection->get($name);
     }
 
     /**
@@ -82,25 +92,25 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function pause(string $taskName): void
+    public function pause(string $name): void
     {
-        $this->connection->pause($taskName);
+        $this->connection->pause($name);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function resume(string $taskName): void
+    public function resume(string $name): void
     {
-        $this->connection->resume($taskName);
+        $this->connection->resume($name);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function delete(string $taskName): void
+    public function delete(string $name): void
     {
-        $this->connection->delete($taskName);
+        $this->connection->delete($name);
     }
 
     /**

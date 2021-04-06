@@ -14,6 +14,9 @@ use Throwable;
  */
 final class ChainedTaskRunner implements RunnerInterface
 {
+    /**
+     * @var iterable|RunnerInterface[]
+     */
     private iterable $runners;
 
     /**

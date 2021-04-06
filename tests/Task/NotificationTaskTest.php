@@ -19,11 +19,11 @@ final class NotificationTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('foo', $notification, $recipient);
+        $notificationTask = new NotificationTask('foo', $notification, $recipient);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame($notification, $task->getNotification());
-        self::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $notificationTask->getName());
+        self::assertSame($notification, $notificationTask->getNotification());
+        self::assertNotEmpty($notificationTask->getRecipients());
     }
 
     public function testTaskCanBeCreatedAndNotificationChangedLater(): void
@@ -31,16 +31,16 @@ final class NotificationTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('foo', $notification, $recipient);
+        $notificationTask = new NotificationTask('foo', $notification, $recipient);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame($notification, $task->getNotification());
-        self::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $notificationTask->getName());
+        self::assertSame($notification, $notificationTask->getNotification());
+        self::assertNotEmpty($notificationTask->getRecipients());
 
         $secondNotification = $this->createMock(Notification::class);
 
-        $task->setNotification($secondNotification);
-        self::assertSame($secondNotification, $task->getNotification());
+        $notificationTask->setNotification($secondNotification);
+        self::assertSame($secondNotification, $notificationTask->getNotification());
     }
 
     public function testTaskCanBeCreatedAndRecipientsChangedLater(): void
@@ -48,16 +48,16 @@ final class NotificationTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('foo', $notification, $recipient);
+        $notificationTask = new NotificationTask('foo', $notification, $recipient);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame($notification, $task->getNotification());
-        self::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $notificationTask->getName());
+        self::assertSame($notification, $notificationTask->getNotification());
+        self::assertNotEmpty($notificationTask->getRecipients());
 
         $secondRecipient = $this->createMock(Recipient::class);
 
-        $task->setRecipients($recipient, $secondRecipient);
-        self::assertCount(2, $task->getRecipients());
+        $notificationTask->setRecipients($recipient, $secondRecipient);
+        self::assertCount(2, $notificationTask->getRecipients());
     }
 
     public function testTaskCanBeCreatedAndRecipientAddedLater(): void
@@ -65,15 +65,15 @@ final class NotificationTaskTest extends TestCase
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
-        $task = new NotificationTask('foo', $notification, $recipient);
+        $notificationTask = new NotificationTask('foo', $notification, $recipient);
 
-        self::assertSame('foo', $task->getName());
-        self::assertSame($notification, $task->getNotification());
-        self::assertNotEmpty($task->getRecipients());
+        self::assertSame('foo', $notificationTask->getName());
+        self::assertSame($notification, $notificationTask->getNotification());
+        self::assertNotEmpty($notificationTask->getRecipients());
 
         $secondRecipient = $this->createMock(Recipient::class);
 
-        $task->addRecipient($secondRecipient);
-        self::assertCount(2, $task->getRecipients());
+        $notificationTask->addRecipient($secondRecipient);
+        self::assertCount(2, $notificationTask->getRecipients());
     }
 }

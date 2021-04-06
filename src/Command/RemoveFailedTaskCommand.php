@@ -50,16 +50,16 @@ final class RemoveFailedTaskCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command remove a failed task.
+                    The <info>%command.name%</info> command remove a failed task.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the task-name argument to specify the task to remove:
-    <info>php %command.full_name% <task-name></info>
+                    Use the task-name argument to specify the task to remove:
+                        <info>php %command.full_name% <task-name></info>
 
-Use the --force option to force the task deletion without asking for confirmation:
-    <info>php %command.full_name% <task-name> --force</info>
-EOF
+                    Use the --force option to force the task deletion without asking for confirmation:
+                        <info>php %command.full_name% <task-name> --force</info>
+                    EOF
             )
         ;
     }
@@ -69,22 +69,22 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
-            $style->error(sprintf('The task "%s" does not fails', $name));
+            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $style->confirm('Do you want to permanently remove this task?', false)) {
+        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to permanently remove this task?', false)) {
             try {
                 $this->scheduler->unschedule($toRemoveTask->getName());
             } catch (Throwable $throwable) {
-                $style->error([
+                $symfonyStyle->error([
                     'An error occurred when trying to unschedule the task:',
                     $throwable->getMessage(),
                 ]);
@@ -92,12 +92,12 @@ EOF
                 return self::FAILURE;
             }
 
-            $style->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $symfonyStyle->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
         }
 
-        $style->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+        $symfonyStyle->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
 
         return self::FAILURE;
     }

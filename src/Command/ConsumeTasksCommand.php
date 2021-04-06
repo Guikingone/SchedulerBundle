@@ -70,22 +70,22 @@ final class ConsumeTasksCommand extends Command
             ])
             ->setHelp(
                 <<<'EOF'
-The <info>%command.name%</info> command consumes due tasks.
+                    The <info>%command.name%</info> command consumes due tasks.
 
-    <info>php %command.full_name%</info>
+                        <info>php %command.full_name%</info>
 
-Use the --limit option to limit the number of tasks consumed:
-    <info>php %command.full_name% --limit=10</info>
+                    Use the --limit option to limit the number of tasks consumed:
+                        <info>php %command.full_name% --limit=10</info>
 
-Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
-    <info>php %command.full_name% --time-limit=3600</info>
+                    Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached:
+                        <info>php %command.full_name% --time-limit=3600</info>
 
-Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
-    <info>php %command.full_name% --failure-limit=5</info>
+                    Use the --failure-limit option to stop the worker when the given amount of failed tasks is reached:
+                        <info>php %command.full_name% --failure-limit=5</info>
 
-Use the --wait option to set the worker to wait for tasks every minutes:
-    <info>php %command.full_name% --wait</info>
-EOF
+                    Use the --wait option to set the worker to wait for tasks every minutes:
+                        <info>php %command.full_name% --wait</info>
+                    EOF
             )
         ;
     }
@@ -95,11 +95,11 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $tasks = $this->scheduler->getDueTasks();
-        if (0 === $tasks->count() && !$input->getOption('wait')) {
-            $style->warning('No due tasks found');
+        $dueTasks = $this->scheduler->getDueTasks();
+        if (0 === $dueTasks->count() && !$input->getOption('wait')) {
+            $symfonyStyle->warning('No due tasks found');
 
             return self::SUCCESS;
         }
@@ -124,31 +124,34 @@ EOF
         if (0 !== count($stopOptions)) {
             $last = array_pop($stopOptions);
             $stopsWhen = (0 !== count($stopOptions) ? implode(', ', $stopOptions).' or ' : '').$last;
-            $style->comment(sprintf('The worker will automatically exit once %s.', $stopsWhen));
+            $symfonyStyle->comment([
+                'The worker will automatically exit once:',
+                sprintf('- %s', $stopsWhen),
+            ]);
         }
 
         if ($input->getOption('wait')) {
-            $style->note('The worker will wait for tasks every minutes');
+            $symfonyStyle->note('The worker will wait for tasks every minutes');
         }
 
-        $style->comment('Quit the worker with CONTROL-C.');
+        $symfonyStyle->comment('Quit the worker with CONTROL-C.');
 
         if (OutputInterface::VERBOSITY_VERBOSE > $output->getVerbosity()) {
-            $style->note(sprintf('The task%s output can be displayed if the -vv option is used', $tasks->count() > 1 ? 's' : ''));
+            $symfonyStyle->note(sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : ''));
         }
 
         if ($output->isVeryVerbose()) {
-            $this->registerOutputSubscriber($style);
+            $this->registerOutputSubscriber($symfonyStyle);
         }
 
-        $this->registerTaskExecutedSubscriber($style);
+        $this->registerTaskExecutedSubscriber($symfonyStyle);
 
         try {
             $this->worker->execute([
                 'sleepUntilNextMinute' => $input->getOption('wait'),
             ]);
         } catch (Throwable $throwable) {
-            $style->error([
+            $symfonyStyle->error([
                 'An error occurred when executing the tasks',
                 $throwable->getMessage(),
             ]);
@@ -159,9 +162,9 @@ EOF
         return self::SUCCESS;
     }
 
-    private function registerOutputSubscriber(SymfonyStyle $style): void
+    private function registerOutputSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($style): void {
+        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
             if (null === $output) {
                 return;
@@ -171,28 +174,28 @@ EOF
                 return;
             }
 
-            $style->note(sprintf('Output for task "%s":', $event->getTask()->getName()));
-            $style->text($output->getOutput());
+            $symfonyStyle->note(sprintf('Output for task "%s":', $event->getTask()->getName()));
+            $symfonyStyle->text($output->getOutput());
         });
     }
 
-    private function registerTaskExecutedSubscriber(SymfonyStyle $style): void
+    private function registerTaskExecutedSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($style): void {
+        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $task = $event->getTask();
             $outputType = $event->getOutput()->getType();
             $taskExecutionDuration = Helper::formatTime($task->getExecutionComputationTime() / 1000);
             $taskExecutionMemoryUsage = Helper::formatMemory($task->getExecutionMemoryUsage());
 
             if (Output::ERROR === $outputType) {
-                $style->error([
+                $symfonyStyle->error([
                     sprintf('Task "%s" failed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
                 ]);
 
                 return;
             }
 
-            $style->success([
+            $symfonyStyle->success([
                 sprintf('Task "%s" succeed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
             ]);
         });

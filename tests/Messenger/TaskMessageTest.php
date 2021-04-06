@@ -18,10 +18,10 @@ final class TaskMessageTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('app.messenger');
 
-        $message = new TaskMessage($task);
-        self::assertSame(1, $message->getWorkerTimeout());
-        self::assertSame($task, $message->getTask());
-        self::assertSame('app.messenger', $message->getTask()->getName());
+        $taskMessage = new TaskMessage($task);
+        self::assertSame(1, $taskMessage->getWorkerTimeout());
+        self::assertSame($task, $taskMessage->getTask());
+        self::assertSame('app.messenger', $taskMessage->getTask()->getName());
     }
 
     public function testWorkerTimeoutCanBeSet(): void
@@ -29,9 +29,9 @@ final class TaskMessageTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('app.messenger');
 
-        $message = new TaskMessage($task, 2);
-        self::assertSame($task, $message->getTask());
-        self::assertSame('app.messenger', $message->getTask()->getName());
-        self::assertSame(2, $message->getWorkerTimeout());
+        $taskMessage = new TaskMessage($task, 2);
+        self::assertSame($task, $taskMessage->getTask());
+        self::assertSame('app.messenger', $taskMessage->getTask()->getName());
+        self::assertSame(2, $taskMessage->getWorkerTimeout());
     }
 }

@@ -6,7 +6,7 @@ namespace SchedulerBundle\Test\Constraint;
 
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Event\TaskEventList;
-use SchedulerBundle\Event\TaskScheduledEvent;
+use function count;
 use function sprintf;
 
 /**
@@ -34,20 +34,6 @@ final class TaskScheduled extends Constraint
      */
     protected function matches($eventsList): bool
     {
-        return $this->expectedCount === $this->countTasks($eventsList);
-    }
-
-    private function countTasks(TaskEventList $eventsList): int
-    {
-        $count = 0;
-        foreach ($eventsList->getEvents() as $event) {
-            if (!$event instanceof TaskScheduledEvent) {
-                continue;
-            }
-
-            ++$count;
-        }
-
-        return $count;
+        return $this->expectedCount === count($eventsList->getScheduledTaskEvents());
     }
 }

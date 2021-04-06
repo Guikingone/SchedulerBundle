@@ -22,14 +22,14 @@ final class CommandBuilderTest extends TestCase
 {
     public function testBuilderSupport(): void
     {
-        $builder = new CommandBuilder(new ExpressionBuilder([
+        $commandBuilder = new CommandBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        self::assertFalse($builder->support('test'));
-        self::assertTrue($builder->support('command'));
+        self::assertFalse($commandBuilder->support('test'));
+        self::assertTrue($commandBuilder->support('command'));
     }
 
     /**
@@ -37,13 +37,13 @@ final class CommandBuilderTest extends TestCase
      */
     public function testTaskCanBeBuilt(array $options): void
     {
-        $builder = new CommandBuilder(new ExpressionBuilder([
+        $commandBuilder = new CommandBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
         ]));
 
-        $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
+        $task = $commandBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
         self::assertInstanceOf(CommandTask::class, $task);
         self::assertSame($options['name'], $task->getName());

@@ -53,9 +53,9 @@ final class InMemoryConfiguration implements ConfigurationInterface
     }
 
     /**
-     * @return array<string, mixed>
+     * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getOptions(): iterable
     {
         return $this->options;
     }
