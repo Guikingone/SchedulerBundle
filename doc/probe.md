@@ -9,7 +9,7 @@ and fetch external applications state.
 
 ## Returning current state
 
-First, the probe must be enabled and optionally a path defined (default to `/_probe`):
+First, the probe must be enabled and optionally a path (defaults to `/_probe`):
 
 ```yaml
 scheduler_bundle:
@@ -18,7 +18,7 @@ scheduler_bundle:
         path: '/_probe'
 ```
 
-Once done, the current state is displayed as following when sending a `GET` request to the specified path:
+Once done, the current state is returned as shown below when sending a `GET` request to the specified path:
 
 ```json
 {
@@ -30,9 +30,9 @@ Once done, the current state is displayed as following when sending a `GET` requ
 
 ## Fetching external state
 
-Let's imagine that you use this bundle on multiple applications. Sometimes 
-you may need to control the state of these applications. To do so, you can define 
-a list of clients that will fetch these states:
+Let's imagine that you use this bundle in multiple applications. 
+Sometimes you may need to control the state of these applications. 
+To do so, you can define a list of clients that will fetch these states:
 
 ```yaml
 scheduler_bundle:
