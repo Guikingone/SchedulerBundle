@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
@@ -21,14 +21,14 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection as DoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Serializer\SerializerInterface;
-use function json_encode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -38,57 +38,30 @@ final class ConnectionTest extends TestCase
     public function testConnectionCanReturnATaskList(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::exactly(2))->method('deserialize')->willReturnOnConsecutiveCalls(
-            new NullTask('foo'),
-            new NullTask('bar')
-        );
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('select')
-            ->with(self::equalTo('t.*'))
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
             ->with(self::equalTo('_symfony_scheduler_tasks'), self::equalTo('t'))
             ->willReturnSelf()
         ;
-        $queryBuilder->expects(self::once())->method('orderBy')
-            ->with(self::equalTo('task_name'), Criteria::ASC)
-        ;
+        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks');
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
+        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-
-        $statement = $this->getStatementMock([
-            [
-                'id' => 1,
-                'task_name' => 'foo',
-                'body' => json_encode([
-                    'body' => [
-                        'expression' => '* * * * *',
-                        'priority' => 1,
-                        'tracked' => true,
-                    ],
-                    'taskInternalType' => NullTask::class,
-                ], JSON_THROW_ON_ERROR),
-            ],
-            [
-                'id' => 2,
-                'task_name' => 'bar',
-                'body' => json_encode([
-                    'body' => [
-                        'expression' => '* * * * *',
-                        'priority' => 2,
-                        'tracked' => false,
-                    ],
-                    'taskInternalType' => NullTask::class,
-                ], JSON_THROW_ON_ERROR),
-            ],
-        ], true);
-
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks');
-        $queryBuilder->expects(self::never())->method('getParameterTypes');
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::once())->method('transactional')->willReturn(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -97,7 +70,8 @@ final class ConnectionTest extends TestCase
         $taskList = $connection->list();
 
         self::assertNotEmpty($taskList);
-        self::assertInstanceOf(TaskInterface::class, $taskList->get('bar'));
+        self::assertInstanceOf(NullTask::class, $taskList->get('foo'));
+        self::assertInstanceOf(NullTask::class, $taskList->get('bar'));
 
         $list = $taskList->toArray(false);
         self::assertSame('foo', $list[0]->getName());
@@ -109,41 +83,76 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('orderBy')->with(self::equalTo('task_name'), Criteria::ASC);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('from')
+            ->with(self::equalTo('_symfony_scheduler_tasks'), self::equalTo('t'))
+            ->willReturnSelf()
+        ;
         $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks');
-        $queryBuilder->expects(self::never())->method('getParameterTypes');
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
+        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-
-        $statement = $this->getStatementMock([], true);
-
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer);
-        $taskList = $connection->list();
 
-        self::assertEmpty($taskList);
+        self::assertEmpty($connection->list());
     }
 
     public function testConnectionCannotReturnAnInvalidTask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $statement = $this->getStatementMock([]);
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('foo'));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')->with(
+            self::equalTo(':name'),
+            self::equalTo('foo'),
+            self::equalTo(ParameterType::STRING)
+        );
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -151,31 +160,52 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $connection->get('foo');
     }
 
-    public function testConnectionCanReturnASingleTask(): void
+    public function testConnectionCanReturnATask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('deserialize')->willReturn(new NullTask('foo'));
 
-        $statement = $this->getStatementMock([
-            'id' => 1,
-            'task_name' => 'foo',
-            'body' => json_encode([
-                'expression' => '* * * * *',
-                'taskInternalType' => NullTask::class,
-            ], JSON_THROW_ON_ERROR),
-        ]);
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('foo'), self::equalTo(ParameterType::STRING));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('from')
+            ->with(self::equalTo('_symfony_scheduler_tasks'), self::equalTo('t'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')->with(
+            self::equalTo(':name'),
+            self::equalTo('foo'),
+            self::equalTo(ParameterType::STRING)
+        )->willReturnSelf();
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -184,7 +214,7 @@ final class ConnectionTest extends TestCase
             self::equalTo([':name' => 'foo']),
             self::equalTo([':name' => ParameterType::STRING])
         )->willReturn($statement);
-        $driverConnection->expects(self::any())->method('getDatabasePlatform');
+        $driverConnection->expects(self::once())->method('transactional')->willReturn(new NullTask('foo'));
 
         $connection = new DoctrineConnection([
             'auto_setup' => false,
@@ -192,6 +222,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
         $task = $connection->get('foo');
 
+        self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }
@@ -199,29 +230,102 @@ final class ConnectionTest extends TestCase
     public function testConnectionCannotInsertASingleTaskWithExistingIdentifier(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')
+            ->with(self::equalTo('The task "foo" cannot be created as an existing one has been found'))
+        ;
+
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('foo'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
-        $driverConnection->expects(self::once())->method('transactional')->willThrowException(new LogicException('The task "foo" has already been scheduled!'));
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer);
-
-        self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" has already been scheduled!');
-        self::expectExceptionCode(0);
+        ], $driverConnection, $serializer, $logger);
         $connection->create($task);
     }
 
     public function testConnectionCannotInsertASingleTaskWithDuplicatedIdentifier(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')->with(
+            self::equalTo(':name'),
+            self::equalTo('foo'),
+            self::equalTo(ParameterType::STRING)
+        )->willReturnSelf();
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
-        $driverConnection->expects(self::once())->method('transactional')->willThrowException(new Exception('The given data are invalid.'));
+        $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $driverConnection->expects(self::once())
+            ->method('transactional')
+            ->willThrowException(new Exception('The given data are invalid.'))
+        ;
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -237,9 +341,47 @@ final class ConnectionTest extends TestCase
     public function testConnectionCanInsertASingleTask(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
+
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')->with(
+            self::equalTo(':name'),
+            self::equalTo('foo'),
+            self::equalTo(ParameterType::STRING)
+        )->willReturnSelf();
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
+        $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('transactional');
 
         $connection = new DoctrineConnection([
@@ -253,18 +395,37 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('bar'));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'bar']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
-        $statement = $this->getStatementMock([]);
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('bar'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'bar'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -272,38 +433,53 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "bar" cannot be found');
         self::expectExceptionCode(0);
         $connection->pause('bar');
     }
 
     public function testConnectionCanPauseASingleTask(): void
     {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('setState')->with(self::equalTo(TaskInterface::PAUSED));
+
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');
-        $serializer->expects(self::once())->method('deserialize')->willReturn(new NullTask('foo'));
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('foo'));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('foo'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
 
-        $statement = $this->getStatementMock([
-            'id' => 1,
-            'task_name' => 'foo',
-            'body' => [
-                'expression' => '* * * * *',
-                'priority' => 1,
-                'tracked' => true,
-                'internal_type' => NullTask::class,
-            ],
-        ]);
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $driverConnection->expects(self::once())->method('transactional');
+        $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($task);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
 
         $connection = new DoctrineConnection([
@@ -317,18 +493,37 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('foo'));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
-        $statement = $this->getStatementMock([]);
+        $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('foo'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -336,7 +531,7 @@ final class ConnectionTest extends TestCase
         ], $driverConnection, $serializer);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $connection->resume('foo');
     }
@@ -348,30 +543,42 @@ final class ConnectionTest extends TestCase
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');
-        $serializer->expects(self::once())->method('deserialize')->willReturn($task);
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
 
         $queryBuilder = $this->getQueryBuilderMock();
-        $queryBuilder->expects(self::once())->method('where')->with(self::equalTo('t.task_name = :name'));
-        $queryBuilder->expects(self::once())->method('setParameter')->with(self::equalTo(':name'), self::equalTo('foo'));
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name');
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
-        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([':name' => ParameterType::STRING]);
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(self::equalTo(':name'), self::equalTo('foo'))
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')
+            ->willReturn([':name' => 'foo'])
+        ;
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
 
-        $statement = $this->getStatementMock([
-            'id' => 1,
-            'task_name' => 'foo',
-            'body' => [
-                'expression' => '* * * * *',
-                'priority' => 1,
-                'tracked' => true,
-                'internal_type' => NullTask::class,
-            ],
-        ]);
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
-        $driverConnection->expects(self::once())->method('transactional');
+        $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($task);
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -385,7 +592,10 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineConnection = $this->getDBALConnectionMock();
-        $doctrineConnection->expects(self::once())->method('transactional')->willThrowException(new InvalidArgumentException('The given identifier is invalid.'));
+        $doctrineConnection->expects(self::once())
+            ->method('transactional')
+            ->willThrowException(new InvalidArgumentException('The given identifier is invalid.'))
+        ;
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -482,8 +692,14 @@ final class ConnectionTest extends TestCase
         $column->expects(self::exactly(3))->method('setNotNull')->with(true);
 
         $schema = $this->createMock(Schema::class);
-        $schema->expects(self::once())->method('hasTable')->with(self::equalTo('_symfony_scheduler_tasks'))->willReturn(false);
-        $schema->expects(self::once())->method('createTable')->with(self::equalTo('_symfony_scheduler_tasks'))->willReturn($table);
+        $schema->expects(self::once())->method('hasTable')
+            ->with(self::equalTo('_symfony_scheduler_tasks'))
+            ->willReturn(false)
+        ;
+        $schema->expects(self::once())->method('createTable')
+            ->with(self::equalTo('_symfony_scheduler_tasks'))
+            ->willReturn($table)
+        ;
 
         $table->expects(self::exactly(3))->method('addColumn')
             ->withConsecutive(
@@ -494,7 +710,9 @@ final class ConnectionTest extends TestCase
             ->willReturn($column)
         ;
         $table->expects(self::once())->method('setPrimaryKey')->with(self::equalTo(['id']));
-        $table->expects(self::once())->method('addIndex')->with(self::equalTo(['task_name']), self::equalTo('_symfony_scheduler_tasks_name'));
+        $table->expects(self::once())->method('addIndex')
+            ->with(self::equalTo(['task_name']), self::equalTo('_symfony_scheduler_tasks_name'))
+        ;
 
         $connection = new DoctrineConnection([
             'auto_setup' => true,
@@ -526,7 +744,10 @@ final class ConnectionTest extends TestCase
         $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
 
         $configuration->expects(self::once())->method('getSchemaAssetsFilter')->willReturn(null);
-        $configuration->expects(self::exactly(2))->method('setSchemaAssetsFilter')->withConsecutive([self::equalTo(null)], [self::equalTo(null)]);
+        $configuration->expects(self::exactly(2))
+            ->method('setSchemaAssetsFilter')
+            ->withConsecutive([self::equalTo(null)], [self::equalTo(null)])
+        ;
 
         $driverConnection = $this->createMock(Connection::class);
         $driverConnection->method('getDatabasePlatform')->willReturn($platform);
@@ -542,7 +763,7 @@ final class ConnectionTest extends TestCase
     }
 
     /**
-     * @return Connection|MockObject
+     * @return MockObject|Connection
      */
     private function getDBALConnectionMock()
     {
@@ -585,20 +806,5 @@ final class ConnectionTest extends TestCase
         $queryBuilder->method('setParameters')->willReturnSelf();
 
         return $queryBuilder;
-    }
-
-    /**
-     * @return Result|MockObject
-     */
-    private function getStatementMock($expectedResult, bool $list = false)
-    {
-        $statement = $this->createMock(Result::class);
-
-        $list
-            ? $statement->expects(self::once())->method('fetchAllAssociative')->willReturn($expectedResult)
-            : $statement->expects(self::once())->method('fetchAssociative')->willReturn($expectedResult)
-        ;
-
-        return $statement;
     }
 }

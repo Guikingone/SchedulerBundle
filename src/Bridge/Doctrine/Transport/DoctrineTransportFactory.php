@@ -6,6 +6,8 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
@@ -21,10 +23,14 @@ use function strpos;
 final class DoctrineTransportFactory implements TransportFactoryInterface
 {
     private ConnectionRegistry $registry;
+    private LoggerInterface $logger;
 
-    public function __construct(ConnectionRegistry $registry)
-    {
+    public function __construct(
+        ConnectionRegistry $registry,
+        ?LoggerInterface $logger = null
+    ) {
         $this->registry = $registry;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -32,15 +38,8 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        $connectionOptions = [
-            'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
-            'connection' => $dsn->getHost(),
-            'execution_mode' => $dsn->getOption('execution_mode'),
-            'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
-        ];
-
         try {
-            $doctrineConnection = $this->registry->getConnection($connectionOptions['connection']);
+            $doctrineConnection = $this->registry->getConnection($dsn->getHost());
         } catch (InvalidArgumentException $invalidArgumentException) {
             throw new TransportException(
                 sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()),
@@ -49,7 +48,12 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             );
         }
 
-        return new DoctrineTransport($connectionOptions, $doctrineConnection, $serializer);
+        return new DoctrineTransport([
+            'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
+            'connection' => $dsn->getHost(),
+            'execution_mode' => $dsn->getOption('execution_mode'),
+            'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
+        ], $doctrineConnection, $serializer, $this->logger);
     }
 
     /**

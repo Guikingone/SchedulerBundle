@@ -33,7 +33,7 @@ use function getcwd;
  */
 final class FilesystemTransportTest extends TestCase
 {
-    private ?Filesystem $filesystem = null;
+    private Filesystem $filesystem;
 
     /**
      * {@inheritdoc}

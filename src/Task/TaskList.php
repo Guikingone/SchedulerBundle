@@ -11,6 +11,7 @@ use Throwable;
 use function array_filter;
 use function array_key_exists;
 use function array_values;
+use function array_walk;
 use function count;
 use function gettype;
 use function in_array;

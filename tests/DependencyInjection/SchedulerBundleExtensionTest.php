@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -896,9 +897,11 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(DoctrineTransportFactory::class));
         self::assertFalse($container->getDefinition(DoctrineTransportFactory::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(DoctrineTransportFactory::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(DoctrineTransportFactory::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(DoctrineTransportFactory::class)->getArgument(0));
         self::assertSame('doctrine', (string) $container->getDefinition(DoctrineTransportFactory::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(DoctrineTransportFactory::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(DoctrineTransportFactory::class)->getArgument(1));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(DoctrineTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(DoctrineTransportFactory::class, $container->getDefinition(DoctrineTransportFactory::class)->getTag('container.preload')[0]['class']);

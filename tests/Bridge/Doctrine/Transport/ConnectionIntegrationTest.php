@@ -14,7 +14,6 @@ use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -33,9 +32,9 @@ use function unlink;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private ?Connection $connection = null;
-    private ?DbalConnection $driverConnection = null;
-    private ?string $sqliteFile = null;
+    private Connection $connection;
+    private DbalConnection $driverConnection;
+    private string $sqliteFile;
 
     /**
      * {@inheritdoc}
@@ -44,7 +43,16 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';
@@ -73,15 +81,31 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertEmpty($list);
     }
 
-    public function testConnectionCanListHydratedTasks(): void
+    public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
     {
-        $this->connection->setup();
         $this->connection->create(new NullTask('foo'));
+        $this->connection->create(new NullTask('bar'));
 
         $list = $this->connection->list();
 
         self::assertNotEmpty($list);
+        self::assertCount(2, $list);
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertInstanceOf(NullTask::class, $list->get('bar'));
+    }
+
+    public function testConnectionCanListHydratedTasks(): void
+    {
+        $this->connection->setup();
+        $this->connection->create(new NullTask('foo'));
+        $this->connection->create(new NullTask('bar'));
+
+        $list = $this->connection->list();
+
+        self::assertNotEmpty($list);
+        self::assertCount(2, $list);
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 
     public function testConnectionCannotRetrieveAnUndefinedTask(): void
@@ -89,9 +113,20 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->setup();
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
+    }
+
+    public function testConnectionCanRetrieveASingleTaskWithoutExistingSchema(): void
+    {
+        $this->connection->create(new NullTask('foo'));
+
+        $task = $this->connection->get('foo');
+
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testConnectionCanRetrieveASingleTask(): void
@@ -115,6 +150,17 @@ final class ConnectionIntegrationTest extends TestCase
 
         $this->connection->create(new ShellTask('foo', []));
         self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
+    }
+
+    public function testTaskCanBeCreatedWithoutExistingSchema(): void
+    {
+        $this->connection->create(new NullTask('foo'));
+
+        $task = $this->connection->get('foo');
+
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testTaskCanBeCreated(): void
@@ -271,7 +317,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -285,7 +331,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }

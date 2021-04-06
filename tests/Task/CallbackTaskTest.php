@@ -53,7 +53,7 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallbackAndArguments(): void
     {
-        $task = new CallbackTask('foo', function ($value): void {
+        $task = new CallbackTask('foo', function (string $value): void {
             echo $value;
         }, ['value' => 'test']);
 
@@ -62,7 +62,7 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallbackAndSetArgumentsLater(): void
     {
-        $task = new CallbackTask('foo', function ($value): void {
+        $task = new CallbackTask('foo', function (string $value): void {
             echo $value;
         });
         $task->setArguments(['value' => 'test']);

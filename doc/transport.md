@@ -220,3 +220,13 @@ scheduler_bundle:
     transport:
         dsn: 'doctrine://default?execution_mode=first_in_first_out&table_name=foo&auto_setup=false'
 ```
+
+### Extra integration
+
+The Doctrine bride integrate deeply with the [Doctrine bundle](https://packagist.org/packages/doctrine/doctrine-bundle),
+the first integration is done via the connection which is retrieved via the `doctrine` service,
+the second integration is done via [DoctrineMigrationsBundle](https://packagist.org/packages/doctrine/doctrine-migrations-bundle),
+thanks to this one and when using `bin/console doctrine:migrations:diff`, the schema related to the task list can be generated.
+
+_**Note**_: An important thing to keep in mind is that if you don't use the DoctrineMigrationsBundle bundle 
+and the `auto_setup` option is set to `true`, the schema is generated when scheduling the tasks.

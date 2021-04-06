@@ -25,7 +25,6 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
@@ -48,9 +47,7 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher);
-
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(['execution_mode' => 'first_in_first_out']), new SchedulerMiddlewareStack(), $eventDispatcher);
         $scheduler->schedule($task);
     }
 
@@ -65,9 +62,7 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher);
-
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(['execution_mode' => 'first_in_first_out']), new SchedulerMiddlewareStack(), $eventDispatcher);
         $scheduler->schedule($task);
     }
 
@@ -82,8 +77,7 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $transport = new InMemoryTransport(['execution_mode' => 'first_in_first_out']);
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(['execution_mode' => 'first_in_first_out']), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
         ]), $eventDispatcher);
 

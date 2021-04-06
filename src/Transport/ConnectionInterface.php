@@ -15,6 +15,8 @@ interface ConnectionInterface
 {
     /**
      * Create a new task using {@param TaskInterface $task}, the operation must occurs withing a transaction if possible.
+     *
+     * {@internal If a task already exist using the task name, the operation MUST be aborted without throwing an error}
      */
     public function create(TaskInterface $task): void;
 
