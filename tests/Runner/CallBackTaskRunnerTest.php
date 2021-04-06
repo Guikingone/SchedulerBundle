@@ -20,8 +20,7 @@ final class CallBackTaskRunnerTest extends TestCase
     {
         $callbackTaskRunner = new CallbackTaskRunner();
 
-        $task = new ShellTask('foo', ['echo', 'Symfony!']);
-        self::assertFalse($callbackTaskRunner->support($task));
+        self::assertFalse($callbackTaskRunner->support(new ShellTask('foo', ['echo', 'Symfony!'])));
 
         $task = new CallbackTask('foo', fn (): int => 1 + 1);
 
