@@ -16,7 +16,7 @@ final class Probe
     /**
      * @var TaskListInterface<string, TaskInterface>
      */
-    private TaskListInterface $scheduledTasks;
+    private TaskListInterface $executedTasks;
 
     /**
      * @var TaskListInterface<string, TaskInterface>
@@ -26,7 +26,7 @@ final class Probe
     /**
      * @var TaskListInterface<string, TaskInterface>
      */
-    private TaskListInterface $executedTasks;
+    private TaskListInterface $scheduledTasks;
 
     public function __construct()
     {
@@ -35,9 +35,9 @@ final class Probe
         $this->scheduledTasks = new TaskList();
     }
 
-    public function addScheduledTask(TaskInterface $task): void
+    public function addExecutedTask(TaskInterface $task): void
     {
-        $this->scheduledTasks->add($task);
+        $this->executedTasks->add($task);
     }
 
     public function addFailedTask(TaskInterface $task): void
@@ -45,17 +45,17 @@ final class Probe
         $this->failedTasks->add($task);
     }
 
-    public function addExecutedTask(TaskInterface $task): void
+    public function addScheduledTask(TaskInterface $task): void
     {
-        $this->executedTasks->add($task);
+        $this->scheduledTasks->add($task);
     }
 
     /**
      * @return TaskListInterface<string, TaskInterface>
      */
-    public function getScheduledTasks(): TaskListInterface
+    public function getExecutedTasks(): TaskListInterface
     {
-        return $this->scheduledTasks;
+        return $this->executedTasks;
     }
 
     /**
@@ -69,8 +69,8 @@ final class Probe
     /**
      * @return TaskListInterface<string, TaskInterface>
      */
-    public function getExecutedTasks(): TaskListInterface
+    public function getScheduledTasks(): TaskListInterface
     {
-        return $this->executedTasks;
+        return $this->scheduledTasks;
     }
 }
