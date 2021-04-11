@@ -103,7 +103,7 @@
         "friendsofphp/php-cs-fixer": "^2.18",
         "infection/infection": "^0.21",
         "nikic/php-parser": "^4.10.2",
-        "phpstan/phpstan": "^0.12,
+        "phpstan/phpstan": "^0.12",
         "phpstan/phpstan-doctrine": "^0.12",
         "phpstan/phpstan-phpunit": "^0.12",
         "phpstan/phpstan-strict-rules": "^0.12",
