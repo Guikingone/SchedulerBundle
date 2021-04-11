@@ -259,6 +259,10 @@ final class ConnectionTest extends TestCase
         ;
 
         $queryBuilder = $this->getQueryBuilderMock();
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::once())->method('where')
             ->with(self::equalTo('t.task_name = :name'))
@@ -267,7 +271,7 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo(':name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT COUNT(DISTINCT t.id) FROM _symfony_scheduler_tasks t WHERE t.task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])
@@ -322,7 +326,7 @@ final class ConnectionTest extends TestCase
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])
@@ -384,7 +388,7 @@ final class ConnectionTest extends TestCase
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])

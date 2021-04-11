@@ -4,9 +4,13 @@ CHANGELOG
 0.4.0
 -----
 
-* [PSR-6](https://www.php-fig.org/psr/psr-6/) transport introduced (see https://github.com/Guikingone/SchedulerBundle/pull/16)
-* Core improvements (see https://github.com/Guikingone/SchedulerBundle/pull/16)
+* Doctrine lock & worker single_run fix (see https://github.com/Guikingone/SchedulerBundle/pull/46)
+* Snyk analyze added (see https://github.com/Guikingone/SchedulerBundle/pull/48)
+* Doctrine auto_setup fix (see https://github.com/Guikingone/SchedulerBundle/pull/43)
+* Cache transport added (see https://github.com/Guikingone/SchedulerBundle/pull/16)
 * Documentation improvements (see https://github.com/Guikingone/SchedulerBundle/pull/16)
+* Core improvements (see https://github.com/Guikingone/SchedulerBundle/pull/16)
+* Core improvements (see https://github.com/Guikingone/SchedulerBundle/pull/52)
 
 0.3.4
 -----
