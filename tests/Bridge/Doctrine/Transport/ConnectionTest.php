@@ -267,7 +267,7 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo(':name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])
@@ -322,7 +322,7 @@ final class ConnectionTest extends TestCase
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])
@@ -384,7 +384,7 @@ final class ConnectionTest extends TestCase
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([':name' => 'foo'])
