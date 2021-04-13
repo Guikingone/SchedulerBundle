@@ -226,21 +226,27 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        if (array_key_exists('transport', $configuration) && 0 === strpos($configuration['transport']['dsn'], 'cache://')) {
-            $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
-                ->setArguments([
-                    new Reference(
-                        sprintf('cache.%s', Dsn::fromString($configuration['transport']['dsn'])->getHost()),
-                        ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE
-                    ),
-                ])
-                ->setPublic(false)
-                ->addTag('scheduler.transport_factory')
-                ->addTag('container.preload', [
-                    'class' => CacheTransportFactory::class,
-                ])
-            ;
+        if (!array_key_exists('transport', $configuration)) {
+            return;
         }
+
+        if (0 !== strpos($configuration['transport']['dsn'], 'cache://')) {
+            return;
+        }
+
+        $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
+            ->setArguments([
+                new Reference(
+                    sprintf('cache.%s', Dsn::fromString($configuration['transport']['dsn'])->getHost()),
+                    ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE
+                ),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.transport_factory')
+            ->addTag('container.preload', [
+                'class' => CacheTransportFactory::class,
+            ])
+        ;
     }
 
     private function registerTransport(ContainerBuilder $container, array $configuration): void
