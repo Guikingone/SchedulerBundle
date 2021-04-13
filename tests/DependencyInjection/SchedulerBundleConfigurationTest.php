@@ -60,4 +60,20 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertNotNull($configuration['rate_limiter']);
         self::assertSame('foo', $configuration['rate_limiter']);
     }
+
+    public function testConfigurationCanDefineCacheTransport(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotEmpty($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('cache://app', $configuration['transport']['dsn']);
+    }
 }

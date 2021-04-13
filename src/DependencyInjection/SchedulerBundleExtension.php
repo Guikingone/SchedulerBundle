@@ -105,6 +105,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function array_key_exists;
 use function array_merge;
 use function class_exists;
 use function sprintf;
@@ -225,7 +226,7 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        if (0 === strpos($configuration['transport']['dsn'], 'cache://')) {
+        if (array_key_exists('transport', $configuration) && 0 === strpos($configuration['transport']['dsn'], 'cache://')) {
             $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
                 ->setArguments([
                     new Reference(
