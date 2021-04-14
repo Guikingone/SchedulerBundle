@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.4.1
+-----
+
+* Extension fixed on transport access (see https://github.com/Guikingone/SchedulerBundle/pull/57)
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.0
 -----
 
