@@ -48,6 +48,48 @@ final class SchedulerBundleConfigurationTest extends TestCase
         ]);
     }
 
+
+    public function testConfigurationCanDefineChainedTasks(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'random' => [
+                        'type' => 'chained',
+                        'tasks' => [
+                            'foo' => [
+                                'type' => 'shell',
+                                'command' => ['ls', '-al'],
+                                'expression' => '* * * * *',
+                            ],
+                            'bar' => [
+                                'type' => 'command',
+                                'command' => 'cache:clear',
+                                'expression' => '* * * * *',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotEmpty($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('cache://app', $configuration['transport']['dsn']);
+        self::assertCount(1, $configuration['tasks']);
+        self::assertArrayHasKey('random', $configuration['tasks']);
+        self::assertCount(2, $configuration['tasks']['random']['tasks']);
+        self::assertSame('chained', $configuration['tasks']['random']['type']);
+        self::assertSame('foo', $configuration['tasks']['random']['tasks'][0]['name']);
+        self::assertSame('shell', $configuration['tasks']['random']['tasks'][0]['type']);
+        self::assertSame('bar', $configuration['tasks']['random']['tasks'][1]['name']);
+        self::assertSame('command', $configuration['tasks']['random']['tasks'][1]['type']);
+    }
+
     public function testConfigurationCanDefineSpecificRateLimiter(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
@@ -59,5 +101,21 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('rate_limiter', $configuration);
         self::assertNotNull($configuration['rate_limiter']);
         self::assertSame('foo', $configuration['rate_limiter']);
+    }
+
+    public function testConfigurationCanDefineCacheTransport(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotEmpty($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('cache://app', $configuration['transport']['dsn']);
     }
 }

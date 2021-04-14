@@ -105,6 +105,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function array_key_exists;
 use function array_merge;
 use function class_exists;
 use function sprintf;
@@ -120,6 +121,10 @@ final class SchedulerBundleExtension extends Extension
         $schedulerBundleConfiguration = new SchedulerBundleConfiguration();
 
         $config = $this->processConfiguration($schedulerBundleConfiguration, $configs);
+
+        if (!array_key_exists('transport', $config)) {
+            return;
+        }
 
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
@@ -225,21 +230,23 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        if (0 === strpos($configuration['transport']['dsn'], 'cache://')) {
-            $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
-                ->setArguments([
-                    new Reference(
-                        sprintf('cache.%s', Dsn::fromString($configuration['transport']['dsn'])->getHost()),
-                        ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE
-                    ),
-                ])
-                ->setPublic(false)
-                ->addTag('scheduler.transport_factory')
-                ->addTag('container.preload', [
-                    'class' => CacheTransportFactory::class,
-                ])
-            ;
+        if (0 !== strpos($configuration['transport']['dsn'], 'cache://')) {
+            return;
         }
+
+        $container->register(CacheTransportFactory::class, CacheTransportFactory::class)
+            ->setArguments([
+                new Reference(
+                    sprintf('cache.%s', Dsn::fromString($configuration['transport']['dsn'])->getHost()),
+                    ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE
+                ),
+            ])
+            ->setPublic(false)
+            ->addTag('scheduler.transport_factory')
+            ->addTag('container.preload', [
+                'class' => CacheTransportFactory::class,
+            ])
+        ;
     }
 
     private function registerTransport(ContainerBuilder $container, array $configuration): void
