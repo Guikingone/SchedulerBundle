@@ -122,6 +122,10 @@ final class SchedulerBundleExtension extends Extension
 
         $config = $this->processConfiguration($schedulerBundleConfiguration, $configs);
 
+        if (!array_key_exists('transport', $config)) {
+            return;
+        }
+
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
         $this->registerTransportFactories($container, $config);
@@ -225,10 +229,6 @@ final class SchedulerBundleExtension extends Extension
                 'class' => RoundRobinTransportFactory::class,
             ])
         ;
-
-        if (!array_key_exists('transport', $configuration)) {
-            return;
-        }
 
         if (0 !== strpos($configuration['transport']['dsn'], 'cache://')) {
             return;

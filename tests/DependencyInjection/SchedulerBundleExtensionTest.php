@@ -108,6 +108,17 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class SchedulerBundleExtensionTest extends TestCase
 {
+    public function testExtensionCannotBeConfiguredWithoutTransport(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+        ]);
+
+        self::assertFalse($container->hasParameter('scheduler.timezone'));
+        self::assertFalse($container->hasParameter('scheduler.trigger_path'));
+    }
+
     public function testParametersAreRegistered(): void
     {
         $container = $this->getContainer([
