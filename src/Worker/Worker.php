@@ -104,6 +104,8 @@ final class Worker implements WorkerInterface
 
             foreach ($tasks as $task) {
                 if (!$this->checkTaskState($task)) {
+                    ++$tasksCount;
+
                     continue;
                 }
 
