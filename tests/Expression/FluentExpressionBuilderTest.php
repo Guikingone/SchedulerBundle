@@ -62,7 +62,6 @@ final class FluentExpressionBuilderTest extends TestCase
         yield ['12/22/78', '0 0 22 12 5', 'UTC'];
         yield ['10/Oct/2000:13:55:36 -0700', '55 20 10 10 2', 'UTC'];
 
-        // Test with a different timezone
         $datetime = new DateTimeImmutable();
         $datetime = $datetime->setTimezone(new DateTimeZone('Europe/Paris'));
         $datetime = $datetime->modify("+1 minute");
