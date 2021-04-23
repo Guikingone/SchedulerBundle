@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Expression;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
@@ -61,11 +63,11 @@ final class FluentExpressionBuilderTest extends TestCase
         yield ['10/Oct/2000:13:55:36 -0700', '55 20 10 10 2', 'UTC'];
 
         // Test with a different timezone
-        $datetime = new \DateTimeImmutable();
-        $datetime = $datetime->setTimezone(new \DateTimeZone('Europe/Paris'));
+        $datetime = new DateTimeImmutable();
+        $datetime = $datetime->setTimezone(new DateTimeZone('Europe/Paris'));
         $datetime = $datetime->modify("+1 minute");
         yield [
-            $datetime->format(\DateTimeImmutable::RFC3339),
+            $datetime->format(DateTimeImmutable::RFC3339),
             sprintf(
                 '%d %s %s %s %s',
                 (int) $datetime->format('i'),
