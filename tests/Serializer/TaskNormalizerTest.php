@@ -27,7 +27,6 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
@@ -428,7 +427,7 @@ final class TaskNormalizerTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
@@ -460,7 +459,7 @@ final class TaskNormalizerTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
