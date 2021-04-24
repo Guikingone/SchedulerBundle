@@ -27,6 +27,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
@@ -415,7 +416,20 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->serialize(new MessengerTask('foo', new FooMessage()), 'json');
@@ -425,6 +439,47 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('foo', $task->getName());
         self::assertInstanceOf(FooMessage::class, $task->getMessage());
         self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    public function testMessengerTaskCanBeNormalized(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $normalizer = new TaskNormalizer(
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            $objectNormalizer,
+            $notificationTaskBagNormalizer
+        );
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            $normalizer,
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $task = (new MessengerTask(uniqid(), new FooMessage()))
+            ->setExpression('* * * * *')
+            ->setTimezone(new DateTimeZone('Europe/Paris'))
+            ->setSingleRun(true)
+        ;
+
+        $data = $normalizer->normalize($task, 'json');
+
+        self::assertArrayHasKey('taskInternalType', $data);
+        self::assertSame(MessengerTask::class, $data['taskInternalType']);
+        self::assertArrayHasKey('body', $data);
+        self::assertArrayHasKey('message', $data['body']);
+        self::assertArrayHasKey('class', $data['body']['message']);
+        self::assertArrayHasKey('payload', $data['body']['message']);
+        self::assertArrayHasKey('timezone', $data['body']);
+        self::assertSame('Europe/Paris', $data['body']['timezone']);
     }
 
     public function testNotificationTaskCanBeDenormalized(): void

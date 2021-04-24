@@ -14,6 +14,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -27,6 +28,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Tests\SchedulerBundle\Bridge\Doctrine\Transport\Assets\MessengerMessage;
 use function file_exists;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -190,6 +192,19 @@ final class ConnectionIntegrationTest extends TestCase
         $task = $this->connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    public function testMessengerTaskCanBeCreated(): void
+    {
+        $this->connection->setup();
+        $this->connection->create(new MessengerTask('foo', new MessengerMessage()));
+
+        $task = $this->connection->get('foo');
+
+        self::assertInstanceOf(MessengerTask::class, $task);
+        self::assertInstanceOf(MessengerMessage::class, $task->getMessage());
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }
