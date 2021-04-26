@@ -83,7 +83,7 @@ final class ConnectionIntegrationTest extends TestCase
     {
         $list = $this->connection->list();
 
-        self::assertEmpty($list);
+        self::assertCount(0, $list);
     }
 
     public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
