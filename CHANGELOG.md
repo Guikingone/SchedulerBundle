@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+0.4.2
+-----
+
+* Fluent expression fixed (see https://github.com/Guikingone/SchedulerBundle/pull/62) - Thanks @babeuloula
+* Worker improvements (see https://github.com/Guikingone/SchedulerBundle/pull/61)
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.1
 -----
 
