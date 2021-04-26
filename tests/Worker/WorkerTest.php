@@ -460,7 +460,7 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $logger);
         $worker->execute();
 
-        self::assertEmpty($worker->getFailedTasks());
+        self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
@@ -954,7 +954,7 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $logger);
         $worker->execute([], $task);
 
-        self::assertEmpty($worker->getFailedTasks());
+        self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 

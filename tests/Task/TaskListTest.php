@@ -19,7 +19,7 @@ final class TaskListTest extends TestCase
     {
         $taskList = new TaskList();
 
-        self::assertEmpty($taskList);
+        self::assertCount(0, $taskList);
     }
 
     public function testListCanBeCreatedWithTasks(): void
@@ -143,7 +143,7 @@ final class TaskListTest extends TestCase
         $taskList = new TaskList([]);
         $tasks = $taskList->findByName(['foo']);
 
-        self::assertEmpty($tasks);
+        self::assertCount(0, $tasks);
     }
 
     public function testListCanFindTaskByNames(): void
@@ -188,7 +188,7 @@ final class TaskListTest extends TestCase
 
         $taskList->remove('foo');
 
-        self::assertEmpty($taskList);
+        self::assertCount(0, $taskList);
         self::assertSame(0, $taskList->count());
     }
 
@@ -204,7 +204,7 @@ final class TaskListTest extends TestCase
 
         $taskList->offsetUnset('foo');
 
-        self::assertEmpty($taskList);
+        self::assertCount(0, $taskList);
         self::assertSame(0, $taskList->count());
     }
 
