@@ -1004,21 +1004,21 @@ final class WorkerTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::exactly(2))->method('info')->withConsecutive([
-                self::equalTo('The following task "bar" is paused|disabled, consider enable it if it should be executed!'),
-                [
-                    'name' => 'bar',
-                    'expression' => '* * * * *',
-                    'state' => TaskInterface::PAUSED,
-                ]
-            ], [
+            self::equalTo('The following task "bar" is paused|disabled, consider enable it if it should be executed!'),
+            [
+                'name' => 'bar',
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ],
+        ], [
 
-                self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
-                [
-                    'name' => 'foo',
-                    'expression' => '* * * * *',
-                    'state' => TaskInterface::PAUSED,
-                ]
-            ]
+            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
+            [
+                'name' => 'foo',
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ],
+        ]
         );
 
         $task = $this->createMock(TaskInterface::class);
