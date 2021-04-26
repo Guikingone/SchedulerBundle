@@ -2,6 +2,20 @@
 
 This bundle provides a set of commands to interact with your tasks
 
+## Consuming tasks
+
+_Description: Consume due tasks_
+
+```bash
+$ bin/console scheduler:consume
+```
+
+## Executing tasks
+
+_Introduced in `0.5`_
+
+_Description: Execute a set of tasks (due or not) depending on filters_
+
 ## Listing the tasks
 
 _Description: List every tasks scheduled_

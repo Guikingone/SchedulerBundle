@@ -68,6 +68,9 @@ final class ShellBuilderTest extends TestCase
         self::assertEmpty($task->getEnvironmentVariables());
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideTaskData(): Generator
     {
         yield [

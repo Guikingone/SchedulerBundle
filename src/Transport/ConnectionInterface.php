@@ -24,8 +24,6 @@ interface ConnectionInterface
      * Return a list containing every tasks stored by the connection.
      *
      * {@internal The task retrieving approach is not described as every connection defines a specific solution}
-     *
-     * @return TaskListInterface<string, TaskInterface>
      */
     public function list(): TaskListInterface;
 

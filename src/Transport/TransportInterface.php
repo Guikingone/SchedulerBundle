@@ -23,8 +23,6 @@ interface TransportInterface
     /**
      * Return all the tasks as a {@see TaskListInterface}, the tasks name are used as keys.
      *
-     * @return TaskListInterface<string, TaskInterface>
-     *
      * @throws Throwable
      */
     public function list(): TaskListInterface;

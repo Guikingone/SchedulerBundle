@@ -46,6 +46,9 @@ final class RoundRobinTransportFactoryTest extends TestCase
         self::assertSame(2, $transport->getOptions()['quantum']);
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideDsn(): Generator
     {
         yield ['roundrobin://(memory://first_in_first_out && memory://last_in_first_out)'];

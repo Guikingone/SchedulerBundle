@@ -122,29 +122,44 @@ final class TransportFactoryTest extends TestCase
         $transportFactory->createTransport('foo://', [], $serializer, new SchedulePolicyOrchestrator([]));
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideFilesystemDsn(): Generator
     {
         yield 'Full' => ['filesystem://first_in_first_out'];
         yield 'Short' => ['fs://first_in_first_out'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideMemoryDsn(): Generator
     {
         yield 'Full' => ['memory://first_in_first_out'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideFailoverDsn(): Generator
     {
         yield 'Full' => ['failover://(fs://first_in_first_out || memory://first_in_first_out)'];
         yield 'Short' => ['fo://(fs://first_in_first_out || memory://first_in_first_out)'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideRoundRobinDsn(): Generator
     {
         yield 'Full' => ['roundrobin://(fs://first_in_first_out || memory://first_in_first_out)'];
         yield 'Short' => ['rr://(fs://first_in_first_out || memory://first_in_first_out)'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideLongTailDsn(): Generator
     {
         yield 'Full' => ['longtail://(fs://first_in_first_out <> memory://first_in_first_out)'];

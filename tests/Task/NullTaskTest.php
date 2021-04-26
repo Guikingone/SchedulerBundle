@@ -580,6 +580,9 @@ final class NullTaskTest extends TestCase
         self::assertNull($nullTask->getAfterExecutingNotificationBag());
     }
 
+    /**
+     * @return Generator<array<int, int>>
+     */
     public function provideNice(): Generator
     {
         yield [20];

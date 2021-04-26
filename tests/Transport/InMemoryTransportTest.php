@@ -277,6 +277,9 @@ final class InMemoryTransportTest extends TestCase
         self::assertCount(0, $inMemoryTransport->list());
     }
 
+    /**
+     * @return Generator<array<int, TaskInterface>>
+     */
     public function provideTasks(): Generator
     {
         yield [

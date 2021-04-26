@@ -126,6 +126,9 @@ final class TaskBuilderTest extends TestCase
         self::assertInstanceOf(HttpTask::class, $taskBuilder->create($options));
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideNullTaskData(): Generator
     {
         yield [
@@ -156,6 +159,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideShellTaskData(): Generator
     {
         yield [
@@ -186,6 +192,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideCommandTaskData(): Generator
     {
         yield [
@@ -214,6 +223,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideHttpTaskData(): Generator
     {
         yield [
