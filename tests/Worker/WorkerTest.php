@@ -993,4 +993,43 @@ final class WorkerTest extends TestCase
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
     }
+
+    /**
+     * @group error
+     */
+    public function testPausedTaskIsNotExecutedIfListContainsASingleTask(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(
+            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
+            [
+                'name' => 'foo',
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ]
+        );
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::PAUSED);
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $runner = $this->createMock(RunnerInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+        ]), $eventDispatcher, $logger);
+        $worker->execute();
+
+        self::assertNull($worker->getLastExecutedTask());
+    }
 }
