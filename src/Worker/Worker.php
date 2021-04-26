@@ -108,7 +108,7 @@ final class Worker implements WorkerInterface
             $tasks = is_array($tasks) ? $tasks : iterator_to_array($tasks);
 
             foreach ($tasks as $task) {
-                if ((false !== end($tasks) && end($tasks) === $task) && !$this->checkTaskState($task)) {
+                if (end($tasks) === $task && !$this->checkTaskState($task)) {
                     break 2;
                 }
 
