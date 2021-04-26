@@ -35,6 +35,7 @@ use function array_replace_recursive;
 use function count;
 use function end;
 use function in_array;
+use function is_array;
 use function iterator_to_array;
 use function sleep;
 use function sprintf;
@@ -104,7 +105,7 @@ final class Worker implements WorkerInterface
                 $tasks = $this->scheduler->getDueTasks();
             }
 
-            $tasks = iterator_to_array($tasks);
+            $tasks = is_array($tasks) ? $tasks : iterator_to_array($tasks);
 
             foreach ($tasks as $task) {
                 if ((false !== end($tasks) && end($tasks) === $task) && !$this->checkTaskState($task)) {
