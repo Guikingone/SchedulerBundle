@@ -938,6 +938,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertEquals([
             'name' => 'foo',
             'type' => 'chained',
+            'execution_mode' => 'first_in_first_out',
             'tasks' => [
                 [
                     'name' => 'bar',

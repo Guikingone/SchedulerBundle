@@ -84,6 +84,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('random', $configuration['tasks']);
         self::assertCount(2, $configuration['tasks']['random']['tasks']);
         self::assertSame('chained', $configuration['tasks']['random']['type']);
+        self::assertSame('first_in_first_out', $configuration['tasks']['random']['execution_mode']);
         self::assertSame('foo', $configuration['tasks']['random']['tasks'][0]['name']);
         self::assertSame('shell', $configuration['tasks']['random']['tasks'][0]['type']);
         self::assertSame('bar', $configuration['tasks']['random']['tasks'][1]['name']);
