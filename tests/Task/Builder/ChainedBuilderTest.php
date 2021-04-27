@@ -11,6 +11,8 @@ use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\ShellBuilder;
 use SchedulerBundle\Task\ChainedTask;
@@ -28,6 +30,8 @@ final class ChainedBuilderTest extends TestCase
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
         ]));
 
         self::assertFalse($chainedBuilder->support('test'));
@@ -43,6 +47,8 @@ final class ChainedBuilderTest extends TestCase
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
         ]));
 
         self::expectException(InvalidArgumentException::class);
@@ -60,6 +66,8 @@ final class ChainedBuilderTest extends TestCase
             new CronExpressionBuilder(),
             new ComputedExpressionBuilder(),
             new FluentExpressionBuilder(),
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
         ]), [
             new ShellBuilder(new ExpressionBuilder([
                 new CronExpressionBuilder(),
@@ -80,6 +88,7 @@ final class ChainedBuilderTest extends TestCase
         yield [
             [
                 'name' => 'bar',
+                'execution_mode' => 'first_in_first_out',
                 'tasks' => [
                     [
                         'name' => 'foo',
@@ -98,6 +107,7 @@ final class ChainedBuilderTest extends TestCase
         yield [
             [
                 'name' => 'bar',
+                'execution_mode' => 'first_in_first_out',
                 'tasks' => [
                     [
                         'name' => 'bar',

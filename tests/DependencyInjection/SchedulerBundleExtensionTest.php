@@ -573,9 +573,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(ChainedBuilder::class));
         self::assertFalse($container->getDefinition(ChainedBuilder::class)->isPublic());
         self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getClass());
-        self::assertCount(2, $container->getDefinition(ChainedBuilder::class)->getArguments());
+        self::assertCount(3, $container->getDefinition(ChainedBuilder::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(1));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ChainedBuilder::class)->getArgument(1));
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(2));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('container.preload'));
         self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getTag('container.preload')[0]['class']);
