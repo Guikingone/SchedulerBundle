@@ -84,11 +84,42 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('random', $configuration['tasks']);
         self::assertCount(2, $configuration['tasks']['random']['tasks']);
         self::assertSame('chained', $configuration['tasks']['random']['type']);
-        self::assertSame('first_in_first_out', $configuration['tasks']['random']['execution_mode']);
+        self::assertSame('priority', $configuration['tasks']['random']['execution_mode']);
         self::assertSame('foo', $configuration['tasks']['random']['tasks'][0]['name']);
         self::assertSame('shell', $configuration['tasks']['random']['tasks'][0]['type']);
         self::assertSame('bar', $configuration['tasks']['random']['tasks'][1]['name']);
         self::assertSame('command', $configuration['tasks']['random']['tasks'][1]['type']);
+    }
+
+    public function testConfigurationCanDefineChainedTasksSpecificExecutionMode(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'random' => [
+                        'type' => 'chained',
+                        'execution_mode' => 'first_in_first_out',
+                        'tasks' => [
+                            'foo' => [
+                                'type' => 'shell',
+                                'command' => ['ls', '-al'],
+                                'expression' => '* * * * *',
+                            ],
+                            'bar' => [
+                                'type' => 'command',
+                                'command' => 'cache:clear',
+                                'expression' => '* * * * *',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertSame('first_in_first_out', $configuration['tasks']['random']['execution_mode']);
     }
 
     public function testConfigurationCanDefineSpecificRateLimiter(): void

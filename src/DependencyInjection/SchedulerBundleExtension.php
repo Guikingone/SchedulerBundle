@@ -62,6 +62,7 @@ use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
 use SchedulerBundle\SchedulePolicy\PolicyInterface;
+use SchedulerBundle\SchedulePolicy\PriorityPolicy;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -483,6 +484,13 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.schedule_policy')
             ->addTag('container.preload', [
                 'class' => NicePolicy::class,
+            ])
+        ;
+
+        $container->register(PriorityPolicy::class, PriorityPolicy::class)
+            ->addTag('scheduler.schedule_policy')
+            ->addTag('container.preload', [
+                'class' => PriorityPolicy::class,
             ])
         ;
 

@@ -17,6 +17,7 @@ use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
 use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
+use SchedulerBundle\SchedulePolicy\PriorityPolicy;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\TaskInterface;
@@ -207,6 +208,25 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             'app' => $task,
             'foo' => $secondTask,
         ], $schedulePolicyOrchestrator->sort('nice', ['foo' => $secondTask, 'app' => $task]));
+    }
+
+    public function testSchedulePolicyCanSortTasksUsingPriority(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+            new PriorityPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getPriority')->willReturn(-10);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getPriority')->willReturn(0);
+
+        self::assertSame([
+            'app' => $task,
+            'foo' => $secondTask,
+        ], $schedulePolicyOrchestrator->sort('priority', ['foo' => $secondTask, 'app' => $task]));
     }
 
     public function testSchedulePolicyCanSortTasksUsingRoundRobin(): void

@@ -63,6 +63,7 @@ use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
 use SchedulerBundle\SchedulePolicy\PolicyInterface;
+use SchedulerBundle\SchedulePolicy\PriorityPolicy;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -499,6 +500,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(NicePolicy::class));
         self::assertTrue($container->getDefinition(NicePolicy::class)->hasTag('container.preload'));
         self::assertSame(NicePolicy::class, $container->getDefinition(NicePolicy::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(PriorityPolicy::class));
+        self::assertTrue($container->getDefinition(PriorityPolicy::class)->hasTag('container.preload'));
+        self::assertSame(PriorityPolicy::class, $container->getDefinition(PriorityPolicy::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RoundRobinPolicy::class));
         self::assertTrue($container->getDefinition(RoundRobinPolicy::class)->hasTag('container.preload'));
@@ -938,7 +943,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertEquals([
             'name' => 'foo',
             'type' => 'chained',
-            'execution_mode' => 'first_in_first_out',
+            'execution_mode' => 'priority',
             'tasks' => [
                 [
                     'name' => 'bar',
