@@ -55,7 +55,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
             throw new InvalidArgumentException('The given task cannot be created as no related builder can be found');
         }, $options['tasks'])));
 
-        unset($options['tasks']);
+        unset($options['tasks'],  $options['execution_mode']);
 
         return $this->handleTaskAttributes($chainedTask, $options, $propertyAccessor);
     }
