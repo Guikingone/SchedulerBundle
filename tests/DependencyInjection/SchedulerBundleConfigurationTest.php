@@ -89,6 +89,8 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('shell', $configuration['tasks']['random']['tasks'][0]['type']);
         self::assertSame('bar', $configuration['tasks']['random']['tasks'][1]['name']);
         self::assertSame('command', $configuration['tasks']['random']['tasks'][1]['type']);
+        self::assertArrayNotHasKey('execution_mode', $configuration['tasks']['random']['tasks'][0]);
+        self::assertArrayNotHasKey('execution_mode', $configuration['tasks']['random']['tasks'][1]);
     }
 
     public function testConfigurationCanDefineChainedTasksSpecificExecutionMode(): void
