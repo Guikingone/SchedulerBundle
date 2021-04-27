@@ -6,6 +6,7 @@ namespace SchedulerBundle\Task\Builder;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Expression\BuilderInterface as ExpressionBuilderInterface;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -21,13 +22,17 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
      */
     private iterable $builders;
 
+    private SchedulePolicyOrchestratorInterface $orchestrator;
+
     /**
      * @param iterable|BuilderInterface[] $builders
      */
     public function __construct(
         ExpressionBuilderInterface $expressionBuilder,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         iterable $builders = []
     ) {
+        $this->orchestrator = $schedulePolicyOrchestrator;
         $this->builders = $builders;
 
         parent::__construct($expressionBuilder);
@@ -38,7 +43,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $chainedTask = new ChainedTask($options['name'], ...array_map(function (array $task) use ($propertyAccessor): TaskInterface {
+        $chainedTask = new ChainedTask($options['name'], ... $this->orchestrator->sort($options['execution_mode'], array_map(function (array $task) use ($propertyAccessor): TaskInterface {
             foreach ($this->builders as $builder) {
                 if (!$builder->support($task['type'])) {
                     continue;
@@ -48,7 +53,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
             }
 
             throw new InvalidArgumentException('The given task cannot be created as no related builder can be found');
-        }, $options['tasks']));
+        }, $options['tasks'])));
 
         unset($options['tasks']);
 

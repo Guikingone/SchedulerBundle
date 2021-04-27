@@ -561,7 +561,8 @@ final class SchedulerBundleExtension extends Extension
         $chainedBuilderDefinition = new ChildDefinition(AbstractTaskBuilder::class);
         $chainedBuilderDefinition->setClass(ChainedBuilder::class);
         $container->setDefinition(ChainedBuilder::class, $chainedBuilderDefinition)
-            ->setArgument(1, new TaggedIteratorArgument('scheduler.task_builder'))
+            ->setArgument(1, new Reference(SchedulePolicyOrchestratorInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE), )
+            ->setArgument(2, new TaggedIteratorArgument('scheduler.task_builder'))
             ->setPublic(false)
             ->addTag('scheduler.task_builder')
             ->addTag('container.preload', [

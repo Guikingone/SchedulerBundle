@@ -67,6 +67,7 @@ abstract class AbstractTask implements TaskInterface
             'execution_end_date' => null,
             'execution_start_time' => null,
             'execution_end_time' => null,
+            'execution_mode' => 'first_in_first_out',
             'last_execution' => null,
             'max_duration' => null,
             'max_executions' => null,
@@ -107,6 +108,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
         $optionsResolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_mode', ['string', 'null']);
         $optionsResolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('max_duration', ['float', 'null']);
         $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
