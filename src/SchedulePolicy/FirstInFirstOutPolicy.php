@@ -13,16 +13,11 @@ use function uasort;
 final class FirstInFirstOutPolicy implements PolicyInterface
 {
     /**
-     * @var string
-     */
-    private const POLICY = 'first_in_first_out';
-
-    /**
      * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $nextTask->getScheduledAt() <=> $task->getScheduledAt());
+        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
 
         return $tasks;
     }
@@ -32,6 +27,6 @@ final class FirstInFirstOutPolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'first_in_first_out' === $policy;
     }
 }

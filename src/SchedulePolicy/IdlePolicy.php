@@ -13,11 +13,6 @@ use function uasort;
 final class IdlePolicy implements PolicyInterface
 {
     /**
-     * @var string
-     */
-    private const POLICY = 'idle';
-
-    /**
      * @return TaskInterface[]
      */
     public function sort(array $tasks): array
@@ -32,6 +27,6 @@ final class IdlePolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'idle' === $policy;
     }
 }

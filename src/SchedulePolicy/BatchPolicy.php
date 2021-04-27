@@ -14,11 +14,6 @@ use function uasort;
 final class BatchPolicy implements PolicyInterface
 {
     /**
-     * @var string
-     */
-    private const POLICY = 'batch';
-
-    /**
      * @return TaskInterface[]
      */
     public function sort(array $tasks): array
@@ -38,6 +33,6 @@ final class BatchPolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'batch' === $policy;
     }
 }

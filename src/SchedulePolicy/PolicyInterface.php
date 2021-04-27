@@ -18,5 +18,8 @@ interface PolicyInterface
      */
     public function sort(array $tasks): array;
 
+    /**
+     * Define if the @param string $policy is supported by the current policy.
+     */
     public function support(string $policy): bool;
 }

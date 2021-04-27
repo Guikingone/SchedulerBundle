@@ -128,8 +128,8 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
         self::assertSame([
-            'foo' => $secondTask,
             'app' => $task,
+            'foo' => $secondTask,
         ], $schedulePolicyOrchestrator->sort('first_in_first_out', ['foo' => $secondTask, 'app' => $task]));
     }
 
