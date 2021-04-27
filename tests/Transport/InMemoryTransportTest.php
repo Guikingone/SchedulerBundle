@@ -116,8 +116,8 @@ final class InMemoryTransportTest extends TestCase
 
         self::assertNotEmpty($inMemoryTransport->list());
         self::assertSame([
-            'foo' => $secondTask,
             'bar' => $task,
+            'foo' => $secondTask,
         ], $inMemoryTransport->list()->toArray());
     }
 

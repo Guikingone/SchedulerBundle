@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -36,9 +37,32 @@ final class FirstInFirstOutPolicyTest extends TestCase
         $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
 
         self::assertSame([
-            'foo' => $secondTask,
-            'random' => $thirdTask,
             'app' => $task,
+            'random' => $thirdTask,
+            'foo' => $secondTask,
         ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'app' => $task, 'random' => $thirdTask]));
+    }
+
+    public function testTasksCanBeSortedUsingNegativeDate(): void
+    {
+        $task = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable('- 1 month'),
+        ]);
+
+        $secondTask = new NullTask('bar', [
+            'scheduled_at' => new DateTimeImmutable('- 2 month'),
+        ]);
+
+        $thirdTask = new NullTask('random', [
+            'scheduled_at' => new DateTimeImmutable('- 3 month'),
+        ]);
+
+        $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
+
+        self::assertSame([
+            'random' => $thirdTask,
+            'bar' => $secondTask,
+            'foo' => $task,
+        ], $firstInFirstOutPolicy->sort(['bar' => $secondTask, 'random' => $thirdTask, 'foo' => $task]));
     }
 }

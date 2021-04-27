@@ -13,11 +13,6 @@ use function uasort;
 final class MemoryUsagePolicy implements PolicyInterface
 {
     /**
-     * @var string
-     */
-    private const POLICY = 'memory_usage';
-
-    /**
      * @return TaskInterface[]
      */
     public function sort(array $tasks): array
@@ -32,6 +27,6 @@ final class MemoryUsagePolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'memory_usage' === $policy;
     }
 }
