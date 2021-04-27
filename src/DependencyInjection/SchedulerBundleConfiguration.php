@@ -77,7 +77,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                     foreach ($chainedTaskConfiguration['tasks'] as $chainedTask => &$configuration) {
                                         $configuration['name'] = $chainedTask;
                                     }
-                                    $chainedTaskConfiguration['execution_mode'] = $chainedTaskConfiguration['execution_mode']??'priority';
+                                    $chainedTaskConfiguration['execution_mode'] = $chainedTaskConfiguration['execution_mode'] ?? 'priority';
                                     $chainedTaskConfiguration['tasks'] = array_values($chainedTaskConfiguration['tasks']);
 
                                     return $chainedTaskConfiguration;
