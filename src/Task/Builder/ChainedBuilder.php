@@ -21,7 +21,6 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
      * @var iterable|BuilderInterface[]
      */
     private iterable $builders;
-
     private SchedulePolicyOrchestratorInterface $orchestrator;
 
     /**
