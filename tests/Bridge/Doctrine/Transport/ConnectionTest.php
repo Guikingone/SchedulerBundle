@@ -21,7 +21,6 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection as DoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
