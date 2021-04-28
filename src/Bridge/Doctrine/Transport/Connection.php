@@ -161,8 +161,6 @@ final class Connection implements ConnectionInterface
         )->fetchOne();
 
         if ('0' !== $existingTask) {
-            $this->logger->warning(sprintf('The task "%s" cannot be created as an existing one has been found', $task->getName()));
-
             return;
         }
 

@@ -219,12 +219,7 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('warning')
-            ->with(self::equalTo('The task "foo" cannot be created as an existing one has been found'))
-        ;
+        $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $expression = $this->createMock(ExpressionBuilder::class);
         $expression->expects(self::once())->method('eq')
@@ -283,7 +278,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), $logger);
+        ]));
 
         $transport->create($task);
     }
