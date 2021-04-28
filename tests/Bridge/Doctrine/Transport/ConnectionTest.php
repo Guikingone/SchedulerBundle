@@ -21,7 +21,6 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection as DoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
@@ -244,13 +243,8 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('warning')
-            ->with(self::equalTo('The task "foo" cannot be created as an existing one has been found'))
-        ;
-
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $expressionBuilder = $this->createMock(ExpressionBuilder::class);
         $expressionBuilder->expects(self::once())->method('eq')
@@ -293,7 +287,7 @@ final class ConnectionTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), $logger);
+        ]));
         $connection->create($task);
     }
 
