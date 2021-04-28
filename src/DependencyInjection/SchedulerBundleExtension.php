@@ -968,4 +968,9 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
     }
+
+    public function getConfiguration(array $config, ContainerBuilder $container)
+    {
+        return new SchedulerBundleConfiguration();
+    }
 }
