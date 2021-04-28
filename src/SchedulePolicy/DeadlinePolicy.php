@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use DateTimeImmutable;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
+use function array_walk;
+use function sprintf;
 use function uasort;
 
 /**
@@ -14,29 +17,24 @@ use function uasort;
 final class DeadlinePolicy implements PolicyInterface
 {
     /**
-     * @var string
-     */
-    private const POLICY = 'deadline';
-
-    /**
      * @return TaskInterface[]
      */
     public function sort(array $tasks): array
     {
-        foreach ($tasks as $task) {
-            if (null === $task->getExecutionRelativeDeadline()) {
-                continue;
+        array_walk($tasks, function (TaskInterface $task): void {
+            if (null === $task->getArrivalTime()) {
+                throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
             }
 
-            if (null === $task->getArrivalTime()) {
-                continue;
+            if (null === $task->getExecutionRelativeDeadline()) {
+                throw new RuntimeException(sprintf('The execution relative deadline must be defined, consider using %s::setExecutionRelativeDeadline()', TaskInterface::class));
             }
 
             $arrivalTime = $task->getArrivalTime();
             $absoluteDeadlineDate = $arrivalTime->add($task->getExecutionRelativeDeadline());
 
             $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
-        }
+        });
 
         uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
             $dateTimeImmutable = new DateTimeImmutable();
@@ -52,6 +50,6 @@ final class DeadlinePolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'deadline' === $policy;
     }
 }
