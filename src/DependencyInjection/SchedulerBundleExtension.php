@@ -93,6 +93,7 @@ use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -969,7 +970,7 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container): ConfigurationInterface
     {
         return new SchedulerBundleConfiguration();
     }
