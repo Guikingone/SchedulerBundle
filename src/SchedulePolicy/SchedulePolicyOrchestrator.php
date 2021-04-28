@@ -6,6 +6,7 @@ namespace SchedulerBundle\SchedulePolicy;
 
 use InvalidArgumentException;
 use RuntimeException;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 use function count;
 use function sprintf;
@@ -41,6 +42,12 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
 
         if (0 === count($tasks)) {
             return [];
+        }
+
+        foreach ($tasks as $task) {
+            if ($task instanceof ChainedTask) {
+                $task->setTasks(...$this->sort($policy, $task->getTasks()));
+            }
         }
 
         foreach ($this->policies as $schedulePolicy) {

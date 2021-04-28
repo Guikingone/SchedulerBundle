@@ -19,6 +19,7 @@ use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
 use SchedulerBundle\SchedulePolicy\NicePolicy;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -152,7 +153,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ], $schedulePolicyOrchestrator->sort('first_in_last_out', ['foo' => $secondTask, 'app' => $task]));
     }
 
-    public function testTasksCanBeSortTasksUsingIdle(): void
+    public function testSchedulePolicyCanBeSortTasksUsingIdle(): void
     {
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -171,7 +172,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
     }
 
-    public function testTasksCanBeSortTasksUsingMemoryUsage(): void
+    public function testSchedulePolicyCanBeSortTasksUsingMemoryUsage(): void
     {
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -227,5 +228,213 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             'bar' => $task,
             'foo' => $secondTask,
         ], $schedulePolicyOrchestrator->sort('round_robin', ['foo' => $secondTask, 'bar' => $task]));
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingBatch(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new BatchPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(3, 2);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('batch', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingDeadline(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new DeadlinePolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('deadline', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingExecutionDuration(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new ExecutionDurationPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.0);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getExecutionComputationTime')->willReturn(12.0);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('execution_duration', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingFirstInFirstOut(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('first_in_first_out', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingFirstInLastOut(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new FirstInLastOutPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('first_in_last_out', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingIdle(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new IdlePolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getPriority')->willReturn(-10);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(-20);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('idle', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingMemoryUsage(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new MemoryUsagePolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->method('getExecutionMemoryUsage')->willReturn(10);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->method('getExecutionMemoryUsage')->willReturn(15);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('memory_usage', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingNice(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new NicePolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getNice')->willReturn(1);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::once())->method('getNice')->willReturn(5);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('nice', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
+    }
+
+    public function testSchedulePolicyCanSortNestedTasksUsingRoundRobin(): void
+    {
+        $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
+            new RoundRobinPolicy(),
+        ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(12.0);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.0);
+        $secondTask->expects(self::once())->method('getMaxDuration')->willReturn(10.0);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setTasks(...[$secondTask, $task]);
+
+        $schedulePolicyOrchestrator->sort('round_robin', [$chainedTask]);
+
+        self::assertSame([
+            $task,
+            $secondTask,
+        ], $chainedTask->getTasks());
     }
 }
