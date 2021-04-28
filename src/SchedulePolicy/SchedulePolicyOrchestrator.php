@@ -35,7 +35,7 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
      */
     public function sort(string $policy, array $tasks): array
     {
-        if (0 === count($this->policies)) {
+        if ([] === $this->policies) {
             throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
         }
 
