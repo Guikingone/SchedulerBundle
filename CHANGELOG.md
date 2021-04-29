@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+0.4.3
+-----
+
+* FIFO sort fixed (see https://github.com/Guikingone/SchedulerBundle/pull/75)
+* DeadlinePolicy sort improved (see https://github.com/Guikingone/SchedulerBundle/pull/80)
+* Doctrine connection extra logger call removed (see https://github.com/Guikingone/SchedulerBundle/pull/81)
+* Configuration set for reference dump (see https://github.com/Guikingone/SchedulerBundle/pull/83) - Thanks @jvancoillie
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.2
 -----
 
