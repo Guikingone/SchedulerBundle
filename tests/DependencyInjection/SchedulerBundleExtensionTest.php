@@ -18,6 +18,7 @@ use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
+use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
@@ -1104,6 +1105,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(SchedulerDataCollector::NAME, $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['id']);
         self::assertTrue($container->getDefinition(SchedulerDataCollector::class)->hasTag('container.preload'));
         self::assertSame(SchedulerDataCollector::class, $container->getDefinition(SchedulerDataCollector::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testConfiguration(): void
+    {
+        $extension = new SchedulerBundleExtension();
+
+        self::assertInstanceOf(SchedulerBundleConfiguration::class, $extension->getConfiguration([], new ContainerBuilder()));
     }
 
     private function getContainer(array $configuration = []): ContainerBuilder
