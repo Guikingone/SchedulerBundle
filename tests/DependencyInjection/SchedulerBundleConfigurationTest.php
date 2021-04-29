@@ -84,10 +84,10 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('random', $configuration['tasks']);
         self::assertCount(2, $configuration['tasks']['random']['tasks']);
         self::assertSame('chained', $configuration['tasks']['random']['type']);
-        self::assertSame('foo', $configuration['tasks']['random']['tasks'][0]['name']);
-        self::assertSame('shell', $configuration['tasks']['random']['tasks'][0]['type']);
-        self::assertSame('bar', $configuration['tasks']['random']['tasks'][1]['name']);
-        self::assertSame('command', $configuration['tasks']['random']['tasks'][1]['type']);
+        self::assertArrayHasKey('foo', $configuration['tasks']['random']['tasks']);
+        self::assertSame('shell', $configuration['tasks']['random']['tasks']['foo']['type']);
+        self::assertArrayHasKey('bar', $configuration['tasks']['random']['tasks']);
+        self::assertSame('command', $configuration['tasks']['random']['tasks']['bar']['type']);
     }
 
     public function testConfigurationCanDefineSpecificRateLimiter(): void

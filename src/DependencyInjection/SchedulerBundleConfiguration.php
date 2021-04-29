@@ -8,10 +8,6 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use function array_key_exists;
-use function array_filter;
-use function array_map;
-use function array_replace;
-use function array_values;
 use function count;
 
 /**
@@ -65,27 +61,6 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->arrayNode('tasks')
-                        ->beforeNormalization()
-                            ->always(function (array $taskConfiguration): array {
-                                $chainedTasks = array_filter($taskConfiguration, fn (array $configuration): bool => 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']));
-
-                                if (0 === count($chainedTasks)) {
-                                    return $taskConfiguration;
-                                }
-
-                                $updatedChainedTasks = array_map(function (array $chainedTaskConfiguration): array {
-                                    foreach ($chainedTaskConfiguration['tasks'] as $chainedTask => &$configuration) {
-                                        $configuration['name'] = $chainedTask;
-                                    }
-
-                                    $chainedTaskConfiguration['tasks'] = array_values($chainedTaskConfiguration['tasks']);
-
-                                    return $chainedTaskConfiguration;
-                                }, $chainedTasks);
-
-                                return array_replace($taskConfiguration, $updatedChainedTasks);
-                            })
-                        ->end()
                         ->useAttributeAsKey('name')
                         ->normalizeKeys(false)
                             ->variablePrototype()->end()

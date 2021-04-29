@@ -939,13 +939,11 @@ final class SchedulerBundleExtensionTest extends TestCase
             'name' => 'foo',
             'type' => 'chained',
             'tasks' => [
-                [
-                    'name' => 'bar',
+                'bar' => [
                     'type' => 'shell',
                     'expression' => '* * * * *',
                 ],
-                [
-                    'name' => 'random',
+                'random' => [
                     'type' => 'shell',
                     'expression' => '*/5 * * * *',
                 ],
