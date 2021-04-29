@@ -9,6 +9,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use function array_key_exists;
 use function count;
+use function in_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -60,11 +61,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
-                    ->arrayNode('tasks')
-                        ->useAttributeAsKey('name')
-                        ->normalizeKeys(false)
-                            ->variablePrototype()->end()
-                    ->end()
+                    ->append($this->addTasksSection())
                     ->scalarNode('lock_store')
                         ->info('The store used by every worker to prevent overlapping, by default, a FlockStore is created')
                         ->defaultValue(null)
@@ -78,5 +75,95 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
         ;
 
         return $treeBuilder;
+    }
+
+    private function addTasksSection()
+    {
+        $treeBuilder = new TreeBuilder('tasks');
+
+        return  $treeBuilder->getRootNode()
+            ->useAttributeAsKey('name')
+            ->normalizeKeys(false)
+            ->arrayPrototype()
+                ->validate()
+                    ->always(function ($v) {
+                        if (0=== count($v['arguments'])) {
+                            unset($v['arguments']);
+                        }
+
+                        if (0=== count($v['tags'])) {
+                            unset($v['tags']);
+                        }
+
+                        if (0=== count($v['options'])) {
+                            unset($v['options']);
+                        }
+
+                        if (0=== count($v['tasks'])) {
+                            unset($v['tasks']);
+                        }
+
+                        return $v;
+                    })
+                ->end()
+                ->validate()
+                    ->ifTrue(static fn ($v): bool => !in_array($v['type'], ['null', 'chained'], true)  && !isset($v['command']))
+                    ->then(static function (array $v): void {
+                        throw new InvalidConfigurationException(sprintf('You must specify the "command" if you define "%s" task type.', $v['type']));
+                    })
+                ->end()
+                ->validate()
+                    ->ifTrue(static fn ($v): bool => 'command' !== $v['type'] && isset($v['arguments']))
+                    ->thenInvalid('The "arguments" option can only be defined for "command" task type.')
+                ->end()
+                ->validate()
+                    ->ifTrue(static fn ($v): bool =>  'chained' === $v['type'] && !isset($v['tasks']))
+                    ->thenInvalid('The "chained" type requires that you provide tasks.')
+                ->end()
+                ->children()
+                    ->enumNode('type')
+                        ->info('The Task type to build')
+                        ->isRequired()
+                        ->values(['shell', 'null', 'http', 'command', 'chained'])
+                    ->end()
+                    ->scalarNode('description')->end()
+                    ->variableNode('command')->end()
+                    ->arrayNode('arguments')
+                        ->info('arguments to passed to "command" task type')
+                        ->normalizeKeys(false)
+                        ->variablePrototype()->end()
+                    ->end()
+                    ->integerNode('priority')
+                         ->min(-1000)->max(1000)
+                    ->end()
+                    ->scalarNode('expression')->end()
+                    ->booleanNode('single_run')->end()
+                    ->booleanNode('output')->end()
+                    ->booleanNode('output_to_store')->end()
+                    ->arrayNode('options')
+                        ->useAttributeAsKey('name')
+                        ->normalizeKeys(false)
+                        ->variablePrototype()->end()
+                    ->end()
+                    ->arrayNode('tags')
+                        ->normalizeKeys(false)
+                        ->variablePrototype()->end()
+                    ->end()
+                    ->scalarNode('timezone')->end()
+                    ->scalarNode('tracked')->end()
+                    ->scalarNode('state')->end()
+                    ->integerNode('nice')->end()
+                    ->integerNode('max_executions')->end()
+                    ->floatNode('max_duration')->end()
+                    ->integerNode('execution_delay')->end()
+                    ->arrayNode('tasks')
+                        ->info('Tasks list only available for "chained" type')
+                        ->normalizeKeys(false)
+                        ->prototype('variable')
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
     }
 }

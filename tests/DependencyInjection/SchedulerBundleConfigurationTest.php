@@ -48,6 +48,125 @@ final class SchedulerBundleConfigurationTest extends TestCase
         ]);
     }
 
+    public function testConfigurationCannotDefineChainedTaskWithoutTasks(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The "chained" type requires that you provide tasks.');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'chained',
+                        'expression' => '*/5 * * * *',
+                        'description' => 'A chained task',
+                        'options' => [
+                            'env' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationCannotDefineShellTaskWithArguments(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The "arguments" option can only be defined for "command" task type.');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'shell',
+                        'arguments' => ['arg'],
+                        'command' => ['ls', '-al'],
+                        'expression' => '*/5 * * * *',
+                        'description' => 'A shell task with args',
+                        'options' => [
+                            'env' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationCannotDefineShellTaskWithoutCommand(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('You must specify the "command" if you define "shell" task type.');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'shell',
+                        'arguments' => ['arg'],
+                        'expression' => '*/5 * * * *',
+                        'description' => 'A shell task with args',
+                        'options' => [
+                            'env' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationCannotDefinePriorityOutOfRange(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The value -2000 is too small for path "scheduler_bundle.tasks.foo.priority". Should be greater than or equal to -1000');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'shell',
+                        'expression' => '*/5 * * * *',
+                        'priority' => -2000,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationCannotDefineCommandTaskWithoutCommand(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('You must specify the "command" if you define "command" task type.');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'tasks' => [
+                    'foo' => [
+                        'type' => 'command',
+                        'expression' => '*/5 * * * *',
+                        'description' => 'A shell task with args',
+                        'options' => [
+                            'env' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
 
     public function testConfigurationCanDefineChainedTasks(): void
     {
