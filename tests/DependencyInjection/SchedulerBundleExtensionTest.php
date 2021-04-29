@@ -920,6 +920,7 @@ final class SchedulerBundleExtensionTest extends TestCase
             'tasks' => [
                 'foo' => [
                     'type' => 'chained',
+                    'expression' => '* * * * *',
                     'tasks' => [
                         'bar' => [
                             'type' => 'shell',
@@ -938,6 +939,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertEquals([
             'name' => 'foo',
             'type' => 'chained',
+            'expression' => '* * * * *',
             'tasks' => [
                 'bar' => [
                     'type' => 'shell',
