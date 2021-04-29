@@ -970,6 +970,9 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getConfiguration(array $config, ContainerBuilder $container): ConfigurationInterface
     {
         return new SchedulerBundleConfiguration();
