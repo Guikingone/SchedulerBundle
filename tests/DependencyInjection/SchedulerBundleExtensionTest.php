@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -357,6 +358,22 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('scheduler', $container->getDefinition(ConsumeTasksCommand::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(ConsumeTasksCommand::class)->hasTag('container.preload'));
         self::assertSame(ConsumeTasksCommand::class, $container->getDefinition(ConsumeTasksCommand::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(ExecuteTaskCommand::class));
+        self::assertCount(4, $container->getDefinition(ExecuteTaskCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(0));
+        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(1));
+        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(1));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(2));
+        self::assertSame(WorkerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(2));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(3));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(3));
+        self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('monolog.logger'));
+        self::assertSame('scheduler', $container->getDefinition(ExecuteTaskCommand::class)->getTag('monolog.logger')[0]['channel']);
+        self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('container.preload'));
+        self::assertSame(ExecuteTaskCommand::class, $container->getDefinition(ExecuteTaskCommand::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ListFailedTasksCommand::class));
         self::assertCount(1, $container->getDefinition(ListFailedTasksCommand::class)->getArguments());

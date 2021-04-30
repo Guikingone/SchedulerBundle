@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -307,6 +308,22 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->addTag('container.preload', [
                 'class' => ConsumeTasksCommand::class,
+            ])
+        ;
+
+        $container->register(ExecuteTaskCommand::class, ExecuteTaskCommand::class)
+            ->setArguments([
+                new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => ExecuteTaskCommand::class,
             ])
         ;
 
