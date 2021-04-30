@@ -101,7 +101,7 @@ final class ExecuteTaskCommand extends Command
             return self::SUCCESS;
         }
 
-        $style->info(sprintf('Found %d task%s', count($tasks), 1 < count($tasks) ? 's' : ''));
+        $style->info(sprintf('Found %d task%s', count($tasks), 1 !== count($tasks) ? 's' : ''));
 
         $executionOptions = [];
 
