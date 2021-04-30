@@ -34,6 +34,8 @@ final class NullBuilderTest extends TestCase
 
     /**
      * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testTaskCanBeBuilt(array $options): void
     {
@@ -55,6 +57,9 @@ final class NullBuilderTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideTaskData(): Generator
     {
         yield [

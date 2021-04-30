@@ -34,6 +34,8 @@ final class ShellBuilderTest extends TestCase
 
     /**
      * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testTaskCanBeBuilt(array $options): void
     {

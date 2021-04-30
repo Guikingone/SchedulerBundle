@@ -101,7 +101,7 @@ final class ExecuteTaskCommand extends Command
             return self::SUCCESS;
         }
 
-        $style->info(sprintf('Found %s task%s', count($tasks), 1 < count($tasks) ? 's' : ''));
+        $style->info(sprintf('Found %d task%s', count($tasks), 1 < count($tasks) ? 's' : ''));
 
         $executionOptions = [];
 
@@ -122,7 +122,7 @@ final class ExecuteTaskCommand extends Command
 
         $style->info([
             'The tasks following the listed conditions will be executed:',
-            implode('' . PHP_EOL, $executionOptions),
+            implode(PHP_EOL, $executionOptions),
             sprintf('%d task%s to be executed', count($tasks), 1 < count($tasks) ? 's' : ''),
         ]);
 

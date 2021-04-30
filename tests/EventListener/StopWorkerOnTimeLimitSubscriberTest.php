@@ -80,6 +80,9 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
         $stopWorkerOnTimeLimitSubscriber->onWorkerRunning($workerRunningEvent);
     }
 
+    /**
+     * @return Generator<array<int, int>>
+     */
     public function provideTimeLimit(): Generator
     {
         yield [1];
