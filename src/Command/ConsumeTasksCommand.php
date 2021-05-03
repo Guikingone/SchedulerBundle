@@ -22,7 +22,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_pop;
-use function count;
 use function implode;
 use function sprintf;
 
