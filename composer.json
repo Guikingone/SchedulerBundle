@@ -80,7 +80,7 @@
         "sort-packages": true
     },
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "ext-json": "*",
         "dragonmantank/cron-expression": "^3.1",
         "psr/log": "^1.0",
@@ -94,7 +94,8 @@
         "symfony/process": "^5.2",
         "symfony/property-access": "^5.2",
         "symfony/serializer": "^5.2",
-        "symfony/stopwatch": "^5.2"
+        "symfony/stopwatch": "^5.2",
+        "spatie/fork": "^1.0"
     },
     "require-dev": {
         "ext-pcntl": "*",

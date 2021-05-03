@@ -11,9 +11,6 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
-use Symfony\Component\Lock\Store\FlockStore;
-use SchedulerBundle\Event\TaskExecutedEvent;
-use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
@@ -27,7 +24,6 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
@@ -42,7 +38,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Worker implements WorkerInterface
+final class Worker extends AbstractWorker
 {
     public ?bool $isRunning = null;
     private const DEFAULT_OPTIONS = [
@@ -54,7 +50,6 @@ final class Worker implements WorkerInterface
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
-    private ?array $options = [];
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
@@ -208,11 +203,6 @@ final class Worker implements WorkerInterface
         return $this->lastExecutedTask;
     }
 
-    public function getOptions(): ?array
-    {
-        return $this->options;
-    }
-
     private function checkTaskState(TaskInterface $task): bool
     {
         if (TaskInterface::UNDEFINED === $task->getState()) {
@@ -230,38 +220,5 @@ final class Worker implements WorkerInterface
         }
 
         return true;
-    }
-
-    private function handleTask(RunnerInterface $runner, TaskInterface $task): void
-    {
-        $this->dispatch(new TaskExecutingEvent($task));
-
-        $task->setArrivalTime(new DateTimeImmutable());
-        $task->setExecutionStartTime(new DateTimeImmutable());
-
-        $this->tracker->startTracking($task);
-        $output = $runner->run($task);
-        $this->tracker->endTracking($task);
-        $task->setExecutionEndTime(new DateTimeImmutable());
-        $task->setLastExecution(new DateTimeImmutable());
-
-        $this->dispatch(new TaskExecutedEvent($task, $output));
-    }
-
-    private function getSleepDuration(): int
-    {
-        $dateTimeImmutable = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $dateTimeImmutable->setTime((int) $dateTimeImmutable->format('H'), (int) $dateTimeImmutable->format('i'));
-
-        return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
-    }
-
-    private function dispatch(Event $event): void
-    {
-        if (null === $this->eventDispatcher) {
-            return;
-        }
-
-        $this->eventDispatcher->dispatch($event);
     }
 }
