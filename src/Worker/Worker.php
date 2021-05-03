@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\FlockStore;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -62,7 +61,7 @@ final class Worker implements WorkerInterface
     private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
-    private ?PersistingStoreInterface $store;
+    private LockFactory $lockFactory;
     private ?TaskInterface $lastExecutedTask = null;
     private TaskListInterface $failedTasks;
 
@@ -84,7 +83,7 @@ final class Worker implements WorkerInterface
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
-        $this->store = $persistingStore;
+        $this->lockFactory = new LockFactory($persistingStore ?? new FlockStore());
         $this->failedTasks = new TaskList();
     }
 
@@ -116,7 +115,11 @@ final class Worker implements WorkerInterface
                     continue;
                 }
 
-                $lockedTask = $this->getLock($task);
+                $lockedTask = $this->lockFactory->createLock($task->getName());
+                if (end($tasks) === $task && !$lockedTask->acquire()) {
+                    break 2;
+                }
+
                 if (!$lockedTask->acquire()) {
                     continue;
                 }
@@ -243,17 +246,6 @@ final class Worker implements WorkerInterface
         $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
-    }
-
-    private function getLock(TaskInterface $task): LockInterface
-    {
-        if (null === $this->store) {
-            $this->store = new FlockStore();
-        }
-
-        $lockFactory = new LockFactory($this->store);
-
-        return $lockFactory->createLock($task->getName());
     }
 
     private function getSleepDuration(): int

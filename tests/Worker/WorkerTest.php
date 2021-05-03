@@ -541,7 +541,7 @@ final class WorkerTest extends TestCase
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $store = $this->createMock(BlockingStoreInterface::class);
+        //$store = $this->createMock(BlockingStoreInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
@@ -563,7 +563,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger, $store);
+        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
