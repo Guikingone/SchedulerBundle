@@ -48,8 +48,7 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function findByName(array $names): self;
 
     /**
-     * Allow to filter the list using a custom filter, the $filter receive the task name and the TaskInterface object (in this order).
-     *
+     * Allow to filter the list using a custom filter, the @param Closure $filter receive the task name and the TaskInterface object (in this order).
      *
      * @return TaskListInterface<string, TaskInterface>
      */
@@ -61,8 +60,7 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function remove(string $taskName): void;
 
     /**
-     * Return the list as an array (using tasks name's as keys), if $keepKeys is false, the array is returned with indexed keys.
-     *
+     * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>
      */

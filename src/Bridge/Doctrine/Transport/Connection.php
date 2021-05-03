@@ -82,9 +82,7 @@ final class Connection implements ConnectionInterface
 
         try {
             return $this->driverConnection->transactional(function (): TaskListInterface {
-                $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
-
-                $statement = $this->executeQuery($query->getSQL());
+                $statement = $this->executeQuery($this->createQueryBuilder()->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
                 return new TaskList($this->schedulePolicyOrchestrator->sort(
