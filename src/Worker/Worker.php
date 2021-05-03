@@ -90,7 +90,7 @@ final class Worker implements WorkerInterface
 
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
-        if (0 === count($this->runners)) {
+        if ([] === $this->runners) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -132,7 +132,12 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if (!$lockedTask->acquire() || $this->isRunning) {
+                        if (!$lockedTask->acquire()) {
+                            $this->logger->info(sprintf('The task "%s" cannot be acquired', $task->getName()));
+                            continue 2;
+                        }
+
+                        if ($this->isRunning) {
                             continue 2;
                         }
 

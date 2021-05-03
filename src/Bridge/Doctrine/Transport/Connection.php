@@ -129,7 +129,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 $data = $statement->fetchAssociative();
-                if (false === $data || 0 === count($data)) {
+                if (false === $data || [] === $data) {
                     throw new LogicException('The desired task cannot be found.');
                 }
 

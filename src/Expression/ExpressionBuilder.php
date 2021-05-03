@@ -6,7 +6,6 @@ namespace SchedulerBundle\Expression;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
-use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -28,7 +27,7 @@ final class ExpressionBuilder implements BuilderInterface
 
     public function build(string $expression, ?string $timezone = null): Expression
     {
-        if (0 === count($this->builders)) {
+        if ([] === $this->builders) {
             throw new RuntimeException('No builder found');
         }
 
