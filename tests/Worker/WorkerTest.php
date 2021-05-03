@@ -86,7 +86,7 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
@@ -1041,40 +1041,5 @@ final class WorkerTest extends TestCase
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
-    }
-
-    public function testWorkerCannotExecuteTaskWithoutAcquiringIt(): void
-    {
-        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $runner = $this->createMock(RunnerInterface::class);
-
-        $store = $this->createMock(PersistingStoreInterface::class);
-        $store->expects(self::once())->method('getLock');
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The task "foo" cannot be acquired'));
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
-
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(3))->method('getName')->willReturn('bar');
-        $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $secondTask->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
-
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$secondTask, $task]));
-
-        $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
-
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
-            new SingleRunTaskMiddleware($scheduler),
-            new TaskUpdateMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
-        $worker->execute();
     }
 }

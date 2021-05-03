@@ -116,14 +116,17 @@ final class Worker implements WorkerInterface
                     continue;
                 }
 
+                $lockedTask = $this->getLock($task);
+                if (!$lockedTask->acquire()) {
+                    continue;
+                }
+
                 $this->dispatch(new WorkerRunningEvent($this));
 
                 foreach ($this->runners as $runner) {
                     if (!$runner->support($task)) {
                         continue;
                     }
-
-                    $lockedTask = $this->getLock($task);
 
                     if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
                         usleep($task->getExecutionDelay());
@@ -132,13 +135,13 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if ($lockedTask->acquire() && !$this->isRunning) {
+                        if (!$this->isRunning) {
                             $this->isRunning = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
-
-                            $this->middlewareStack->runPostExecutionMiddleware($task);
                         }
+
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
