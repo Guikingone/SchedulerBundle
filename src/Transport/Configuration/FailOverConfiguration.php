@@ -8,7 +8,6 @@ use Closure;
 use SchedulerBundle\Exception\ConfigurationException;
 use SplObjectStorage;
 use Throwable;
-use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -78,7 +77,7 @@ final class FailOverConfiguration implements ConfigurationInterface
 
     private function execute(Closure $func)
     {
-        if (0 === count($this->configurationStorages)) {
+        if ([] === $this->configurationStorages) {
             throw new ConfigurationException('No configuration found');
         }
 

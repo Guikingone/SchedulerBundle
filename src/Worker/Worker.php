@@ -132,20 +132,13 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if (!$lockedTask->acquire()) {
-                            $this->logger->info(sprintf('The task "%s" cannot be acquired', $task->getName()));
-                            continue 2;
+                        if ($lockedTask->acquire() && !$this->isRunning) {
+                            $this->isRunning = true;
+                            $this->dispatch(new WorkerRunningEvent($this));
+                            $this->handleTask($runner, $task);
+
+                            $this->middlewareStack->runPostExecutionMiddleware($task);
                         }
-
-                        if ($this->isRunning) {
-                            continue 2;
-                        }
-
-                        $this->isRunning = true;
-                        $this->dispatch(new WorkerRunningEvent($this));
-                        $this->handleTask($runner, $task);
-
-                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
