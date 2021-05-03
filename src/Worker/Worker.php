@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use DateTimeImmutable;
 use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;

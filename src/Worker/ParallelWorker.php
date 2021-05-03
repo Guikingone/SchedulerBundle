@@ -15,8 +15,8 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Spatie\Fork\Fork;
 use Symfony\Component\Lock\PersistingStoreInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -69,6 +69,8 @@ final class ParallelWorker extends AbstractWorker
         $this->options = array_replace_recursive(self::DEFAULT_OPTIONS, $options);
 
         $this->dispatch(new WorkerStartedEvent($this));
+
+        $tasks = 0 === count($tasks) ? $this->scheduler->getDueTasks() : $tasks;
     }
 
     public function stop(): void
@@ -94,10 +96,5 @@ final class ParallelWorker extends AbstractWorker
     public function getLastExecutedTask(): ?TaskInterface
     {
         // TODO: Implement getLastExecutedTask() method.
-    }
-
-    public function getOptions(): ?array
-    {
-        // TODO: Implement getOptions() method.
     }
 }

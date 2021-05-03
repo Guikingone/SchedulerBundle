@@ -84,6 +84,7 @@
         "ext-json": "*",
         "dragonmantank/cron-expression": "^3.1",
         "psr/log": "^1.0",
+        "spatie/fork": "^1.0",
         "symfony/config": "^5.2",
         "symfony/console": "^5.2",
         "symfony/event-dispatcher": "^5.2",
@@ -94,8 +95,7 @@
         "symfony/process": "^5.2",
         "symfony/property-access": "^5.2",
         "symfony/serializer": "^5.2",
-        "symfony/stopwatch": "^5.2",
-        "spatie/fork": "^1.0"
+        "symfony/stopwatch": "^5.2"
     },
     "require-dev": {
         "ext-pcntl": "*",
