@@ -41,6 +41,12 @@ final class FirstInFirstOutPolicyTest extends TestCase
             'random' => $thirdTask,
             'foo' => $secondTask,
         ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'app' => $task, 'random' => $thirdTask]));
+
+        self::assertSame([
+            'random' => $thirdTask,
+            'app' => $task,
+            'foo' => $secondTask,
+        ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'random' => $thirdTask,  'app' => $task ]));
     }
 
     public function testTasksCanBeSortedUsingNegativeDate(): void
