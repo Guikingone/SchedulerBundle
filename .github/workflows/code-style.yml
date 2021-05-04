@@ -36,6 +36,4 @@ jobs:
           composer-options: "--prefer-stable"
 
       - name: PHP CS Fixer
-        uses: docker://oskarstark/php-cs-fixer-ga
-        with:
-            args: --allow-risky=yes --dry-run --diff-format=udiff .
+        run: php vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run --config .php_cs.dist .

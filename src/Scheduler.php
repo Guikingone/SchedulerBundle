@@ -213,7 +213,7 @@ final class Scheduler implements SchedulerInterface
 
     private function dispatch(Event $event): void
     {
-        if (null === $this->eventDispatcher) {
+        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
             return;
         }
 

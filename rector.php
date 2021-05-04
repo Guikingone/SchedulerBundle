@@ -40,6 +40,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         PHPUnitSetList::PHPUNIT_SPECIFIC_METHOD,
         PHPUnitSetList::PHPUNIT_YIELD_DATA_PROVIDER,
         SetList::CODE_QUALITY,
+        SetList::CODE_QUALITY_STRICT,
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
         SetList::PHP_70,

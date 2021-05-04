@@ -100,7 +100,7 @@ final class Worker implements WorkerInterface
         $tasksCount = 0;
 
         while (!$this->shouldStop) {
-            if (0 === count($tasks)) {
+            if ([] === $tasks) {
                 $tasks = $this->scheduler->getDueTasks();
             }
 
@@ -258,7 +258,7 @@ final class Worker implements WorkerInterface
 
     private function dispatch(Event $event): void
     {
-        if (null === $this->eventDispatcher) {
+        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
             return;
         }
 

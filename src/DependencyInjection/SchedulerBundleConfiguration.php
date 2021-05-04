@@ -21,8 +21,6 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('scheduler_bundle');
-
         $treeBuilder
             ->getRootNode()
                 ->beforeNormalization()
@@ -101,6 +99,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                 ->end()
             ->end()
         ;
+        $treeBuilder = new TreeBuilder('scheduler_bundle');
 
         return $treeBuilder;
     }

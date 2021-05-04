@@ -84,13 +84,15 @@ final class YieldTaskCommand extends Command
 
                 return self::FAILURE;
             }
+            $message = sprintf('The task "%s" has been yielded', $name);
 
-            $symfonyStyle->success(sprintf('The task "%s" has been yielded', $name));
+            $symfonyStyle->success($message);
 
             return self::SUCCESS;
         }
+        $message = sprintf('The task "%s" has not been yielded', $name);
 
-        $symfonyStyle->warning(sprintf('The task "%s" has not been yielded', $name));
+        $symfonyStyle->warning($message);
 
         return self::FAILURE;
     }

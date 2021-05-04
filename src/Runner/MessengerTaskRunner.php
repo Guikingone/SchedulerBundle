@@ -34,7 +34,7 @@ final class MessengerTaskRunner implements RunnerInterface
         }
 
         try {
-            if (null === $this->bus) {
+            if (!$this->bus instanceof MessageBusInterface) {
                 $task->setExecutionState(TaskInterface::ERRORED);
 
                 return new Output($task, 'The task cannot be handled as the bus is not defined', Output::ERROR);

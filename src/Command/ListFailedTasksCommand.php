@@ -63,8 +63,9 @@ final class ListFailedTasksCommand extends Command
         $table->setHeaders(['Name', 'Expression', 'Reason', 'Date']);
 
         $table->addRows(array_map(fn (FailedTask $task): array => [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)], $failedTasksList));
+        $message = sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : '');
 
-        $symfonyStyle->success(sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : ''));
+        $symfonyStyle->success($message);
         $table->render();
 
         return self::SUCCESS;

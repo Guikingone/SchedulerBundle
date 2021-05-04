@@ -182,11 +182,13 @@ final class FooCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ('' !== $input->getOption('env')) {
+        $envInputOption = $input->getOption('env');
+        if ('' !== $envInputOption) {
             $output->write(sprintf('This command is executed in "%s" env', $input->getOption('env')));
         }
+        $waitInputOption = $input->getOption('wait');
 
-        if (true === $input->getOption('wait')) {
+        if (true === $waitInputOption) {
             $output->write('This command will wait');
         }
 

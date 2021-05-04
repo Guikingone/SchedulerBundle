@@ -24,13 +24,14 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
     protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
     {
         $dsnList = $dsn->getOptions() ?? [];
-        if (0 === count($dsnList)) {
+        if ([] === $dsnList) {
             throw new LogicException(sprintf('The %s transport factory cannot create a transport', static::class));
         }
 
         return array_map(function (string $transportDsn) use ($transportFactories, $options, $serializer, $schedulePolicyOrchestrator): TransportInterface {
             foreach ($transportFactories as $transportFactory) {
-                if (!$transportFactory->support($transportDsn)) {
+                $transportFactorySupport = $transportFactory->support($transportDsn);
+                if (!$transportFactorySupport) {
                     continue;
                 }
 

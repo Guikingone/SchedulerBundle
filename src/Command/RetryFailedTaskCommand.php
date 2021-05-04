@@ -83,7 +83,8 @@ final class RetryFailedTaskCommand extends Command
 
         $task = $this->worker->getFailedTasks()->get($name);
         if (!$task instanceof TaskInterface) {
-            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
+            $message = sprintf('The task "%s" does not fails', $name);
+            $symfonyStyle->error($message);
 
             return self::FAILURE;
         }
@@ -101,13 +102,15 @@ final class RetryFailedTaskCommand extends Command
 
                 return self::FAILURE;
             }
+            $message = sprintf('The task "%s" has been retried', $task->getName());
 
-            $symfonyStyle->success(sprintf('The task "%s" has been retried', $task->getName()));
+            $symfonyStyle->success($message);
 
             return self::SUCCESS;
         }
+        $message = sprintf('The task "%s" has not been retried', $task->getName());
 
-        $symfonyStyle->warning(sprintf('The task "%s" has not been retried', $task->getName()));
+        $symfonyStyle->warning($message);
 
         return self::FAILURE;
     }

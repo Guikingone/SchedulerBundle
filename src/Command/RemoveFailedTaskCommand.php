@@ -75,7 +75,8 @@ final class RemoveFailedTaskCommand extends Command
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
-            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
+            $message = sprintf('The task "%s" does not fails', $name);
+            $symfonyStyle->error($message);
 
             return self::FAILURE;
         }
@@ -91,13 +92,15 @@ final class RemoveFailedTaskCommand extends Command
 
                 return self::FAILURE;
             }
+            $message = sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName());
 
-            $symfonyStyle->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $symfonyStyle->success($message);
 
             return self::SUCCESS;
         }
+        $message = sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName());
 
-        $symfonyStyle->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+        $symfonyStyle->note($message);
 
         return self::FAILURE;
     }

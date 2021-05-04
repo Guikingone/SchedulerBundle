@@ -79,7 +79,7 @@ final class HttpTask extends AbstractTask
      */
     private function validateClientOptions(array $clientOptions = []): void
     {
-        if (0 === count($clientOptions)) {
+        if ([] === $clientOptions) {
             return;
         }
 

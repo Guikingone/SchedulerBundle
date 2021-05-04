@@ -106,7 +106,8 @@ final class Connection implements ConnectionInterface
         }
 
         $body = $this->serializer->serialize($updatedTask, 'json');
-        if (false === $this->connection->hSet($this->list, $taskName, $body)) {
+        $connectionHSet = $this->connection->hSet($this->list, $taskName, $body);
+        if (false === $connectionHSet) {
             throw new TransportException(sprintf('The task "%s" cannot be updated, error: %s', $taskName, $this->connection->getLastError()));
         }
     }
@@ -154,7 +155,8 @@ final class Connection implements ConnectionInterface
      */
     public function delete(string $taskName): void
     {
-        if (0 === $this->connection->hDel($this->list, $taskName)) {
+        $connectionHDel = $this->connection->hDel($this->list, $taskName);
+        if (0 === $connectionHDel) {
             throw new TransportException(sprintf('The task "%s" cannot be deleted as it does not exist', $taskName));
         }
     }
@@ -165,11 +167,12 @@ final class Connection implements ConnectionInterface
     public function empty(): void
     {
         $keys = $this->connection->hKeys($this->list);
-        if (0 === count($keys)) {
+        if ([] === $keys) {
             return;
         }
+        $connectionHDel = $this->connection->hDel($this->list, ...$keys);
 
-        if (!$this->connection->hDel($this->list, ...$keys)) {
+        if (!$connectionHDel) {
             throw new TransportException('The list cannot be emptied');
         }
     }

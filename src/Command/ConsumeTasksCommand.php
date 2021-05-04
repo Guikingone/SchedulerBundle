@@ -128,15 +128,17 @@ final class ConsumeTasksCommand extends Command
                 sprintf('- %s', $stopsWhen),
             ]);
         }
+        $waitInputOption = $input->getOption('wait');
 
-        if ($input->getOption('wait')) {
+        if ($waitInputOption) {
             $symfonyStyle->note('The worker will wait for tasks every minutes');
         }
 
         $symfonyStyle->comment('Quit the worker with CONTROL-C.');
 
         if (OutputInterface::VERBOSITY_VERBOSE > $output->getVerbosity()) {
-            $symfonyStyle->note(sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : ''));
+            $message = sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : '');
+            $symfonyStyle->note($message);
         }
 
         if ($output->isVeryVerbose()) {
@@ -165,15 +167,16 @@ final class ConsumeTasksCommand extends Command
     {
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
-            if (null === $output) {
+            if (!$output instanceof Output) {
                 return;
             }
 
             if (null === $output->getOutput()) {
                 return;
             }
+            $message = sprintf('Output for task "%s":', $event->getTask()->getName());
 
-            $symfonyStyle->note(sprintf('Output for task "%s":', $event->getTask()->getName()));
+            $symfonyStyle->note($message);
             $symfonyStyle->text($output->getOutput());
         });
     }

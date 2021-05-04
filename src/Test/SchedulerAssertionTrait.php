@@ -44,7 +44,8 @@ trait SchedulerAssertionTrait
 
     private static function getSchedulerEventList(): TaskEventList
     {
-        if (self::$container->has(TaskLoggerSubscriber::class)) {
+        $hasTaskLoggerSubscriber = self::$container->has(TaskLoggerSubscriber::class);
+        if ($hasTaskLoggerSubscriber) {
             return self::$container->get(TaskLoggerSubscriber::class)->getEvents();
         }
 

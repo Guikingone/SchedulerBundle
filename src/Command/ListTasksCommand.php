@@ -80,7 +80,7 @@ final class ListTasksCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getTasks();
-        if (0 === count($tasks->toArray())) {
+        if ([] === $tasks->toArray()) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
@@ -95,13 +95,14 @@ final class ListTasksCommand extends Command
         }
 
         $tasks = $tasks->toArray();
-        if (0 === count($tasks)) {
+        if ([] === $tasks) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
+        $message = sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : '');
 
-        $symfonyStyle->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
+        $symfonyStyle->success($message);
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Description', 'Expression', 'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);

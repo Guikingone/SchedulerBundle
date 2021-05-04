@@ -84,8 +84,9 @@ final class RebootSchedulerCommand extends Command
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
+        $inputGetOption = $input->getOption('dry-run');
 
-        if ($input->getOption('dry-run')) {
+        if ($inputGetOption) {
             if (0 === $tasks->count()) {
                 $symfonyStyle->warning([
                     'The scheduler does not contain any tasks',

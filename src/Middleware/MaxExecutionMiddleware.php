@@ -11,7 +11,6 @@ use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
-use function is_null;
 use function sprintf;
 
 /**
@@ -32,11 +31,11 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
 
     public function preExecute(TaskInterface $task): void
     {
-        if (is_null($this->rateLimiter)) {
+        if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;
         }
 
-        if (is_null($task->getMaxExecutions())) {
+        if (null === $task->getMaxExecutions()) {
             return;
         }
 
@@ -56,11 +55,11 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
 
     public function postExecute(TaskInterface $task): void
     {
-        if (is_null($this->rateLimiter)) {
+        if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;
         }
 
-        if (is_null($task->getMaxExecutions())) {
+        if (null === $task->getMaxExecutions()) {
             return;
         }
 
