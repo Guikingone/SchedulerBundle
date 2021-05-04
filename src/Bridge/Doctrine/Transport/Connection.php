@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
@@ -82,9 +81,7 @@ final class Connection implements ConnectionInterface
 
         try {
             return $this->driverConnection->transactional(function (): TaskListInterface {
-                $query = $this->createQueryBuilder()->orderBy('task_name', Criteria::ASC);
-
-                $statement = $this->executeQuery($query->getSQL());
+                $statement = $this->executeQuery($this->createQueryBuilder()->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
                 return new TaskList($this->schedulePolicyOrchestrator->sort(

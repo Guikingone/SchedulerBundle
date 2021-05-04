@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
@@ -16,10 +17,14 @@ use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use function file_exists;
@@ -43,7 +48,7 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $objectNormalizer = new ObjectNormalizer();
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -53,6 +58,9 @@ final class ConnectionIntegrationTest extends TestCase
                 $objectNormalizer,
                 new NotificationTaskBagNormalizer($objectNormalizer)
             ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -88,13 +96,19 @@ final class ConnectionIntegrationTest extends TestCase
 
     public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
     {
-        $this->connection->create(new NullTask('foo'));
-        $this->connection->create(new NullTask('bar'));
+        $this->connection->create(new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]));
+        $this->connection->create(new NullTask('bar', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]));
 
         $list = $this->connection->list();
 
         self::assertNotEmpty($list);
         self::assertCount(2, $list);
+        self::assertSame('foo', $list->toArray(false)[0]->getName());
+        self::assertSame('bar', $list->toArray(false)[1]->getName());
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }

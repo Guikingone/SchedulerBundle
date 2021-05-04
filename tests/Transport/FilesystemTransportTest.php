@@ -110,14 +110,23 @@ final class FilesystemTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $nullTask = new NullTask('bar');
-        $nullTask->setScheduledAt(new DateTimeImmutable());
+        $nullTask = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+        $secondNullTask = new NullTask('bar', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
 
         $filesystemTransport->create($nullTask);
+        $filesystemTransport->create($secondNullTask);
+        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
 
         $list = $filesystemTransport->list();
-        self::assertNotEmpty($list);
+        self::assertCount(2, $list);
+        self::assertSame('foo', $list->toArray(false)[0]->getName());
+        self::assertSame('bar', $list->toArray(false)[1]->getName());
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 

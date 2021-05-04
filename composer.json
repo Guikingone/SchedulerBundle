@@ -75,7 +75,8 @@
     },
     "config": {
         "classmap-authoritative": true,
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "sort-packages": true
     },
     "require": {
         "php": ">=7.4",
@@ -102,7 +103,7 @@
         "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^2.18",
         "infection/infection": "^0.21",
-        "nikic/php-parser": "^4.10.2",
+        "nikic/php-parser": "4.10.4",
         "phpstan/phpstan": "^0.12.83",
         "phpstan/phpstan-doctrine": "^0.12.33",
         "phpstan/phpstan-phpunit": "^0.12.18",
@@ -112,7 +113,7 @@
         "psalm/plugin-symfony": "^2.1",
         "phpunit/phpunit": "^9.5",
         "psr/cache": "^1.0",
-        "rector/rector": "0.10.9",
+        "rector/rector": "0.10.17",
         "symfony/cache": "^5.2",
         "symfony/dependency-injection": "^5.2",
         "symfony/framework-bundle": "^5.2",
