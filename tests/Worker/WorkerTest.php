@@ -541,7 +541,6 @@ final class WorkerTest extends TestCase
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        //$store = $this->createMock(BlockingStoreInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
