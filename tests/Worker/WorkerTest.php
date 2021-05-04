@@ -18,7 +18,6 @@ use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Lock\BlockingStoreInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Runner\RunnerInterface;
