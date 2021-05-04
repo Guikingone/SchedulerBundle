@@ -153,7 +153,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ], $schedulePolicyOrchestrator->sort('first_in_last_out', ['foo' => $secondTask, 'app' => $task]));
     }
 
-    public function testSchedulePolicyCanBeSortTasksUsingIdle(): void
+    public function testSchedulePolicyCanSortTasksUsingIdle(): void
     {
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -172,7 +172,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
     }
 
-    public function testSchedulePolicyCanBeSortTasksUsingMemoryUsage(): void
+    public function testSchedulePolicyCanSortTasksUsingMemoryUsage(): void
     {
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
