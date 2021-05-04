@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\FlockStore;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -62,7 +61,7 @@ final class Worker implements WorkerInterface
     private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
-    private ?PersistingStoreInterface $store;
+    private LockFactory $lockFactory;
     private ?TaskInterface $lastExecutedTask = null;
     private TaskListInterface $failedTasks;
 
@@ -84,13 +83,13 @@ final class Worker implements WorkerInterface
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
-        $this->store = $persistingStore;
+        $this->lockFactory = new LockFactory($persistingStore ?? new FlockStore());
         $this->failedTasks = new TaskList();
     }
 
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
-        if (0 === count($this->runners)) {
+        if ([] === $this->runners) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -116,14 +115,21 @@ final class Worker implements WorkerInterface
                     continue;
                 }
 
+                $lockedTask = $this->lockFactory->createLock($task->getName());
+                if (end($tasks) === $task && !$lockedTask->acquire()) {
+                    break 2;
+                }
+
+                if (!$lockedTask->acquire()) {
+                    continue;
+                }
+
                 $this->dispatch(new WorkerRunningEvent($this));
 
                 foreach ($this->runners as $runner) {
                     if (!$runner->support($task)) {
                         continue;
                     }
-
-                    $lockedTask = $this->getLock($task);
 
                     if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
                         usleep($task->getExecutionDelay());
@@ -132,7 +138,7 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if ($lockedTask->acquire() && !$this->isRunning) {
+                        if (!$this->isRunning) {
                             $this->isRunning = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
@@ -240,17 +246,6 @@ final class Worker implements WorkerInterface
         $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
-    }
-
-    private function getLock(TaskInterface $task): LockInterface
-    {
-        if (null === $this->store) {
-            $this->store = new FlockStore();
-        }
-
-        $lockFactory = new LockFactory($this->store);
-
-        return $lockFactory->createLock($task->getName());
     }
 
     private function getSleepDuration(): int

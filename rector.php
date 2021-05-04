@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Core\Configuration\Option;
 use Rector\Core\ValueObject\PhpVersion;
 use Rector\Doctrine\Set\DoctrineSetList;
-use Rector\Php71\Rector\FuncCall\CountOnNullRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
@@ -30,15 +29,16 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $parameters->set(Option::SKIP, [
         __DIR__ . '/vendor',
-        CountOnNullRector::class,
     ]);
 
     $parameters->set(Option::SETS, [
+        DoctrineSetList::DOCTRINE_25,
         DoctrineSetList::DOCTRINE_DBAL_211,
+        PHPUnitSetList::PHPUNIT_91,
         PHPUnitSetList::PHPUNIT_EXCEPTION,
         PHPUnitSetList::PHPUNIT_MOCK,
         PHPUnitSetList::PHPUNIT_SPECIFIC_METHOD,
-        PHPUnitSetList::PHPUNIT_91,
+        PHPUnitSetList::PHPUNIT_YIELD_DATA_PROVIDER,
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
@@ -51,6 +51,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         SymfonySetList::SYMFONY_50,
         SymfonySetList::SYMFONY_50_TYPES,
         SymfonySetList::SYMFONY_52,
+        SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
     ]);
 
     $parameters->set(Option::ENABLE_CACHE, true);

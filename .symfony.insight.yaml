@@ -5,6 +5,9 @@ global_exclude_dirs:
   - assets
   - doc
 
+commit_failure_conditions:
+  - "project.grade < gold"
+
 rules:
   php.use_php_sleep_function:
     enabled: false

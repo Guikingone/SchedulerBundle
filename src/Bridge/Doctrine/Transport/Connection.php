@@ -27,7 +27,6 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
-use function count;
 use function sprintf;
 
 /**
@@ -129,7 +128,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 $data = $statement->fetchAssociative();
-                if (false === $data || 0 === count($data)) {
+                if (false === $data || [] === $data) {
                     throw new LogicException('The desired task cannot be found.');
                 }
 
