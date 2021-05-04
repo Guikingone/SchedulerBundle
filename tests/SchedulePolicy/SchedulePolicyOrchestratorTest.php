@@ -260,9 +260,13 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getArrivalTime')->willReturn(new DateTimeImmutable('+ 1 month'));
+        $task->expects(self::exactly(2))->method('getExecutionRelativeDeadline')->willReturn(new DateInterval('P2D'));
         $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
 
         $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getArrivalTime')->willReturn(new DateTimeImmutable('+ 1 month'));
+        $secondTask->expects(self::exactly(2))->method('getExecutionRelativeDeadline')->willReturn(new DateInterval('P2D'));
         $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
 
         $chainedTask = new ChainedTask('nested');
