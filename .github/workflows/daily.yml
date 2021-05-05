@@ -67,7 +67,7 @@ jobs:
       - name: PHP-CS-FIXER
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
-          args: --allow-risky=yes --dry-run --diff-format=udiff .
+          args: --allow-risky=yes --dry-run
 
       # —— Rector ————————————————————————————————————————————————————————
       - name: Rector
