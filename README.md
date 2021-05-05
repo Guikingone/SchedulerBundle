@@ -1,12 +1,30 @@
 ![SchedulerBundleHero](assets/SchedulerBundle.png)
 
 <div align="center">
-    <img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Daily?style=flat" alt="Daily build status">
     <img src="https://img.shields.io/packagist/v/guikingone/scheduler-bundle?style=flat" alt="Current bundle version">
     <img src="https://img.shields.io/packagist/php-v/guikingone/scheduler-bundle?style=flat" alt="PHP version requirement">
     <img src="https://img.shields.io/symfony/i/grade/825be328-29f8-44f7-a750-f82818ae9111?style=flat" alt="Symfony Insight">
     <img src="https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FGuikingone%2FSchedulerBundle%2Fmain" alt="Infection score">
     <img src="https://img.shields.io/github/license/Guikingone/SchedulerBundle?style=flat" alt="License">
+    <br><br>Daily runs<br>
+    <table>
+        <tr>
+            <th>Code style</th>
+            <th>Infection</th>
+            <th>PHPUnit</th>
+            <th>Rector</th>
+            <th>Security</th>
+            <th>Static analysis</th>
+        </tr>
+        <tr>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Code%20style/main?style=flat" alt="Code style"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Infection/main?style=flat" alt="Infection"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/PHPUnit/main?style=flat" alt="PHPUnit"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Rector/main?style=flat" alt="Rector"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Security/main?style=flat" alt="Security"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Static%20analysis/main?style=flat" alt="Static analysis"></td>
+        </tr>
+    </table>
 </div>
 
 <h4 align="center">A Symfony bundle built to schedule/consume repetitive tasks</h4>
