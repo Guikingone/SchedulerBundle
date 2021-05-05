@@ -270,6 +270,9 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
 
         $chainedTask = new ChainedTask('nested');
+        $chainedTask->setArrivalTime(new DateTimeImmutable());
+        $chainedTask->setExecutionStartTime(new DateTimeImmutable());
+        $chainedTask->setExecutionRelativeDeadline(new DateInterval('P1D'));
         $chainedTask->setTasks(...[$secondTask, $task]);
 
         $schedulePolicyOrchestrator->sort('deadline', [$chainedTask]);
