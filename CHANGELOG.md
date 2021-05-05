@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+0.4.4
+-----
+
+* Doctrine bridge sort fixed (see https://github.com/Guikingone/SchedulerBundle/pull/95)
+* Task lock management improved (see https://github.com/Guikingone/SchedulerBundle/pull/91)
+* Chained sub-tasks sort (see https://github.com/Guikingone/SchedulerBundle/pull/89) - Thanks @jvancoillie
+* Tests improvements on Doctrine bridge (see https://github.com/Guikingone/SchedulerBundle/pull/66)
+* Tools dependencies upgraded (see https://github.com/Guikingone/SchedulerBundle/pull/97) - Thanks @jmsche
+* CI improvements (see https://github.com/Guikingone/SchedulerBundle/pull/98) - Thanks @jmsche
+* README.md improved (see https://github.com/Guikingone/SchedulerBundle/pull/100) - Thanks @jmsche
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.3
 -----
 
