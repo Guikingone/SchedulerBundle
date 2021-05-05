@@ -9,7 +9,7 @@ infection.log
 summary.log
 
 # Tools
-.php_cs.cache
+.php-cs-fixer.cache
 
 # Tests
 .phpunit.result.cache

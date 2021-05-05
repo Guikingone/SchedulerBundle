@@ -26,11 +26,11 @@ vendor: composer.json composer.lock
 
 php-cs-fixer: ## Run PHP-CS-FIXER and fix the errors
 php-cs-fixer:
-	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes --config .php_cs.dist .
+	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes
 
 php-cs-fixer-dry: ## Run PHP-CS-FIXER in --dry-run mode
 php-cs-fixer-dry:
-	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes --config .php_cs.dist . --dry-run
+	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
 
 phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon)
 phpstan: phpstan.neon.dist
