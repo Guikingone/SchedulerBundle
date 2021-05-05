@@ -49,6 +49,7 @@
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\": "tests/Bridge/Doctrine/",
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\SchemaListener\\": "tests/Bridge/Doctrine/SchemaListener/",
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\Transport\\": "tests/Bridge/Doctrine/Transport/",
+            "Tests\\SchedulerBundle\\Bridge\\Doctrine\\Transport\\Assets\\": "tests/Bridge/Doctrine/Transport/Assets/",
             "Tests\\SchedulerBundle\\Bridge\\Redis\\": "tests/Bridge/Redis/",
             "Tests\\SchedulerBundle\\Bridge\\Redis\\Transport\\": "tests/Bridge/Redis/Transport/",
             "Tests\\SchedulerBundle\\Command\\": "tests/Command/",
