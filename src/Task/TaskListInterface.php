@@ -58,14 +58,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function map(Closure $func): array;
 
     /**
-     * Return the last tasks, a {@see RuntimeException} is thrown if no task is found.
+     * Return the last task of the list.
+     *
+     * @throws RuntimeException If the list is empty or if the last task cannot be found.
      */
     public function last(): TaskInterface;
-
-    /**
-     * Move the internal pointer to the latest {@see TaskInterface}.
-     */
-    public function end(): TaskInterface;
 
     /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.

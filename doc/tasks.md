@@ -73,6 +73,9 @@ scheduler_bundle:
             # ...
 ```
 
+**PS: Keep in mind that each command is called against the `Application`, it may trigger some issues
+if you interact with the cache or the container (ex: `cache:clear`).**
+
 ## ChainedTask
 
 A [ChainedTask](../src/Task/ChainedTask.php) represent a list of tasks that should be executed 

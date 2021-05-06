@@ -36,7 +36,7 @@ final class FailOverTransport extends AbstractTransport
         $this->defineOptions(array_merge([
             'mode' => 'normal',
         ], $options), [
-            'mode' => ['string'],
+            'mode' => 'string',
         ]);
 
         $this->transports = $transports;

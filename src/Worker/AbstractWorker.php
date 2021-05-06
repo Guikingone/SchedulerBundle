@@ -18,19 +18,21 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\Lock\Key;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function is_array;
-use function iterator_to_array;
-use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -39,37 +41,34 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
 
-    /**
-     * @var RunnerInterface[]
-     */
-    private iterable $runners;
+    private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
-    private ?EventDispatcherInterface $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
+    private LockFactory $lockFactory;
 
-    /**
-     * @param RunnerInterface[] $runners
-     */
     public function __construct(
         SchedulerInterface $scheduler,
-        iterable $runners,
+        RunnerRegistryInterface $runnerRegistry,
         TaskExecutionTrackerInterface $tracker,
-        ?EventDispatcherInterface $eventDispatcher = null,
+        EventDispatcherInterface $eventDispatcher,
+        LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
-        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
+        $this->runnerRegistry = $runnerRegistry;
         $this->tracker = $tracker;
         $this->eventDispatcher = $eventDispatcher;
+        $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
 
     protected function run(array $options, Closure $closure): void
     {
-        if ([] === $this->runners) {
+        if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -155,9 +154,9 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getRunners(): array
+    public function getRunners(): RunnerRegistryInterface
     {
-        return $this->runners;
+        return $this->runnerRegistry;
     }
 
     /**
@@ -174,6 +173,16 @@ abstract class AbstractWorker implements WorkerInterface
     protected function getTasks(array $tasks): TaskListInterface
     {
         return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+    }
+
+    protected function getLockedTask(TaskInterface $task): LockInterface
+    {
+        $executionLockBag = $task->getExecutionLockBag();
+        if (null !== $executionLockBag && null !== $key = $executionLockBag->getKey()) {
+            return $this->lockFactory->createLockFromKey($key);
+        }
+
+        return $this->lockFactory->createLockFromKey(new Key(sprintf('%s_%s_%s', TaskLockBagMiddleware::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i'))));
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void
@@ -224,10 +233,6 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function dispatch(Event $event): void
     {
-        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
-            return;
-        }
-
         $this->eventDispatcher->dispatch($event);
     }
 

@@ -25,6 +25,9 @@ final class ExpressionBuilder implements BuilderInterface
         $this->builders = $builders;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function build(string $expression, ?string $timezone = null): Expression
     {
         if ([] === $this->builders) {
@@ -36,7 +39,7 @@ final class ExpressionBuilder implements BuilderInterface
                 continue;
             }
 
-            return $builder->build($expression, $timezone);
+            return $builder->build($expression, $timezone ?? 'UTC');
         }
 
         throw new InvalidArgumentException('The expression cannot be used');

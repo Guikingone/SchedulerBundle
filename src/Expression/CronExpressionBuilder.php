@@ -11,11 +11,17 @@ use Cron\CronExpression;
  */
 final class CronExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression, ?string $timezone = null): Expression
+    /**
+     * {@inheritdoc}
+     */
+    public function build(string $expression, string $timezone = 'UTC'): Expression
     {
         return Expression::createFromString($expression);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function support(string $expression): bool
     {
         return CronExpression::isValidExpression($expression);

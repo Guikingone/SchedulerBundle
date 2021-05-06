@@ -9,5 +9,11 @@ namespace SchedulerBundle\Expression;
  */
 interface BuilderInterface
 {
+    /**
+     * The builder must return a valid {@see Expression} using both:
+     *
+     * - The submitted @param string      $expression
+     * - The submitted @param string|null $timezone
+     */
     public function build(string $expression, ?string $timezone = null): Expression;
 }

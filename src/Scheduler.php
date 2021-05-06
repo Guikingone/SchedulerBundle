@@ -23,7 +23,6 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function is_bool;
@@ -49,7 +48,7 @@ final class Scheduler implements SchedulerInterface
     private DateTimeZone $timezone;
     private TransportInterface $transport;
     private SchedulerMiddlewareStack $middlewareStack;
-    private ?EventDispatcherInterface $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
     private ?MessageBusInterface $bus;
 
     /**
@@ -59,8 +58,8 @@ final class Scheduler implements SchedulerInterface
         string $timezone,
         TransportInterface $transport,
         SchedulerMiddlewareStack $schedulerMiddlewareStack,
-        EventDispatcherInterface $eventDispatcher = null,
-        MessageBusInterface $messageBus = null
+        EventDispatcherInterface $eventDispatcher,
+        ?MessageBusInterface $messageBus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
@@ -84,13 +83,13 @@ final class Scheduler implements SchedulerInterface
 
         if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
             $this->bus->dispatch(new TaskMessage($task));
-            $this->dispatch(new TaskScheduledEvent($task));
+            $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
 
             return;
         }
 
         $this->transport->create($task);
-        $this->dispatch(new TaskScheduledEvent($task));
+        $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
 
         $this->middlewareStack->runPostSchedulingMiddleware($task, $this);
     }
@@ -101,7 +100,7 @@ final class Scheduler implements SchedulerInterface
     public function unschedule(string $taskName): void
     {
         $this->transport->delete($taskName);
-        $this->dispatch(new TaskUnscheduledEvent($taskName));
+        $this->eventDispatcher->dispatch(new TaskUnscheduledEvent($taskName));
     }
 
     /**
@@ -166,7 +165,15 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->getTasks($lazy)->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && (null === $task->getLastExecution() || $task->getLastExecution()->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i')));
+        $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+            $timezone = $task->getTimezone() ?? $this->getTimezone();
+            $lastExecution = $task->getLastExecution();
+            if (null === $lastExecution) {
+                return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName());
+            }
+
+            return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName()) && ($lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i'));
+        });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
@@ -229,11 +236,11 @@ final class Scheduler implements SchedulerInterface
 
         $this->transport->clear();
 
-        foreach ($rebootTasks as $rebootTask) {
-            $this->transport->create($rebootTask);
-        }
+        $rebootTasks->walk(function (TaskInterface $task): void {
+            $this->transport->create($task);
+        });
 
-        $this->dispatch(new SchedulerRebootedEvent($this));
+        $this->eventDispatcher->dispatch(new SchedulerRebootedEvent($this));
     }
 
     /**
@@ -242,15 +249,6 @@ final class Scheduler implements SchedulerInterface
     public function getTimezone(): DateTimeZone
     {
         return $this->timezone;
-    }
-
-    private function dispatch(Event $event): void
-    {
-        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
-            return;
-        }
-
-        $this->eventDispatcher->dispatch($event);
     }
 
     /**

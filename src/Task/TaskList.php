@@ -108,6 +108,45 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): TaskListInterface
+    {
+        array_walk($this->tasks, $func);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return array_map($func, $this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function last(): TaskInterface
+    {
+        $lastIndex = array_key_last($this->tasks);
+        if (null === $lastIndex) {
+            throw new RuntimeException('The current list is empty');
+        }
+
+        return $this->tasks[$lastIndex];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(bool $keepKeys = true): array
+    {
+        return $keepKeys ? $this->tasks : array_values($this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset): bool
     {
         return $this->has($offset);
@@ -160,57 +199,5 @@ final class TaskList implements TaskListInterface
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->tasks);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function walk(Closure $func): TaskListInterface
-    {
-        array_walk($this->tasks, $func);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function map(Closure $func): array
-    {
-        return array_map($func, $this->tasks);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function last(): TaskInterface
-    {
-        $lastIndex = array_key_last($this->tasks);
-        if (null === $lastIndex) {
-            throw new RuntimeException('The current list is empty');
-        }
-
-        return $this->tasks[$lastIndex];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function end(): TaskInterface
-    {
-        $lastTask = end($this->tasks);
-        if (is_bool($lastTask)) {
-            throw new RuntimeException('The latest task cannot be used as the current list is empty');
-        }
-
-        return $lastTask;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(bool $keepKeys = true): array
-    {
-        return $keepKeys ? $this->tasks : array_values($this->tasks);
     }
 }

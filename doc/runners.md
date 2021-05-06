@@ -3,8 +3,13 @@
 Runners are the foundations of the [Worker](../src/Worker/Worker.php), 
 every task is executed via a runner.
 
+- [Retrieving the runners](#retrieving)
 - [Existing runners](#existing-runners)
 - [Defining a new runner](#defining-a-new-runner)
+
+## Retrieving
+
+// TODO
 
 ## Existing runners
 

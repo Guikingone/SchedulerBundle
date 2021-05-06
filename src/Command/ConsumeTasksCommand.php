@@ -225,7 +225,7 @@ final class ConsumeTasksCommand extends Command
 
     private function registerWorkerSleepingListener(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(WorkerSleepingEvent ::class, function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(WorkerSleepingEvent::class, function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
             $symfonyStyle->info(sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
         });
     }

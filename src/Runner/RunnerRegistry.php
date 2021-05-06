@@ -21,7 +21,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
     /**
      * @var RunnerInterface[]
      */
-    private array $runners;
+    private iterable $runners;
 
     /**
      * @param RunnerInterface[] $runners
