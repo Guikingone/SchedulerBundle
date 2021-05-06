@@ -258,7 +258,7 @@ final class Worker implements WorkerInterface
 
     private function dispatch(Event $event): void
     {
-        if (null === $this->eventDispatcher) {
+        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
             return;
         }
 

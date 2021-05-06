@@ -13,7 +13,6 @@ return $config->setRules([
     '@PSR2' => true,
     '@PSR12' => true,
     '@PHP74Migration' => true,
-    'strict_param' => true,
     'array_indentation' => true,
     'array_syntax' => [
         'syntax' => 'short',
