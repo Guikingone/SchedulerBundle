@@ -28,14 +28,12 @@ final class ParallelWorker extends AbstractWorker
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
-    private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
     private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private ?PersistingStoreInterface $store;
-    private ?TaskInterface $lastExecutedTask = null;
     private TaskListInterface $failedTasks;
 
     /**
@@ -60,6 +58,9 @@ final class ParallelWorker extends AbstractWorker
         $this->failedTasks = new TaskList();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
         if (0 === count($this->runners)) {
@@ -70,31 +71,6 @@ final class ParallelWorker extends AbstractWorker
 
         $this->dispatch(new WorkerStartedEvent($this));
 
-        $tasks = 0 === count($tasks) ? $this->scheduler->getDueTasks() : $tasks;
-    }
-
-    public function stop(): void
-    {
-        // TODO: Implement stop() method.
-    }
-
-    public function restart(): void
-    {
-        // TODO: Implement restart() method.
-    }
-
-    public function isRunning(): bool
-    {
-        // TODO: Implement isRunning() method.
-    }
-
-    public function getFailedTasks(): TaskListInterface
-    {
-        // TODO: Implement getFailedTasks() method.
-    }
-
-    public function getLastExecutedTask(): ?TaskInterface
-    {
-        // TODO: Implement getLastExecutedTask() method.
+        $tasks = $this->getTasks($tasks);
     }
 }

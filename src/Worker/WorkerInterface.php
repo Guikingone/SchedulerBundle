@@ -43,6 +43,9 @@ interface WorkerInterface
 
     public function restart(): void;
 
+    /**
+     * Return if the worker is currently running.
+     */
     public function isRunning(): bool;
 
     /**
@@ -52,6 +55,11 @@ interface WorkerInterface
      */
     public function getFailedTasks(): TaskListInterface;
 
+    /**
+     * Depending on the execution process, return the last executed tasks or null.
+     *
+     * @return TaskInterface|null
+     */
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**

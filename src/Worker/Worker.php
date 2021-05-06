@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use LogicException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use SchedulerBundle\Event\TaskFailedEvent;
-use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -23,23 +21,19 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_replace_recursive;
 use function count;
 use function end;
-use function in_array;
-use function is_array;
-use function iterator_to_array;
 use function sleep;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class Worker extends AbstractWorker
 {
-    public ?bool $isRunning = null;
     private const DEFAULT_OPTIONS = [
         'sleepDurationDelay' => 1,
         'sleepUntilNextMinute' => false,
@@ -49,14 +43,12 @@ final class Worker extends AbstractWorker
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
-    private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
     private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private LockFactory $lockFactory;
-    private ?TaskInterface $lastExecutedTask = null;
     private TaskListInterface $failedTasks;
 
     /**
@@ -81,6 +73,9 @@ final class Worker extends AbstractWorker
         $this->failedTasks = new TaskList();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
         if ([] === $this->runners) {
@@ -94,11 +89,7 @@ final class Worker extends AbstractWorker
         $tasksCount = 0;
 
         while (!$this->shouldStop) {
-            if (0 === count($tasks)) {
-                $tasks = $this->scheduler->getDueTasks();
-            }
-
-            $tasks = is_array($tasks) ? $tasks : iterator_to_array($tasks);
+            $tasks = $this->getTasks($tasks);
 
             foreach ($tasks as $task) {
                 if (end($tasks) === $task && !$this->checkTaskState($task)) {
@@ -170,54 +161,5 @@ final class Worker extends AbstractWorker
         }
 
         $this->dispatch(new WorkerStoppedEvent($this));
-    }
-
-    public function restart(): void
-    {
-        $this->stop();
-        $this->isRunning = false;
-        $this->failedTasks = new TaskList();
-        $this->shouldStop = false;
-
-        $this->dispatch(new WorkerRestartedEvent($this));
-    }
-
-    public function stop(): void
-    {
-        $this->shouldStop = true;
-    }
-
-    public function isRunning(): bool
-    {
-        return $this->isRunning;
-    }
-
-    public function getFailedTasks(): TaskListInterface
-    {
-        return $this->failedTasks;
-    }
-
-    public function getLastExecutedTask(): ?TaskInterface
-    {
-        return $this->lastExecutedTask;
-    }
-
-    private function checkTaskState(TaskInterface $task): bool
-    {
-        if (TaskInterface::UNDEFINED === $task->getState()) {
-            throw new LogicException('The task state must be defined in order to be executed!');
-        }
-
-        if (in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED], true)) {
-            $this->logger->info(sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), [
-                'name' => $task->getName(),
-                'expression' => $task->getExpression(),
-                'state' => $task->getState(),
-            ]);
-
-            return false;
-        }
-
-        return true;
     }
 }
