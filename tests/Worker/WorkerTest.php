@@ -14,8 +14,11 @@ use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\CommandTaskRunner;
+use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -28,11 +31,13 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\Worker;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
+use Tests\SchedulerBundle\Worker\Assets\LongExecutionCommand;
 use Throwable;
 
 /**
@@ -1045,5 +1050,34 @@ final class WorkerTest extends TestCase
      */
     public function testWorkerCanExecuteLongRunningTask(): void
     {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $lockStore = new FlockStore();
+
+        $application = new Application();
+        $application->addCommands([
+            new LongExecutionCommand(),
+        ]);
+
+        $task = new CommandTask('foo', 'app:long');
+        $task->setSingleRun(true);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+
+        $worker = new Worker($scheduler, [
+            new CommandTaskRunner($application),
+        ], $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+        ]), $eventDispatcher, $logger, $lockStore);
+
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 }

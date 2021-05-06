@@ -74,9 +74,8 @@ final class CommandTaskRunner implements RunnerInterface
     private function buildInput(CommandTask $commandTask): StringInput
     {
         $command = $this->findCommand($commandTask->getCommand());
-        $options = $this->buildOptions($commandTask);
 
-        return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $commandTask->getArguments()), implode(' ', $options)));
+        return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $commandTask->getArguments()), implode(' ', $this->buildOptions($commandTask))));
     }
 
     private function buildOptions(CommandTask $commandTask): array
