@@ -82,6 +82,7 @@
     "require": {
         "php": ">=8.0",
         "ext-json": "*",
+        "ext-pcntl": "*",
         "dragonmantank/cron-expression": "^3.1",
         "psr/log": "^1.0",
         "spatie/fork": "^1.0",
@@ -98,7 +99,6 @@
         "symfony/stopwatch": "^5.2"
     },
     "require-dev": {
-        "ext-pcntl": "*",
         "ext-redis": "*",
         "api-platform/core": "^2.6",
         "doctrine/dbal": "^2.12 || ^3.0",

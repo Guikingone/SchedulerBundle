@@ -15,7 +15,6 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Spatie\Fork\Fork;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
