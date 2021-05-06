@@ -52,24 +52,24 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertTrue($command->getDefinition()->getOption('tags')->isArray());
         self::assertSame('The tags of the task(s) to execute', $command->getDefinition()->getOption('tags')->getDescription());
         self::assertSame(
-        $command->getHelp(),
-        <<<'EOF'
-            The <info>%command.name%</info> command execute tasks.
+            $command->getHelp(),
+            <<<'EOF'
+                The <info>%command.name%</info> command execute tasks.
 
-                <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-            Use the --due option to execute the due tasks:
-                <info>php %command.full_name% --due</info>
+                Use the --due option to execute the due tasks:
+                    <info>php %command.full_name% --due</info>
 
-            Use the --name option to filter the executed tasks depending on their name:
-                <info>php %command.full_name% --name=foo, bar</info>
+                Use the --name option to filter the executed tasks depending on their name:
+                    <info>php %command.full_name% --name=foo, bar</info>
 
-            Use the --expression option to filter the executed tasks depending on their expression:
-                <info>php %command.full_name% --expression=* * * * *</info>
+                Use the --expression option to filter the executed tasks depending on their expression:
+                    <info>php %command.full_name% --expression=* * * * *</info>
 
-            Use the --tags option to filter the executed tasks depending on their tags:
-                <info>php %command.full_name% --tags=foo, bar</info>
-            EOF
+                Use the --tags option to filter the executed tasks depending on their tags:
+                    <info>php %command.full_name% --tags=foo, bar</info>
+                EOF
         );
     }
 
