@@ -61,6 +61,8 @@ Here's a breakdown of each major key:
 
 - `timezone`: Define the timezone used by the scheduler, each task can override this value.
 
-- `lock_store`: Define the id of the lock factory to use when executing tasks.
+- `lock_store`: Allows to specify a lock factory used by the [Worker](../src/Worker/Worker.php) and
+  created via the key `framework.lock`, by default, the worker will create a new `LockFactory` using a `FlockStore`,
+  if you need to give a custom lock store, the store "service id" is required (ex: `lock.foo.factory`).
 
 - `rate_limiter`: Define the id of the rate limiter used by the worker to prevent extra execution of a task.

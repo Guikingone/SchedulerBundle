@@ -83,7 +83,8 @@
             "Tests\\SchedulerBundle\\Test\\Constraint\\Scheduler\\": "tests/Test/Constraint/Scheduler/",
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
             "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
-            "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/"
+            "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/",
+            "Tests\\SchedulerBundle\\Worker\\Assets\\": "tests/Worker/Assets/"
         }
     },
     "config": {

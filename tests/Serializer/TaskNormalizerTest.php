@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Serializer;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Serializer\LockTaskBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\ProbeTask;
@@ -42,7 +43,14 @@ final class TaskNormalizerTest extends TestCase
 {
     public function testNormalizerSupportNormalize(): void
     {
-        $taskNormalizer = new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), new ObjectNormalizer(), new NotificationTaskBagNormalizer(new ObjectNormalizer()));
+        $taskNormalizer = new TaskNormalizer(
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            new ObjectNormalizer(),
+            new NotificationTaskBagNormalizer(new ObjectNormalizer()),
+            new LockTaskBagNormalizer(new ObjectNormalizer())
+        );
 
         self::assertFalse($taskNormalizer->supportsNormalization(new stdClass()));
         self::assertTrue($taskNormalizer->supportsNormalization(new NullTask('foo')));
@@ -52,6 +60,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -60,7 +69,8 @@ final class TaskNormalizerTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                $notificationTaskBagNormalizer
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer,
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
@@ -103,7 +113,8 @@ final class TaskNormalizerTest extends TestCase
             new DateTimeZoneNormalizer(),
             new DateIntervalNormalizer(),
             new ObjectNormalizer(),
-            new NotificationTaskBagNormalizer(new ObjectNormalizer())
+            new NotificationTaskBagNormalizer(new ObjectNormalizer()),
+            new LockTaskBagNormalizer(new ObjectNormalizer())
         );
 
         self::expectException(InvalidArgumentException::class);

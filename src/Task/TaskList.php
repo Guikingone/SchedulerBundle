@@ -104,6 +104,16 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): TaskListInterface
+    {
+        array_walk($this->tasks, $func);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset): bool
     {
         return $this->has($offset);

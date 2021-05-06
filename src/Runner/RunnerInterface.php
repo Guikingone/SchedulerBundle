@@ -15,5 +15,10 @@ interface RunnerInterface
 {
     public function run(TaskInterface $task, WorkerInterface $worker): Output;
 
+    /**
+     * Determine if a @param TaskInterface $task is supported by the runner.
+     *
+     * The determination process is totally up to the runner.
+     */
     public function support(TaskInterface $task): bool;
 }

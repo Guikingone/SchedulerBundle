@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Worker;
 
+use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -17,12 +18,16 @@ use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Runner\CommandTaskRunner;
+use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
+use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -36,6 +41,8 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\Worker;
 use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -43,6 +50,7 @@ use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Tests\SchedulerBundle\Worker\Assets\LongExecutionCommand;
 use Throwable;
 
 /**
@@ -60,7 +68,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, [], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [], $watcher, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
 
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
@@ -241,7 +249,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->stop();
 
         $worker->execute([
@@ -339,7 +347,7 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner, $secondRunner], $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
-        ]), null, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
@@ -397,6 +405,7 @@ final class WorkerTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::exactly(3))->method('getName')->willReturn('bar');
         $secondTask->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $secondTask->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $secondTask->expects(self::once())->method('isSingleRun')->willReturn(false);
         $secondTask->expects(self::once())->method('setArrivalTime');
         $secondTask->expects(self::once())->method('setExecutionStartTime');
@@ -421,7 +430,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($secondTask, $worker->getLastExecutedTask());
@@ -444,6 +453,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -464,7 +474,7 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -506,7 +516,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNotNull($worker->getLastExecutedTask());
@@ -514,7 +524,7 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithErroredBeforeExecutionCallback(): void
     {
@@ -560,7 +570,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNotNull($worker->getLastExecutedTask());
@@ -568,7 +578,7 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithBeforeExecutionCallback(): void
     {
@@ -603,14 +613,14 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
@@ -620,6 +630,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getAfterExecuting')->willReturn(fn (): bool => false);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -631,6 +642,7 @@ final class WorkerTest extends TestCase
         $validTask = $this->createMock(TaskInterface::class);
         $validTask->expects(self::any())->method('getName')->willReturn('bar');
         $validTask->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $validTask->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $validTask->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $validTask->expects(self::once())->method('getAfterExecuting')->willReturn(fn (): bool => true);
         $validTask->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -663,7 +675,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertCount(1, $worker->getFailedTasks());
@@ -671,7 +683,7 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithAfterExecutionCallback(): void
     {
@@ -685,6 +697,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getAfterExecuting')->willReturn(fn (): bool => true);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -707,7 +720,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertCount(0, $worker->getFailedTasks());
@@ -715,7 +728,7 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithRunner(): void
     {
@@ -729,6 +742,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -748,14 +762,14 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
     {
@@ -769,6 +783,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -788,14 +803,14 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
@@ -804,6 +819,7 @@ final class WorkerTest extends TestCase
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
         $shellTask->setExpression('* * * * *');
+        $shellTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
         $shellTask->setSingleRun(true);
 
         $runner = $this->createMock(RunnerInterface::class);
@@ -821,14 +837,14 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner, $secondRunner], $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testWorkerCanHandleFailedTask(): void
     {
@@ -840,6 +856,7 @@ final class WorkerTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->method('getName')->willReturn('failed');
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
@@ -852,7 +869,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         /** @var FailedTask $failedTask */
@@ -865,7 +882,7 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
     {
@@ -882,6 +899,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getBeforeExecutingNotificationBag')->willReturn(null);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -905,14 +923,14 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, $logger, null);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TaskListInterface::add()}
      */
     public function testTaskCanBeExecutedWithBeforeExecutionNotificationAndNotifier(): void
     {
@@ -932,6 +950,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getBeforeExecutingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -955,7 +974,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -979,6 +998,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(null);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -1002,7 +1022,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1029,6 +1049,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -1052,7 +1073,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1073,6 +1094,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1094,7 +1116,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new MaxExecutionMiddleware(),
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1111,6 +1133,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1143,7 +1166,7 @@ final class WorkerTest extends TestCase
                 ],
             ], new InMemoryStorage())),
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1160,6 +1183,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1192,7 +1216,7 @@ final class WorkerTest extends TestCase
                 ],
             ], new InMemoryStorage())),
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
 
         $worker->execute();
 
@@ -1215,6 +1239,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('-1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1236,7 +1261,7 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute([], $task);
 
         self::assertCount(0, $worker->getFailedTasks());
@@ -1254,6 +1279,7 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::never())->method('isSingleRun');
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1275,7 +1301,7 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute([], $task);
 
         self::assertNotEmpty($worker->getFailedTasks());
@@ -1327,7 +1353,7 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
@@ -1454,5 +1480,40 @@ final class WorkerTest extends TestCase
         self::assertSame(TaskInterface::SUCCEED, $shellTask->getExecutionState());
         self::assertNotNull($shellTask->getExecutionStartTime());
         self::assertNotNull($shellTask->getExecutionEndTime());
+    }
+
+    /**
+     * @group time-sensitive
+     */
+    public function testWorkerCanExecuteLongRunningTask(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $application = new Application();
+        $application->addCommands([
+            new LongExecutionCommand(),
+        ]);
+
+        $task = new CommandTask('foo', 'app:long');
+        $task->setScheduledAt(new DateTimeImmutable('- 1 month'));
+        $task->setSingleRun(true);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $eventDispatcher = new EventDispatcher();
+
+        $worker = new Worker($scheduler, [
+            new CommandTaskRunner($application),
+        ], $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
+
+        $worker->execute();
+
+        self::assertSame($task, $worker->getLastExecutedTask());
     }
 }

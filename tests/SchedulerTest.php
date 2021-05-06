@@ -28,6 +28,8 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -64,7 +66,7 @@ final class SchedulerTest extends TestCase
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), $eventDispatcher);
+        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -87,7 +89,7 @@ final class SchedulerTest extends TestCase
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
-        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), $eventDispatcher);
+        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -112,7 +114,7 @@ final class SchedulerTest extends TestCase
         ]));
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task cannot be scheduled');
@@ -140,7 +142,7 @@ final class SchedulerTest extends TestCase
         ]));
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -176,7 +178,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware(),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -212,7 +214,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -248,7 +250,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware(),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -280,7 +282,7 @@ final class SchedulerTest extends TestCase
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-        ]), $eventDispatcher);
+        ]), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $scheduler->schedule($task);
     }
@@ -920,7 +922,7 @@ final class SchedulerTest extends TestCase
         $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$task->getName() => $task]);
 
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator);
-        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack());
+        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()));
 
         $scheduler->schedule($task);
 
@@ -972,7 +974,7 @@ final class SchedulerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, $bus);
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()), null, $bus);
         $scheduler->schedule($task);
 
         $scheduler->yieldTask('foo');
@@ -997,7 +999,7 @@ final class SchedulerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()));
         $scheduler->schedule($task);
 
         $scheduler->yieldTask('foo', true);
@@ -1023,8 +1025,12 @@ final class SchedulerTest extends TestCase
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), null, $bus);
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new LockFactory(new FlockStore()), null, $bus);
         $scheduler->yieldTask('foo', true);
+    }
+
+    public function testSchedulerCannotLockTaskWithInvalidLockFactory(): void
+    {
     }
 
     /**

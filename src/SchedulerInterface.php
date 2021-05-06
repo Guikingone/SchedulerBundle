@@ -52,6 +52,20 @@ interface SchedulerInterface
     public function resume(string $taskName): void;
 
     /**
+     * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
+     */
+    public function getDueTasks(): TaskListInterface;
+
+    /**
+     * Return the timezone used by the actual scheduler, each scheduler can use a different timezone.
+     */
+    public function getTimezone(): DateTimeZone;
+
+    /**
      * Return every tasks scheduled.
      *
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
@@ -65,9 +79,12 @@ interface SchedulerInterface
      *
      * Can lazy-load the task list if @param bool $lazy is used
      *
+     * @param bool $lock Define if each task should be locked before being returned,
+     *                   the actual lock process should not be handled by the scheduler.
+     *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false): TaskListInterface;
+    public function getDueTasks(bool $lazy = false, bool $lock = false): TaskListInterface;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})
