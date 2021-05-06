@@ -1039,4 +1039,11 @@ final class WorkerTest extends TestCase
 
         self::assertNull($worker->getLastExecutedTask());
     }
+
+    /**
+     * @group time-sensitive
+     */
+    public function testWorkerCanExecuteLongRunningTask(): void
+    {
+    }
 }
