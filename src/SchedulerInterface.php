@@ -51,6 +51,8 @@ interface SchedulerInterface
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getDueTasks(): TaskListInterface;
 
@@ -63,6 +65,8 @@ interface SchedulerInterface
      * Return every tasks scheduled.
      *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getTasks(): TaskListInterface;
 

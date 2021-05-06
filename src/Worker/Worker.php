@@ -63,6 +63,10 @@ final class Worker implements WorkerInterface
     private LoggerInterface $logger;
     private LockFactory $lockFactory;
     private ?TaskInterface $lastExecutedTask = null;
+
+    /**
+     * @var TaskListInterface<string|int, TaskInterface>
+     */
     private TaskListInterface $failedTasks;
 
     /**

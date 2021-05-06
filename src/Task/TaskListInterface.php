@@ -34,7 +34,7 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function get(string $taskName): ?TaskInterface;
 
     /**
-     * Return a new {@see TaskListInterface} which contain the desired tasks using the names.
+     * @return TaskListInterface<string|int, TaskInterface> which contain the desired tasks using the names.
      *
      * @param array<int, string> $names
      */
