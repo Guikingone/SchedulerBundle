@@ -32,7 +32,7 @@ final class RoundRobinTransport extends AbstractTransport
         $this->defineOptions(array_merge([
             'quantum' => $options['quantum'] ?? 2,
         ], $options), [
-            'quantum' => ['int'],
+            'quantum' => 'int',
         ]);
 
         $this->transports = $transports;

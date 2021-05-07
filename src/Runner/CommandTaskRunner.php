@@ -8,13 +8,10 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use SchedulerBundle\Exception\UnrecognizedCommandException;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use Throwable;
-use function array_key_exists;
-use function get_class;
 use function implode;
 use function is_int;
 use function sprintf;
@@ -73,7 +70,7 @@ final class CommandTaskRunner implements RunnerInterface
 
     private function buildInput(CommandTask $commandTask): StringInput
     {
-        $command = $this->findCommand($commandTask->getCommand());
+        $command = $this->application->find($commandTask->getCommand());
 
         return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $commandTask->getArguments()), implode(' ', $this->buildOptions($commandTask))));
     }
@@ -92,21 +89,5 @@ final class CommandTaskRunner implements RunnerInterface
         }
 
         return $options;
-    }
-
-    private function findCommand(string $command): Command
-    {
-        $registeredCommands = $this->application->all();
-        if (array_key_exists($command, $registeredCommands)) {
-            return $registeredCommands[$command];
-        }
-
-        foreach ($registeredCommands as $registeredCommand) {
-            if ($command === get_class($registeredCommand)) {
-                return $registeredCommand;
-            }
-        }
-
-        throw new UnrecognizedCommandException(sprintf('The given command "%s" cannot be found!', $command));
     }
 }
