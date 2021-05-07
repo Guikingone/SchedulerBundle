@@ -7,6 +7,7 @@ namespace SchedulerBundle\Worker;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
@@ -41,8 +42,18 @@ interface WorkerInterface
 
     public function stop(): void;
 
+    /**
+     * Restart the worker, the actual restart process is dependant on the current implementation and/or context.
+     *
+     * Once the worker has been restarted, the {@see WorkerRestartedEvent} must be dispatched.
+     */
     public function restart(): void;
 
+    /**
+     * Determine if the worker is currently running (aka executing a task / set of tasks).
+     *
+     * The way the worker determine this informations is up to the worker / current context.
+     */
     public function isRunning(): bool;
 
     /**
@@ -52,6 +63,9 @@ interface WorkerInterface
      */
     public function getFailedTasks(): TaskListInterface;
 
+    /**
+     * @return TaskInterface|null The latest executed task or null if none has been executed.
+     */
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**

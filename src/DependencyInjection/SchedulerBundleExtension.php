@@ -118,6 +118,7 @@ use function strpos;
 final class SchedulerBundleExtension extends Extension
 {
     private const RUNNER_TAG = 'scheduler.runner';
+    private const TRANSPORT_FACTORY_TAG = 'scheduler.transport_factory';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -186,7 +187,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(InMemoryTransportFactory::class, InMemoryTransportFactory::class)
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => InMemoryTransportFactory::class,
             ])
@@ -194,7 +195,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(FilesystemTransportFactory::class, FilesystemTransportFactory::class)
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => FilesystemTransportFactory::class,
             ])
@@ -205,7 +206,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument('scheduler.transport_factory'),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => FailOverTransportFactory::class,
             ])
@@ -216,7 +217,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument('scheduler.transport_factory'),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => LongTailTransportFactory::class,
             ])
@@ -227,7 +228,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument('scheduler.transport_factory'),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => RoundRobinTransportFactory::class,
             ])
