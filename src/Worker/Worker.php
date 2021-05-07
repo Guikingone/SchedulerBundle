@@ -27,10 +27,10 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function array_replace_recursive;
 use function count;
 use function end;
 use function in_array;
@@ -44,17 +44,13 @@ use function sprintf;
  */
 final class Worker implements WorkerInterface
 {
+    private array $options = [];
     public ?bool $isRunning = null;
-    private const DEFAULT_OPTIONS = [
-        'sleepDurationDelay' => 1,
-        'sleepUntilNextMinute' => false,
-    ];
 
     /**
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
-    private ?array $options = [];
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
@@ -93,14 +89,13 @@ final class Worker implements WorkerInterface
             throw new UndefinedRunnerException('No runner found');
         }
 
-        $this->options = array_replace_recursive(self::DEFAULT_OPTIONS, $options);
-
+        $this->configure($options);
         $this->dispatch(new WorkerStartedEvent($this));
 
         $tasksCount = 0;
 
         while (!$this->shouldStop) {
-            if (0 === count($tasks)) {
+            if ([] === $tasks) {
                 $tasks = $this->scheduler->getDueTasks();
             }
 
@@ -168,7 +163,7 @@ final class Worker implements WorkerInterface
                 }
             }
 
-            if ($this->options['sleepUntilNextMinute']) {
+            if (true === $this->options['sleepUntilNextMinute']) {
                 sleep($this->getSleepDuration());
 
                 $this->execute($options);
@@ -246,6 +241,20 @@ final class Worker implements WorkerInterface
         $task->setLastExecution(new DateTimeImmutable());
 
         $this->dispatch(new TaskExecutedEvent($task, $output));
+    }
+
+    private function configure(array $options): void
+    {
+        $optionsResolver = new OptionsResolver();
+        $optionsResolver->setDefaults([
+            'sleepDurationDelay' => 1,
+            'sleepUntilNextMinute' => false,
+        ]);
+
+        $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
+        $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
+
+        $this->options = $optionsResolver->resolve($options);
     }
 
     private function getSleepDuration(): int
