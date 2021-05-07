@@ -8,11 +8,11 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\NamespaceNotFoundException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use SchedulerBundle\Exception\UnrecognizedCommandException;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\NullTask;
@@ -54,9 +54,7 @@ final class CommandTaskRunnerTest extends TestCase
         $application = $this->createMock(Application::class);
         $application->expects(self::once())->method('setCatchExceptions')->with(self::equalTo(false));
         $application->expects(self::once())->method('setAutoExit')->with(self::equalTo(false));
-        $application->expects(self::once())->method('all')->willReturn([
-            'app:foo' => new FooCommand(),
-        ]);
+        $application->expects(self::once())->method('find')->with(self::equalTo('app:foo'))->willReturn(new FooCommand());
         $application->expects(self::once())->method('run')->willReturn(0);
 
         $commandTaskRunner = new CommandTaskRunner($application);
@@ -74,15 +72,8 @@ final class CommandTaskRunnerTest extends TestCase
 
         $commandTaskRunner = new CommandTaskRunner($application);
         self::assertTrue($commandTaskRunner->support($task));
-        self::expectException(UnrecognizedCommandException::class);
-        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
-        self::expectExceptionCode(0);
-        self::assertNotNull($commandTaskRunner->run($task)->getOutput());
-        self::assertSame(Output::ERROR, $commandTaskRunner->run($task)->getOutput());
-
-        $task = new CommandTask('foo', FooCommand::class);
-        self::expectException(UnrecognizedCommandException::class);
-        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
+        self::expectException(NamespaceNotFoundException::class);
+        self::expectExceptionMessage('There are no commands defined in the "app" namespace.');
         self::expectExceptionCode(0);
         self::assertNotNull($commandTaskRunner->run($task)->getOutput());
         self::assertSame(Output::ERROR, $commandTaskRunner->run($task)->getOutput());

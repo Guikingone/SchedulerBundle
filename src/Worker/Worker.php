@@ -106,6 +106,9 @@ final class Worker implements WorkerInterface
                 }
 
                 $lockedTask = $this->lockFactory->createLock($task->getName());
+                if (!$lockedTask->acquire()) {
+                    continue;
+                }
 
                 $this->dispatch(new WorkerRunningEvent($this));
 
@@ -121,7 +124,7 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if ($lockedTask->acquire() && !$this->options['isRunning']) {
+                        if (!$this->options['isRunning']) {
                             $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);

@@ -17,6 +17,7 @@ use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -73,11 +74,14 @@ final class WorkerTest extends TestCase
 
         $worker->execute([
             'sleepDurationDelay' => 5,
+            'shouldStop' => true,
         ]);
 
         self::assertNotNull($worker->getOptions());
         self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
         self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
+        self::assertArrayHasKey('shouldStop', $worker->getOptions());
+        self::assertTrue($worker->getOptions()['shouldStop']);
     }
 
     /**
@@ -134,8 +138,9 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
         ]), $eventDispatcher, $logger);
-        $worker->stop();
-        $worker->execute();
+        $worker->execute([
+            'shouldStop' => true,
+        ]);
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -279,6 +284,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithErroredBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -330,6 +338,9 @@ final class WorkerTest extends TestCase
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -369,6 +380,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -427,6 +441,9 @@ final class WorkerTest extends TestCase
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -468,6 +485,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithRunner(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -505,6 +525,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -542,6 +565,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -572,6 +598,9 @@ final class WorkerTest extends TestCase
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testWorkerCanHandleFailedTask(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -606,6 +635,9 @@ final class WorkerTest extends TestCase
         self::assertSame('Random error occurred', $failedTask->getReason());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -650,6 +682,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionNotificationAndNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
