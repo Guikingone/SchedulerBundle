@@ -117,6 +117,8 @@ use function strpos;
  */
 final class SchedulerBundleExtension extends Extension
 {
+    private const RUNNER_TAG = 'scheduler.runner';
+
     public function load(array $configs, ContainerBuilder $container): void
     {
         $schedulerBundleConfiguration = new SchedulerBundleConfiguration();
@@ -580,7 +582,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(ShellTaskRunner::class, ShellTaskRunner::class)
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => ShellTaskRunner::class,
             ])
@@ -590,14 +592,14 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference('scheduler.application', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => CommandTaskRunner::class,
             ])
         ;
 
         $container->register(CallbackTaskRunner::class, CallbackTaskRunner::class)
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => CallbackTaskRunner::class,
             ])
@@ -607,7 +609,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(HttpClientInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('scheduler.extra', [
                 'require' => 'http_client',
                 'tag' => 'scheduler.runner',
@@ -621,7 +623,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('scheduler.extra', [
                 'require' => 'messenger.default_bus',
                 'tag' => 'scheduler.runner',
@@ -635,7 +637,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('scheduler.extra', [
                 'require' => 'notifier',
                 'tag' => 'scheduler.runner',
@@ -646,7 +648,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(NullTaskRunner::class, NullTaskRunner::class)
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => NullTaskRunner::class,
             ])
@@ -656,7 +658,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new TaggedIteratorArgument('scheduler.runner'),
             ])
-            ->addTag('scheduler.runner')
+            ->addTag(self::RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => ChainedTaskRunner::class,
             ])

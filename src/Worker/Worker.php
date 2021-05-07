@@ -31,8 +31,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function array_key_last;
 use function count;
-use function end;
 use function in_array;
 use function is_array;
 use function iterator_to_array;
@@ -44,22 +44,18 @@ use function sprintf;
  */
 final class Worker implements WorkerInterface
 {
-    private array $options = [];
-    public ?bool $isRunning = null;
-
     /**
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
-    private bool $shouldStop = false;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
     private WorkerMiddlewareStack $middlewareStack;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private LockFactory $lockFactory;
-    private ?TaskInterface $lastExecutedTask = null;
     private TaskListInterface $failedTasks;
+    private array $options = [];
 
     /**
      * @param iterable|RunnerInterface[] $runners
@@ -83,6 +79,9 @@ final class Worker implements WorkerInterface
         $this->failedTasks = new TaskList();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
         if ([] === $this->runners) {
@@ -92,14 +91,8 @@ final class Worker implements WorkerInterface
         $this->configure($options);
         $this->dispatch(new WorkerStartedEvent($this));
 
-        $tasksCount = 0;
-
-        while (!$this->shouldStop) {
-            if ([] === $tasks) {
-                $tasks = $this->scheduler->getDueTasks();
-            }
-
-            $tasks = is_array($tasks) ? $tasks : iterator_to_array($tasks);
+        while (!$this->options['shouldStop']) {
+            $tasks = $this->getTasks($tasks);
 
             foreach ($tasks as $task) {
                 if (end($tasks) === $task && !$this->checkTaskState($task)) {
@@ -107,6 +100,8 @@ final class Worker implements WorkerInterface
                 }
 
                 if (!$this->checkTaskState($task)) {
+                    ++$this->options['executedTasksCount'];
+
                     continue;
                 }
 
@@ -123,6 +118,8 @@ final class Worker implements WorkerInterface
 
                 foreach ($this->runners as $runner) {
                     if (!$runner->support($task)) {
+                        --$this->options['executedTasksCount'];
+
                         continue;
                     }
 
@@ -133,8 +130,8 @@ final class Worker implements WorkerInterface
                     try {
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                        if (!$this->isRunning) {
-                            $this->isRunning = true;
+                        if (!$this->options['isRunning']) {
+                            $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
                         }
@@ -146,24 +143,24 @@ final class Worker implements WorkerInterface
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
                         $lockedTask->release();
-                        $this->isRunning = false;
-                        $this->lastExecutedTask = $task;
+                        $this->options['isRunning'] = false;
+                        $this->options['lastExecutedTask'] = $task;
                         $this->dispatch(new WorkerRunningEvent($this, true));
 
-                        ++$tasksCount;
+                        ++$this->options['executedTasksCount'];
                     }
 
-                    if ($this->shouldStop) {
+                    if ($this->options['shouldStop']) {
                         break 3;
                     }
                 }
 
-                if ($this->shouldStop || ($tasksCount === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->options['shouldStop'] || ($this->options['executedTasksCount'] === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
                     break 2;
                 }
             }
 
-            if (true === $this->options['sleepUntilNextMinute']) {
+            if ($this->options['sleepUntilNextMinute']) {
                 sleep($this->getSleepDuration());
 
                 $this->execute($options);
@@ -176,23 +173,26 @@ final class Worker implements WorkerInterface
     public function restart(): void
     {
         $this->stop();
-        $this->isRunning = false;
+        $this->options['isRunning'] = false;
         $this->failedTasks = new TaskList();
-        $this->shouldStop = false;
+        $this->options['shouldStop'] = false;
 
         $this->dispatch(new WorkerRestartedEvent($this));
     }
 
     public function stop(): void
     {
-        $this->shouldStop = true;
+        $this->options['shouldStop'] = true;
     }
 
     public function isRunning(): bool
     {
-        return $this->isRunning;
+        return $this->options['isRunning'];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getFailedTasks(): TaskListInterface
     {
         return $this->failedTasks;
@@ -200,12 +200,22 @@ final class Worker implements WorkerInterface
 
     public function getLastExecutedTask(): ?TaskInterface
     {
-        return $this->lastExecutedTask;
+        return $this->options['lastExecutedTask'];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getOptions(): ?array
     {
         return $this->options;
+    }
+
+    private function getTasks(array $tasks): array
+    {
+        $tasks = [] === $tasks ? $this->scheduler->getDueTasks() : $tasks;
+
+        return is_array($tasks) ? $tasks : iterator_to_array($tasks);
     }
 
     private function checkTaskState(TaskInterface $task): bool
@@ -247,10 +257,18 @@ final class Worker implements WorkerInterface
     {
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
+            'executedTasksCount' => 0,
+            'isRunning' => false,
+            'lastExecutedTask' => null,
+            'shouldStop' => false,
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
         ]);
 
+        $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
+        $optionsResolver->setAllowedTypes('isRunning', 'bool');
+        $optionsResolver->setAllowedTypes('lastExecutedTask', [TaskInterface::class, 'null']);
+        $optionsResolver->setAllowedTypes('shouldStop', 'bool');
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
 
