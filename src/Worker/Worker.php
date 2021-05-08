@@ -248,7 +248,7 @@ final class Worker implements WorkerInterface
         $task->setExecutionStartTime(new DateTimeImmutable());
 
         $this->tracker->startTracking($task);
-        $output = $runner->run($task);
+        $output = $runner->run($task, $this);
         $this->tracker->endTracking($task);
         $task->setExecutionEndTime(new DateTimeImmutable());
         $task->setLastExecution(new DateTimeImmutable());

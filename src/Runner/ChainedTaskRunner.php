@@ -7,6 +7,7 @@ namespace SchedulerBundle\Runner;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
 /**
@@ -30,7 +31,7 @@ final class ChainedTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof ChainedTask) {
             $task->setExecutionState(TaskInterface::ERRORED);
@@ -38,13 +39,7 @@ final class ChainedTaskRunner implements RunnerInterface
         }
 
         try {
-            foreach ($task->getTasks() as $chainedTask) {
-                foreach ($this->runners as $runner) {
-                    if ($runner->support($chainedTask)) {
-                        $runner->run($chainedTask);
-                    }
-                }
-            }
+            $worker->execute($worker->getOptions(), ...$task->getTasks());
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, $throwable->getMessage(), Output::ERROR);

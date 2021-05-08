@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\StringInput;
@@ -35,7 +36,7 @@ final class CommandTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof CommandTask) {
             return new Output($task, null, Output::ERROR);
