@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use DateTimeImmutable;
 use Exception;
 use ArrayIterator;
 use Generator;
@@ -328,6 +329,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
@@ -368,6 +370,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 

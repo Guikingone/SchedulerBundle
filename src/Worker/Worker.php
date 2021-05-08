@@ -42,6 +42,8 @@ use function sprintf;
  */
 final class Worker implements WorkerInterface
 {
+    private const TASK_LOCK_MASK = '_symfony_scheduler_';
+
     /**
      * @var iterable|RunnerInterface[]
      */
@@ -90,11 +92,7 @@ final class Worker implements WorkerInterface
         $this->dispatch(new WorkerStartedEvent($this));
 
         while (!$this->options['shouldStop']) {
-            if (0 === count($tasks)) {
-                $tasks = $this->scheduler->getDueTasks();
-            }
-
-            $tasks = is_array($tasks) ? $tasks : iterator_to_array($tasks);
+            $tasks = $this->getTasks($tasks);
 
             foreach ($tasks as $index => $task) {
                 if (array_key_last($tasks) === $index && !$this->checkTaskState($task)) {
@@ -105,7 +103,7 @@ final class Worker implements WorkerInterface
                     continue;
                 }
 
-                $lockedTask = $this->lockFactory->createLock($task->getName());
+                $lockedTask = $this->lockFactory->createLock(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), $task->getScheduledAt()->format('dHi')));
                 if (!$lockedTask->acquire()) {
                     continue;
                 }
@@ -155,7 +153,9 @@ final class Worker implements WorkerInterface
             }
 
             if ($this->options['sleepUntilNextMinute']) {
-                sleep($this->getSleepDuration());
+                if (0 !== sleep($this->getSleepDuration())) {
+                    break;
+                }
 
                 $this->execute($options);
             }
@@ -212,6 +212,13 @@ final class Worker implements WorkerInterface
     public function getOptions(): ?array
     {
         return $this->options;
+    }
+
+    private function getTasks(array $tasks): array
+    {
+        $tasks = 0 === count($tasks) ? $this->scheduler->getDueTasks() : $tasks;
+
+        return is_array($tasks) ? $tasks : iterator_to_array($tasks);
     }
 
     private function checkTaskState(TaskInterface $task): bool
