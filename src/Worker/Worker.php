@@ -158,6 +158,7 @@ final class Worker implements WorkerInterface
                 }
 
                 $this->execute($options);
+                break;
             }
         }
 

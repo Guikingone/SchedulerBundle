@@ -83,6 +83,23 @@ final class WorkerTest extends TestCase
         self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
         self::assertArrayHasKey('shouldStop', $worker->getOptions());
         self::assertTrue($worker->getOptions()['shouldStop']);
+
+        $worker->execute([
+            'shouldStop' => true,
+        ]);
+
+        self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
+        self::assertSame(1, $worker->getOptions()['sleepDurationDelay']);
+        self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
+        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('isRunning', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['isRunning']);
+        self::assertArrayHasKey('lastExecutedTask', $worker->getOptions());
+        self::assertNull($worker->getOptions()['lastExecutedTask']);
+        self::assertArrayHasKey('sleepUntilNextMinute', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['sleepUntilNextMinute']);
+        self::assertArrayHasKey('shouldStop', $worker->getOptions());
+        self::assertTrue($worker->getOptions()['shouldStop']);
     }
 
     /**
