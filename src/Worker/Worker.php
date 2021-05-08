@@ -122,15 +122,15 @@ final class Worker implements WorkerInterface
                     }
 
                     try {
-                        $this->middlewareStack->runPreExecutionMiddleware($task);
-
                         if ($lockedTask->acquire(true) && !$this->options['isRunning']) {
+                            $this->middlewareStack->runPreExecutionMiddleware($task);
+
                             $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
-                        }
 
-                        $this->middlewareStack->runPostExecutionMiddleware($task);
+                            $this->middlewareStack->runPostExecutionMiddleware($task);
+                        }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->failedTasks->add($failedTask);
