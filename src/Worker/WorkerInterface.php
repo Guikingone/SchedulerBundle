@@ -40,6 +40,15 @@ interface WorkerInterface
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void;
 
+    /**
+     * Processes an array of tasks
+     *
+     * @internal
+     *
+     * @param TaskInterface[] $tasks
+     */
+    public function processTasks(array $tasks): void;
+
     public function stop(): void;
 
     /**

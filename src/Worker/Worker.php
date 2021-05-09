@@ -91,78 +91,78 @@ final class Worker implements WorkerInterface
         $this->configure($options);
         $this->dispatch(new WorkerStartedEvent($this));
 
-        while (!$this->options['shouldStop']) {
-            $tasks = $this->getTasks($tasks);
+        do {
+            if ($this->options['shouldStop']) {
+                break;
+            }
+            $this->processTasks($this->getTasks($tasks));
+        } while ($this->options['sleepUntilNextMinute'] && 0 === sleep($this->getSleepDuration()));
 
-            foreach ($tasks as $index => $task) {
-                if (array_key_last($tasks) === $index && !$this->checkTaskState($task)) {
-                    break 2;
-                }
+        $this->dispatch(new WorkerStoppedEvent($this));
+    }
 
-                if (!$this->checkTaskState($task)) {
+    /**
+     * {@inheritdoc}
+     */
+    public function processTasks(array $tasks): void
+    {
+        foreach ($tasks as $index => $task) {
+            if (array_key_last($tasks) === $index && !$this->checkTaskState($task)) {
+                break;
+            }
+
+            if (!$this->checkTaskState($task)) {
+                continue;
+            }
+
+            $lockedTask = $this->lockFactory->createLock(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), $task->getScheduledAt()->format('dHi')));
+            if (!$lockedTask->acquire()) {
+                continue;
+            }
+
+            $this->dispatch(new WorkerRunningEvent($this));
+
+            foreach ($this->runners as $runner) {
+                if (!$runner->support($task)) {
                     continue;
                 }
 
-                $lockedTask = $this->lockFactory->createLock(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), $task->getScheduledAt()->format('dHi')));
-                if (!$lockedTask->acquire()) {
-                    continue;
+                if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
+                    usleep($task->getExecutionDelay());
                 }
 
-                $this->dispatch(new WorkerRunningEvent($this));
+                try {
+                    if ($lockedTask->acquire(true) && !$this->options['isRunning']) {
+                        $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                foreach ($this->runners as $runner) {
-                    if (!$runner->support($task)) {
-                        continue;
+                        $this->options['isRunning'] = true;
+                        $this->dispatch(new WorkerRunningEvent($this));
+                        $this->handleTask($runner, $task);
+
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
                     }
+                } catch (Throwable $throwable) {
+                    $failedTask = new FailedTask($task, $throwable->getMessage());
+                    $this->failedTasks->add($failedTask);
+                    $this->dispatch(new TaskFailedEvent($failedTask));
+                } finally {
+                    $lockedTask->release();
+                    $this->options['isRunning'] = false;
+                    $this->options['lastExecutedTask'] = $task;
+                    $this->dispatch(new WorkerRunningEvent($this, true));
 
-                    if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
-                        usleep($task->getExecutionDelay());
-                    }
-
-                    try {
-                        if ($lockedTask->acquire(true) && !$this->options['isRunning']) {
-                            $this->middlewareStack->runPreExecutionMiddleware($task);
-
-                            $this->options['isRunning'] = true;
-                            $this->dispatch(new WorkerRunningEvent($this));
-                            $this->handleTask($runner, $task);
-
-                            $this->middlewareStack->runPostExecutionMiddleware($task);
-                        }
-                    } catch (Throwable $throwable) {
-                        $failedTask = new FailedTask($task, $throwable->getMessage());
-                        $this->failedTasks->add($failedTask);
-                        $this->dispatch(new TaskFailedEvent($failedTask));
-                    } finally {
-                        $lockedTask->release();
-                        $this->options['isRunning'] = false;
-                        $this->options['lastExecutedTask'] = $task;
-                        $this->dispatch(new WorkerRunningEvent($this, true));
-
-                        ++$this->options['executedTasksCount'];
-                    }
-
-                    if ($this->options['shouldStop']) {
-                        break 3;
-                    }
+                    ++$this->options['executedTasksCount'];
                 }
 
-                if ($this->options['shouldStop'] || ($this->options['executedTasksCount'] === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
+                if ($this->options['shouldStop']) {
                     break 2;
                 }
             }
 
-            if ($this->options['sleepUntilNextMinute']) {
-                if (0 !== sleep($this->getSleepDuration())) {
-                    break;
-                }
-
-                $this->execute($options);
+            if ($this->options['shouldStop'] || ($this->options['executedTasksCount'] === count($tasks) && !$this->options['sleepUntilNextMinute'])) {
                 break;
             }
         }
-
-        $this->dispatch(new WorkerStoppedEvent($this));
     }
 
     /**
