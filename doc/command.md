@@ -2,20 +2,6 @@
 
 This bundle provides a set of commands to interact with your tasks
 
-## Consuming tasks
-
-_Description: Consume due tasks_
-
-```bash
-$ bin/console scheduler:consume
-```
-
-## Executing tasks
-
-_Introduced in `0.5`_
-
-_Description: Execute a set of tasks (due or not) depending on filters_
-
 ## Listing the tasks
 
 _Description: List every tasks scheduled_
@@ -55,6 +41,30 @@ This command allows using multiple options to filter consumed tasks (each one ca
 - The command filter tasks returned by the scheduler by checking if each task is not paused 
   (the worker will do this if the `--wait` option is set).
 - The output of each executed task can be displayed if the `-vv` option is used.
+
+## Executing tasks
+
+_Introduced in `0.5`_
+
+_Description: Execute a set of tasks (due or not) depending on filters_
+
+```bash
+$ bin/console scheduler:execute
+```
+
+### Options
+
+This command allows using multiple options to filter consumed tasks (each one can be combined):
+
+- `--due`: Execute due tasks.
+- `--namme`: Allows to specify a set of tasks (depending on their name) that must be executed.
+- `--expression`: Allows to specify a set of tasks (depending on their expression) that must be executed.
+- `--tags`: Allows to specify a set of tasks (depending on their tags) that must be executed.
+
+### Extra informations
+
+- Depending on `--due` option, the scheduler will execute the due tasks or each tasks that match the submitted options.
+- The worker is automatically stopped once each task has been consumed.
 
 ## Rebooting the scheduler
 
