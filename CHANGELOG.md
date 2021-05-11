@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.4.5
+-----
+
+* Due tasks filter improved (see https://github.com/Guikingone/SchedulerBundle/pull/107)
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.4
 -----
 
