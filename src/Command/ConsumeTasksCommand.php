@@ -109,7 +109,7 @@ final class ConsumeTasksCommand extends Command
         if (0 === count($nonPausedTasks)) {
             $symfonyStyle->warning([
                 'Each tasks has already been executed for the current minute',
-                sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable())->format('Y-m-d h:i')),
+                sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable('+ 1 minute'))->format('Y-m-d h:i')),
             ]);
 
             return self::SUCCESS;

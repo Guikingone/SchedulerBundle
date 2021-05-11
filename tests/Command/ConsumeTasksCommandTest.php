@@ -127,7 +127,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('[WARNING] Each tasks has already been executed for the current minute', $commandTester->getDisplay());
-        self::assertStringContainsString(sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable())->format('Y-m-d h:i')), $commandTester->getDisplay());
+        self::assertStringContainsString(sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable('+ 1 minute'))->format('Y-m-d h:i')), $commandTester->getDisplay());
     }
 
     /**
