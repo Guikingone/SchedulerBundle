@@ -18,6 +18,30 @@ _Description: List every task that have failed during execution_
 $ bin/console scheduler:list:failed
 ```
 
+## Consuming the tasks
+
+_Description: Consume due tasks_
+
+```bash
+$ bin/console scheduler:consume
+```
+
+### Options
+
+This command allows using multiple options to filter consumed tasks (each one can be combined):
+
+- `--limit`: Define the maximum amount of due tasks to consume.
+- `--time-limit`: Define the maximum amount in seconds before the worker stop.
+- `--failure-limit`: Define the maximum amount of tasks that can fails during consumation.
+- `--wait`: Set the worker to a "infinite" wait loop where tasks are consumed then the worker wait until next minute.
+
+### Extra informations
+
+- The scheduler will only return tasks that haven't been executed since the last minute.
+- The command filter tasks returned by the scheduler by checking if each task is not paused 
+  (the worker will do this if the `--wait` option is set).
+- The output of each executed task can be displayed if the `-vv` option is used.
+
 ## Rebooting the scheduler
 
 _Description: Remove every task (except the ones using `@reboot` expression) and reboot the scheduler_
