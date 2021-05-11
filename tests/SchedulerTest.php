@@ -379,6 +379,8 @@ final class SchedulerTest extends TestCase
      */
     public function testDueTasksCanBeReturned(TaskInterface $task): void
     {
+        $task->setLastExecution(new DateTimeImmutable('- 2 minutes'));
+
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$task->getName() => $task]);
 
@@ -566,7 +568,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('- 2 minutes'));
         $task->expects(self::once())->method('getExecutionEndDate')->willReturn(null);
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
