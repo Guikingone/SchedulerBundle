@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.4.6
+-----
+
+* Next execution allowed date fixed (see https://github.com/Guikingone/SchedulerBundle/pull/112)
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.5
 -----
 
