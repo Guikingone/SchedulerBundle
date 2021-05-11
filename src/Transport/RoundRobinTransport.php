@@ -125,7 +125,7 @@ final class RoundRobinTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== count($this->transports)) {
+        while ($this->sleepingTransports->count() !== (is_countable($this->transports) ? count($this->transports) : 0)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;
