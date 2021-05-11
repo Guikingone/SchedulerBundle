@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -99,6 +101,16 @@ final class ConsumeTasksCommand extends Command
         $dueTasks = $this->scheduler->getDueTasks();
         if (0 === $dueTasks->count() && !$input->getOption('wait')) {
             $symfonyStyle->warning('No due tasks found');
+
+            return self::SUCCESS;
+        }
+
+        $nonPausedTasks = $dueTasks->filter(fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
+        if (0 === count($nonPausedTasks)) {
+            $symfonyStyle->warning([
+                'Each tasks has already been executed for the current minute',
+                sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable())->format('Y-m-d h:i')),
+            ]);
 
             return self::SUCCESS;
         }
