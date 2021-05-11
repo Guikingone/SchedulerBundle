@@ -20,6 +20,7 @@ use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
@@ -34,6 +35,7 @@ use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 use function in_array;
 
 /**
@@ -325,7 +327,7 @@ final class SchedulerTest extends TestCase
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -349,7 +351,7 @@ final class SchedulerTest extends TestCase
         $task->setQueued(true);
         $scheduler->schedule($task);
 
-        self::assertEmpty($scheduler->getTasks());
+        self::assertCount(0, $scheduler->getTasks());
     }
 
     public function testTaskCannotBeScheduledTwice(): void
@@ -371,7 +373,7 @@ final class SchedulerTest extends TestCase
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -388,11 +390,11 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertNotEmpty($scheduler->getDueTasks());
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -407,11 +409,11 @@ final class SchedulerTest extends TestCase
 
         $dueTasks = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
 
-        self::assertNotEmpty($dueTasks);
+        self::assertCount(1, $dueTasks);
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -453,7 +455,7 @@ final class SchedulerTest extends TestCase
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -476,7 +478,7 @@ final class SchedulerTest extends TestCase
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -530,6 +532,9 @@ final class SchedulerTest extends TestCase
         $scheduler->pause('foo', true);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
     public function testDueTasksCanBeReturnedWithStartAndEndDate(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -537,6 +542,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -547,9 +553,12 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertNotEmpty($scheduler->getDueTasks());
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
     public function testDueTasksCanBeReturnedWithPreviousStartDate(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -557,6 +566,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getExecutionEndDate')->willReturn(null);
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -567,9 +577,12 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertNotEmpty($scheduler->getDueTasks());
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
     public function testDueTasksCanBeReturnedWithEndDate(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -577,6 +590,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -587,7 +601,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertNotEmpty($scheduler->getDueTasks());
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
     public function testSchedulerCanYieldTask(): void
