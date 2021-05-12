@@ -179,6 +179,26 @@ final class NullTaskTest extends TestCase
         ]);
     }
 
+    public function testTaskCannotBeCreatedWithHigherPriorityThanAllowed(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "priority" with value 1001 is invalid.');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'priority' => 1001,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithLowerPriorityThanAllowed(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "priority" with value -1001 is invalid.');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'priority' => -1001,
+        ]);
+    }
+
     public function testTaskCannotBeCreatedWithInvalidExecutionAbsoluteDeadline(): void
     {
         self::expectException(InvalidOptionsException::class);
@@ -461,6 +481,17 @@ final class NullTaskTest extends TestCase
 
         $nullTask->storeOutput(false);
         self::assertFalse($nullTask->mustStoreOutput());
+    }
+
+    public function testTaskCanSetPriorityWithinTheRange(): void
+    {
+        $nullTask = new NullTask('foo');
+
+        self::assertEquals(1000, $nullTask->setPriority(1000)->getPriority());
+        self::assertEquals(1000, $nullTask->setPriority(1001)->getPriority());
+        self::assertEquals(-1000, $nullTask->setPriority(-1000)->getPriority());
+        self::assertEquals(-1000, $nullTask->setPriority(-1001)->getPriority());
+        self::assertEquals(5, $nullTask->setPriority(5)->getPriority());
     }
 
     public function testTaskCanBeCreatedWithDate(): void
