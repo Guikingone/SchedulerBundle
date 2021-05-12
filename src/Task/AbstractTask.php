@@ -612,11 +612,9 @@ abstract class AbstractTask implements TaskInterface
 
     public function setPriority(int $priority): TaskInterface
     {
-        if (!$this->validatePriority($priority)) {
-            throw new InvalidArgumentException('The priority is invalid');
+        if ($this->validatePriority($priority)) {
+            $this->options['priority'] = $priority;
         }
-
-        $this->options['priority'] = $priority;
 
         return $this;
     }

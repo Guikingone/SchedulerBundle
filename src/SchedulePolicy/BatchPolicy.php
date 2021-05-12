@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\SchedulePolicy;
 
-use SchedulerBundle\Task\AbstractTask;
 use SchedulerBundle\Task\TaskInterface;
 use function array_walk;
 use function uasort;
@@ -21,12 +20,6 @@ final class BatchPolicy implements PolicyInterface
     {
         array_walk($tasks, function (TaskInterface $task): void {
             $priority = $task->getPriority();
-            if ($priority <= AbstractTask::MIN_PRIORITY) {
-                return;
-            }
-            if ($priority >= AbstractTask::MAX_PRIORITY) {
-                return;
-            }
             $task->setPriority(--$priority);
         });
 
