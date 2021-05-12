@@ -40,14 +40,6 @@ psalm: ## Run Psalm
 psalm: psalm.xml
 	$(PHP) vendor/bin/psalm --show-info=true
 
-rector-dry: ## Run Rector in --dry-run mode
-rector-dry: rector.php
-	$(PHP) vendor/bin/rector process --dry-run --clear-cache
-
-rector: ## Run Rector
-rector: rector.php
-	$(PHP) vendor/bin/rector process --clear-cache
-
 ##
 ## Tests
 ##---------------------------------------------------------------------------

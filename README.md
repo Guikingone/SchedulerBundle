@@ -20,7 +20,6 @@
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Code%20style/main?style=flat" alt="Code style"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Infection/main?style=flat" alt="Infection"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/PHPUnit/main?style=flat" alt="PHPUnit"></td>
-            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Rector/main?style=flat" alt="Rector"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Security/main?style=flat" alt="Security"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Static%20analysis/main?style=flat" alt="Static analysis"></td>
         </tr>
