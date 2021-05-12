@@ -25,8 +25,8 @@ use function strtotime;
  */
 abstract class AbstractTask implements TaskInterface
 {
-    public const MIN_PRIORITY = -1000;
-    public const MAX_PRIORITY  = 1000;
+    private const MIN_PRIORITY = -1000;
+    private const MAX_PRIORITY  = 1000;
 
     private string $name;
 
