@@ -12,7 +12,6 @@
             <th>Code style</th>
             <th>Infection</th>
             <th>PHPUnit</th>
-            <th>Rector</th>
             <th>Security</th>
             <th>Static analysis</th>
         </tr>
