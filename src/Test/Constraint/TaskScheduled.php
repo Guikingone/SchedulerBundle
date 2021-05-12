@@ -34,6 +34,6 @@ final class TaskScheduled extends Constraint
      */
     protected function matches($eventsList): bool
     {
-        return $this->expectedCount === count($eventsList->getScheduledTaskEvents());
+        return $this->expectedCount === (is_countable($eventsList->getScheduledTaskEvents()) ? count($eventsList->getScheduledTaskEvents()) : 0);
     }
 }

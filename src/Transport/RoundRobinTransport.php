@@ -19,7 +19,7 @@ use function count;
 final class RoundRobinTransport extends AbstractTransport
 {
     /**
-     * @var iterable|TransportInterface[]
+     * @var TransportInterface[]
      */
     private iterable $transports;
     private SplObjectStorage $sleepingTransports;
@@ -32,7 +32,7 @@ final class RoundRobinTransport extends AbstractTransport
         $this->defineOptions(array_merge([
             'quantum' => $options['quantum'] ?? 2,
         ], $options), [
-            'quantum' => ['int'],
+            'quantum' => 'int',
         ]);
 
         $this->transports = $transports;
@@ -125,7 +125,7 @@ final class RoundRobinTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== count($this->transports)) {
+        while ($this->sleepingTransports->count() !== (is_countable($this->transports) ? count($this->transports) : 0)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;
