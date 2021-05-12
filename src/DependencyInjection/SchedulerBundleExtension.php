@@ -20,7 +20,6 @@ use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
-use SchedulerBundle\EventListener\ProbeSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -1001,20 +1000,13 @@ final class SchedulerBundleExtension extends Extension
         }
 
         $container->register(Probe::class, Probe::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
             ->setPublic(false)
             ->addTag('container.preload', [
                 'class' => Probe::class,
-            ])
-        ;
-
-        $container->register(ProbeSubscriber::class, ProbeSubscriber::class)
-            ->setArguments([
-                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-            ])
-            ->setPublic(false)
-            ->addTag('kernel.event_subscriber')
-            ->addTag('container.preload', [
-                'class' => ProbeSubscriber::class,
             ])
         ;
 

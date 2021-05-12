@@ -28,6 +28,12 @@ Once done, the current state is returned as shown below when sending a `GET` req
 }
 ```
 
+The probe will return the following information:
+
+- `executedTasks`: The count is done on the tasks executed during the latest minute.
+- `failedTasks`: The count is done on the tasks that are marked as failed by the worker.
+- `scheduledTasks`: The count is done on the tasks that have been scheduled.
+
 ## Fetching external state
 
 Let's imagine that you use this bundle in multiple applications. 

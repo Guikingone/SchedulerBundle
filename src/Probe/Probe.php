@@ -4,73 +4,46 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Probe;
 
+use DateTimeImmutable;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class Probe
 {
-    /**
-     * @var TaskListInterface<string, TaskInterface>
-     */
-    private TaskListInterface $executedTasks;
+    private SchedulerInterface $scheduler;
+    private WorkerInterface $worker;
 
-    /**
-     * @var TaskListInterface<string, TaskInterface>
-     */
-    private TaskListInterface $failedTasks;
-
-    /**
-     * @var TaskListInterface<string, TaskInterface>
-     */
-    private TaskListInterface $scheduledTasks;
-
-    public function __construct()
-    {
-        $this->executedTasks = new TaskList();
-        $this->failedTasks = new TaskList();
-        $this->scheduledTasks = new TaskList();
-    }
-
-    public function addExecutedTask(TaskInterface $task): void
-    {
-        $this->executedTasks->add($task);
-    }
-
-    public function addFailedTask(TaskInterface $task): void
-    {
-        $this->failedTasks->add($task);
-    }
-
-    public function addScheduledTask(TaskInterface $task): void
-    {
-        $this->scheduledTasks->add($task);
+    public function __construct(
+        SchedulerInterface $scheduler,
+        WorkerInterface $worker
+    ) {
+        $this->scheduler = $scheduler;
+        $this->worker = $worker;
     }
 
     /**
-     * @return TaskListInterface<string, TaskInterface>
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
-    public function getExecutedTasks(): TaskListInterface
+    public function getExecutedTasks(): int
     {
-        return $this->executedTasks;
+        return $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getLastExecution() && $task->getLastExecution()->format('Y-m-d h:i') === (new DateTimeImmutable())->format('Y-m-d h:i'))->count();
+    }
+
+    public function getFailedTasks(): int
+    {
+        return $this->worker->getFailedTasks()->count();
     }
 
     /**
-     * @return TaskListInterface<string, TaskInterface>
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
-    public function getFailedTasks(): TaskListInterface
+    public function getScheduledTasks(): int
     {
-        return $this->failedTasks;
-    }
-
-    /**
-     * @return TaskListInterface<string, TaskInterface>
-     */
-    public function getScheduledTasks(): TaskListInterface
-    {
-        return $this->scheduledTasks;
+        return $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getScheduledAt())->count();
     }
 }

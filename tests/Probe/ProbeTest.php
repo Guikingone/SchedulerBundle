@@ -6,46 +6,52 @@ namespace Tests\SchedulerBundle\Probe;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Probe\Probe;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class ProbeTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
     public function testProbeCanReceiveExecutedTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $worker = $this->createMock(WorkerInterface::class);
 
-        $probe = new Probe();
-        self::assertCount(0, $probe->getExecutedTasks());
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList());
 
-        $probe->addExecutedTask($task);
-        self::assertCount(1, $probe->getExecutedTasks());
+        $probe = new Probe($scheduler, $worker);
+        self::assertSame(0, $probe->getExecutedTasks());
     }
 
     public function testProbeCanReceiveFailedTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $probe = new Probe();
-        self::assertCount(0, $probe->getFailedTasks());
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
 
-        $probe->addFailedTask($task);
-        self::assertCount(1, $probe->getFailedTasks());
+        $probe = new Probe($scheduler, $worker);
+        self::assertSame(0, $probe->getFailedTasks());
     }
 
+    /**
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
     public function testProbeCanReceiveScheduledTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $worker = $this->createMock(WorkerInterface::class);
 
-        $probe = new Probe();
-        self::assertCount(0, $probe->getScheduledTasks());
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList());
 
-        $probe->addScheduledTask($task);
-        self::assertCount(1, $probe->getScheduledTasks());
+        $probe = new Probe($scheduler, $worker);
+        self::assertSame(0, $probe->getScheduledTasks());
     }
 }

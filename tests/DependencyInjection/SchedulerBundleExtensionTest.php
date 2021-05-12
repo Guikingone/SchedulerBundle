@@ -22,7 +22,6 @@ use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
-use SchedulerBundle\EventListener\ProbeSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -1123,30 +1122,29 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Probe::class));
         self::assertFalse($container->getDefinition(Probe::class)->isPublic());
-        self::assertCount(0, $container->getDefinition(Probe::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(Probe::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Probe::class)->getArgument(0));
+        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(Probe::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Probe::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Probe::class)->getArgument(1));
+        self::assertSame(WorkerInterface::class, (string) $container->getDefinition(Probe::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Probe::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(Probe::class)->hasTag('container.preload'));
         self::assertSame(Probe::class, $container->getDefinition(Probe::class)->getTag('container.preload')[0]['class']);
-
-        self::assertTrue($container->hasDefinition(ProbeSubscriber::class));
-        self::assertFalse($container->getDefinition(ProbeSubscriber::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(ProbeSubscriber::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(ProbeSubscriber::class)->getArgument(0));
-        self::assertSame(Probe::class, (string) $container->getDefinition(ProbeSubscriber::class)->getArgument(0));
-        self::assertTrue($container->getDefinition(ProbeSubscriber::class)->hasTag('kernel.event_subscriber'));
-        self::assertTrue($container->getDefinition(ProbeSubscriber::class)->hasTag('container.preload'));
-        self::assertSame(ProbeSubscriber::class, $container->getDefinition(ProbeSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ProbeStateSubscriber::class));
         self::assertFalse($container->getDefinition(ProbeStateSubscriber::class)->isPublic());
         self::assertCount(2, $container->getDefinition(ProbeStateSubscriber::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0));
         self::assertSame(Probe::class, (string) $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0)->getInvalidBehavior());
         self::assertSame('/_probe', $container->getDefinition(ProbeStateSubscriber::class)->getArgument(1));
         self::assertTrue($container->getDefinition(ProbeStateSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(ProbeStateSubscriber::class)->hasTag('container.preload'));
         self::assertSame(ProbeStateSubscriber::class, $container->getDefinition(ProbeStateSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ProbeTaskMiddleware::class));
+        self::assertCount(0, $container->getDefinition(ProbeTaskMiddleware::class)->getArguments());
         self::assertFalse($container->getDefinition(ProbeTaskMiddleware::class)->isPublic());
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('container.preload'));
