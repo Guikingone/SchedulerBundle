@@ -72,7 +72,7 @@ final class Scheduler implements SchedulerInterface
         $task->setScheduledAt($this->getSynchronizedCurrentDate());
         $task->setTimezone($task->getTimezone() ?? $this->timezone);
 
-        if (null !== $this->bus && $task->isQueued()) {
+        if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
             $this->bus->dispatch(new TaskMessage($task));
             $this->dispatch(new TaskScheduledEvent($task));
 
@@ -99,7 +99,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function yieldTask(string $name, bool $async = false): void
     {
-        if ($async && null !== $this->bus) {
+        if ($async && $this->bus instanceof MessageBusInterface) {
             $this->bus->dispatch(new TaskToYieldMessage($name));
 
             return;
@@ -124,7 +124,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function pause(string $taskName, bool $async = false): void
     {
-        if ($async && null !== $this->bus) {
+        if ($async && $this->bus instanceof MessageBusInterface) {
             $this->bus->dispatch(new TaskToPauseMessage($taskName));
 
             return;
@@ -148,7 +148,7 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->transport->list()->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && (null !== $task->getLastExecution() && ($synchronizedCurrentDate->format('Y-m-d h:i') !== $task->getLastExecution()->format('Y-m-d h:i'))));
+        $dueTasks = $this->transport->list()->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && null === $task->getLastExecution() || $task->getLastExecution()->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i'));
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
@@ -213,7 +213,7 @@ final class Scheduler implements SchedulerInterface
 
     private function dispatch(Event $event): void
     {
-        if (null === $this->eventDispatcher) {
+        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
             return;
         }
 
