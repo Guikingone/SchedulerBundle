@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+0.4.8
+-----
+
+* `Scheduler::getDueTasks()` fixed (see https://github.com/Guikingone/SchedulerBundle/pull/117)
+* Tools improved (see https://github.com/Guikingone/SchedulerBundle/pull/99)
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.7
 -----
 
