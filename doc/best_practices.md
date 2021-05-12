@@ -1,6 +1,7 @@
 # Best practices
 
 - [Transports](#Transports)
+- [Using the probe](#using-the-probe)
 - [External ressources](#external-ressources)
 
 ## Transports
@@ -14,6 +15,10 @@ scheduler_bundle:
     transport:
         dsn: 'failover://(doctrine://... || fs://last_in_first_out)'
 ```
+
+## Using the probe
+
+// TODO
 
 ## External ressources
 

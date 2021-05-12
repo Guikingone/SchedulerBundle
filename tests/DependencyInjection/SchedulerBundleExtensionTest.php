@@ -50,6 +50,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Probe\Probe;
+use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
@@ -174,6 +175,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[PostExecutionMiddlewareInterface::class]->hasTag('scheduler.worker_middleware'));
         self::assertArrayHasKey(ExpressionBuilderInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[ExpressionBuilderInterface::class]->hasTag('scheduler.expression_builder'));
+        self::assertArrayHasKey(ProbeInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ProbeInterface::class]->hasTag('scheduler.probe'));
     }
 
     public function testTransportFactoriesAreRegistered(): void
@@ -1120,7 +1123,13 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ]);
 
+        self::assertTrue($container->hasParameter('scheduler.probe_path'));
+        self::assertSame('/_probe', $container->getParameter('scheduler.probe_path'));
+
         self::assertTrue($container->hasDefinition(Probe::class));
+        self::assertTrue($container->hasAlias(ProbeInterface::class));
+        self::assertSame(Probe::class, (string) $container->getAlias(ProbeInterface::class));
+        self::assertTrue($container->getDefinition(Probe::class)->hasTag('scheduler.probe'));
         self::assertFalse($container->getDefinition(Probe::class)->isPublic());
         self::assertCount(2, $container->getDefinition(Probe::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Probe::class)->getArgument(0));
@@ -1136,7 +1145,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertFalse($container->getDefinition(ProbeStateSubscriber::class)->isPublic());
         self::assertCount(2, $container->getDefinition(ProbeStateSubscriber::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0));
-        self::assertSame(Probe::class, (string) $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0));
+        self::assertSame(ProbeInterface::class, (string) $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ProbeStateSubscriber::class)->getArgument(0)->getInvalidBehavior());
         self::assertSame('/_probe', $container->getDefinition(ProbeStateSubscriber::class)->getArgument(1));
         self::assertTrue($container->getDefinition(ProbeStateSubscriber::class)->hasTag('kernel.event_subscriber'));
@@ -1203,9 +1212,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SchedulerDataCollector::class));
         self::assertFalse($container->getDefinition(SchedulerDataCollector::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(SchedulerDataCollector::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(SchedulerDataCollector::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerDataCollector::class)->getArgument(0));
         self::assertSame(TaskLoggerSubscriber::class, (string) $container->getDefinition(SchedulerDataCollector::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerDataCollector::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerDataCollector::class)->getArgument(1));
+        self::assertSame(ProbeInterface::class, (string) $container->getDefinition(SchedulerDataCollector::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerDataCollector::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(SchedulerDataCollector::class)->hasTag('data_collector'));
         self::assertSame('@Scheduler/Collector/data_collector.html.twig', $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['template']);
         self::assertSame(SchedulerDataCollector::NAME, $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['id']);

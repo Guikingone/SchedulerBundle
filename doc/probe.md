@@ -6,6 +6,7 @@ and fetch external applications state.
 - [Returning current state](#returning-current-state)
 - [Fetching external application state](#fetching-external-state)
 - [DataCollector](#datacollector-integration)
+- [Extending](#extending)
 
 ## Returning current state
 
@@ -65,5 +66,9 @@ to launch the probe clients.
 To prevent any errors when merging both probe clients and default tasks, using a unique name is highly recommended._**
 
 ## DataCollector integration
+
+// TODO
+
+## Extending
 
 // TODO

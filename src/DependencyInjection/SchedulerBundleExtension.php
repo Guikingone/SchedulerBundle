@@ -48,6 +48,7 @@ use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Probe\Probe;
+use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\CommandTaskRunner;
@@ -121,6 +122,8 @@ use function strpos;
  */
 final class SchedulerBundleExtension extends Extension
 {
+    private const SCHEDULER_PROBE_TAG = 'scheduler.probe';
+
     public function load(array $configs, ContainerBuilder $container): void
     {
         $schedulerBundleConfiguration = new SchedulerBundleConfiguration();
@@ -175,6 +178,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag('scheduler.worker_middleware');
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag('scheduler.expression_builder');
+        $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
     }
 
     private function registerTransportFactories(ContainerBuilder $container, array $configuration): void
@@ -999,20 +1003,24 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
+        $container->setParameter('scheduler.probe_path', $configuration['probe']['path']);
+
         $container->register(Probe::class, Probe::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(WorkerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
+            ->addTag(self::SCHEDULER_PROBE_TAG)
             ->addTag('container.preload', [
                 'class' => Probe::class,
             ])
         ;
+        $container->setAlias(ProbeInterface::class, Probe::class);
 
         $container->register(ProbeStateSubscriber::class, ProbeStateSubscriber::class)
             ->setArguments([
-                new Reference(Probe::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(ProbeInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 $configuration['probe']['path'],
             ])
             ->setPublic(false)
@@ -1036,6 +1044,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(SchedulerDataCollector::class, SchedulerDataCollector::class)
             ->setArguments([
                 new Reference(TaskLoggerSubscriber::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(ProbeInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag('data_collector', [

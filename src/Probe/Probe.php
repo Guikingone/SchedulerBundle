@@ -13,7 +13,7 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Probe
+final class Probe implements ProbeInterface
 {
     private SchedulerInterface $scheduler;
     private WorkerInterface $worker;
@@ -34,13 +34,16 @@ final class Probe
         return $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getLastExecution() && $task->getLastExecution()->format('Y-m-d h:i') === (new DateTimeImmutable())->format('Y-m-d h:i'))->count();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getFailedTasks(): int
     {
         return $this->worker->getFailedTasks()->count();
     }
 
     /**
-     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     * {@inheritdoc}
      */
     public function getScheduledTasks(): int
     {

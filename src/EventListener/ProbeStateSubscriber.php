@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
-use SchedulerBundle\Probe\Probe;
+use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,10 +19,10 @@ use function rawurldecode;
  */
 final class ProbeStateSubscriber implements EventSubscriberInterface
 {
-    private Probe $probe;
+    private ProbeInterface $probe;
     private string $path;
 
-    public function __construct(Probe $probe, string $path = '/_probe')
+    public function __construct(ProbeInterface $probe, string $path = '/_probe')
     {
         $this->probe = $probe;
         $this->path = $path;

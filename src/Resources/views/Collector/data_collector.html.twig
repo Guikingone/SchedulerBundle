@@ -13,6 +13,10 @@
             <span class="sf-toolbar-value">
                 {{- scheduled_tasks|length -}}
             </span>
+
+            <span class="sf-toolbar-value">
+                {{- collector.getProbeInformations() is not empty ? 'Probe Enabled' : 'Probe disabled' -}}
+            </span>
         {% endset %}
 
         {% set text %}
