@@ -21,6 +21,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
@@ -412,6 +413,75 @@ final class SchedulerTest extends TestCase
         $dueTasks = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
 
         self::assertCount(1, $dueTasks);
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testNonExecutedDueTasksCanBeReturned(): void
+    {
+        $task = new NullTask('foo');
+        $secondTask = new NullTask('bar');
+        $thirdTask = new NullTask('random');
+        $fourthTask = new NullTask('executed', [
+            'last_execution' => new DateTimeImmutable(),
+        ]);
+
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new SchedulerMiddlewareStack()
+        );
+
+        $scheduler->schedule($task);
+        $scheduler->schedule($secondTask);
+        $scheduler->schedule($thirdTask);
+        $scheduler->schedule($fourthTask);
+
+        self::assertCount(3, $scheduler->getDueTasks());
+        self::assertTrue($scheduler->getDueTasks()->has('foo'));
+        self::assertTrue($scheduler->getDueTasks()->has('bar'));
+        self::assertTrue($scheduler->getDueTasks()->has('random'));
+        self::assertFalse($scheduler->getDueTasks()->has('executed'));
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testCurentMinuteExecutedDueTasksCannotBeReturned(): void
+    {
+        $task = new NullTask('foo', [
+            'last_execution' => new DateTimeImmutable(),
+        ]);
+        $secondTask = new NullTask('bar', [
+            'last_execution' => new DateTimeImmutable('- 1 minute'),
+        ]);
+        $thirdTask = new NullTask('random', [
+            'last_execution' => new DateTimeImmutable(),
+        ]);
+
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new SchedulerMiddlewareStack()
+        );
+
+        $scheduler->schedule($task);
+        $scheduler->schedule($secondTask);
+        $scheduler->schedule($thirdTask);
+
+        self::assertCount(1, $scheduler->getDueTasks());
+        self::assertFalse($scheduler->getDueTasks()->has('foo'));
+        self::assertTrue($scheduler->getDueTasks()->has('bar'));
+        self::assertFalse($scheduler->getDueTasks()->has('random'));
     }
 
     /**
