@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -36,5 +37,19 @@ final class BatchPolicyTest extends TestCase
 
         self::assertCount(2, $list);
         self::assertEquals([$task, $secondTask], $list);
+    }
+
+    public function testTasksPriorityIsNotOutOfBounds(): void
+    {
+        $fooTask = new NullTask('foo', ['priority' => 1000]);
+        $barTask = new NullTask('bar', ['priority' => -1000]);
+        $bazTask = new NullTask('baz');
+
+        $batchPolicy = new BatchPolicy();
+        $batchPolicy->sort([$fooTask, $barTask, $bazTask]);
+
+        self::assertEquals(1000, $fooTask->getPriority());
+        self::assertEquals(-1, $bazTask->getPriority());
+        self::assertEquals(-1000, $barTask->getPriority());
     }
 }

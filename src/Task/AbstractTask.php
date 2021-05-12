@@ -25,6 +25,9 @@ use function strtotime;
  */
 abstract class AbstractTask implements TaskInterface
 {
+    public const MIN_PRIORITY = -1000;
+    public const MAX_PRIORITY  = 1000;
+
     private string $name;
 
     /**
@@ -717,11 +720,11 @@ abstract class AbstractTask implements TaskInterface
 
     private function validatePriority(int $priority): bool
     {
-        if ($priority > 1000) {
+        if ($priority > self::MAX_PRIORITY) {
             return false;
         }
 
-        return $priority >= -1000;
+        return $priority >= self::MIN_PRIORITY;
     }
 
     private function validateState(string $state): bool
