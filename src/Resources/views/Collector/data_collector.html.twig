@@ -13,10 +13,6 @@
             <span class="sf-toolbar-value">
                 {{- scheduled_tasks|length -}}
             </span>
-
-            <span class="sf-toolbar-value">
-                {{- collector.getProbeInformations() is not empty ? 'Probe Enabled' : 'Probe disabled' -}}
-            </span>
         {% endset %}
 
         {% set text %}
@@ -52,6 +48,13 @@
                 <b>{{ 'Queued tasks' }}</b>
                 <span class="sf-toolbar-status">
                     {{- events.queuedTaskEvents|length -}}
+                </span>
+            </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Probe state' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- collector.getProbeInformations() is not empty ? 'Enabled' : 'disabled' -}}
                 </span>
             </div>
         {% endset %}
@@ -157,6 +160,20 @@
                     {% else %}
                         {{ helper.render_tasks_list(queued_tasks, true) }}
                     {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <h2>{{- 'Probe' -}}</h2>
+
+        <div class="sf-tabs tasks-scheduler">
+            <div class="tab">
+                <h3 class="tab-title">
+                    {{- 'State' -}}
+                </h3>
+
+                <div class="tab-content">
+
                 </div>
             </div>
         </div>
