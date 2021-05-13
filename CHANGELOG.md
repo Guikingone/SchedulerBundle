@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+0.4.9
+-----
+
+# Description
+
+* BatchPolicy sort improved (see https://github.com/Guikingone/SchedulerBundle/pull/120) - Thanks @jvancoillie
+
+### Extra
+
+- The whole improvements tagged in `0.4.8` are also released via this release.
+
+### API
+
+No BC Breaks introduced via this release.
+
 0.4.8
 -----
 
