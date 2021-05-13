@@ -37,4 +37,21 @@ final class BatchPolicyTest extends TestCase
         self::assertCount(2, $list);
         self::assertEquals([$task, $secondTask], $list);
     }
+
+    public function testTasksCanBeSortedWithNegativePriority(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(-500, -501);
+        $task->expects(self::once())->method('setPriority')->withConsecutive([-501], [-502]);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(-200, -201);
+        $secondTask->expects(self::once())->method('setPriority')->withConsecutive([-201], [-202]);
+
+        $batchPolicy = new BatchPolicy();
+        $list = $batchPolicy->sort([$secondTask, $task]);
+
+        self::assertCount(2, $list);
+        self::assertEquals([$task, $secondTask], $list);
+    }
 }
