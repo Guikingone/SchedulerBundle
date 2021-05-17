@@ -275,6 +275,7 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertStringContainsString('[INFO] The tasks following the listed conditions will be executed:', $tester->getDisplay());
         self::assertStringContainsString('- Task(s) with the following expression(s): * * * * *', $tester->getDisplay());
         self::assertStringContainsString('1 task to be executed', $tester->getDisplay());
+        self::assertStringContainsString('1 task has been executed', $tester->getDisplay());
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     }
 
@@ -304,6 +305,7 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertStringContainsString('[INFO] The tasks following the listed conditions will be executed:', $tester->getDisplay());
         self::assertStringContainsString('- Task(s) with the following expression(s): * * * * *', $tester->getDisplay());
         self::assertStringContainsString('1 task to be executed', $tester->getDisplay());
+        self::assertStringContainsString('1 task has been executed', $tester->getDisplay());
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     }
 
@@ -335,6 +337,7 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertStringContainsString('[INFO] The tasks following the listed conditions will be executed:', $tester->getDisplay());
         self::assertStringContainsString('- Task(s) with the following tags(s): @reboot, @deploy', $tester->getDisplay());
         self::assertStringContainsString('1 task to be executed', $tester->getDisplay());
+        self::assertStringContainsString('1 task has been executed', $tester->getDisplay());
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     }
 
@@ -366,6 +369,7 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertStringContainsString('[INFO] The tasks following the listed conditions will be executed:', $tester->getDisplay());
         self::assertStringContainsString('- Task(s) with the following tags(s): @reboot, @deploy', $tester->getDisplay());
         self::assertStringContainsString('1 task to be executed', $tester->getDisplay());
+        self::assertStringContainsString('1 task has been executed', $tester->getDisplay());
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     }
 }

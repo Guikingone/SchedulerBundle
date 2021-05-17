@@ -363,12 +363,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertCount(4, $container->getDefinition(ExecuteTaskCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(0));
         self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(1));
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(1)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(2));
         self::assertSame(WorkerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(2)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(3));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(ExecuteTaskCommand::class)->getArgument(3));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteTaskCommand::class)->getArgument(3)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(ExecuteTaskCommand::class)->getTag('monolog.logger')[0]['channel']);
