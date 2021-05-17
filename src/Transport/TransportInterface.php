@@ -21,9 +21,7 @@ interface TransportInterface
     public function get(string $name): TaskInterface;
 
     /**
-     * Return all the tasks as a {@see TaskListInterface}, the tasks name are used as keys.
-     *
-     * @return TaskListInterface<string, TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>, the tasks name are used as keys.
      *
      * @throws Throwable
      */

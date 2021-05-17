@@ -432,12 +432,18 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringNotContainsString('Task failed: "foo"', $commandTester->getDisplay());
     }
 
+    /**
+     * @return Generator<array<int, int>>
+     */
     public function providerFailureLimitContext(): Generator
     {
         yield 'Multiple tasks' => [10];
         yield 'Single task' => [1];
     }
 
+    /**
+     * @return Generator<array<int, int|string>>
+     */
     public function provideLimitOption(): Generator
     {
         yield [10];

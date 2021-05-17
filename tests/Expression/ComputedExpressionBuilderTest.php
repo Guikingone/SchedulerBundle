@@ -33,6 +33,9 @@ final class ComputedExpressionBuilderTest extends TestCase
         self::assertNotSame($finalExpression->getExpression(), $expression);
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideExpression(): Generator
     {
         yield ['# * * * *'];

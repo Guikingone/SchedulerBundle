@@ -80,12 +80,18 @@ final class FailOverTransportFactoryTest extends TestCase
         self::assertSame('normal', $transport->getOptions()['mode']);
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideDsn(): Generator
     {
         yield ['failover://(memory://first_in_first_out || memory://last_in_first_out)'];
         yield ['fo://(memory://first_in_first_out || memory://last_in_first_out)'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideDsnWithOptions(): Generator
     {
         yield ['failover://(memory://first_in_first_out || memory://last_in_first_out)?mode=normal'];

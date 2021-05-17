@@ -30,6 +30,9 @@ final class DsnTest extends TestCase
         self::assertEquals($dsn, Dsn::fromString($input));
     }
 
+    /**
+     * @return Generator<array<int, Dsn|string>>
+     */
     public function provideDsn(): Generator
     {
         yield 'Redis transport DSN' => [

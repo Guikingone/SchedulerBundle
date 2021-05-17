@@ -118,6 +118,9 @@ final class RedisTransportTest extends TestCase
         $this->transport->get('foo');
     }
 
+    /**
+     * @return Generator<array<int, ShellTask|NullTask>>
+     */
     public function provideTasks(): Generator
     {
         yield 'NullTask' => [

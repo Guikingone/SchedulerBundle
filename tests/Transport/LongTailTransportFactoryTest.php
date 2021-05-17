@@ -42,6 +42,9 @@ final class LongTailTransportFactoryTest extends TestCase
         self::assertInstanceOf(LongTailTransport::class, $transport);
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideDsn(): Generator
     {
         yield ['longtail://(memory://first_in_first_out || memory://last_in_first_out)'];

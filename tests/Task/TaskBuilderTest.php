@@ -48,6 +48,8 @@ final class TaskBuilderTest extends TestCase
 
     /**
      * @dataProvider provideNullTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testBuilderCanCreateNullTask(array $options): void
     {
@@ -68,6 +70,8 @@ final class TaskBuilderTest extends TestCase
 
     /**
      * @dataProvider provideShellTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testBuilderCanCreateShellTask(array $options): void
     {
@@ -88,6 +92,8 @@ final class TaskBuilderTest extends TestCase
 
     /**
      * @dataProvider provideCommandTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testBuilderCanCreateCommandTask(array $options): void
     {
@@ -108,6 +114,8 @@ final class TaskBuilderTest extends TestCase
 
     /**
      * @dataProvider provideHttpTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testBuilderCanCreateHttpTask(array $options): void
     {
@@ -126,6 +134,9 @@ final class TaskBuilderTest extends TestCase
         self::assertInstanceOf(HttpTask::class, $taskBuilder->create($options));
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideNullTaskData(): Generator
     {
         yield [
@@ -156,6 +167,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideShellTaskData(): Generator
     {
         yield [
@@ -186,6 +200,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideCommandTaskData(): Generator
     {
         yield [
@@ -214,6 +231,9 @@ final class TaskBuilderTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideHttpTaskData(): Generator
     {
         yield [

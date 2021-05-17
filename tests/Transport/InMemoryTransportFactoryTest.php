@@ -60,6 +60,9 @@ final class InMemoryTransportFactoryTest extends TestCase
         self::assertCount(2, $transport->getOptions());
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideDsn(): Generator
     {
         yield 'simple configuration' => [
@@ -70,6 +73,9 @@ final class InMemoryTransportFactoryTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideAdvancedDsn(): Generator
     {
         yield 'advanced configuration' => [

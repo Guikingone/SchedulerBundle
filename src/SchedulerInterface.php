@@ -16,7 +16,7 @@ use Throwable;
 interface SchedulerInterface
 {
     /**
-     * Schedule a specific task, the storage of the task is up to the scheduler.
+     * Schedule a specific {@see TaskInterface}, the storage of the task is up to the scheduler.
      */
     public function schedule(TaskInterface $task): void;
 
@@ -50,9 +50,9 @@ interface SchedulerInterface
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
-     * @return TaskListInterface<string, TaskInterface>
-     *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getDueTasks(): TaskListInterface;
 
@@ -64,9 +64,9 @@ interface SchedulerInterface
     /**
      * Return every tasks scheduled.
      *
-     * @return TaskListInterface<string, TaskInterface>
-     *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getTasks(): TaskListInterface;
 

@@ -36,6 +36,8 @@ final class ChainedBuilderTest extends TestCase
 
     /**
      * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $configuration
      */
     public function testBuilderCanBuildWithoutBuilders(array $configuration): void
     {
@@ -53,6 +55,8 @@ final class ChainedBuilderTest extends TestCase
 
     /**
      * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $configuration
      */
     public function testBuilderCanBuild(array $configuration): void
     {
@@ -75,6 +79,9 @@ final class ChainedBuilderTest extends TestCase
         self::assertInstanceOf(ShellTask::class, $task->getTask(0));
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideTaskData(): Generator
     {
         yield [

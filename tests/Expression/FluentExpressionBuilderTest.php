@@ -45,6 +45,9 @@ final class FluentExpressionBuilderTest extends TestCase
         self::assertSame($finalExpression->getExpression(), $endExpression);
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideExpression(): Generator
     {
         yield ['first monday of January 1980 10:00', '0 10 7 1 1'];
@@ -54,6 +57,9 @@ final class FluentExpressionBuilderTest extends TestCase
         yield ['10/Oct/2000:13:55:36 -0700', '55 20 10 10 2'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideExpressionWithTimezone(): Generator
     {
         yield ['first monday of January 1980 10:00', '0 10 7 1 1', 'UTC'];

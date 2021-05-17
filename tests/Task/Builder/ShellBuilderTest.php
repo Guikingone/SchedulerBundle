@@ -34,6 +34,8 @@ final class ShellBuilderTest extends TestCase
 
     /**
      * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $options
      */
     public function testTaskCanBeBuilt(array $options): void
     {
@@ -68,6 +70,9 @@ final class ShellBuilderTest extends TestCase
         self::assertEmpty($task->getEnvironmentVariables());
     }
 
+    /**
+     * @return Generator<array<int, array<string, mixed>>>
+     */
     public function provideTaskData(): Generator
     {
         yield [

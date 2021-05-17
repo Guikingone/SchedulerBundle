@@ -21,11 +21,9 @@ interface ConnectionInterface
     public function create(TaskInterface $task): void;
 
     /**
-     * Return a list containing every tasks stored by the connection.
+     * @return TaskListInterface<string|int, TaskInterface> containing every tasks stored by the connection.
      *
      * {@internal The task retrieving approach is not described as every connection defines a specific solution}
-     *
-     * @return TaskListInterface<string, TaskInterface>
      */
     public function list(): TaskListInterface;
 

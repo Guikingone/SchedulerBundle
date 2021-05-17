@@ -593,6 +593,9 @@ final class ConnectionTest extends TestCase
         $connection->empty();
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideList(): Generator
     {
         yield ['_random'];

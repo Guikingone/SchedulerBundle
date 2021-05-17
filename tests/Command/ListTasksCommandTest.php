@@ -310,12 +310,18 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideStateOption(): Generator
     {
         yield ['--state'];
         yield ['-s'];
     }
 
+    /**
+     * @return Generator<array<int, string>>
+     */
     public function provideOptions(): Generator
     {
         yield ['--expression', '--state'];

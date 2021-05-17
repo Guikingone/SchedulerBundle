@@ -750,6 +750,9 @@ final class SchedulerTest extends TestCase
         $scheduler->yieldTask('foo', true);
     }
 
+    /**
+     * @return Generator<array<int, ShellTask>>
+     */
     public function provideTasks(): Generator
     {
         yield 'Shell tasks' => [

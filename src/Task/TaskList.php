@@ -122,6 +122,11 @@ final class TaskList implements TaskListInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @param string|null|mixed   $offset The name of the task, if null is passed and $value isn't, {@see TaskListInterface::add()} is called
+     * @param TaskInterface|mixed $value A TaskInstance instance or mixed (will trigger an exception)
+     *
+     * @throws Throwable If the $value is not a {@see TaskInterface}
      */
     public function offsetSet($offset, $value): void
     {

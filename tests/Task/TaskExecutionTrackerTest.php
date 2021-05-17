@@ -46,6 +46,9 @@ final class TaskExecutionTrackerTest extends TestCase
         self::assertNotNull($task->getExecutionMemoryUsage());
     }
 
+    /**
+     * @return Generator<array<int, TaskInterface>>
+     */
     public function provideTrackedTasks(): Generator
     {
         yield [
@@ -54,6 +57,9 @@ final class TaskExecutionTrackerTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, TaskInterface>>
+     */
     public function provideUnTrackedTasks(): Generator
     {
         yield [
