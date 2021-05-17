@@ -65,4 +65,32 @@ final class FirstInFirstOutPolicyTest extends TestCase
             'foo' => $task,
         ], $firstInFirstOutPolicy->sort(['bar' => $secondTask, 'random' => $thirdTask, 'foo' => $task]));
     }
+
+    public function testTasksCanBeSortedUsingDefaultDate(): void
+    {
+        $task = new NullTask('qux', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        $secondTask = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        $thirdTask = new NullTask('bar', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        $fourthTask = new NullTask('baz', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
+
+        self::assertSame([
+            'qux' => $task,
+            'foo' => $secondTask,
+            'bar' => $thirdTask,
+            'baz' => $fourthTask,
+        ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'baz' => $fourthTask, 'bar' => $thirdTask, 'qux' => $task]));
+    }
 }
