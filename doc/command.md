@@ -147,3 +147,39 @@ _Description: Display the probe state along with (if defined) the external probe
 ```bash
 $ bin/console scheduler:debug:probe
 ```
+
+### Options
+
+This command allows using additional options to display information:
+
+- `--external`: Define if the external probes state must be displayed.
+
+#### Example
+
+```bash
+$ bin/console scheduler:debug:probe
+
+[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+
++----------------+--------------+-----------------+
+| Executed tasks | Failed tasks | Scheduled tasks |
++----------------+--------------+-----------------+
+| 0              | 0            | 0               |
++----------------+--------------+-----------------+
+```
+
+- With external probes state
+
+```bash
+$ bin/console scheduler:debug:probe --external
+
+[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+
++----------------+--------------+-----------------+
+| Executed tasks | Failed tasks | Scheduled tasks |
++----------------+--------------+-----------------+
+| 0              | 0            | 0               |
++----------------+--------------+-----------------+
+
+[INFO] External probes state
+```
