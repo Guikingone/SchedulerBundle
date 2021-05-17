@@ -54,6 +54,10 @@ final class Worker implements WorkerInterface
      * @var iterable|RunnerInterface[]
      */
     private iterable $runners;
+
+    /**
+     * @var array<string, bool|int>|null
+     */
     private ?array $options = [];
     private bool $shouldStop = false;
     private SchedulerInterface $scheduler;

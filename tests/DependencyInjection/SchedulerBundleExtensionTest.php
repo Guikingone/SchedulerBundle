@@ -1131,6 +1131,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(SchedulerBundleConfiguration::class, $extension->getConfiguration([], new ContainerBuilder()));
     }
 
+    /**
+     * @param array<string, mixed> $configuration
+     */
     private function getContainer(array $configuration = []): ContainerBuilder
     {
         $containerBuilder = new ContainerBuilder();

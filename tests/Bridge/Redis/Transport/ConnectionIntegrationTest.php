@@ -281,6 +281,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->get($task->getName());
     }
 
+    /**
+     * @return Generator<array<int, TaskInterface>>
+     */
     public function provideTasks(): Generator
     {
         yield 'NullTask' => [
@@ -294,6 +297,9 @@ final class ConnectionIntegrationTest extends TestCase
         ];
     }
 
+    /**
+     * @return Generator<array<int, TaskInterface>>
+     */
     public function provideCreateTasks(): Generator
     {
         yield 'NullTask' => [
