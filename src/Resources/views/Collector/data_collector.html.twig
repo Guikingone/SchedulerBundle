@@ -52,7 +52,7 @@
             </div>
 
             <div class="sf-toolbar-info-piece">
-                <b>{{ 'Probe state' }}</b>
+                <b>{{ 'Probe' }}</b>
                 <span class="sf-toolbar-status">
                     {{- collector.getProbeInformations() is not empty ? 'Enabled' : 'disabled' -}}
                 </span>
@@ -164,19 +164,45 @@
             </div>
         </div>
 
-        <h2>{{- 'Probe' -}}</h2>
+        {% set probe_informations = collector.getProbeInformations() %}
+        {% set probe_tasks = collector.events.probeTaskEvents %}
 
-        <div class="sf-tabs tasks-scheduler">
-            <div class="tab">
-                <h3 class="tab-title">
-                    {{- 'State' -}}
-                </h3>
+        {% if probe_informations|length != 0 %}
+            <h2>{{- 'Probe' -}}</h2>
 
-                <div class="tab-content">
+            <div class="sf-tabs tasks-scheduler">
+                <div class="tab">
+                    <h3 class="tab-title">
+                        {{- 'State' -}}
+                    </h3>
 
+                    {% if probe_tasks|length != 0 %}
+                        <h3 class="tab-title">
+                            {{- 'External probe' -}}
+                        </h3>
+                    {% endif %}
+
+                    <div class="tab-content">
+                        <table class="{{ class|default('') }}">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="key">{{- 'Executed tasks' -}}</th>
+                                    <th scope="col" class="key">{{- 'Failed tasks' -}}</th>
+                                    <th scope="col" class="key">{{- 'Scheduled tasks' -}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>{{- probe_informations['executedTasks'] -}}</th>
+                                    <th>{{- probe_informations['failedTasks'] -}}</th>
+                                    <th>{{- probe_informations['scheduledTasks'] -}}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 

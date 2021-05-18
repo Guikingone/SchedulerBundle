@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -34,8 +38,12 @@ final class DebugProbeCommandTest extends TestCase
 
     public function testCommandCanReturnCurrentProbeState(): void
     {
-        $probe = $this->createMock(ProbeInterface::class);
         $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $probe = $this->createMock(ProbeInterface::class);
+        $probe->expects(self::once())->method('getExecutedTasks')->willReturn(1);
+        $probe->expects(self::once())->method('getFailedTasks')->willReturn(5);
+        $probe->expects(self::once())->method('getScheduledTasks')->willReturn(10);
 
         $command = new DebugProbeCommand($probe, $scheduler);
 
@@ -44,11 +52,11 @@ final class DebugProbeCommandTest extends TestCase
 
         self::assertStringContainsString('[INFO] The displayed probe state is the one found at', $tester->getDisplay());
         self::assertStringContainsString('Executed tasks', $tester->getDisplay());
-        self::assertStringContainsString('0', $tester->getDisplay());
+        self::assertStringContainsString('1', $tester->getDisplay());
         self::assertStringContainsString('Failed tasks', $tester->getDisplay());
-        self::assertStringContainsString('0', $tester->getDisplay());
+        self::assertStringContainsString('5', $tester->getDisplay());
         self::assertStringContainsString('Scheduled tasks', $tester->getDisplay());
-        self::assertStringContainsString('0', $tester->getDisplay());
+        self::assertStringContainsString('10', $tester->getDisplay());
     }
 
     public function testCommandCannotReturnExternalProbeStateWhenEmpty(): void
@@ -72,7 +80,42 @@ final class DebugProbeCommandTest extends TestCase
         self::assertStringNotContainsString('Execution state', $tester->getDisplay());
     }
 
-    public function testCommandCanReturnExternalProbeState(): void
+    public function testCommandCanReturnSingleExternalProbeState(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+
+        $executionDate = new DatetimeImmutable();
+        $probeTask = new ProbeTask('foo', '/_external_path');
+        $probeTask->setLastExecution($executionDate);
+        $probeTask->setState(TaskInterface::PAUSED);
+        $probeTask->setExecutionState(TaskInterface::SUCCEED);
+
+        $nullTask = new NullTask('bar');
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([$probeTask, $nullTask]));
+
+        $command = new DebugProbeCommand($probe, $scheduler);
+
+        $tester = new CommandTester($command);
+        $tester->execute([
+            '--external' => true,
+        ]);
+
+        self::assertStringContainsString('[INFO] Found 1 external probe', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('Path', $tester->getDisplay());
+        self::assertStringContainsString('/_external_path', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString(TaskInterface::PAUSED, $tester->getDisplay());
+        self::assertStringContainsString('Last execution', $tester->getDisplay());
+        self::assertStringContainsString($executionDate->format(DateTimeInterface::COOKIE), $tester->getDisplay());
+        self::assertStringContainsString('Execution state', $tester->getDisplay());
+        self::assertStringContainsString(TaskInterface::SUCCEED, $tester->getDisplay());
+    }
+
+    public function testCommandCanReturnMultipleExternalProbeState(): void
     {
         $probe = $this->createMock(ProbeInterface::class);
 

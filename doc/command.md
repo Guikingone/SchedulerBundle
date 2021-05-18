@@ -173,7 +173,7 @@ $ bin/console scheduler:debug:probe
 ```bash
 $ bin/console scheduler:debug:probe --external
 
-[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
 
 +----------------+--------------+-----------------+
 | Executed tasks | Failed tasks | Scheduled tasks |
@@ -181,5 +181,11 @@ $ bin/console scheduler:debug:probe --external
 | 0              | 0            | 0               |
 +----------------+--------------+-----------------+
 
-[INFO] External probes state
+  [INFO] Found 1 external probe
+
++------+-----------------+--------+-----------------------------------+-----------------+
+| Name | Path            | State  | Last execution                    | Execution state |
++------+-----------------+--------+-----------------------------------+-----------------+
+| foo  | /_external_path | paused | Tuesday, 18-May-2021 16:26:34 UTC | Not executed    |
++------+-----------------+--------+-----------------------------------+-----------------+
 ```

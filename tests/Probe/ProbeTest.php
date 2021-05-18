@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Probe;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Probe\Probe;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
@@ -44,7 +46,7 @@ final class ProbeTest extends TestCase
     /**
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
-    public function testProbeCanReceiveScheduledTask(): void
+    public function testProbeCanReceiveEmptyScheduledTask(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
 
@@ -53,5 +55,23 @@ final class ProbeTest extends TestCase
 
         $probe = new Probe($scheduler, $worker);
         self::assertSame(0, $probe->getScheduledTasks());
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function testProbeCanReceiveScheduledTask(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $nullTask = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([$nullTask]));
+
+        $probe = new Probe($scheduler, $worker);
+        self::assertSame(1, $probe->getScheduledTasks());
     }
 }
