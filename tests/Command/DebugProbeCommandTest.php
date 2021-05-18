@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -69,5 +70,40 @@ final class DebugProbeCommandTest extends TestCase
         self::assertStringNotContainsString('State', $tester->getDisplay());
         self::assertStringNotContainsString('Last execution', $tester->getDisplay());
         self::assertStringNotContainsString('Execution state', $tester->getDisplay());
+    }
+
+    public function testCommandCanReturnExternalProbeState(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+
+        $probeTask = new ProbeTask('foo', '/_external_path');
+        $secondProbeTask = new ProbeTask('bar', '/_path');
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([$probeTask, $secondProbeTask]));
+
+        $command = new DebugProbeCommand($probe, $scheduler);
+
+        $tester = new CommandTester($command);
+        $tester->execute([
+            '--external' => true,
+        ]);
+
+        self::assertStringContainsString('[INFO] Found 2 external probes', $tester->getDisplay());
+        self::assertStringContainsString('Name', $tester->getDisplay());
+        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('bar', $tester->getDisplay());
+        self::assertStringContainsString('Path', $tester->getDisplay());
+        self::assertStringContainsString('/_external_path', $tester->getDisplay());
+        self::assertStringContainsString('/_path', $tester->getDisplay());
+        self::assertStringContainsString('State', $tester->getDisplay());
+        self::assertStringContainsString('enabled', $tester->getDisplay());
+        self::assertStringContainsString('enabled', $tester->getDisplay());
+        self::assertStringContainsString('Last execution', $tester->getDisplay());
+        self::assertStringContainsString('Not executed', $tester->getDisplay());
+        self::assertStringContainsString('Not executed', $tester->getDisplay());
+        self::assertStringContainsString('Execution state', $tester->getDisplay());
+        self::assertStringContainsString('Not executed', $tester->getDisplay());
+        self::assertStringContainsString('Not executed', $tester->getDisplay());
     }
 }
