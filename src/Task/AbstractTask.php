@@ -718,7 +718,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validatePriority(int $priority): bool
     {
-        return !($priority > self::MAX_PRIORITY) && $priority >= self::MIN_PRIORITY;
+        return $priority <= self::MAX_PRIORITY && $priority >= self::MIN_PRIORITY;
     }
 
     private function validateState(string $state): bool

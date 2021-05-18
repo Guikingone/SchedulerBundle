@@ -29,8 +29,6 @@ final class ProbeStateSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param RequestEvent $event
-     *
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function onKernelRequest(RequestEvent $event): void

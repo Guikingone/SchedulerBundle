@@ -120,8 +120,6 @@ final class FailOverTransport extends AbstractTransport
     }
 
     /**
-     * @param Closure $func
-     *
      * @return mixed
      */
     private function execute(Closure $func)
