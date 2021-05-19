@@ -92,7 +92,7 @@ final class DebugProbeCommand extends Command
                 $task->getState(),
                 null !== $task->getLastExecution() ? $task->getLastExecution()->format(DateTimeInterface::COOKIE) : 'Not executed',
                 $task->getExecutionState() ?? 'Not executed',
-            ], $externalProbeTasks->toArray(false)));
+            ], $externalProbeTasks->toArray()));
 
             $secondTable->render();
         }

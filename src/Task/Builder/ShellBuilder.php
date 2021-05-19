@@ -6,7 +6,6 @@ namespace SchedulerBundle\Task\Builder;
 
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,7 +15,7 @@ final class ShellBuilder extends AbstractTaskBuilder implements BuilderInterface
     /**
      * {@inheritdoc}
      */
-    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
+    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): ShellTask
     {
         return $this->handleTaskAttributes(
             new ShellTask($options['name'], $options['command'], $options['cwd'] ?? null, $options['environment_variables'] ?? [], $options['timeout'] ?? 60),

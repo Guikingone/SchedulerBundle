@@ -44,6 +44,8 @@
             "SchedulerBundle\\Task\\Builder\\": "src/Task/Builder/",
             "SchedulerBundle\\Test\\": "src/Test/",
             "SchedulerBundle\\Test\\Constraint\\": "src/Test/Constraint/",
+            "SchedulerBundle\\Test\\Constraint\\Probe\\": "src/Test/Constraint/Probe/",
+            "SchedulerBundle\\Test\\Constraint\\Scheduler\\": "src/Test/Constraint/Scheduler/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
             "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
             "SchedulerBundle\\Worker\\": "src/Worker/"
@@ -76,6 +78,8 @@
             "Tests\\SchedulerBundle\\Task\\Builder\\": "tests/Task/Builder/",
             "Tests\\SchedulerBundle\\Test\\": "tests/Test/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\": "tests/Test/Constraint/",
+            "Tests\\SchedulerBundle\\Test\\Constraint\\Probe\\": "tests/Test/Constraint/Probe/",
+            "Tests\\SchedulerBundle\\Test\\Constraint\\Scheduler\\": "tests/Test/Constraint/Scheduler/",
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
             "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
             "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/"

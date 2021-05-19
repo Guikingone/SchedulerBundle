@@ -6,7 +6,6 @@ namespace SchedulerBundle\Task\Builder;
 
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\HttpTask;
-use SchedulerBundle\Task\TaskInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,7 +15,7 @@ final class HttpBuilder extends AbstractTaskBuilder implements BuilderInterface
     /**
      * {@inheritdoc}
      */
-    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
+    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): HttpTask
     {
         return $this->handleTaskAttributes(
             new HttpTask($options['name'], $options['url'], $options['method'] ?? null, $options['client_options'] ?? []),

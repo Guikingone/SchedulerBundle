@@ -13,8 +13,7 @@ use SchedulerBundle\Task\TaskInterface;
 interface BuilderInterface
 {
     /**
-     * @param array<string, mixed>      $options
-     *
+     * @param array<string, mixed> $options
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface;
 

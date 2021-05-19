@@ -2,6 +2,12 @@
 
 This bundle provides a set of constraints built on top of the API to assert on task lifecycle.
 
+- [Task](#tasks)
+- [Probe](#probe)
+- [Scheduler](#scheduler)
+
+## Tasks
+
 | Constraint                                                      | Description                          |
 | ----------------------------------------------------------------| -------------------------------------|
 | [`TaskExecuted`](../src/Test/Constraint/TaskExecuted.php)       | Assert on the executed task count    |
@@ -9,6 +15,22 @@ This bundle provides a set of constraints built on top of the API to assert on t
 | [`TaskQueued`](../src/Test/Constraint/TaskQueued.php)           | Assert on the queued task count      |
 | [`TaskScheduled`](../src/Test/Constraint/TaskScheduled.php)     | Assert on the scheduled task count   |
 | [`TaskUnscheduled`](../src/Test/Constraint/TaskUnscheduled.php) | Assert on the unscheduled task count |
+
+## Probe
+
+| Constraint                                                                  | Description                            |
+| ----------------------------------------------------------------------------| ---------------------------------------|
+| [`ProbeEnabled`](../src/Test/Constraint/Probe/ProbeExecutedTask.php)        | Assert on the probe state              |
+| [`ProbeExecutedTask`](../src/Test/Constraint/Probe/ProbeExecutedTask.php)   | Assert on the unscheduled task count   |
+| [`ProbeFailedTask`](../src/Test/Constraint/Probe/ProbeFailedTask.php)       | Assert on the unscheduled task count   |
+| [`ProbeScheduledTask`](../src/Test/Constraint/Probe/ProbeScheduledTask.php) | Assert on the unscheduled task count   |
+| [`ProbeState`](../src/Test/Constraint/Probe/ProbeState.php)                 | Assert against the current probe state |
+
+## Scheduler
+
+| Constraint                                                                  | Description                          |
+| ----------------------------------------------------------------------------| -------------------------------------|
+| [`SchedulerDueTask`](../src/Test/Constraint/Scheduler/SchedulerDueTask.php) | Assert on the due tasks count        |
 
 ## Tests trait
 

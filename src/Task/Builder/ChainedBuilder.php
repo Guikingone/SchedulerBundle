@@ -36,7 +36,7 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
     /**
      * {@inheritdoc}
      */
-    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
+    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): ChainedTask
     {
         $chainedTask = new ChainedTask($options['name'], ...array_map(function (array $task) use ($propertyAccessor): TaskInterface {
             foreach ($this->builders as $builder) {

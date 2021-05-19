@@ -189,3 +189,15 @@ $ bin/console scheduler:debug:probe --external
 | foo  | /_external_path | paused | Tuesday, 18-May-2021 16:26:34 UTC | Not executed    |
 +------+-----------------+--------+-----------------------------------+-----------------+
 ```
+
+### Executing external probe
+
+_Introduced in `0.5`_
+
+_Description: Execute external probe_
+
+```bash
+$ bin/console scheduler:execute:external-probe
+```
+
+#### Example

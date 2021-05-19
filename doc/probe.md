@@ -56,9 +56,10 @@ scheduler_bundle:
                 errorOnFailedTasks: false # Default value
 ```
 
-By default, the bundle will define a `ProbeTask` that will be executed every minute.
-As this task is not executed in background, you must use the `scheduler:consume` command
-to launch the probe clients.
+By default, the bundle will define a `ProbeTask` for each client,
+these probes are planned be executed every minute.
+As this task is not executed in background, 
+you must use the `scheduler:execute:external-probe` command to launch the probe clients.
 
 **_Note: By default, the runner will return the task as failed if the response returns a 3/4/5xx status code._**
 

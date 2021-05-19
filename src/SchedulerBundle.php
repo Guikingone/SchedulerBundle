@@ -7,7 +7,6 @@ namespace SchedulerBundle;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\DependencyInjection\SchedulerPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
@@ -18,7 +17,7 @@ final class SchedulerBundle extends Bundle
     /**
      * {@inheritdoc}
      */
-    public function getContainerExtension(): ?ExtensionInterface
+    public function getContainerExtension(): SchedulerBundleExtension
     {
         return new SchedulerBundleExtension();
     }

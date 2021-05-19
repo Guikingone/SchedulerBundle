@@ -163,6 +163,7 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->setParameter('scheduler.timezone', $configuration['timezone']);
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
+        $container->setParameter('scheduler.probe_enabled', isset($configuration['probe']) ? $configuration['probe']['enabled'] : false);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void

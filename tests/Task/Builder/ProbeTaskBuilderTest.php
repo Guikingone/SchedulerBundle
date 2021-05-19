@@ -47,6 +47,7 @@ final class ProbeTaskBuilderTest extends TestCase
         self::assertInstanceOf(ProbeTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['externalProbePath'], $task->getExternalProbePath());
+        self::assertNotNull($task->getDelay());
     }
 
     public function testTaskCanBeBuiltWithoutExtraInformations(): void
