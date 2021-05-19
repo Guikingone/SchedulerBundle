@@ -188,9 +188,9 @@ final class TaskNormalizerTest extends TestCase
 
         $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-
+        $scheduledAt = new DateTimeImmutable();
         $task = new NullTask('foo');
-        $task->setScheduledAt(new DateTimeImmutable());
+        $task->setScheduledAt($scheduledAt);
 
         $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
@@ -198,6 +198,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('* * * * *', $task->getExpression());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getScheduledAt());
+        self::assertSame($scheduledAt->format("Y-m-d H:i:s.u"), $task->getScheduledAt()->format("Y-m-d H:i:s.u"));
     }
 
     public function testShellTaskWithBeforeSchedulingClosureCannotBeNormalized(): void
