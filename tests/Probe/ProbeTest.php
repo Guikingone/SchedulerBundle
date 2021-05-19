@@ -25,11 +25,23 @@ final class ProbeTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
+        $nullTask = new NullTask('foo');
+        $secondNullTask = new NullTask('bar', [
+            'last_execution' => new DateTimeImmutable(),
+        ]);
+        $thirdNullTask = new NullTask('random', [
+            'last_execution' => new DateTimeImmutable('+ 1 month'),
+        ]);
+
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList());
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            $nullTask,
+            $secondNullTask,
+            $thirdNullTask,
+        ]));
 
         $probe = new Probe($scheduler, $worker);
-        self::assertSame(0, $probe->getExecutedTasks());
+        self::assertSame(1, $probe->getExecutedTasks());
     }
 
     public function testProbeCanReceiveFailedTask(): void
