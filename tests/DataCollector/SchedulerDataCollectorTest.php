@@ -32,7 +32,15 @@ final class SchedulerDataCollectorTest extends TestCase
         $schedulerDataCollector = new SchedulerDataCollector($taskLoggerSubscriber, $probe);
         $schedulerDataCollector->lateCollect();
 
-        self::assertEmpty($schedulerDataCollector->getEvents());
+        self::assertCount(0, $schedulerDataCollector->getEvents());
+        self::assertCount(3, $schedulerDataCollector->getProbeInformations());
+        self::assertArrayHasKey('executedTasks', $schedulerDataCollector->getProbeInformations());
+        self::assertArrayHasKey('failedTasks', $schedulerDataCollector->getProbeInformations());
+        self::assertArrayHasKey('scheduledTasks', $schedulerDataCollector->getProbeInformations());
+
+        $schedulerDataCollector->lateCollect();
+
+        self::assertCount(0, $schedulerDataCollector->getEvents());
         self::assertCount(3, $schedulerDataCollector->getProbeInformations());
         self::assertArrayHasKey('executedTasks', $schedulerDataCollector->getProbeInformations());
         self::assertArrayHasKey('failedTasks', $schedulerDataCollector->getProbeInformations());
