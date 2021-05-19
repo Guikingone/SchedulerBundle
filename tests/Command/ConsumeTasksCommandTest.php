@@ -363,7 +363,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9507552);
+        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -403,7 +403,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9507552);
+        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));

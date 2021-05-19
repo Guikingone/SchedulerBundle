@@ -47,8 +47,6 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
      */
     public function lateCollect(): void
     {
-        $this->reset();
-
         $this->data['events'] = $this->events;
 
         if ($this->probe instanceof ProbeInterface) {

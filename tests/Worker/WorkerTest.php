@@ -423,7 +423,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
         $task->expects(self::once())->method('setLastExecution');
-        $task->expects(self::exactly(2))->method('getExecutionDelay')->willReturn(1000000);
+        $task->expects(self::exactly(2))->method('getExecutionDelay')->willReturn(1_000_000);
 
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
