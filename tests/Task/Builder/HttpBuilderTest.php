@@ -12,7 +12,6 @@ use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\HttpBuilder;
-use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -47,7 +46,6 @@ final class HttpBuilderTest extends TestCase
 
         $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        self::assertInstanceOf(HttpTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertSame($options['url'], $task->getUrl());

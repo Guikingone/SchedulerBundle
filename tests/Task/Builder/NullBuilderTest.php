@@ -12,7 +12,6 @@ use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\NullBuilder;
-use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -48,7 +47,6 @@ final class NullBuilderTest extends TestCase
 
         $task = $nullBuilder->build($propertyAccessor, $options);
 
-        self::assertInstanceOf(NullTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertNull($task->getDescription());

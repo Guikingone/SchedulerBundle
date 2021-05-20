@@ -6,6 +6,7 @@ namespace SchedulerBundle\Test\Constraint\Probe;
 
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Probe\ProbeInterface;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +25,7 @@ final class ProbeExecutedTask extends Constraint
      */
     public function toString(): string
     {
-        // TODO: Implement toString() method.
+        return sprintf('has found %s executed task%s', $this->expectedCount, 1 === $this->expectedCount ? '' : 's');
     }
 
     /**

@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
@@ -139,6 +140,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
         self::assertTrue($container->hasParameter('scheduler.trigger_path'));
         self::assertSame('/_foo', $container->getParameter('scheduler.trigger_path'));
+        self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
+        self::assertFalse($container->getParameter('scheduler.probe_enabled'));
     }
 
     public function testInterfacesForAutoconfigureAreRegistered(): void
@@ -1125,6 +1128,8 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasParameter('scheduler.probe_path'));
         self::assertSame('/_probe', $container->getParameter('scheduler.probe_path'));
+        self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
+        self::assertTrue($container->getParameter('scheduler.probe_enabled'));
 
         self::assertTrue($container->hasDefinition(Probe::class));
         self::assertTrue($container->hasAlias(ProbeInterface::class));
@@ -1158,6 +1163,19 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(ProbeTaskMiddleware::class)->hasTag('container.preload'));
         self::assertSame(ProbeTaskMiddleware::class, $container->getDefinition(ProbeTaskMiddleware::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(ExecuteExternalProbeCommand::class));
+        self::assertFalse($container->getDefinition(ExecuteExternalProbeCommand::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(ExecuteExternalProbeCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(0));
+        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(1));
+        self::assertSame(WorkerInterface::class, (string) $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecuteExternalProbeCommand::class)->getArgument(1)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(ExecuteExternalProbeCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(ExecuteExternalProbeCommand::class)->hasTag('container.preload'));
+        self::assertSame(ExecuteExternalProbeCommand::class, $container->getDefinition(ExecuteExternalProbeCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testProbeTasksCanBeConfigured(): void

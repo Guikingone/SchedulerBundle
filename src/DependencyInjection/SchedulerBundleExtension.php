@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
@@ -1036,6 +1037,18 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('scheduler.worker_middleware')
             ->addTag('container.preload', [
                 'class' => ProbeTaskMiddleware::class,
+            ])
+        ;
+
+        $container->register(ExecuteExternalProbeCommand::class, ExecuteExternalProbeCommand::class)
+            ->setArguments([
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => ExecuteExternalProbeCommand::class,
             ])
         ;
     }

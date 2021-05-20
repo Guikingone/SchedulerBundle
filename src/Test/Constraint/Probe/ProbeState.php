@@ -32,7 +32,7 @@ final class ProbeState extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('match current probe state: %s', json_encode($this->expectedState));
+        return sprintf('match current probe state: %s', json_encode($this->expectedState, JSON_THROW_ON_ERROR));
     }
 
     /**

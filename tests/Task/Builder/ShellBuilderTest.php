@@ -47,7 +47,6 @@ final class ShellBuilderTest extends TestCase
 
         $task = $shellBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        self::assertInstanceOf(ShellTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertSame($options['command'], $task->getCommand());

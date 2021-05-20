@@ -11,7 +11,6 @@ use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Task\Builder\ProbeTaskBuilder;
-use SchedulerBundle\Task\ProbeTask;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
@@ -44,10 +43,9 @@ final class ProbeTaskBuilderTest extends TestCase
 
         $task = $builder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        self::assertInstanceOf(ProbeTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['externalProbePath'], $task->getExternalProbePath());
-        self::assertNotNull($task->getDelay());
+        self::assertGreaterThanOrEqual(0, $task->getDelay());
     }
 
     public function testTaskCanBeBuiltWithoutExtraInformations(): void
@@ -64,7 +62,6 @@ final class ProbeTaskBuilderTest extends TestCase
             'externalProbePath' => '/_probe',
         ]);
 
-        self::assertInstanceOf(ProbeTask::class, $task);
         self::assertSame('bar', $task->getName());
         self::assertSame('/_probe', $task->getExternalProbePath());
         self::assertFalse($task->getErrorOnFailedTasks());

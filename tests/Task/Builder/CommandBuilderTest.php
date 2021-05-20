@@ -12,7 +12,6 @@ use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\CommandBuilder;
-use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -47,7 +46,6 @@ final class CommandBuilderTest extends TestCase
 
         $task = $commandBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
-        self::assertInstanceOf(CommandTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertSame($options['command'], $task->getCommand());

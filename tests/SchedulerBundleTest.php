@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\SchedulerBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -18,7 +17,7 @@ final class SchedulerBundleTest extends TestCase
     {
         $schedulerBundle = new SchedulerBundle();
 
-        self::assertInstanceOf(SchedulerBundleExtension::class, $schedulerBundle->getContainerExtension());
+        self::assertSame('scheduler_bundle', $schedulerBundle->getContainerExtension()->getAlias());
     }
 
     public function testCompilerPassIsConfigured(): void
