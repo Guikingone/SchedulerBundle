@@ -16,19 +16,6 @@ use Throwable;
 final class ChainedTaskRunner implements RunnerInterface
 {
     /**
-     * @var iterable|RunnerInterface[]
-     */
-    private iterable $runners;
-
-    /**
-     * @param iterable|RunnerInterface[] $runners
-     */
-    public function __construct(iterable $runners)
-    {
-        $this->runners = $runners;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function run(TaskInterface $task, WorkerInterface $worker): Output

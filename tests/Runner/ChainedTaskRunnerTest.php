@@ -7,11 +7,11 @@ namespace Tests\SchedulerBundle\Runner;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SchedulerBundle\Runner\ChainedTaskRunner;
-use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -20,7 +20,7 @@ final class ChainedTaskRunnerTest extends TestCase
 {
     public function testRunnerSupportTask(): void
     {
-        $chainedTaskRunner = new ChainedTaskRunner([]);
+        $chainedTaskRunner = new ChainedTaskRunner();
 
         self::assertFalse($chainedTaskRunner->support(new ShellTask('foo', ['ls', '-al'])));
         self::assertTrue($chainedTaskRunner->support(new ChainedTask('foo')));
@@ -28,9 +28,11 @@ final class ChainedTaskRunnerTest extends TestCase
 
     public function testRunnerCannotRunInvalidTask(): void
     {
-        $chainedTaskRunner = new ChainedTaskRunner([]);
+        $worker = $this->createMock(WorkerInterface::class);
 
-        $output = $chainedTaskRunner->run(new ShellTask('foo', ['ls', '-al']));
+        $chainedTaskRunner = new ChainedTaskRunner();
+
+        $output = $chainedTaskRunner->run(new ShellTask('foo', ['ls', '-al']), $worker);
 
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
@@ -41,15 +43,22 @@ final class ChainedTaskRunnerTest extends TestCase
     {
         $shellTask = new ShellTask('foo', ['ls', '-al']);
 
-        $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with(self::equalTo($shellTask))->willReturn(true);
-        $runner->expects(self::once())->method('run')->with(self::equalTo($shellTask))->willThrowException(new RuntimeException('An error occurred'));
-
-        $chainedTaskRunner = new ChainedTaskRunner([
-            $runner,
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([
+            'sleepDurationDelay' => 1,
+            'sleepUntilNextMinute' => false,
         ]);
+        $worker->expects(self::once())->method('execute')
+            ->with(self::equalTo([
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+            ]), self::equalTo($shellTask))
+            ->willThrowException(new RuntimeException('An error occurred'))
+        ;
 
-        $output = $chainedTaskRunner->run(new ChainedTask('bar', $shellTask));
+        $chainedTaskRunner = new ChainedTaskRunner();
+
+        $output = $chainedTaskRunner->run(new ChainedTask('bar', $shellTask), $worker);
 
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());

@@ -670,9 +670,6 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(ChainedTaskRunner::class, ChainedTaskRunner::class)
-            ->setArguments([
-                new TaggedIteratorArgument('scheduler.runner'),
-            ])
             ->addTag('scheduler.runner')
             ->addTag('container.preload', [
                 'class' => ChainedTaskRunner::class,

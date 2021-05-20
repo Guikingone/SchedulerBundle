@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Runner;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use SchedulerBundle\Runner\HttpTaskRunner;
@@ -31,12 +32,14 @@ final class HttpTaskRunnerTest extends TestCase
 
     public function testRunnerCannotSupportInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $httpClient = $this->createMock(HttpClientInterface::class);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
 
         $httpTaskRunner = new HttpTaskRunner($httpClient);
-        $output = $httpTaskRunner->run($shellTask);
+        $output = $httpTaskRunner->run($shellTask, $worker);
 
         self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
@@ -46,6 +49,8 @@ final class HttpTaskRunnerTest extends TestCase
 
     public function testRunnerCanGenerateErrorOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $mockHttpClient = new MockHttpClient([
             new MockResponse(json_encode([
                 'error' => 404,
@@ -54,7 +59,7 @@ final class HttpTaskRunnerTest extends TestCase
         ]);
 
         $httpTaskRunner = new HttpTaskRunner($mockHttpClient);
-        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
+        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'), $worker);
 
         self::assertSame('HTTP 404 returned for "https://symfony.com/".', $output->getOutput());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
@@ -62,6 +67,8 @@ final class HttpTaskRunnerTest extends TestCase
 
     public function testRunnerCanGenerateSuccessOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $mockHttpClient = new MockHttpClient([
             new MockResponse(json_encode([
                 'body' => 'test',
@@ -69,7 +76,7 @@ final class HttpTaskRunnerTest extends TestCase
         ]);
 
         $httpTaskRunner = new HttpTaskRunner($mockHttpClient);
-        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'));
+        $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'), $worker);
 
         self::assertSame('{"body":"test"}', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

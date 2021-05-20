@@ -8,6 +8,7 @@ use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerInterface;
 use stdClass;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -30,10 +31,12 @@ final class MessengerTaskRunnerTest extends TestCase
 
     public function testRunnerCannotExecuteInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
 
         $messengerTaskRunner = new MessengerTaskRunner();
-        $output = $messengerTaskRunner->run($shellTask);
+        $output = $messengerTaskRunner->run($shellTask, $worker);
 
         self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
@@ -43,10 +46,12 @@ final class MessengerTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnOutputWithoutBus(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $messengerTaskRunner = new MessengerTaskRunner();
         $messengerTask = new MessengerTask('foo', new stdClass());
 
-        $output = $messengerTaskRunner->run($messengerTask);
+        $output = $messengerTaskRunner->run($messengerTask, $worker);
         self::assertSame('The task cannot be handled as the bus is not defined', $output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
@@ -54,13 +59,14 @@ final class MessengerTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnOutputWithBusAndException(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->willThrowException(new RuntimeException('An error occurred'));
 
         $messengerTaskRunner = new MessengerTaskRunner($bus);
         $messengerTask = new MessengerTask('foo', new stdClass());
 
-        $output = $messengerTaskRunner->run($messengerTask);
+        $output = $messengerTaskRunner->run($messengerTask, $worker);
 
         self::assertSame('An error occurred', $output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
@@ -69,6 +75,7 @@ final class MessengerTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnOutputWithBus(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $message = $this->createMock(stdClass::class);
 
         $bus = $this->createMock(MessageBusInterface::class);
@@ -77,7 +84,7 @@ final class MessengerTaskRunnerTest extends TestCase
         $messengerTaskRunner = new MessengerTaskRunner($bus);
         $messengerTask = new MessengerTask('foo', $message);
 
-        $output = $messengerTaskRunner->run($messengerTask);
+        $output = $messengerTaskRunner->run($messengerTask, $worker);
 
         self::assertNull($output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
