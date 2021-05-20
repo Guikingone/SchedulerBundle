@@ -39,7 +39,17 @@ phpstan: phpstan.neon.dist
 
 psalm: ## Run Psalm
 psalm: psalm.xml
+	$(PHP) vendor/bin/psalm
+
+psalm-debug: ## Run Psalm (display informations)
+psalm-debug: psalm.xml
 	$(PHP) vendor/bin/psalm --show-info=true
+
+rector: rector.php
+	$(PHP) vendor/bin/rector
+
+rector-dry: rector.php
+	$(PHP) vendor/bin/rector --dry-run
 
 ##
 ## Tests

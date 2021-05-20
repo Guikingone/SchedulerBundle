@@ -7,6 +7,7 @@ namespace SchedulerBundle;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -23,6 +24,8 @@ use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function is_bool;
+use function next;
 use function sprintf;
 
 /**
@@ -47,6 +50,9 @@ final class Scheduler implements SchedulerInterface
     private ?EventDispatcherInterface $eventDispatcher;
     private ?MessageBusInterface $bus;
 
+    /**
+     * @throws Exception {@see DateTimeImmutable::__construct()}
+     */
     public function __construct(
         string $timezone,
         TransportInterface $transport,
@@ -64,6 +70,8 @@ final class Scheduler implements SchedulerInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see Scheduler::getSynchronizedCurrentDate()}
      */
     public function schedule(TaskInterface $task): void
     {
@@ -185,6 +193,26 @@ final class Scheduler implements SchedulerInterface
 
             return true;
         });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function next(bool $lazy = false): TaskInterface
+    {
+        $dueTasks = $this->getDueTasks($lazy);
+        if (0 === $dueTasks->count()) {
+            throw new RuntimeException('The current due tasks is empty');
+        }
+
+        $dueTasks = $dueTasks->toArray(false);
+
+        $nextTask = next($dueTasks);
+        if (is_bool($nextTask)) {
+            throw new RuntimeException('The next due task cannot be found');
+        }
+
+        return $nextTask;
     }
 
     /**

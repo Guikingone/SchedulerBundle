@@ -28,7 +28,7 @@ final class Connection implements ConnectionInterface
     private SerializerInterface $serializer;
 
     /**
-     * @param array<string, string|int|null> $options
+     * @param array<string, mixed|string|int|float|null> $options
      */
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {

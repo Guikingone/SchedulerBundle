@@ -58,11 +58,7 @@ interface WorkerInterface
     public function isRunning(): bool;
 
     /**
-     * @return TaskListInterface<int|string, TaskInterface> which contain every task that has fail during execution.
-     *
      * Every task in this list can also be retrieved independently thanks to {@see TaskFailedEvent}.
-     *
-     * @return TaskListInterface<int|string, TaskInterface>
      */
     public function getFailedTasks(): TaskListInterface;
 

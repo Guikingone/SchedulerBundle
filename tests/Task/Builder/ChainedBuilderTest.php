@@ -13,6 +13,7 @@ use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
 use SchedulerBundle\Task\Builder\ShellBuilder;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\ShellTask;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -73,7 +74,8 @@ final class ChainedBuilderTest extends TestCase
 
         $task = $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
 
-        self::assertNotEmpty($task->getTasks());
+        self::assertInstanceOf(ChainedTask::class, $task);
+        self::assertCount(1, $task->getTasks());
         self::assertInstanceOf(ShellTask::class, $task->getTask($configuration['tasks'][0]['name']));
     }
 

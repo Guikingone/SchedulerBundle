@@ -29,10 +29,10 @@ final class SchedulerDueTask extends Constraint
     }
 
     /**
-     * @param mixed|SchedulerInterface $scheduler
+     * @param mixed|SchedulerInterface $other
      */
-    protected function matches($scheduler): bool
+    protected function matches($other): bool
     {
-        return $this->expectedCount === $scheduler->getDueTasks()->count();
+        return $this->expectedCount === $other->getDueTasks()->count();
     }
 }

@@ -28,10 +28,10 @@ final class ProbeEnabled extends Constraint
     }
 
     /**
-     * @param mixed|bool $probeState
+     * @param mixed|bool $other
      */
-    protected function matches($probeState): bool
+    protected function matches($other): bool
     {
-        return $this->expectedState === $probeState;
+        return $this->expectedState === $other;
     }
 }

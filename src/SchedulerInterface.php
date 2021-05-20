@@ -67,6 +67,15 @@ interface SchedulerInterface
     public function getDueTasks(bool $lazy = false): TaskListInterface;
 
     /**
+     * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})
+     *
+     * Can lazy-load the task list if @param bool $lazy is used
+     *
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function next(bool $lazy = false): TaskInterface;
+
+    /**
      * Remove every tasks except the ones that use the '@reboot' expression.
      *
      * The "reboot" tasks are re-scheduled and MUST be executed as soon as possible.

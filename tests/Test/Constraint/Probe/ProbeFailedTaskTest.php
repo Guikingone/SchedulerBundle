@@ -37,6 +37,19 @@ final class ProbeFailedTaskTest extends TestCase
         $constraint->evaluate($probe);
     }
 
+    public function testConstraintCannotMatchMultipleTasksWithException(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+        $probe->expects(self::once())->method('getFailedTasks')->willReturn(1);
+
+        $constraint = new ProbeFailedTask(10);
+
+        self::expectException(ExpectationFailedException::class);
+        self::expectExceptionMessage('has found 10 failed tasks');
+        self::expectExceptionCode(0);
+        $constraint->evaluate($probe);
+    }
+
     public function testConstraintCanMatch(): void
     {
         $probe = $this->createMock(ProbeInterface::class);

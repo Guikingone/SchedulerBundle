@@ -33,6 +33,7 @@ use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -164,6 +165,7 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->setParameter('scheduler.timezone', $configuration['timezone']);
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
+        $container->setParameter('scheduler.scheduler_mode', isset($configuration['scheduler']) && isset($configuration['scheduler']['mode']) ? $configuration['scheduler']['mode'] : 'default');
         $container->setParameter('scheduler.probe_enabled', isset($configuration['probe']) ? $configuration['probe']['enabled'] : false);
     }
 
@@ -298,6 +300,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(EventDispatcherInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
             ])
@@ -307,6 +310,19 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->setAlias(SchedulerInterface::class, Scheduler::class);
+
+        if ('lazy' === $container->getParameter('scheduler.scheduler_mode')) {
+            $container->register(LazyScheduler::class, LazyScheduler::class)
+                ->setDecoratedService(Scheduler::class, 'scheduler.scheduler')
+                ->setArguments([
+                    new Reference('scheduler.scheduler', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('container.preload', [
+                    'class' => LazyScheduler::class,
+                ])
+            ;
+        }
     }
 
     private function registerCommands(ContainerBuilder $container): void

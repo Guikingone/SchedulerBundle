@@ -995,6 +995,79 @@ final class SchedulerTest extends TestCase
     }
 
     /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCannotReturnNextDueTaskWhenEmpty(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        self::assertCount(0, $scheduler->getDueTasks());
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The current due tasks is empty');
+        self::expectExceptionCode(0);
+        $scheduler->next();
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCannotReturnNextDueTaskWhenASingleTaskIsFound(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        self::assertCount(0, $scheduler->getDueTasks());
+
+        $scheduler->schedule(new NullTask('foo'));
+        self::assertCount(1, $scheduler->getDueTasks());
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The next due task cannot be found');
+        self::expectExceptionCode(0);
+        $scheduler->next();
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCanReturnNextDueTask(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $scheduler->schedule(new NullTask('foo'));
+        $scheduler->schedule(new NullTask('bar'));
+
+        self::assertCount(2, $scheduler->getDueTasks());
+
+        $nextDueTask = $scheduler->next();
+        self::assertInstanceOf(NullTask::class, $nextDueTask);
+        self::assertSame('bar', $nextDueTask->getName());
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCanReturnNextDueTaskAsynchronously(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $scheduler->schedule(new NullTask('foo'));
+        $scheduler->schedule(new NullTask('bar'));
+
+        $nextDueTask = $scheduler->next(true);
+        self::assertInstanceOf(NullTask::class, $nextDueTask);
+        self::assertSame('bar', $nextDueTask->getName());
+    }
+
+    /**
      * @return Generator<array<int, ShellTask>>
      */
     public function provideTasks(): Generator

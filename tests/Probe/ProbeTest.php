@@ -41,6 +41,7 @@ final class ProbeTest extends TestCase
         ]));
 
         $probe = new Probe($scheduler, $worker);
+
         self::assertSame(1, $probe->getExecutedTasks());
     }
 

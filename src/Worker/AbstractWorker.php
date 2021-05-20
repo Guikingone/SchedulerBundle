@@ -40,10 +40,6 @@ abstract class AbstractWorker implements WorkerInterface
      * @var RunnerInterface[]
      */
     private iterable $runners;
-
-    /**
-     * @var TaskListInterface<string|int, TaskInterface>
-     */
     private TaskListInterface $failedTasks;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;

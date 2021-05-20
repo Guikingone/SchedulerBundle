@@ -10,6 +10,7 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -28,9 +29,11 @@ final class ProbeTaskRunnerTest extends TestCase
 
     public function testRunnerCannotRunInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $runner = new ProbeTaskRunner();
 
-        $output = $runner->run(new ShellTask('foo', []));
+        $output = $runner->run(new ShellTask('foo', []), $worker);
 
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
@@ -39,6 +42,8 @@ final class ProbeTaskRunnerTest extends TestCase
 
     public function testRunnerCanRunTaskWithEmptyProbeState(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::once())->method('toArray')->with(self::equalTo(true))->willReturn([]);
 
@@ -49,7 +54,7 @@ final class ProbeTaskRunnerTest extends TestCase
         ;
 
         $runner = new ProbeTaskRunner($httpClient);
-        $output = $runner->run(new ProbeTask('foo', '/_probe'));
+        $output = $runner->run(new ProbeTask('foo', '/_probe'), $worker);
 
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame('The probe state is invalid', $output->getOutput());
@@ -59,6 +64,8 @@ final class ProbeTaskRunnerTest extends TestCase
 
     public function testRunnerCanRunTaskWithInvalidProbeStateAndTaskFailureEnabled(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::once())->method('toArray')->with(self::equalTo(true))->willReturn([
             'failedTasks' => 1,
@@ -71,7 +78,7 @@ final class ProbeTaskRunnerTest extends TestCase
         ;
 
         $runner = new ProbeTaskRunner($httpClient);
-        $output = $runner->run(new ProbeTask('foo', '/_probe', true));
+        $output = $runner->run(new ProbeTask('foo', '/_probe', true), $worker);
 
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame('The probe state is invalid', $output->getOutput());
@@ -81,6 +88,8 @@ final class ProbeTaskRunnerTest extends TestCase
 
     public function testRunnerCanRunTaskWithInvalidProbeStateAndTaskFailureDisabled(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::once())->method('toArray')->with(self::equalTo(true))->willReturn([
             'failedTasks' => 1,
@@ -93,7 +102,7 @@ final class ProbeTaskRunnerTest extends TestCase
         ;
 
         $runner = new ProbeTaskRunner($httpClient);
-        $output = $runner->run(new ProbeTask('foo', '/_probe'));
+        $output = $runner->run(new ProbeTask('foo', '/_probe'), $worker);
 
         self::assertSame(Output::SUCCESS, $output->getType());
         self::assertSame('The probe succeed', $output->getOutput());
@@ -103,6 +112,8 @@ final class ProbeTaskRunnerTest extends TestCase
 
     public function testRunnerCanRunTaskWithValidProbeStateAndErrorOnFailedTasksEnabled(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $response = $this->createMock(ResponseInterface::class);
         $response->expects(self::once())->method('toArray')->with(self::equalTo(true))->willReturn([
             'failedTasks' => 0,
@@ -115,7 +126,7 @@ final class ProbeTaskRunnerTest extends TestCase
         ;
 
         $runner = new ProbeTaskRunner($httpClient);
-        $output = $runner->run(new ProbeTask('foo', '/_probe', true));
+        $output = $runner->run(new ProbeTask('foo', '/_probe', true), $worker);
 
         self::assertSame(Output::SUCCESS, $output->getType());
         self::assertSame('The probe succeed', $output->getOutput());

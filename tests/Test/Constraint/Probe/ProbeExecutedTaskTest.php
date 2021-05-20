@@ -37,6 +37,32 @@ final class ProbeExecutedTaskTest extends TestCase
         $constraint->evaluate($probe);
     }
 
+    public function testConstraintCannotMatchNoTasksWithException(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+        $probe->expects(self::once())->method('getExecutedTasks')->willReturn(1);
+
+        $constraint = new ProbeExecutedTask(0);
+
+        self::expectException(ExpectationFailedException::class);
+        self::expectExceptionMessage('has found 0 executed task');
+        self::expectExceptionCode(0);
+        $constraint->evaluate($probe);
+    }
+
+    public function testConstraintCannotMatchMultipleTasksWithException(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+        $probe->expects(self::once())->method('getExecutedTasks')->willReturn(1);
+
+        $constraint = new ProbeExecutedTask(10);
+
+        self::expectException(ExpectationFailedException::class);
+        self::expectExceptionMessage('has found 10 executed tasks');
+        self::expectExceptionCode(0);
+        $constraint->evaluate($probe);
+    }
+
     public function testConstraintCanMatch(): void
     {
         $probe = $this->createMock(ProbeInterface::class);

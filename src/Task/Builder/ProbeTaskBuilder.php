@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task\Builder;
 
 use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
@@ -15,7 +16,7 @@ final class ProbeTaskBuilder extends AbstractTaskBuilder
     /**
      * {@inheritdoc}
      */
-    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): ProbeTask
+    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
         return $this->handleTaskAttributes(
             new ProbeTask(

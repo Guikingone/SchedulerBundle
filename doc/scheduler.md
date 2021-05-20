@@ -2,6 +2,10 @@
 
 The [Scheduler](../src/Scheduler.php) is the main entrypoint for every action related to task lifecycle.
 
+- [API](#api)
+- [Asynchronous API](#asynchronous-api)
+- [Lazy scheduler](#lazy-scheduler)
+
 ## API
 
 The scheduler provides several methods to help interact with tasks during the whole lifecycle:
@@ -28,6 +32,9 @@ The scheduler provides several methods to help interact with tasks during the wh
 - `getDueTasks`: Return the tasks that are dues regarding the current date (thanks to each task expression),
                  a [TaskList](../src/Task/TaskList.php) is returned.
                  If `true` is passed, the action is performed using a lazy-loaded task list.
+
+- `next`: Return the next due task, if none, an exception is thrown.
+          If `true` is used, the due tasks are retrieved using a [LazyTaskList](../src/Task/LazyTaskList.php).
 
 - `reboot`: Reboot the scheduler, each task that use `@reboot` as expression are yielded into the scheduler.
 
@@ -107,3 +114,13 @@ final class Foo
     }
 }
 ```
+
+## Lazy scheduler
+
+_Introduced in `0.5`_
+
+The [LazyScheduler](../src/LazyScheduler.php) act as a wrapper around
+the default `Scheduler`, when enabled via the configuration, each action
+is performed in a "lazy" approach.
+
+The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).

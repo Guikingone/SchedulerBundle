@@ -230,4 +230,46 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('probe', $configuration['tasks']['bar']['type']);
         self::assertSame('* * * * *', $configuration['tasks']['bar']['expression']);
     }
+
+    public function testConfigurationCannotEnableInvalidSchedulerMode(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The value "foo" is not allowed for path "scheduler_bundle.scheduler.mode". Permissible values: "default", "lazy"');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'scheduler' => [
+                    'mode' => 'foo',
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationCanEnableDefaultScheduler(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'scheduler' => [],
+            ],
+        ]);
+
+        self::assertArrayHasKey('scheduler', $configuration);
+        self::assertArrayHasKey('mode', $configuration['scheduler']);
+        self::assertSame('default', $configuration['scheduler']['mode']);
+    }
+
+    public function testConfigurationCanEnableLazyScheduler(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'scheduler' => [
+                    'mode' => 'lazy',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('scheduler', $configuration);
+        self::assertArrayHasKey('mode', $configuration['scheduler']);
+        self::assertSame('lazy', $configuration['scheduler']['mode']);
+    }
 }

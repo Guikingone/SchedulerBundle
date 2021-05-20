@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\CommandTask;
 
@@ -15,7 +16,7 @@ final class CommandBuilder extends AbstractTaskBuilder implements BuilderInterfa
     /**
      * {@inheritdoc}
      */
-    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): CommandTask
+    public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
         $commandTask = new CommandTask($options['name'], $options['command'], $options['arguments'] ?? [], $options['options'] ?? []);
 

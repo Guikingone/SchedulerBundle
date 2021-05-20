@@ -25,14 +25,14 @@ final class ProbeFailedTask extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('has found %s failed task%s', $this->expectedCount, 1 === $this->expectedCount ? '' : 's');
+        return sprintf('has found %s failed task%s', $this->expectedCount, 1 < $this->expectedCount ? 's' : '');
     }
 
     /**
-     * @param mixed|ProbeInterface $probe
+     * @param mixed|ProbeInterface $other
      */
-    protected function matches($probe): bool
+    protected function matches($other): bool
     {
-        return $this->expectedCount === $probe->getFailedTasks();
+        return $this->expectedCount === $other->getFailedTasks();
     }
 }

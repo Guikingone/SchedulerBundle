@@ -9,6 +9,7 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
@@ -17,6 +18,11 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use function array_key_exists;
 use function in_array;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_string;
 use function sprintf;
 use function strtotime;
 
@@ -26,14 +32,14 @@ use function strtotime;
 abstract class AbstractTask implements TaskInterface
 {
     private const MIN_PRIORITY = -1000;
-    private const MAX_PRIORITY  = 1000;
+    private const MAX_PRIORITY = 1000;
 
     private string $name;
 
     /**
-     * @var mixed[]|DateTimeImmutable[]|bool[]|string[]|DateInterval[]|null[]|float[]|int[]|mixed[][]|DateTimeZone[]
+     * @var array<string, mixed|bool|string|float|int|DateTimeImmutable|DateTimeZone|DateInterval|NotificationTaskBag|null>
      */
-    protected ?array $options = null;
+    protected array $options = [];
 
     public function __construct(string $name)
     {
@@ -197,7 +203,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getArrivalTime(): ?DateTimeImmutable
     {
-        return $this->options['arrival_time'];
+        return $this->options['arrival_time'] instanceof DateTimeImmutable ? $this->options['arrival_time'] : null;
     }
 
     public function setBackground(bool $background): TaskInterface
@@ -213,7 +219,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function mustRunInBackground(): bool
     {
-        return $this->options['background'];
+        return is_bool($this->options['background']) && $this->options['background'];
     }
 
     public function beforeScheduling($beforeSchedulingCallable = null): TaskInterface
@@ -237,7 +243,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['before_scheduling_notification'];
+        return $this->options['before_scheduling_notification'] instanceof NotificationTaskBag ? $this->options['before_scheduling_notification'] : null;
     }
 
     public function afterSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -249,7 +255,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['after_scheduling_notification'];
+        return $this->options['after_scheduling_notification'] instanceof NotificationTaskBag ? $this->options['after_scheduling_notification'] : null;
     }
 
     public function beforeExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -261,7 +267,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['before_executing_notification'];
+        return $this->options['before_executing_notification'] instanceof NotificationTaskBag ? $this->options['before_executing_notification'] : null;
     }
 
     public function afterExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -273,7 +279,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['after_executing_notification'];
+        return $this->options['after_executing_notification'] instanceof NotificationTaskBag ? $this->options['after_executing_notification'] : null;
     }
 
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface
@@ -321,7 +327,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getDescription(): ?string
     {
-        return $this->options['description'];
+        return is_string($this->options['description']) ? $this->options['description'] : null;
     }
 
     public function setExpression(string $expression): TaskInterface
@@ -337,7 +343,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExpression(): string
     {
-        return $this->options['expression'];
+        return is_string($this->options['expression']) ? $this->options['expression'] : '* * * * *';
     }
 
     public function setExecutionAbsoluteDeadline(DateInterval $dateInterval = null): TaskInterface
@@ -349,12 +355,12 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionAbsoluteDeadline(): ?DateInterval
     {
-        return $this->options['execution_absolute_deadline'];
+        return $this->options['execution_absolute_deadline'] instanceof DateInterval ? $this->options['execution_absolute_deadline'] : null;
     }
 
     public function getExecutionComputationTime(): ?float
     {
-        return $this->options['execution_computation_time'];
+        return is_float($this->options['execution_computation_time']) ? $this->options['execution_computation_time'] : null;
     }
 
     /**
@@ -369,7 +375,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionDelay(): ?int
     {
-        return $this->options['execution_delay'];
+        return is_int($this->options['execution_delay']) ? $this->options['execution_delay'] : null;
     }
 
     public function setExecutionDelay(int $executionDelay = null): TaskInterface
@@ -381,7 +387,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionMemoryUsage(): ?int
     {
-        return $this->options['execution_memory_usage'];
+        return is_int($this->options['execution_memory_usage']) ? $this->options['execution_memory_usage'] : null;
     }
 
     public function setExecutionMemoryUsage(int $executionMemoryUsage = null): TaskInterface
@@ -393,7 +399,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionPeriod(): ?float
     {
-        return $this->options['execution_period'];
+        return is_float($this->options['execution_period']) ? $this->options['execution_period'] : null;
     }
 
     public function setExecutionPeriod(float $executionPeriod = null): TaskInterface
@@ -405,7 +411,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionRelativeDeadline(): ?DateInterval
     {
-        return $this->options['execution_relative_deadline'];
+        return $this->options['execution_relative_deadline'] instanceof DateInterval ? $this->options['execution_relative_deadline'] : null;
     }
 
     public function setExecutionRelativeDeadline(DateInterval $dateInterval = null): TaskInterface
@@ -431,7 +437,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionStartDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_start_date'];
+        return $this->options['execution_start_date'] instanceof DateTimeImmutable ? $this->options['execution_start_date'] : null;
     }
 
     /**
@@ -450,7 +456,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionEndDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_end_date'];
+        return $this->options['execution_end_date'] instanceof DateTimeImmutable ? $this->options['execution_end_date'] : null;
     }
 
     public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -462,7 +468,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionStartTime(): ?DateTimeImmutable
     {
-        return $this->options['execution_start_time'];
+        return $this->options['execution_start_time'] instanceof DateTimeImmutable ? $this->options['execution_start_time'] : null;
     }
 
     public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -474,7 +480,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionEndTime(): ?DateTimeImmutable
     {
-        return $this->options['execution_end_time'];
+        return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
     }
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -486,7 +492,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getLastExecution(): ?DateTimeImmutable
     {
-        return $this->options['last_execution'];
+        return $this->options['last_execution'] instanceof DateTimeImmutable ? $this->options['last_execution'] : null;
     }
 
     public function setMaxDuration(float $maxDuration = null): TaskInterface
@@ -498,7 +504,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getMaxDuration(): ?float
     {
-        return $this->options['max_duration'];
+        return is_float($this->options['max_duration']) ? $this->options['max_duration'] : null;
     }
 
     public function setMaxExecutions(int $maxExecutions = null): TaskInterface
@@ -510,7 +516,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getMaxExecutions(): ?int
     {
-        return $this->options['max_executions'];
+        return is_int($this->options['max_executions']) ? $this->options['max_executions'] : null;
     }
 
     public function setMaxRetries(int $maxRetries = null): TaskInterface
@@ -522,12 +528,12 @@ abstract class AbstractTask implements TaskInterface
 
     public function getMaxRetries(): ?int
     {
-        return $this->options['max_retries'];
+        return is_int($this->options['max_retries']) ? $this->options['max_retries'] : null;
     }
 
     public function getNice(): ?int
     {
-        return $this->options['nice'];
+        return is_int($this->options['nice']) ? $this->options['nice'] : null;
     }
 
     public function setNice(int $nice = null): TaskInterface
@@ -551,6 +557,10 @@ abstract class AbstractTask implements TaskInterface
 
     public function getState(): string
     {
+        if (!is_string($this->options['state'])) {
+            throw new RuntimeException('The state is not a string');
+        }
+
         return $this->options['state'];
     }
 
@@ -583,7 +593,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function isOutput(): bool
     {
-        return $this->options['output'];
+        return is_bool($this->options['output']) && $this->options['output'];
     }
 
     public function setOutput(bool $output): TaskInterface
@@ -602,12 +612,12 @@ abstract class AbstractTask implements TaskInterface
 
     public function mustStoreOutput(): bool
     {
-        return $this->options['output_to_store'];
+        return is_bool($this->options['output_to_store']) && $this->options['output_to_store'];
     }
 
     public function getPriority(): int
     {
-        return $this->options['priority'];
+        return is_int($this->options['priority']) ? $this->options['priority'] : 0;
     }
 
     public function setPriority(int $priority): TaskInterface
@@ -621,7 +631,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function isQueued(): bool
     {
-        return $this->options['queued'];
+        return is_bool($this->options['queued']) && $this->options['queued'];
     }
 
     public function setQueued(bool $queued): TaskInterface
@@ -640,12 +650,12 @@ abstract class AbstractTask implements TaskInterface
 
     public function getScheduledAt(): ?DateTimeImmutable
     {
-        return $this->options['scheduled_at'];
+        return $this->options['scheduled_at'] instanceof DateTimeImmutable ? $this->options['scheduled_at'] : null;
     }
 
     public function isSingleRun(): bool
     {
-        return $this->options['single_run'];
+        return is_bool($this->options['single_run']) && $this->options['single_run'];
     }
 
     public function setSingleRun(bool $singleRun): TaskInterface
@@ -657,7 +667,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getTags(): array
     {
-        return $this->options['tags'];
+        return is_array($this->options['tags']) ? $this->options['tags'] : [];
     }
 
     public function setTags(array $tags): TaskInterface
@@ -676,7 +686,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getTimezone(): ?DateTimeZone
     {
-        return $this->options['timezone'];
+        return $this->options['timezone'] instanceof DateTimeZone ? $this->options['timezone'] : null;
     }
 
     public function setTimezone(DateTimeZone $dateTimeZone = null): TaskInterface
@@ -688,7 +698,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function isTracked(): bool
     {
-        return $this->options['tracked'];
+        return !is_bool($this->options['tracked']) || $this->options['tracked'];
     }
 
     public function setTracked(bool $tracked): TaskInterface
@@ -728,7 +738,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateExecutionState(string $executionState = null): bool
     {
-        return null === $executionState ? true : in_array($executionState, TaskInterface::EXECUTION_STATES, true);
+        return null === $executionState || in_array($executionState, TaskInterface::EXECUTION_STATES, true);
     }
 
     /**

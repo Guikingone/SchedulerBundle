@@ -36,14 +36,14 @@ final class ProbeState extends Constraint
     }
 
     /**
-     * @param mixed|ProbeInterface $probe
+     * @param mixed|ProbeInterface $other
      */
-    protected function matches($probe): bool
+    protected function matches($other): bool
     {
         return $this->expectedState === [
-            'executedTasks' => $probe->getExecutedTasks(),
-            'failedTasks' => $probe->getFailedTasks(),
-            'scheduledTasks' => $probe->getScheduledTasks(),
+            'executedTasks' => $other->getExecutedTasks(),
+            'failedTasks' => $other->getFailedTasks(),
+            'scheduledTasks' => $other->getScheduledTasks(),
         ];
     }
 }

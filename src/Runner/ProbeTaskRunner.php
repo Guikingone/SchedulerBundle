@@ -8,6 +8,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
@@ -28,7 +29,7 @@ final class ProbeTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof ProbeTask) {
             return new Output($task, null, Output::ERROR);

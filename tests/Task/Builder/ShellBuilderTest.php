@@ -47,6 +47,7 @@ final class ShellBuilderTest extends TestCase
 
         $task = $shellBuilder->build(PropertyAccess::createPropertyAccessor(), $options);
 
+        self::assertInstanceOf(ShellTask::class, $task);
         self::assertSame($options['name'], $task->getName());
         self::assertSame($options['expression'], $task->getExpression());
         self::assertSame($options['command'], $task->getCommand());
@@ -59,12 +60,12 @@ final class ShellBuilderTest extends TestCase
         self::assertNull($task->getTimezone());
         self::assertSame(TaskInterface::ENABLED, $task->getState());
 
-        /** @var ShellTask $task */
         $task = $shellBuilder->build(PropertyAccess::createPropertyAccessor(), [
             'name' => 'foo',
             'command' => ['ls', '-al'],
         ]);
 
+        self::assertInstanceOf(ShellTask::class, $task);
         self::assertSame(60.0, $task->getTimeout());
         self::assertEmpty($task->getEnvironmentVariables());
     }

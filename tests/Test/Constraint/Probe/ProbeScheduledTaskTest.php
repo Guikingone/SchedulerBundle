@@ -37,6 +37,19 @@ final class ProbeScheduledTaskTest extends TestCase
         $constraint->evaluate($probe);
     }
 
+    public function testConstraintCannotMatchMultipleTasksWithException(): void
+    {
+        $probe = $this->createMock(ProbeInterface::class);
+        $probe->expects(self::once())->method('getScheduledTasks')->willReturn(1);
+
+        $constraint = new ProbeScheduledTask(10);
+
+        self::expectException(ExpectationFailedException::class);
+        self::expectExceptionMessage('has found 10 scheduled tasks');
+        self::expectExceptionCode(0);
+        $constraint->evaluate($probe);
+    }
+
     public function testConstraintCanMatch(): void
     {
         $probe = $this->createMock(ProbeInterface::class);

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use function array_merge;
+use function is_array;
+use function is_float;
+use function is_string;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,8 +19,14 @@ final class ShellTask extends AbstractTask
      * @param array<string, string> $environmentVariables
      * @param array<string, mixed>  $options {@see AbstractTask::defineOptions()}
      */
-    public function __construct(string $name, array $command, string $cwd = null, array $environmentVariables = [], float $timeout = 60.0, array $options = [])
-    {
+    public function __construct(
+        string $name,
+        array $command,
+        string $cwd = null,
+        array $environmentVariables = [],
+        float $timeout = 60.0,
+        array $options = []
+    ) {
         $this->defineOptions(array_merge([
             'command' => $command,
             'cwd' => $cwd,
@@ -38,7 +47,7 @@ final class ShellTask extends AbstractTask
      */
     public function getCommand(): array
     {
-        return $this->options['command'];
+        return is_array($this->options['command']) ? $this->options['command'] : [];
     }
 
     public function setCommand(array $command): self
@@ -50,7 +59,7 @@ final class ShellTask extends AbstractTask
 
     public function getCwd(): ?string
     {
-        return $this->options['cwd'];
+        return is_string($this->options['cwd']) ? $this->options['cwd'] : null;
     }
 
     public function setCwd(?string $cwd): self
@@ -62,7 +71,7 @@ final class ShellTask extends AbstractTask
 
     public function getEnvironmentVariables(): array
     {
-        return $this->options['environment_variables'];
+        return is_array($this->options['environment_variables']) ? $this->options['environment_variables'] : [];
     }
 
     public function setEnvironmentVariables(array $environmentVariables): self
@@ -74,7 +83,7 @@ final class ShellTask extends AbstractTask
 
     public function getTimeout(): ?float
     {
-        return $this->options['timeout'];
+        return is_float($this->options['timeout']) ? $this->options['timeout'] : null;
     }
 
     public function setTimeout(float $timeout): self

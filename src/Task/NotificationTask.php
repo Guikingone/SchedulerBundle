@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 
@@ -27,6 +28,10 @@ final class NotificationTask extends AbstractTask
 
     public function getNotification(): Notification
     {
+        if (!$this->options['notification'] instanceof Notification) {
+            throw new RuntimeException('The notification is not set');
+        }
+
         return $this->options['notification'];
     }
 

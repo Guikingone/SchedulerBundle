@@ -15,12 +15,12 @@ use function sprintf;
 final class TransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
+     * @var TransportFactoryInterface[]
      */
     private iterable $factories;
 
     /**
-     * @param iterable|TransportFactoryInterface[] $transportsFactories
+     * @param TransportFactoryInterface[] $transportsFactories
      */
     public function __construct(iterable $transportsFactories)
     {

@@ -25,14 +25,14 @@ final class ProbeScheduledTask extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('has found %s scheduled task%s', $this->expectedCount, 1 === $this->expectedCount ? '' : 's');
+        return sprintf('has found %s scheduled task%s', $this->expectedCount, 1 < $this->expectedCount ? 's' : '');
     }
 
     /**
-     * @param mixed|ProbeInterface $probe
+     * @param mixed|ProbeInterface $other
      */
-    protected function matches($probe): bool
+    protected function matches($other): bool
     {
-        return $this->expectedCount === $probe->getScheduledTasks();
+        return $this->expectedCount === $other->getScheduledTasks();
     }
 }

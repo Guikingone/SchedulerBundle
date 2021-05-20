@@ -110,6 +110,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
     {
         $probeTask = new ProbeTask('foo', 'https://www.foo.com/_probe');
         $secondProbeTasks = new ProbeTask('bar', 'https://www.bar.com/_probe');
+        $secondProbeTasks->setExecutionState(TaskInterface::SUCCEED);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$probeTask, $secondProbeTasks]));
@@ -136,8 +137,8 @@ final class ExecuteExternalProbeCommandTest extends TestCase
         self::assertStringContainsString('Delay', $tester->getDisplay());
         self::assertStringContainsString('0', $tester->getDisplay());
         self::assertStringContainsString('Execution state', $tester->getDisplay());
-        self::assertStringNotContainsString(TaskInterface::SUCCEED, $tester->getDisplay());
         self::assertStringContainsString('Not executed', $tester->getDisplay());
+        self::assertStringContainsString(TaskInterface::SUCCEED, $tester->getDisplay());
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use function array_merge;
+use function is_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -41,7 +42,7 @@ final class CallbackTask extends AbstractTask
      */
     public function getArguments(): array
     {
-        return $this->options['arguments'];
+        return is_array($this->options['arguments']) ? $this->options['arguments'] : [];
     }
 
     /**

@@ -22,7 +22,7 @@ final class RedisTransport extends AbstractTransport
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
     /**
-     * @param array<string, int|string> $options
+     * @param array<string, mixed|int|float|string|bool|array|null> $options
      */
     public function __construct(
         array $options,

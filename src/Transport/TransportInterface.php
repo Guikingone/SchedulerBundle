@@ -24,8 +24,6 @@ interface TransportInterface
     /**
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
-     * @return TaskListInterface<string|int, TaskInterface>, the tasks name are used as keys.
-     *
      * @throws Throwable
      */
     public function list(bool $lazy = false): TaskListInterface;
@@ -67,7 +65,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string, int|string|bool|array|null>
+     * @return array<string, mixed|int|float|string|bool|array|null>
      */
     public function getOptions(): array;
 }

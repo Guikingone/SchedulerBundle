@@ -35,6 +35,7 @@ use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -140,6 +141,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
         self::assertTrue($container->hasParameter('scheduler.trigger_path'));
         self::assertSame('/_foo', $container->getParameter('scheduler.trigger_path'));
+        self::assertTrue($container->hasParameter('scheduler.scheduler_mode'));
+        self::assertSame('default', $container->getParameter('scheduler.scheduler_mode'));
         self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
         self::assertFalse($container->getParameter('scheduler.probe_enabled'));
     }
@@ -338,6 +341,61 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('container.preload'));
         self::assertSame(Scheduler::class, $container->getDefinition(Scheduler::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testLazySchedulerIsRegistered(): void
+    {
+        $container = $this->getContainer([
+            'scheduler' => [
+                'mode' => 'lazy',
+            ],
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertTrue($container->hasParameter('scheduler.scheduler_mode'));
+        self::assertSame('lazy', $container->getParameter('scheduler.scheduler_mode'));
+
+        self::assertTrue($container->hasDefinition(Scheduler::class));
+        self::assertTrue($container->hasAlias(SchedulerInterface::class));
+        self::assertCount(5, $container->getDefinition(Scheduler::class)->getArguments());
+        self::assertSame('Europe/Paris', $container->getDefinition(Scheduler::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(1));
+        self::assertSame(TransportInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(1)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(2));
+        self::assertSame(SchedulerMiddlewareStack::class, (string) $container->getDefinition(Scheduler::class)->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(2)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(3));
+        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(3));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(3)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(Scheduler::class)->getArgument(4));
+        self::assertSame(MessageBusInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(4));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(4)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
+        self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
+        self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
+        self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('container.preload'));
+        self::assertSame(Scheduler::class, $container->getDefinition(Scheduler::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(LazyScheduler::class));
+        self::assertTrue($container->hasAlias(SchedulerInterface::class));
+        self::assertSame(Scheduler::class, (string) $container->getAlias(SchedulerInterface::class));
+        self::assertSame(Scheduler::class, $container->getDefinition(LazyScheduler::class)->getDecoratedService()[0]);
+        self::assertSame('scheduler.scheduler', $container->getDefinition(LazyScheduler::class)->getDecoratedService()[1]);
+        self::assertSame(0, $container->getDefinition(LazyScheduler::class)->getDecoratedService()[2]);
+        self::assertCount(1, $container->getDefinition(LazyScheduler::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(LazyScheduler::class)->getArgument(0));
+        self::assertSame('scheduler.scheduler', (string) $container->getDefinition(LazyScheduler::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(LazyScheduler::class)->getArgument(0)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(LazyScheduler::class)->isPublic());
+        self::assertTrue($container->getDefinition(LazyScheduler::class)->hasTag('container.preload'));
+        self::assertSame(LazyScheduler::class, $container->getDefinition(LazyScheduler::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testCommandsAreRegistered(): void
