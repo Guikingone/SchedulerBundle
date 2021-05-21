@@ -28,6 +28,7 @@ final class CallBackTaskRunnerTest extends TestCase
     public function testRunnerCannotExecuteInvalidTask(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('execute');
 
         $callbackTaskRunner = new CallbackTaskRunner();
         $shellTask = new ShellTask('foo', ['echo', 'Symfony!']);
