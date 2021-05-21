@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Process\Process;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
@@ -18,7 +19,7 @@ final class ShellTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof ShellTask) {
             $task->setExecutionState(TaskInterface::ERRORED);

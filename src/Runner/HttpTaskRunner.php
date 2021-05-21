@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\Output;
@@ -26,7 +27,7 @@ final class HttpTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof HttpTask) {
             $task->setExecutionState(TaskInterface::ERRORED);

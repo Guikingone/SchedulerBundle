@@ -11,6 +11,7 @@ use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -29,10 +30,12 @@ final class ShellTaskRunnerTest extends TestCase
 
     public function testRunnerCannotRunInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $callbackTask = new CallbackTask('foo', ['echo', 'Symfony']);
 
         $shellTaskRunner = new ShellTaskRunner();
-        $output = $shellTaskRunner->run($callbackTask);
+        $output = $shellTaskRunner->run($callbackTask, $worker);
 
         self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
@@ -41,30 +44,36 @@ final class ShellTaskRunnerTest extends TestCase
 
     public function testRunnerCanSupportValidTaskWithoutOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $shellTask = new ShellTask('test', ['echo', 'Symfony']);
         $shellTask->setEnvironmentVariables(['env' => 'test']);
         $shellTask->setTimeout(10);
 
         $shellTaskRunner = new ShellTaskRunner();
         self::assertTrue($shellTaskRunner->support($shellTask));
-        self::assertNull($shellTaskRunner->run($shellTask)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
+        self::assertNull($shellTaskRunner->run($shellTask, $worker)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanSupportValidTaskWithOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $shellTask = new ShellTask('test', ['echo', 'Symfony']);
         $shellTask->setEnvironmentVariables(['env' => 'test']);
         $shellTask->setOutput(true);
 
         $shellTaskRunner = new ShellTaskRunner();
         self::assertTrue($shellTaskRunner->support($shellTask));
-        self::assertSame('Symfony', $shellTaskRunner->run($shellTask)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
+        self::assertSame('Symfony', $shellTaskRunner->run($shellTask, $worker)->getOutput());
+        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnEmptyOutputOnBackgroundTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $shellTask = new ShellTask('test', ['echo', 'Symfony']);
         $shellTask->setEnvironmentVariables(['env' => 'test']);
         $shellTask->setOutput(true);
@@ -72,8 +81,8 @@ final class ShellTaskRunnerTest extends TestCase
 
         $shellTaskRunner = new ShellTaskRunner();
         self::assertTrue($shellTaskRunner->support($shellTask));
-        self::assertSame('Task is running in background, output is not available', $shellTaskRunner->run($shellTask)->getOutput());
-        self::assertSame(TaskInterface::INCOMPLETE, $shellTaskRunner->run($shellTask)->getTask()->getExecutionState());
+        self::assertSame('Task is running in background, output is not available', $shellTaskRunner->run($shellTask, $worker)->getOutput());
+        self::assertSame(TaskInterface::INCOMPLETE, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
 }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\Output;
@@ -25,7 +26,7 @@ final class MessengerTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof MessengerTask) {
             $task->setExecutionState(TaskInterface::ERRORED);

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**
@@ -27,10 +28,12 @@ final class NullTaskRunnerTest extends TestCase
 
     public function testOutputIsReturned(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $nullTask = new NullTask('test');
 
         $nullTaskRunner = new NullTaskRunner();
-        $output = $nullTaskRunner->run($nullTask);
+        $output = $nullTaskRunner->run($nullTask, $worker);
 
         self::assertNull($output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

@@ -6,13 +6,13 @@ namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use SchedulerBundle\Exception\UnrecognizedCommandException;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\NullTask;
@@ -37,10 +37,12 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testRunnerCannotRunInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run(new ShellTask('foo', []));
+        $output = $commandTaskRunner->run(new ShellTask('foo', []), $worker);
 
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
@@ -49,54 +51,35 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testApplicationIsUsed(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $commandTask = new CommandTask('foo', 'app:foo');
 
         $application = $this->createMock(Application::class);
         $application->expects(self::once())->method('setCatchExceptions')->with(self::equalTo(false));
         $application->expects(self::once())->method('setAutoExit')->with(self::equalTo(false));
-        $application->expects(self::once())->method('all')->willReturn([
-            'app:foo' => new FooCommand(),
-        ]);
+        $application->expects(self::once())->method('find')->willReturn(new FooCommand());
         $application->expects(self::once())->method('run')->willReturn(0);
 
         $commandTaskRunner = new CommandTaskRunner($application);
 
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertSame($commandTask, $output->getTask());
         self::assertSame(TaskInterface::SUCCEED, $commandTask->getExecutionState());
     }
 
-    public function testCommandCannotBeCalledWithoutBeingRegistered(): void
-    {
-        $application = new Application();
-        $task = new CommandTask('foo', 'app:foo');
-
-        $commandTaskRunner = new CommandTaskRunner($application);
-        self::assertTrue($commandTaskRunner->support($task));
-        self::expectException(UnrecognizedCommandException::class);
-        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
-        self::expectExceptionCode(0);
-        self::assertNotNull($commandTaskRunner->run($task)->getOutput());
-        self::assertSame(Output::ERROR, $commandTaskRunner->run($task)->getOutput());
-
-        $task = new CommandTask('foo', FooCommand::class);
-        self::expectException(UnrecognizedCommandException::class);
-        self::expectExceptionMessage('The given command "app:foo" cannot be found!');
-        self::expectExceptionCode(0);
-        self::assertNotNull($commandTaskRunner->run($task)->getOutput());
-        self::assertSame(Output::ERROR, $commandTaskRunner->run($task)->getOutput());
-    }
-
     public function testCommandCanBeCalledWhenRegistered(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
         $application->add(new FooCommand());
 
         $commandTask = new CommandTask('foo', 'app:foo');
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertSame('This command is executed in "" env', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
@@ -104,13 +87,15 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testCommandCanBeCalledWithOptions(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
         $application->add(new FooCommand());
 
         $commandTask = new CommandTask('foo', 'app:foo', [], ['--env' => 'test']);
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertStringContainsString('This command is executed in "test" env', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
@@ -118,13 +103,15 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testCommandCanBeCalledWithEmptyOptions(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
         $application->add(new FooCommand());
 
         $commandTask = new CommandTask('foo', 'app:foo', [], ['--wait']);
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertStringContainsString('This command will wait', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
@@ -132,13 +119,15 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testCommandCanBeCalledWithOptionsButWithoutDashes(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
         $application->add(new BarCommand());
 
         $commandTask = new CommandTask('foo', 'app:bar', ['name' => 'bar'], ['env' => 'test']);
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
@@ -146,13 +135,15 @@ final class CommandTaskRunnerTest extends TestCase
 
     public function testCommandCanBeCalledWithArgument(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $application = new Application();
         $application->add(new BarCommand());
 
         $commandTask = new CommandTask('foo', 'app:bar', ['name' => 'bar'], ['--env' => 'test']);
 
         $commandTaskRunner = new CommandTaskRunner($application);
-        $output = $commandTaskRunner->run($commandTask);
+        $output = $commandTaskRunner->run($commandTask, $worker);
 
         self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

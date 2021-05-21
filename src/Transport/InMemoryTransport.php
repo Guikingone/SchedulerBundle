@@ -93,8 +93,7 @@ final class InMemoryTransport extends AbstractTransport
             throw new LogicException(sprintf('The task "%s" is already paused', $task->getName()));
         }
 
-        $task->setState(TaskInterface::PAUSED);
-        $this->update($name, $task);
+        $this->tasks[$name]->setState(TaskInterface::PAUSED);
     }
 
     /**
@@ -107,8 +106,7 @@ final class InMemoryTransport extends AbstractTransport
             return;
         }
 
-        $task->setState(TaskInterface::ENABLED);
-        $this->update($name, $task);
+        $this->tasks[$name]->setState(TaskInterface::ENABLED);
     }
 
     /**

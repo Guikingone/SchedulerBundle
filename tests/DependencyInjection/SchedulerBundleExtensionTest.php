@@ -677,8 +677,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(NullTaskRunner::class, $container->getDefinition(NullTaskRunner::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ChainedTaskRunner::class));
-        self::assertCount(1, $container->getDefinition(ChainedTaskRunner::class)->getArguments());
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedTaskRunner::class)->getArgument(0));
+        self::assertCount(0, $container->getDefinition(ChainedTaskRunner::class)->getArguments());
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(ChainedTaskRunner::class, $container->getDefinition(ChainedTaskRunner::class)->getTag('container.preload')[0]['class']);

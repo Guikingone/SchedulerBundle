@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Runner;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Notifier\Exception\LogicException;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
@@ -37,10 +38,12 @@ final class NotificationTaskRunnerTest extends TestCase
 
     public function testRunnerCannotRunInvalidTask(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $shellTask = new ShellTask('foo', ['ls', '-al']);
 
         $notificationTaskRunner = new NotificationTaskRunner();
-        $output = $notificationTaskRunner->run($shellTask);
+        $output = $notificationTaskRunner->run($shellTask, $worker);
 
         self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
         self::assertNull($output->getOutput());
@@ -50,6 +53,7 @@ final class NotificationTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnOutputWithoutNotifier(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $notification = $this->createMock(Notification::class);
         $recipient = $this->createMock(Recipient::class);
 
@@ -57,7 +61,7 @@ final class NotificationTaskRunnerTest extends TestCase
 
         $notificationTaskRunner = new NotificationTaskRunner();
 
-        $output = $notificationTaskRunner->run($notificationTask);
+        $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertSame('The task cannot be handled as the notifier is not defined', $output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
@@ -65,6 +69,8 @@ final class NotificationTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnExceptionOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->willThrowException(new LogicException('An error occurred'));
 
@@ -75,7 +81,7 @@ final class NotificationTaskRunnerTest extends TestCase
 
         $notificationTaskRunner = new NotificationTaskRunner($notifier);
 
-        $output = $notificationTaskRunner->run($notificationTask);
+        $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertSame('An error occurred', $output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
@@ -83,6 +89,8 @@ final class NotificationTaskRunnerTest extends TestCase
 
     public function testRunnerCanReturnSuccessOutput(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send');
 
@@ -93,7 +101,7 @@ final class NotificationTaskRunnerTest extends TestCase
 
         $notificationTaskRunner = new NotificationTaskRunner($notifier);
 
-        $output = $notificationTaskRunner->run($notificationTask);
+        $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertNull($output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());

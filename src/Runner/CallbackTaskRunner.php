@@ -7,6 +7,7 @@ namespace SchedulerBundle\Runner;
 use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 use function call_user_func_array;
 use function trim;
@@ -19,7 +20,7 @@ final class CallbackTaskRunner implements RunnerInterface
     /**
      * {@inheritdoc}
      */
-    public function run(TaskInterface $task): Output
+    public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof CallbackTask) {
             $task->setExecutionState(TaskInterface::ERRORED);
