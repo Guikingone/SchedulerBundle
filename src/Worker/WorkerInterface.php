@@ -52,10 +52,13 @@ interface WorkerInterface
      */
     public function getFailedTasks(): TaskListInterface;
 
+    /**
+     * @return TaskInterface|null The latest executed task or null if the worker is just getting started
+     */
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<string, bool|int|null|TaskInterface>
      */
     public function getOptions(): ?array;
 }
