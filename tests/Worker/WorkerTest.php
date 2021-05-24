@@ -14,7 +14,11 @@ use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\ChainedTaskRunner;
+use SchedulerBundle\Runner\ShellTaskRunner;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -33,6 +37,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 
 /**
@@ -40,6 +45,9 @@ use Throwable;
  */
 final class WorkerTest extends TestCase
 {
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedWithoutRunner(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -55,6 +63,9 @@ final class WorkerTest extends TestCase
         $worker->execute();
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanBeConfigured(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -110,6 +121,9 @@ final class WorkerTest extends TestCase
         self::assertNull($worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedWhileWorkerIsStopped(): void
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -274,6 +288,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithErroredBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -325,6 +342,9 @@ final class WorkerTest extends TestCase
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -364,6 +384,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -422,6 +445,9 @@ final class WorkerTest extends TestCase
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -1038,5 +1064,46 @@ final class WorkerTest extends TestCase
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function testWorkerCanExecuteChainedTasks(): void
+    {
+        $chainedTask = new ChainedTask(
+            'foo',
+            new ShellTask('chained_foo', ['ls', '-al']),
+            new ShellTask('chained_bar', ['ls', '-al'])
+        );
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$chainedTask]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
+
+        $worker = new Worker(
+            $scheduler,
+            [
+                new ChainedTaskRunner(),
+                new ShellTaskRunner(),
+            ],
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack([
+                new SingleRunTaskMiddleware($scheduler),
+                new TaskUpdateMiddleware($scheduler),
+            ]),
+            $eventDispatcher,
+            $logger
+        );
+        $worker->execute();
+
+        self::assertSame($chainedTask, $worker->getLastExecutedTask());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(0)->getExecutionState());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(1)->getExecutionState());
     }
 }

@@ -10,10 +10,12 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -36,6 +38,7 @@ interface WorkerInterface
      * @param array<string, int|string> $options
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
+     * @throws Throwable                {@see SchedulerInterface::getDueTasks()}
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void;
 
