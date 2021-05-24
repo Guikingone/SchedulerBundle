@@ -82,9 +82,11 @@ final class WorkerTest extends TestCase
             'shouldStop' => true,
         ]);
 
-        self::assertNotNull($worker->getOptions());
+        self::assertCount(7, $worker->getOptions());
         self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
         self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
+        self::assertArrayHasKey('shouldStop', $worker->getOptions());
+        self::assertTrue($worker->getOptions()['shouldStop']);
     }
 
     /**
@@ -491,6 +493,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithRunner(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -528,6 +533,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -565,6 +573,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -595,6 +606,9 @@ final class WorkerTest extends TestCase
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanHandleFailedTask(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -629,6 +643,9 @@ final class WorkerTest extends TestCase
         self::assertSame('Random error occurred', $failedTask->getReason());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -673,6 +690,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionNotificationAndNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -720,6 +740,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithoutAfterExecutionNotificationAndNotifier(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -764,6 +787,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithAfterExecutionNotificationAndNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -811,6 +837,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCannotReserveMaxExecutionTokensWithoutRateLimiter(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -850,6 +879,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCannotReserveMaxExecutionTokensWithoutMaxExecutionLimit(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -896,6 +928,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanReserveMaxExecutionTokensAndLimitTaskExecutionThenStopTheExecution(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -948,6 +983,9 @@ final class WorkerTest extends TestCase
         self::assertSame('Rate Limit Exceeded', $failedTask->getReason());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanStopWhenTaskAreConsumedAndWithoutDaemonEnabled(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -984,6 +1022,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanStopWhenTaskAreConsumedWithError(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -1020,6 +1061,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testPausedTaskIsNotExecutedIfListContainsASingleTask(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);

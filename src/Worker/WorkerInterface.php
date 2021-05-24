@@ -36,7 +36,7 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
-     * @param array<string, int|string> $options
+     * @param array<string, int|string|bool> $options
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      * @throws Throwable                {@see SchedulerInterface::getDueTasks()}
