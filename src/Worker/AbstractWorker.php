@@ -26,6 +26,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function is_array;
+use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -59,7 +61,7 @@ abstract class AbstractWorker implements WorkerInterface
         ?LoggerInterface $logger
     ) {
         $this->scheduler = $scheduler;
-        $this->runners = $runners;
+        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
         $this->tracker = $tracker;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
