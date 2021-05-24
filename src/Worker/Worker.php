@@ -11,16 +11,11 @@ use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\FlockStore;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
-use SchedulerBundle\Event\WorkerStartedEvent;
-use SchedulerBundle\Event\WorkerStoppedEvent;
-use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function count;
@@ -32,17 +27,8 @@ use function sleep;
  */
 final class Worker extends AbstractWorker
 {
-    /**
-     * @var RunnerInterface[]
-     */
-    private iterable $runners;
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
-
-    /**
-     * @var TaskListInterface<string|int, TaskInterface>
-     */
-    private TaskListInterface $failedTasks;
 
     /**
      * @param RunnerInterface[] $runners
@@ -52,16 +38,14 @@ final class Worker extends AbstractWorker
         iterable $runners,
         TaskExecutionTrackerInterface $taskExecutionTracker,
         WorkerMiddlewareStack $workerMiddlewareStack,
-        EventDispatcherInterface $eventDispatcher = null,
-        LoggerInterface $logger = null,
-        PersistingStoreInterface $persistingStore = null
+        ?EventDispatcherInterface $eventDispatcher = null,
+        ?LoggerInterface $logger = null,
+        ?PersistingStoreInterface $persistingStore = null
     ) {
-        $this->runners = $runners;
         $this->middlewareStack = $workerMiddlewareStack;
         $this->lockFactory = new LockFactory($persistingStore ?? new FlockStore());
-        $this->failedTasks = new TaskList();
 
-        parent::__construct($scheduler, $taskExecutionTracker, $eventDispatcher, $logger);
+        parent::__construct($scheduler, $runners, $taskExecutionTracker, $eventDispatcher, $logger);
     }
 
     /**
@@ -69,85 +53,78 @@ final class Worker extends AbstractWorker
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
-        if ([] === $this->runners) {
-            throw new UndefinedRunnerException('No runner found');
-        }
+        $this->run($options, function () use ($options, $tasks): void {
+            while (!$this->getOptions()['shouldStop']) {
+                $tasks = $this->getTasks($tasks);
 
-        $this->configure($options);
-        $this->dispatch(new WorkerStartedEvent($this));
+                foreach ($tasks as $task) {
+                    if (end($tasks) === $task && !$this->checkTaskState($task)) {
+                        break 2;
+                    }
 
-        while (!$this->getOptions()['shouldStop']) {
-            $tasks = $this->getTasks($tasks);
-
-            foreach ($tasks as $task) {
-                if (end($tasks) === $task && !$this->checkTaskState($task)) {
-                    break 2;
-                }
-
-                if (!$this->checkTaskState($task)) {
-                    continue;
-                }
-
-                $lockedTask = $this->lockFactory->createLock($task->getName());
-                if (end($tasks) === $task && !$lockedTask->acquire()) {
-                    break 2;
-                }
-
-                if (!$lockedTask->acquire()) {
-                    continue;
-                }
-
-                $this->dispatch(new WorkerRunningEvent($this));
-
-                foreach ($this->runners as $runner) {
-                    if (!$runner->support($task)) {
+                    if (!$this->checkTaskState($task)) {
                         continue;
                     }
 
-                    if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
-                        usleep($task->getExecutionDelay());
+                    $lockedTask = $this->lockFactory->createLock($task->getName());
+                    if (end($tasks) === $task && !$lockedTask->acquire()) {
+                        break 2;
                     }
 
-                    try {
-                        $this->middlewareStack->runPreExecutionMiddleware($task);
+                    if (!$lockedTask->acquire()) {
+                        continue;
+                    }
 
-                        if (!$this->getOptions()['isRunning']) {
-                            $this->options['isRunning'] = true;
-                            $this->dispatch(new WorkerRunningEvent($this));
-                            $this->handleTask($runner, $task);
+                    $this->dispatch(new WorkerRunningEvent($this));
+
+                    foreach ($this->getRunners() as $runner) {
+                        if (!$runner->support($task)) {
+                            continue;
                         }
 
-                        $this->middlewareStack->runPostExecutionMiddleware($task);
-                    } catch (Throwable $throwable) {
-                        $failedTask = new FailedTask($task, $throwable->getMessage());
-                        $this->failedTasks->add($failedTask);
-                        $this->dispatch(new TaskFailedEvent($failedTask));
-                    } finally {
-                        $lockedTask->release();
-                        $this->options['isRunning'] = false;
-                        $this->options['lastExecutedTask'] = $task;
-                        $this->dispatch(new WorkerRunningEvent($this, true));
+                        if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
+                            usleep($task->getExecutionDelay());
+                        }
 
-                        ++$this->options['executedTasksCount'];
+                        try {
+                            $this->middlewareStack->runPreExecutionMiddleware($task);
+
+                            if (!$this->getOptions()['isRunning']) {
+                                $this->options['isRunning'] = true;
+                                $this->dispatch(new WorkerRunningEvent($this));
+                                $this->handleTask($runner, $task);
+                            }
+
+                            $this->middlewareStack->runPostExecutionMiddleware($task);
+                        } catch (Throwable $throwable) {
+                            $failedTask = new FailedTask($task, $throwable->getMessage());
+                            $this->getFailedTasks()->add($failedTask);
+                            $this->dispatch(new TaskFailedEvent($failedTask));
+                        } finally {
+                            $lockedTask->release();
+                            $this->options['isRunning'] = false;
+                            $this->options['lastExecutedTask'] = $task;
+                            $this->dispatch(new WorkerRunningEvent($this, true));
+
+                            ++$this->options['executedTasksCount'];
+                        }
+
+                        if ($this->getOptions()['shouldStop']) {
+                            break 3;
+                        }
                     }
 
-                    if ($this->getOptions()['shouldStop']) {
-                        break 3;
+                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === count($tasks) && !$this->getOptions()['sleepUntilNextMinute'])) {
+                        break 2;
                     }
                 }
 
-                if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === count($tasks) && !$this->getOptions()['sleepUntilNextMinute'])) {
-                    break 2;
+                if ($this->getOptions()['sleepUntilNextMinute']) {
+                    sleep($this->getSleepDuration());
+
+                    $this->execute($options);
                 }
             }
-
-            if ($this->getOptions()['sleepUntilNextMinute']) {
-                sleep($this->getSleepDuration());
-
-                $this->execute($options);
-            }
-        }
-
-        $this->dispatch(new WorkerStoppedEvent($this));
+        });
     }
 }

@@ -79,6 +79,7 @@ final class WorkerTest extends TestCase
 
         $worker->execute([
             'sleepDurationDelay' => 5,
+            'shouldStop' => true,
         ]);
 
         self::assertNotNull($worker->getOptions());
@@ -143,8 +144,9 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
         ]), $eventDispatcher, $logger);
-        $worker->stop();
-        $worker->execute();
+        $worker->execute([
+            'shouldStop' => true,
+        ]);
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -441,7 +443,7 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $logger);
         $worker->execute();
 
-        self::assertNotEmpty($worker->getFailedTasks());
+        self::assertCount(1, $worker->getFailedTasks());
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
@@ -1076,14 +1078,15 @@ final class WorkerTest extends TestCase
             new ShellTask('chained_foo', ['ls', '-al']),
             new ShellTask('chained_bar', ['ls', '-al'])
         );
+        $shellTask = new ShellTask('bar', ['ls', '-al']);
 
         $logger = $this->createMock(LoggerInterface::class);
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$chainedTask]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$chainedTask, $shellTask]));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(4));
 
         $worker = new Worker(
             $scheduler,
@@ -1101,9 +1104,18 @@ final class WorkerTest extends TestCase
         );
         $worker->execute();
 
-        self::assertSame($chainedTask, $worker->getLastExecutedTask());
+        self::assertSame($shellTask, $worker->getLastExecutedTask());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
+        self::assertNotNull($chainedTask->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getExecutionEndTime());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(0)->getExecutionState());
+        self::assertNotNull($chainedTask->getTask(0)->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getTask(0)->getExecutionEndTime());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(1)->getExecutionState());
+        self::assertNotNull($chainedTask->getTask(1)->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getTask(1)->getExecutionEndTime());
+        self::assertSame(TaskInterface::SUCCEED, $shellTask->getExecutionState());
+        self::assertNotNull($shellTask->getExecutionStartTime());
+        self::assertNotNull($shellTask->getExecutionEndTime());
     }
 }

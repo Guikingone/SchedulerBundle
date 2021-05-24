@@ -10,6 +10,7 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
@@ -42,6 +43,14 @@ interface WorkerInterface
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void;
 
+    /**
+     * Allow to return a "fork" of the current worker,
+     * the final implementation is up to each worker that implement the interface.
+     *
+     * If required, the fact that a given worker instance is a fork can be checked via {@see WorkerInterface::getOptions()}
+     */
+    public function fork(): WorkerInterface;
+
     public function stop(): void;
 
     public function restart(): void;
@@ -59,6 +68,11 @@ interface WorkerInterface
      * @return TaskInterface|null The latest executed task or null if the worker is just getting started
      */
     public function getLastExecutedTask(): ?TaskInterface;
+
+    /**
+     * @return RunnerInterface[]
+     */
+    public function getRunners(): array;
 
     /**
      * @return array<string, bool|int|null|TaskInterface>

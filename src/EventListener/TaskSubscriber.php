@@ -16,7 +16,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_key_exists;
 use function rawurldecode;
@@ -52,6 +54,10 @@ final class TaskSubscriber implements EventSubscriberInterface
         $this->tasksPath = $tasksPath;
     }
 
+    /**
+     * @throws Throwable          {@see SchedulerInterface::getTasks()}
+     * @throws ExceptionInterface {@see SerializerInterface::serialize()}
+     */
     public function onKernelRequest(RequestEvent $requestEvent): void
     {
         $request = $requestEvent->getRequest();
