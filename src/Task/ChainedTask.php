@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Exception\InvalidArgumentException;
-use function array_key_exists;
-
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -15,9 +12,9 @@ final class ChainedTask extends AbstractTask
     public function __construct(string $name, TaskInterface ...$tasks)
     {
         $this->defineOptions([
-            'tasks' => $tasks,
+            'tasks' => new TaskList($tasks),
         ], [
-            'tasks' => ['SchedulerBundle\Task\TaskInterface[]', 'null'],
+            'tasks' => TaskListInterface::class,
         ]);
 
         parent::__construct($name);
@@ -25,31 +22,27 @@ final class ChainedTask extends AbstractTask
 
     public function addTask(TaskInterface $task): self
     {
-        $this->options['tasks'][] = $task;
+        $this->getTasks()->add($task);
 
         return $this;
     }
 
     public function setTasks(TaskInterface ...$tasks): self
     {
-        $this->options['tasks'] = $tasks;
+        $this->options['tasks'] = new TaskList($tasks);
 
         return $this;
     }
 
-    public function getTask(int $index): TaskInterface
+    public function getTask(string $name): ?TaskInterface
     {
-        if (!array_key_exists($index, $this->options['tasks'])) {
-            throw new InvalidArgumentException('The task does not exist');
-        }
-
-        return $this->options['tasks'][$index];
+        return $this->getTasks()->get($name);
     }
 
     /**
-     * @return TaskInterface[]
+     * @return TaskListInterface<string|int, TaskInterface>
      */
-    public function getTasks(): array
+    public function getTasks(): TaskListInterface
     {
         return $this->options['tasks'];
     }

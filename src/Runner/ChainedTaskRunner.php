@@ -9,7 +9,6 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
-use function array_map;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -26,10 +25,10 @@ final class ChainedTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        $forkedWorker = $worker->fork();
-
         try {
-            array_map(fn (TaskInterface $task) => $forkedWorker->execute([], $task), $task->getTasks());
+            $forkedWorker = $worker->fork();
+
+            $task->getTasks()->walk(fn (TaskInterface $task) => $forkedWorker->execute([], $task));
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, $throwable->getMessage(), Output::ERROR);

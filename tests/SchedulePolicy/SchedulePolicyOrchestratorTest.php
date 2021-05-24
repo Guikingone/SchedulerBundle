@@ -254,7 +254,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             $task,
             $secondTask,
-        ], $chainedTask->getTasks());
+        ], $chainedTask->getTasks()->toArray(false));
     }
 
     public function testSchedulePolicyCanSortNestedTasksUsingDeadline(): void
@@ -284,7 +284,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             $task,
             $secondTask,
-        ], $chainedTask->getTasks());
+        ], $chainedTask->getTasks()->toArray(false));
     }
 
     public function testSchedulePolicyCanSortNestedTasksUsingExecutionDuration(): void
@@ -307,7 +307,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             $task,
             $secondTask,
-        ], $chainedTask->getTasks());
+        ], $chainedTask->getTasks()->toArray(false));
     }
 
     public function testSchedulePolicyCanSortNestedTasksUsingFirstInFirstOut(): void

@@ -30,8 +30,6 @@ final class TaskList implements TaskListInterface
 
     /**
      * @param TaskInterface[] $tasks
-     *
-     * @throws Throwable {@see TaskList::add()}
      */
     public function __construct(array $tasks = [])
     {
@@ -49,15 +47,7 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        array_walk($tasks, function (TaskInterface $task): void {
-            try {
-                $this->tasks[$task->getName()] = $task;
-            } catch (Throwable $throwable) {
-                $this->remove($task->getName());
-
-                throw $throwable;
-            }
-        });
+        array_walk($tasks, fn (TaskInterface $task) => $this->tasks[$task->getName()] = $task);
     }
 
     /**
@@ -81,7 +71,9 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        return new self(array_filter($this->tasks, fn (TaskInterface $task): bool => in_array($task->getName(), $names, true)));
+        $filteredTasks = $this->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
+
+        return new self($filteredTasks->toArray(false));
     }
 
     /**
@@ -159,6 +151,16 @@ final class TaskList implements TaskListInterface
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function walk(Closure $func): TaskListInterface
+    {
+        array_walk($this->tasks, $func);
+
+        return $this;
     }
 
     /**

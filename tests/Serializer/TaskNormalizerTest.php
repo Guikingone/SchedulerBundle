@@ -572,10 +572,10 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(2, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask(0));
-        self::assertSame('bar', $task->getTask(0)->getName());
-        self::assertInstanceOf(ShellTask::class, $task->getTask(1));
-        self::assertSame('foo_second', $task->getTask(1)->getName());
+        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
+        self::assertSame('bar', $task->getTask('bar')->getName());
+        self::assertInstanceOf(ShellTask::class, $task->getTask('foo_second'));
+        self::assertSame('foo_second', $task->getTask('foo_second')->getName());
     }
 
     public function testChainedTaskWithCommandTaskCanBeDenormalized(): void
@@ -604,23 +604,23 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(3, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask(0));
-        self::assertSame('bar', $task->getTask(0)->getName());
+        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
+        self::assertSame('bar', $task->getTask('bar')->getName());
 
-        self::assertInstanceOf(CommandTask::class, $task->getTask(1));
-        self::assertSame('foo_second', $task->getTask(1)->getName());
-        self::assertSame('cache:clear', $task->getTask(1)->getCommand());
-        self::assertEmpty($task->getTask(1)->getArguments());
-        self::assertNotEmpty($task->getTask(1)->getOptions());
-        self::assertContains('--no-warmup', $task->getTask(1)->getOptions());
+        self::assertInstanceOf(CommandTask::class, $task->getTask('foo_second'));
+        self::assertSame('foo_second', $task->getTask('foo_second')->getName());
+        self::assertSame('cache:clear', $task->getTask('foo_second')->getCommand());
+        self::assertEmpty($task->getTask('foo_second')->getArguments());
+        self::assertNotEmpty($task->getTask('foo_second')->getOptions());
+        self::assertContains('--no-warmup', $task->getTask('foo_second')->getOptions());
 
-        self::assertInstanceOf(CommandTask::class, $task->getTask(2));
-        self::assertSame('foo_third', $task->getTask(2)->getName());
-        self::assertSame('cache:clear', $task->getTask(2)->getCommand());
-        self::assertEmpty($task->getTask(2)->getArguments());
-        self::assertNotEmpty($task->getTask(2)->getOptions());
-        self::assertContains('--no-warmup', $task->getTask(2)->getOptions());
-        self::assertContains('-vvv', $task->getTask(2)->getOptions());
+        self::assertInstanceOf(CommandTask::class, $task->getTask('foo_third'));
+        self::assertSame('foo_third', $task->getTask('foo_third')->getName());
+        self::assertSame('cache:clear', $task->getTask('foo_third')->getCommand());
+        self::assertEmpty($task->getTask('foo_third')->getArguments());
+        self::assertNotEmpty($task->getTask('foo_third')->getOptions());
+        self::assertContains('--no-warmup', $task->getTask('foo_third')->getOptions());
+        self::assertContains('-vvv', $task->getTask('foo_third')->getOptions());
     }
 
     public function testShellTaskWithBeforeSchedulingNotificationTaskBagCanBeNormalized(): void

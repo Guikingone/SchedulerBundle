@@ -46,7 +46,7 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
 
         foreach ($tasks as $task) {
             if ($task instanceof ChainedTask) {
-                $task->setTasks(...$this->sort($policy, $task->getTasks()));
+                $task->setTasks(...$this->sort($policy, $task->getTasks()->toArray(false)));
             }
         }
 

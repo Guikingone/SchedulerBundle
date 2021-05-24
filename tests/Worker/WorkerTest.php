@@ -1108,12 +1108,12 @@ final class WorkerTest extends TestCase
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
         self::assertNotNull($chainedTask->getExecutionStartTime());
         self::assertNotNull($chainedTask->getExecutionEndTime());
-        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(0)->getExecutionState());
-        self::assertNotNull($chainedTask->getTask(0)->getExecutionStartTime());
-        self::assertNotNull($chainedTask->getTask(0)->getExecutionEndTime());
-        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask(1)->getExecutionState());
-        self::assertNotNull($chainedTask->getTask(1)->getExecutionStartTime());
-        self::assertNotNull($chainedTask->getTask(1)->getExecutionEndTime());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask('chained_foo')->getExecutionState());
+        self::assertNotNull($chainedTask->getTask('chained_foo')->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getTask('chained_foo')->getExecutionEndTime());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getTask('chained_bar')->getExecutionState());
+        self::assertNotNull($chainedTask->getTask('chained_bar')->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getTask('chained_bar')->getExecutionEndTime());
         self::assertSame(TaskInterface::SUCCEED, $shellTask->getExecutionState());
         self::assertNotNull($shellTask->getExecutionStartTime());
         self::assertNotNull($shellTask->getExecutionEndTime());

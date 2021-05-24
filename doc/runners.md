@@ -11,7 +11,7 @@ every task is executed via a runner.
 | Runner                                                               | Description                                                                                  |
 | ---------------------------------------------------------------------| ---------------------------------------------------------------------------------------------|
 | [`CallbackTaskRunner`](../src/Runner/CallbackTaskRunner.php)         | Execute every `CallbackTask` thanks to `call_user_func_array`                                |
-| [`ChainedTaskRunner`](../src/Runner/ChainedTaskRunner.php)           | Execute every `ChainedTask`, this runner receives the runners list                           |
+| [`ChainedTaskRunner`](../src/Runner/ChainedTaskRunner.php)           | Execute every `ChainedTask`, the whole "sub-tasks" list is executed                          |
 | [`CommandTaskRunner`](../src/Runner/CommandTaskRunner.php)           | Execute every `CommandTask`, the `Application` is used                                       |
 | [`HttpTaskRunner`](../src/Runner/HttpTaskRunner.php)                 | Execute every `HttpTask`, if the http client is not available, the task is not executed      |
 | [`MessengerTaskRunner`](../src/Runner/MessengerTaskRunner.php)       | Execute every `MessengerTask`, if the bus is not available, the task is not executed         |

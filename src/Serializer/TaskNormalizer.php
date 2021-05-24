@@ -9,6 +9,7 @@ use DateInterval;
 use DatetimeInterface;
 use DateTimeZone;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -126,11 +127,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'method' => $innerObject[1],
                     'type' => get_class($innerObject[0]),
                 ],
-                'tasks' => fn (array $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, array_merge($context, [
+                'tasks' => fn (TaskListInterface $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, array_merge($context, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
                         'options' => [],
                     ],
-                ])), $innerObject),
+                ])), $innerObject->toArray(false)),
             ],
         ];
 
