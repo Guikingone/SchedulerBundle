@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Command;
 use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\ChainedTask;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListTasksCommand;
@@ -100,10 +101,67 @@ final class ListTasksCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Type', $commandTester->getDisplay());
+        self::assertStringContainsString('Mock_TaskInterface_', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('foo', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
         self::assertStringContainsString('A random task', $commandTester->getDisplay());
+        self::assertStringContainsString('Expression', $commandTester->getDisplay());
+        self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
+        self::assertStringContainsString('State', $commandTester->getDisplay());
+        self::assertStringContainsString(TaskInterface::ENABLED, $commandTester->getDisplay());
+        self::assertStringContainsString('Tags', $commandTester->getDisplay());
+        self::assertStringContainsString('app, slow', $commandTester->getDisplay());
+    }
+
+    public function testCommandCanListTaskWithSubtasks(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getDescription')->willReturn('A foo task');
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getDescription')->willReturn('A bar task');
+        $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
+
+        $chainedTask = new ChainedTask('nested');
+        $chainedTask->setDescription('A nested task');
+        $chainedTask->setLastExecution(new DateTimeImmutable());
+        $chainedTask->setTasks($secondTask, $task);
+
+        $taskList = new TaskList([$chainedTask]);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
+        self::assertStringContainsString('Type', $commandTester->getDisplay());
+        self::assertStringContainsString('ChainedTask', $commandTester->getDisplay());
+        self::assertStringContainsString('Name', $commandTester->getDisplay());
+        self::assertStringContainsString('nested', $commandTester->getDisplay());
+        self::assertStringContainsString('foo', $commandTester->getDisplay());
+        self::assertStringContainsString('bar', $commandTester->getDisplay());
+        self::assertStringContainsString('Description', $commandTester->getDisplay());
+        self::assertStringContainsString('A nested task', $commandTester->getDisplay());
+        self::assertStringContainsString('A foo task', $commandTester->getDisplay());
+        self::assertStringContainsString('A bar task', $commandTester->getDisplay());
         self::assertStringContainsString('Expression', $commandTester->getDisplay());
         self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
