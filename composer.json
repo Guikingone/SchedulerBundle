@@ -136,7 +136,5 @@
         "symfony/messenger": "For dispatching tasks to queue",
         "symfony/notifier": "For dispatching notification tasks"
     },
-    "scripts": {
-        "changelog": "conventional-changelog"
-    }
+    "version": "0.5.0"
 }

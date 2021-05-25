@@ -174,7 +174,7 @@ final class LazyTaskList implements TaskListInterface
             return;
         }
 
-        $this->list = new TaskList($this->sourceList->toArray(false));
+        $this->list = new TaskList($this->sourceList->toArray());
         $this->initialized = true;
     }
 }

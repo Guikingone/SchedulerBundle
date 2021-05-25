@@ -639,19 +639,17 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(2))->method('dispatch');
 
-        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::exactly(3))->method('sort')->willReturnOnConsecutiveCalls(
-            [[$task->getName() => $task]],
-            [$task->getName() => $task],
-            []
-        );
-
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator);
-        $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack(), $eventDispatcher);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(
+            ['execution_mode' => 'first_in_first_out'],
+            new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])
+        ), new SchedulerMiddlewareStack(), $eventDispatcher);
 
         $scheduler->schedule($task);
+
         self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
-        self::assertCount(0, $scheduler->getTasks(true));
+        self::assertCount(1, $scheduler->getTasks(true));
 
         $scheduler->unschedule($task->getName());
         self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
@@ -704,7 +702,7 @@ final class SchedulerTest extends TestCase
     public function testTaskCanBeUpdatedThenLazilyRetrieved(TaskInterface $task): void
     {
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::exactly(3))->method('sort')->willReturn([$task->getName() => $task]);
+        $schedulePolicyOrchestrator->expects(self::exactly(4))->method('sort')->willReturn([$task->getName() => $task]);
 
         $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], $schedulePolicyOrchestrator);
         $scheduler = new Scheduler('UTC', $inMemoryTransport, new SchedulerMiddlewareStack());
@@ -717,7 +715,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->update($task->getName(), $task);
         $updatedTask = $scheduler->getTasks(true)->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
-        self::assertInstanceOf(LazyTaskList::class, $updatedTask);
+        self::assertInstanceOf(TaskList::class, $updatedTask);
         self::assertNotEmpty($updatedTask);
     }
 
@@ -806,7 +804,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithStartAndEndDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
@@ -854,7 +852,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithPreviousStartDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
@@ -902,7 +900,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithEndDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);

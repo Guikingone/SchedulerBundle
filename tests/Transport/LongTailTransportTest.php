@@ -162,7 +162,6 @@ final class LongTailTransportTest extends TestCase
 
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')
-            ->with(self::equalTo(true))
             ->willReturnOnConsecutiveCalls(
                 $taskList,
                 self::throwException(new RuntimeException('Task list not found'))
@@ -172,7 +171,6 @@ final class LongTailTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())
             ->method('list')
-            ->with(self::equalTo(true))
             ->willReturn($secondTaskList)
         ;
 
@@ -225,14 +223,12 @@ final class LongTailTransportTest extends TestCase
 
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')
-            ->with(self::equalTo(true))
             ->willReturnOnConsecutiveCalls($taskList, $taskList)
         ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())
             ->method('list')
-            ->with(self::equalTo(true))
             ->willReturn($secondTaskList)
         ;
 

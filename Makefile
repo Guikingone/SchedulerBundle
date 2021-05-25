@@ -1,4 +1,5 @@
 PHP            = @symfony php
+COMPOSER       = @symfony composer
 
 .DEFAULT_GOAL := help
 
@@ -53,3 +54,10 @@ tests: phpunit.xml.dist
 infection: ## Launch Infection
 infection: infection.json.dist
 	$(PHP) vendor/bin/infection
+
+##
+## Versioning
+##---------------------------------------------------------------------------
+
+generate-changelog: .changelog
+	$(PHP) vendor/bin/conventional-changelog --config .changelog

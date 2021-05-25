@@ -93,6 +93,11 @@ final class LazyTaskListTest extends TestCase
             $task->addTag('walk');
         });
         self::assertCount(0, $list);
+
+        $list->walk(function (TaskInterface $task): void {
+            $task->addTag('walk');
+        });
+        self::assertCount(0, $list);
     }
 
     public function testListCanWalkThroughTask(): void
@@ -146,6 +151,14 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(1, $list);
     }
 
+    public function testListCannotGetNullOffset(): void
+    {
+        $list = new LazyTaskList(new TaskList());
+
+        self::assertCount(0, $list);
+        self::assertNull($list->offsetGet('foo'));
+    }
+
     public function testListCanGetOffset(): void
     {
         $list = new LazyTaskList(new TaskList());
@@ -153,6 +166,16 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(0, $list);
 
         $list->offsetSet('foo', new NullTask('foo'));
+        self::assertInstanceOf(NullTask::class, $list->offsetGet('foo'));
+    }
+
+    public function testListCanGetOffsetOnTaskList(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        self::assertCount(1, $list);
         self::assertInstanceOf(NullTask::class, $list->offsetGet('foo'));
     }
 
