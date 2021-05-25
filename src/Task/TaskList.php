@@ -41,13 +41,13 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function add(TaskInterface ...$tasks): void
+    public function add(TaskInterface ...$task): void
     {
-        if ($tasks === []) {
+        if ($task === []) {
             return;
         }
 
-        array_walk($tasks, fn (TaskInterface $task) => $this->tasks[$task->getName()] = $task);
+        array_walk($task, fn (TaskInterface $task) => $this->tasks[$task->getName()] = $task);
     }
 
     /**
