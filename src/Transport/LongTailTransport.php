@@ -32,6 +32,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function get(string $name): TaskInterface
     {
@@ -40,14 +42,18 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
-        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list());
+        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list($lazy));
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function create(TaskInterface $task): void
     {
@@ -58,6 +64,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function update(string $name, TaskInterface $updatedTask): void
     {
@@ -68,6 +76,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function delete(string $name): void
     {
@@ -78,6 +88,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function pause(string $name): void
     {
@@ -88,6 +100,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function resume(string $name): void
     {
@@ -98,6 +112,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function clear(): void
     {
@@ -108,6 +124,8 @@ final class LongTailTransport extends AbstractTransport
 
     /**
      * @return mixed|void
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     private function execute(Closure $func)
     {

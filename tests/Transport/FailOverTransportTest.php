@@ -12,6 +12,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -100,6 +101,9 @@ final class FailOverTransportTest extends TestCase
         self::assertSame($task, $failOverTransport->get('foo'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $failOverTransport = new FailOverTransport([]);
@@ -110,6 +114,22 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
+    {
+        $failOverTransport = new FailOverTransport([]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
+        $failOverTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotListWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
@@ -133,6 +153,39 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotLazyListWithFailingTransports(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->expects(self::once())
+            ->method('list')
+            ->with(self::equalTo(true))
+            ->willThrowException(new RuntimeException('Task list not found'))
+        ;
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->expects(self::once())
+            ->method('list')
+            ->with(self::equalTo(true))
+            ->willThrowException(new RuntimeException('Task list not found'))
+        ;
+
+        $failOverTransport = new FailOverTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
+        $failOverTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanRetrieveTaskList(): void
     {
         $taskList = $this->createMock(TaskListInterface::class);
@@ -149,6 +202,31 @@ final class FailOverTransportTest extends TestCase
         ]);
 
         self::assertEmpty($failOverTransport->list());
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanRetrieveLazyTaskList(): void
+    {
+        $taskList = $this->createMock(TaskListInterface::class);
+
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->method('list')
+            ->with(self::equalTo(true))
+            ->willThrowException(new RuntimeException('Task list not found'));
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->method('list')
+            ->with(self::equalTo(true))
+            ->willReturn($taskList);
+
+        $failOverTransport = new FailOverTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        self::assertEmpty($failOverTransport->list(true));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

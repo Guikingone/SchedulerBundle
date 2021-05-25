@@ -144,11 +144,19 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface
+    {
+        return $this->transport->list($lazy);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDueTasks(bool $lazy = false): TaskListInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->transport->list()->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && (null === $task->getLastExecution() || $task->getLastExecution()->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i')));
+        $dueTasks = $this->getTasks($lazy)->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && (null === $task->getLastExecution() || $task->getLastExecution()->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i')));
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
@@ -182,22 +190,6 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTimezone(): DateTimeZone
-    {
-        return $this->timezone;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getTasks(): TaskListInterface
-    {
-        return $this->transport->list();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function reboot(): void
     {
         $rebootTasks = $this->getTasks()->filter(fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
@@ -209,6 +201,14 @@ final class Scheduler implements SchedulerInterface
         }
 
         $this->dispatch(new SchedulerRebootedEvent($this));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTimezone(): DateTimeZone
+    {
+        return $this->timezone;
     }
 
     private function dispatch(Event $event): void

@@ -11,6 +11,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -91,6 +92,9 @@ final class LongTailTransportTest extends TestCase
         self::assertSame($task, $longTailTransport->get('foo'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $longTailTransport = new LongTailTransport([]);
@@ -101,6 +105,22 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
+    {
+        $longTailTransport = new LongTailTransport([]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
+        $longTailTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotReturnAListWithFailingTransports(): void
     {
         $taskList = $this->createMock(TaskListInterface::class);
@@ -129,6 +149,47 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotReturnALazyListWithFailingTransports(): void
+    {
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('count')->willReturn(0);
+
+        $secondTaskList = $this->createMock(TaskListInterface::class);
+        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->method('list')
+            ->with(self::equalTo(true))
+            ->willReturnOnConsecutiveCalls(
+                $taskList,
+                self::throwException(new RuntimeException('Task list not found'))
+            )
+        ;
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->expects(self::once())
+            ->method('list')
+            ->with(self::equalTo(true))
+            ->willReturn($secondTaskList)
+        ;
+
+        $longTailTransport = new LongTailTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
+        $longTailTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanReturnList(): void
     {
         $taskList = $this->createMock(TaskListInterface::class);
@@ -149,6 +210,38 @@ final class LongTailTransportTest extends TestCase
         ]);
 
         self::assertSame($taskList, $longTailTransport->list());
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanReturnLazyList(): void
+    {
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('count')->willReturn(0);
+
+        $secondTaskList = $this->createMock(TaskListInterface::class);
+        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->method('list')
+            ->with(self::equalTo(true))
+            ->willReturnOnConsecutiveCalls($taskList, $taskList)
+        ;
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->expects(self::once())
+            ->method('list')
+            ->with(self::equalTo(true))
+            ->willReturn($secondTaskList)
+        ;
+
+        $longTailTransport = new LongTailTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        self::assertSame($taskList, $longTailTransport->list(true));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

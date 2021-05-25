@@ -15,8 +15,18 @@ final class LazyTaskList implements TaskListInterface
     /**
      * @var TaskListInterface<string|int, TaskInterface>|null
      */
+    private ?TaskListInterface $sourceList;
+
+    /**
+     * @var TaskListInterface<string|int, TaskInterface>|null
+     */
     private ?TaskListInterface $list;
     private bool $initialized = false;
+
+    public function __construct(TaskListInterface $list)
+    {
+        $this->sourceList = $list;
+    }
 
     /**
      * {@inheritdoc}
@@ -164,7 +174,7 @@ final class LazyTaskList implements TaskListInterface
             return;
         }
 
-        $this->list = new TaskList();
+        $this->list = new TaskList($this->sourceList->toArray(false));
         $this->initialized = true;
     }
 }

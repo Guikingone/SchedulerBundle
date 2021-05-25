@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use SchedulerBundle\Task\LazyTaskList;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use SchedulerBundle\Exception\InvalidArgumentException;
@@ -49,7 +50,7 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
         $tasks = [];
 
@@ -60,7 +61,9 @@ final class FilesystemTransport extends AbstractTransport
             $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
         }
 
-        return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
+        $list = new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
+
+        return $lazy ? new LazyTaskList($list) : $list;
     }
 
     /**

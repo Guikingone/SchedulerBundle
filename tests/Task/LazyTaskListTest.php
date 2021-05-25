@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,14 +17,14 @@ final class LazyTaskListTest extends TestCase
 {
     public function testListCanBeInitialized(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list);
     }
 
     public function testListCanReceiveTask(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         $list->add(new NullTask('foo'));
 
         self::assertCount(1, $list);
@@ -31,7 +32,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanCheckTaskExistence(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertFalse($list->has('foo'));
 
@@ -41,7 +42,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanReturnTask(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertNull($list->get('foo'));
 
@@ -51,7 +52,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanFindTaskByName(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list->findByName(['foo']));
 
@@ -61,7 +62,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanFilterTask(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list->filter(fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
 
@@ -71,7 +72,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanRemoveTask(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         $list->remove('foo');
 
         self::assertCount(0, $list);
@@ -85,7 +86,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCannotWalkThroughEmptyList(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         self::assertCount(0, $list);
 
         $list->walk(function (TaskInterface $task): void {
@@ -96,7 +97,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanWalkThroughTask(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         $list->add(new NullTask('foo'));
         self::assertCount(0, $list->get('foo')->getTags());
 
@@ -108,7 +109,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanReturnEmptyListAsArray(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertEquals([], $list->toArray(false));
         self::assertEquals([], $list->toArray());
@@ -118,7 +119,7 @@ final class LazyTaskListTest extends TestCase
     {
         $task = new NullTask('foo');
 
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         $list->add($task);
 
         self::assertEquals([$task], $list->toArray(false));
@@ -127,7 +128,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanCheckOffsetExistence(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertFalse($list->offsetExists('foo'));
 
@@ -137,7 +138,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanSetOffset(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list);
 
@@ -147,7 +148,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanGetOffset(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list);
 
@@ -157,7 +158,7 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanUnsetOffset(): void
     {
-        $list = new LazyTaskList();
+        $list = new LazyTaskList(new TaskList());
         $list->offsetUnset('foo');
 
         self::assertCount(0, $list);

@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
@@ -61,9 +62,11 @@ class DoctrineTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
-        return $this->connection->list();
+        $list = $this->connection->list();
+
+        return $lazy ? new LazyTaskList($list) : $list;
     }
 
     /**

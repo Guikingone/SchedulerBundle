@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -30,6 +31,7 @@ use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 use function getcwd;
 
 /**
@@ -87,6 +89,9 @@ final class FilesystemTransportTest extends TestCase
         self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getOptions()['filename_mask']);
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTaskListCanBeRetrieved(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -128,19 +133,41 @@ final class FilesystemTransportTest extends TestCase
         self::assertSame('bar', $list->toArray(false)[1]->getName());
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
+
+        $lazyList = $filesystemTransport->list(true);
+        self::assertCount(2, $lazyList);
+        self::assertSame('foo', $lazyList->toArray(false)[0]->getName());
+        self::assertSame('bar', $lazyList->toArray(false)[1]->getName());
+        self::assertInstanceOf(NullTask::class, $lazyList->get('foo'));
+        self::assertInstanceOf(NullTask::class, $lazyList->get('bar'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTaskListCanBeRetrievedAndSorted(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $nullTask = new NullTask('bar');
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::once())->method('sort')->willReturn([$nullTask]);
+        $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$nullTask]);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [
             'execution_mode' => 'first_in_first_out',
@@ -152,13 +179,26 @@ final class FilesystemTransportTest extends TestCase
         $list = $filesystemTransport->list();
         self::assertNotEmpty($list);
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
+
+        $lazyList = $filesystemTransport->list(true);
+        self::assertNotEmpty($lazyList);
+        self::assertInstanceOf(NullTask::class, $lazyList->get('bar'));
     }
 
     public function testTaskCannotBeRetrievedWithUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([

@@ -73,7 +73,7 @@ final class TaskList implements TaskListInterface
     {
         $filteredTasks = $this->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
 
-        return new self($filteredTasks->toArray(false));
+        return new TaskList($filteredTasks->toArray(false));
     }
 
     /**
@@ -81,7 +81,7 @@ final class TaskList implements TaskListInterface
      */
     public function filter(Closure $filter): TaskListInterface
     {
-        return new self(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
+        return new TaskList(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }
 
     /**
