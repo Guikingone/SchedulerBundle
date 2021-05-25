@@ -34,9 +34,6 @@ use function iterator_to_array;
  */
 abstract class AbstractWorker implements WorkerInterface
 {
-    /**
-     * @var array<string, bool|int|null|TaskInterface>
-     */
     protected array $options = [];
 
     /**
@@ -53,6 +50,9 @@ abstract class AbstractWorker implements WorkerInterface
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
 
+    /**
+     * @param RunnerInterface[] $runners
+     */
     public function __construct(
         SchedulerInterface $scheduler,
         iterable $runners,
@@ -68,7 +68,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->failedTasks = new TaskList();
     }
 
-    public function run(array $options, Closure $closure): void
+    protected function run(array $options, Closure $closure): void
     {
         if ([] === $this->runners) {
             throw new UndefinedRunnerException('No runner found');
