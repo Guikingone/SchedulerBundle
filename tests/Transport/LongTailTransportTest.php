@@ -7,8 +7,13 @@ namespace Tests\SchedulerBundle\Transport;
 use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
@@ -190,24 +195,17 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCanReturnList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
-
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('list')->willReturnOnConsecutiveCalls($taskList, $taskList);
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
-
         $longTailTransport = new LongTailTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ]);
 
-        self::assertSame($taskList, $longTailTransport->list());
+        self::assertInstanceOf(TaskList::class, $longTailTransport->list());
+        self::assertCount(0, $longTailTransport->list());
     }
 
     /**
@@ -215,29 +213,17 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCanReturnLazyList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
-
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('list')
-            ->willReturnOnConsecutiveCalls($taskList, $taskList)
-        ;
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())
-            ->method('list')
-            ->willReturn($secondTaskList)
-        ;
-
         $longTailTransport = new LongTailTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ]);
 
-        self::assertSame($taskList, $longTailTransport->list(true));
+        self::assertInstanceOf(LazyTaskList::class, $longTailTransport->list(true));
+        self::assertCount(0, $longTailTransport->list(true));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

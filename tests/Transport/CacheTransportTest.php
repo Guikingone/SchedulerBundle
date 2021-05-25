@@ -12,9 +12,11 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\CacheTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -163,12 +165,20 @@ final class CacheTransportTest extends TestCase
         $cacheTransport->create(new NullTask('foo'));
 
         $list = $cacheTransport->list();
-        self::assertNotEmpty($list);
-        self::assertSame('foo', $list->get('foo')->getName());
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(1, $list);
+
+        $fooTask = $list->get('foo');
+        self::assertInstanceOf(NullTask::class, $fooTask);
+        self::assertSame('foo', $fooTask->getName());
 
         $lazyList = $cacheTransport->list(true);
-        self::assertNotEmpty($lazyList);
-        self::assertSame('foo', $lazyList->get('foo')->getName());
+        self::assertInstanceOf(LazyTaskList::class, $lazyList);
+        self::assertCount(1, $lazyList);
+
+        $lazyStoredFooTask = $lazyList->get('foo');
+        self::assertInstanceOf(NullTask::class, $lazyStoredFooTask);
+        self::assertSame('foo', $lazyStoredFooTask->getName());
     }
 
     public function testTransportCannotCreateExistingTask(): void

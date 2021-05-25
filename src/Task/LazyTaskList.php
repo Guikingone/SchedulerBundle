@@ -12,14 +12,7 @@ use Traversable;
  */
 final class LazyTaskList implements TaskListInterface
 {
-    /**
-     * @var TaskListInterface<string|int, TaskInterface>|null
-     */
     private ?TaskListInterface $sourceList;
-
-    /**
-     * @var TaskListInterface<string|int, TaskInterface>|null
-     */
     private ?TaskListInterface $list;
     private bool $initialized = false;
 
@@ -93,9 +86,11 @@ final class LazyTaskList implements TaskListInterface
      */
     public function walk(Closure $func): TaskListInterface
     {
-        $this->initialize();
+        if ($this->initialized) {
+            return $this->list->walk($func);
+        }
 
-        return $this->list->walk($func);
+        return $this->sourceList->walk($func);
     }
 
     /**
@@ -123,9 +118,11 @@ final class LazyTaskList implements TaskListInterface
      */
     public function offsetGet($offset): ?TaskInterface
     {
-        $this->initialize();
+        if ($this->initialized) {
+            return $this->list->offsetGet($offset);
+        }
 
-        return $this->list->offsetGet($offset);
+        return $this->sourceList->offsetGet($offset);
     }
 
     /**
@@ -133,9 +130,13 @@ final class LazyTaskList implements TaskListInterface
      */
     public function offsetSet($offset, $value): void
     {
-        $this->initialize();
+        if ($this->initialized) {
+            $this->list->offsetSet($offset, $value);
 
-        $this->list->offsetSet($offset, $value);
+            return;
+        }
+
+        $this->sourceList->offsetSet($offset, $value);
     }
 
     /**

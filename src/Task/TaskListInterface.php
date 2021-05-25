@@ -30,16 +30,12 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function get(string $taskName): ?TaskInterface;
 
     /**
-     * @return TaskListInterface<string|int, TaskInterface> which contain the desired tasks using the names.
-     *
      * @param array<int, string> $names
      */
     public function findByName(array $names): self;
 
     /**
      * Allow to filter the list using a custom filter, the @param Closure $filter receive the task name and the TaskInterface object (in this order).
-     *
-     * @return TaskListInterface<string, TaskInterface>
      */
     public function filter(Closure $filter): self;
 

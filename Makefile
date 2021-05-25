@@ -59,5 +59,7 @@ infection: infection.json.dist
 ## Versioning
 ##---------------------------------------------------------------------------
 
+.PHONY: generate-changelog
+
 generate-changelog: .changelog
 	$(PHP) vendor/bin/conventional-changelog --config .changelog

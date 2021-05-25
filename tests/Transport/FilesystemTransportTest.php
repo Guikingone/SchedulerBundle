@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -128,6 +130,7 @@ final class FilesystemTransportTest extends TestCase
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
 
         $list = $filesystemTransport->list();
+        self::assertInstanceOf(TaskList::class, $list);
         self::assertCount(2, $list);
         self::assertSame('foo', $list->toArray(false)[0]->getName());
         self::assertSame('bar', $list->toArray(false)[1]->getName());
@@ -135,6 +138,7 @@ final class FilesystemTransportTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
 
         $lazyList = $filesystemTransport->list(true);
+        self::assertInstanceOf(LazyTaskList::class, $lazyList);
         self::assertCount(2, $lazyList);
         self::assertSame('foo', $lazyList->toArray(false)[0]->getName());
         self::assertSame('bar', $lazyList->toArray(false)[1]->getName());

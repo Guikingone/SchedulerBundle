@@ -135,6 +135,5 @@
         "symfony/http-client": "For dispatching http tasks",
         "symfony/messenger": "For dispatching tasks to queue",
         "symfony/notifier": "For dispatching notification tasks"
-    },
-    "version": "0.5.0"
+    }
 }

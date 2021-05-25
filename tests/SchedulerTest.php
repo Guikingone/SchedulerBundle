@@ -355,7 +355,9 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         self::assertCount(0, $scheduler->getTasks());
+        self::assertInstanceOf(TaskList::class, $scheduler->getTasks());
         self::assertCount(0, $scheduler->getTasks(true));
+        self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
     }
 
     public function testTaskCannotBeScheduledTwice(): void

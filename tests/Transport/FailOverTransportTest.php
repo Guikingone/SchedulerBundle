@@ -7,7 +7,9 @@ namespace Tests\SchedulerBundle\Transport;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -209,8 +211,6 @@ final class FailOverTransportTest extends TestCase
      */
     public function testTransportCanRetrieveLazyTaskList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')
             ->with(self::equalTo(true))
@@ -219,14 +219,17 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('list')
             ->with(self::equalTo(true))
-            ->willReturn($taskList);
+            ->willReturn(new LazyTaskList(new TaskList()));
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertEmpty($failOverTransport->list(true));
+        $list = $failOverTransport->list(true);
+
+        self::assertInstanceOf(LazyTaskList::class, $list);
+        self::assertCount(0, $list);
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

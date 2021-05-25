@@ -103,13 +103,20 @@ final class LazyTaskListTest extends TestCase
     public function testListCanWalkThroughTask(): void
     {
         $list = new LazyTaskList(new TaskList());
+
         $list->add(new NullTask('foo'));
-        self::assertCount(0, $list->get('foo')->getTags());
+
+        $task = $list->get('foo');
+        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertCount(0, $task->getTags());
 
         $list->walk(function (TaskInterface $task): void {
             $task->addTag('walk');
         });
-        self::assertCount(1, $list->get('foo')->getTags());
+
+        $task = $list->get('foo');
+        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertCount(1, $task->getTags());
     }
 
     public function testListCanReturnEmptyListAsArray(): void
@@ -141,7 +148,7 @@ final class LazyTaskListTest extends TestCase
         self::assertTrue($list->offsetExists('foo'));
     }
 
-    public function testListCanSetOffset(): void
+    public function testListCanSetOffsetWithoutBeingInitialized(): void
     {
         $list = new LazyTaskList(new TaskList());
 
@@ -149,6 +156,18 @@ final class LazyTaskListTest extends TestCase
 
         $list->offsetSet('foo', new NullTask('foo'));
         self::assertCount(1, $list);
+    }
+
+    public function testListCanSetOffset(): void
+    {
+        $list = new LazyTaskList(new TaskList());
+
+        self::assertCount(0, $list);
+        self::assertNull($list->get('foo'));
+
+        $list->offsetSet('foo', new NullTask('foo'));
+        self::assertCount(1, $list);
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
     public function testListCannotGetNullOffset(): void
@@ -165,7 +184,7 @@ final class LazyTaskListTest extends TestCase
 
         self::assertCount(0, $list);
 
-        $list->offsetSet('foo', new NullTask('foo'));
+        $list->add(new NullTask('foo'));
         self::assertInstanceOf(NullTask::class, $list->offsetGet('foo'));
     }
 
@@ -179,15 +198,21 @@ final class LazyTaskListTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->offsetGet('foo'));
     }
 
+    public function testListCanUnsetOffsetWithoutBeingInitialized(): void
+    {
+        $list = new LazyTaskList(new TaskList());
+
+        $list->offsetUnset('foo');
+        self::assertCount(0, $list);
+    }
+
     public function testListCanUnsetOffset(): void
     {
         $list = new LazyTaskList(new TaskList());
-        $list->offsetUnset('foo');
-
-        self::assertCount(0, $list);
 
         $list->add(new NullTask('foo'));
         self::assertCount(1, $list);
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
 
         $list->offsetUnset('foo');
         self::assertCount(0, $list);

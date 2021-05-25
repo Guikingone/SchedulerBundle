@@ -12,11 +12,13 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Dsn;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -83,20 +85,31 @@ final class RedisTransportTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTaskCanBeListedWhenEmpty(): void
     {
         $list = $this->transport->list();
 
         self::assertInstanceOf(TaskList::class, $list);
-        self::assertEmpty($list);
+        self::assertCount(0, $list);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTaskCanBeListedWhenEmptyAndUsingTheLazyApproach(): void
+    {
+        $list = $this->transport->list(true);
+
+        self::assertInstanceOf(LazyTaskList::class, $list);
+        self::assertCount(0, $list);
     }
 
     /**
      * @dataProvider provideTasks
      *
-     * @throws Throwable
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTasksCanBeListed(TaskInterface $task): void
     {
@@ -106,8 +119,29 @@ final class RedisTransportTest extends TestCase
 
         self::assertInstanceOf(TaskList::class, $list);
         self::assertCount(1, $list);
-        self::assertNotEmpty($list);
-        self::assertSame($task->getName(), $list->get($task->getName())->getName());
+
+        $storedTask = $list->get($task->getName());
+        self::assertNotNull($storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
+    }
+
+    /**
+     * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTasksCanBeListedLazily(TaskInterface $task): void
+    {
+        $this->transport->create($task);
+
+        $list = $this->transport->list(true);
+
+        self::assertInstanceOf(LazyTaskList::class, $list);
+        self::assertCount(1, $list);
+
+        $storedTask = $list->get($task->getName());
+        self::assertNotNull($storedTask);
+        self::assertSame($task->getName(), $storedTask->getName());
     }
 
     public function testTaskCannotBeRetrievedWhenNotCreated(): void

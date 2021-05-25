@@ -20,9 +20,13 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -99,6 +103,7 @@ final class DoctrineTransportTest extends TestCase
 
     /**
      * @throws JsonException
+     * @throws Throwable     {@see TransportInterface::list()}
      */
     public function testTransportCanListTasks(): void
     {
@@ -144,7 +149,64 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]), $logger);
 
-        self::assertEmpty($transport->list());
+        $list = $transport->list();
+
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(0, $list);
+    }
+
+    /**
+     * @throws JsonException
+     * @throws Throwable     {@see TransportInterface::list()}
+     */
+    public function testTransportCanListTasksLazily(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning');
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('from')
+            ->with(self::equalTo('_symfony_scheduler_tasks'), self::equalTo('t'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
+        $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
+        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id)');
+
+        $abstractPlatform = $this->createMock(AbstractPlatform::class);
+        $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
+        $connection->expects(self::once())->method('executeQuery')->with(
+            self::equalTo('COUNT(DISTINCT t.id) FOR UPDATE'),
+            self::equalTo([]),
+            self::equalTo([])
+        )->willReturn($statement);
+        $connection->expects(self::never())->method('transactional');
+
+        $transport = new DoctrineTransport([
+            'execution_mode' => 'normal',
+            'auto_setup' => false,
+            'table_name' => '_symfony_scheduler_tasks',
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]), $logger);
+
+        $list = $transport->list(true);
+
+        self::assertInstanceOf(LazyTaskList::class, $list);
+        self::assertCount(0, $list);
     }
 
     /**

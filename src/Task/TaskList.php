@@ -69,7 +69,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): TaskListInterface
+    public function findByName(array $names): TaskList
     {
         $filteredTasks = $this->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
 
@@ -79,7 +79,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): TaskListInterface
+    public function filter(Closure $filter): TaskList
     {
         return new TaskList(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }

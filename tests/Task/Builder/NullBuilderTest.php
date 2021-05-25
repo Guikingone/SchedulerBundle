@@ -53,7 +53,11 @@ final class NullBuilderTest extends TestCase
         self::assertSame($options['expression'], $task->getExpression());
         self::assertNull($task->getDescription());
         self::assertSame($options['queued'], $task->isQueued());
-        self::assertSame($options['timezone'], $task->getTimezone()->getName());
+
+        $timezone = $task->getTimezone();
+        self::assertNotNull($timezone);
+        self::assertSame($options['timezone'], $timezone->getName());
+
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 

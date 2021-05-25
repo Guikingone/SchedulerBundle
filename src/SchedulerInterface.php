@@ -54,8 +54,6 @@ interface SchedulerInterface
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
      * @throws Throwable {@see TransportInterface::list()}
-     *
-     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getTasks(bool $lazy = false): TaskListInterface;
 
@@ -65,8 +63,6 @@ interface SchedulerInterface
      * Can lazy-load the task list if @param bool $lazy is used
      *
      * @throws Throwable {@see TransportInterface::list()}
-     *
-     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getDueTasks(bool $lazy = false): TaskListInterface;
 

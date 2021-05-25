@@ -173,8 +173,6 @@ final class TaskListTest extends TestCase
 
         $tasks = $taskList->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
 
-        self::assertNotEmpty($tasks);
-        self::assertInstanceOf(TaskList::class, $tasks);
         self::assertCount(1, $tasks);
     }
 

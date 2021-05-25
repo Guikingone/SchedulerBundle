@@ -159,7 +159,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     protected function getTasks(array $tasks): array
     {
-        $tasks = [] !== $tasks ? $tasks : $this->scheduler->getDueTasks();
+        $tasks = [] !== $tasks ? $tasks : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
 
         return is_array($tasks) ? $tasks : iterator_to_array($tasks);
     }
@@ -219,7 +219,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->eventDispatcher->dispatch($event);
     }
 
-    protected function configure(array $options): void
+    private function configure(array $options): void
     {
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
@@ -230,6 +230,7 @@ abstract class AbstractWorker implements WorkerInterface
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
             'shouldStop' => false,
+            'shouldRetrieveTasksLazily' => false,
         ]);
 
         $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
@@ -239,6 +240,7 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
         $optionsResolver->setAllowedTypes('shouldStop', 'bool');
+        $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');
 
         $this->options = $optionsResolver->resolve($options);
     }
