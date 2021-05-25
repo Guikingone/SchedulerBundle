@@ -83,6 +83,17 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(0, $list);
     }
 
+    public function testListCannotWalkThroughEmptyList(): void
+    {
+        $list = new LazyTaskList();
+        self::assertCount(0, $list);
+
+        $list->walk(function (TaskInterface $task): void {
+            $task->addTag('walk');
+        });
+        self::assertCount(0, $list);
+    }
+
     public function testListCanWalkThroughTask(): void
     {
         $list = new LazyTaskList();
@@ -93,6 +104,14 @@ final class LazyTaskListTest extends TestCase
             $task->addTag('walk');
         });
         self::assertCount(1, $list->get('foo')->getTags());
+    }
+
+    public function testListCanReturnEmptyListAsArray(): void
+    {
+        $list = new LazyTaskList();
+
+        self::assertEquals([], $list->toArray(false));
+        self::assertEquals([], $list->toArray());
     }
 
     public function testListCanReturnTasksAsArray(): void
