@@ -76,7 +76,7 @@ final class ChainedBuilderTest extends TestCase
 
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask(0));
+        self::assertInstanceOf(ShellTask::class, $task->getTask($configuration['tasks'][0]['name']));
     }
 
     /**

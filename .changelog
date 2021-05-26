@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'root' => getcwd(),
+    'path' => 'CHANGELOG.md',
+    'headerTitle' => 'Changelog',
+    'headerDescription' => 'All notable changes to this project will be documented in this file.',
+    'sortBy' => 'subject',
+    'ignoreTypes' => ['chore', 'revert', 'style', 'test'],
+];

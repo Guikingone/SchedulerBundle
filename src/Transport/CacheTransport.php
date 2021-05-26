@@ -8,6 +8,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -71,17 +72,19 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
         $listItem = $this->pool->getItem(self::TASK_LIST_ITEM_NAME);
         if (!$listItem->isHit()) {
             return new TaskList();
         }
 
-        return new TaskList($this->schedulePolicyOrchestrator->sort(
+        $list = new TaskList($this->schedulePolicyOrchestrator->sort(
             $this->getExecutionMode(),
             array_map(fn (string $task): TaskInterface => $this->get($task), $listItem->get())
         ));
+
+        return $lazy ? new LazyTaskList($list) : $list;
     }
 
     /**

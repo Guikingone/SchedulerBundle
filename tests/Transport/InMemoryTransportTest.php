@@ -11,10 +11,13 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Throwable;
 use function sprintf;
 
 /**
@@ -69,6 +72,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanCreateATask(TaskInterface $task): void
     {
@@ -80,10 +85,29 @@ final class InMemoryTransportTest extends TestCase
         self::assertCount(1, $inMemoryTransport->list());
     }
 
+    /**
+     * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanCreateATaskAndReturnItAsLazy(TaskInterface $task): void
+    {
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $inMemoryTransport->create($task);
+        self::assertInstanceOf(LazyTaskList::class, $inMemoryTransport->list(true));
+        self::assertCount(1, $inMemoryTransport->list(true));
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotCreateATaskTwice(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
 
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getName')->willReturn('foo');
@@ -95,8 +119,12 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->create($task);
         $inMemoryTransport->create($secondTask);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanAddTaskAndSortAList(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -115,10 +143,15 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->create($task);
 
         self::assertNotEmpty($inMemoryTransport->list());
+        self::assertNotEmpty($inMemoryTransport->list(true));
         self::assertSame([
             'bar' => $task,
             'foo' => $secondTask,
         ], $inMemoryTransport->list()->toArray());
+        self::assertSame([
+            'bar' => $task,
+            'foo' => $secondTask,
+        ], $inMemoryTransport->list(true)->toArray());
     }
 
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
@@ -138,6 +171,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanUpdateATask(TaskInterface $task): void
     {
@@ -147,16 +182,20 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
 
         $task->setTags(['test']);
 
         $inMemoryTransport->update($task->getName(), $task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
         self::assertContains('test', $task->getTags());
     }
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
     {
@@ -166,13 +205,17 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
 
         $inMemoryTransport->delete('bar');
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
     }
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
@@ -182,9 +225,11 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
 
         $inMemoryTransport->delete($task->getName());
         self::assertCount(0, $inMemoryTransport->list());
+        self::assertCount(0, $inMemoryTransport->list(true));
     }
 
     /**
@@ -204,6 +249,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCannotPausePausedTask(TaskInterface $task): void
     {
@@ -213,6 +260,8 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
+
         $inMemoryTransport->pause($task->getName());
 
         self::expectException(LogicException::class);
@@ -223,6 +272,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanPauseATask(TaskInterface $task): void
     {
@@ -233,6 +284,8 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertSame(TaskInterface::ENABLED, $task->getState());
+        self::assertCount(1, $inMemoryTransport->list(true));
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
 
         $inMemoryTransport->pause($task->getName());
 
@@ -242,6 +295,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanResumeAPausedTask(TaskInterface $task): void
     {
@@ -251,6 +306,7 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
 
         $inMemoryTransport->pause($task->getName());
         $pausedTask = $inMemoryTransport->get($task->getName());
@@ -263,6 +319,8 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanEmptyAList(TaskInterface $task): void
     {
@@ -275,6 +333,26 @@ final class InMemoryTransportTest extends TestCase
 
         $inMemoryTransport->clear();
         self::assertCount(0, $inMemoryTransport->list());
+    }
+
+    /**
+     * @dataProvider provideTasks
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanEmptyALazyList(TaskInterface $task): void
+    {
+        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $inMemoryTransport->create($task);
+        self::assertInstanceOf(LazyTaskList::class, $inMemoryTransport->list(true));
+        self::assertCount(1, $inMemoryTransport->list(true));
+
+        $inMemoryTransport->clear();
+        self::assertInstanceOf(LazyTaskList::class, $inMemoryTransport->list(true));
+        self::assertCount(0, $inMemoryTransport->list(true));
     }
 
     /**

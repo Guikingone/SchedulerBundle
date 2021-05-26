@@ -8,7 +8,6 @@ use InvalidArgumentException;
 use RuntimeException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
-use function count;
 use function sprintf;
 
 /**
@@ -40,13 +39,13 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
             throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
         }
 
-        if (0 === count($tasks)) {
+        if ([] === $tasks) {
             return [];
         }
 
         foreach ($tasks as $task) {
             if ($task instanceof ChainedTask) {
-                $task->setTasks(...$this->sort($policy, $task->getTasks()));
+                $task->setTasks(...$this->sort($policy, $task->getTasks()->toArray(false)));
             }
         }
 

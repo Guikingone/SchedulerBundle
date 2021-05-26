@@ -7,10 +7,16 @@ namespace Tests\SchedulerBundle\Transport;
 use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -91,6 +97,9 @@ final class LongTailTransportTest extends TestCase
         self::assertSame($task, $longTailTransport->get('foo'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $longTailTransport = new LongTailTransport([]);
@@ -101,6 +110,22 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
+    {
+        $longTailTransport = new LongTailTransport([]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
+        $longTailTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotReturnAListWithFailingTransports(): void
     {
         $taskList = $this->createMock(TaskListInterface::class);
@@ -129,7 +154,10 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport->list();
     }
 
-    public function testTransportCanReturnList(): void
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotReturnALazyListWithFailingTransports(): void
     {
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('count')->willReturn(0);
@@ -138,17 +166,64 @@ final class LongTailTransportTest extends TestCase
         $secondTaskList->expects(self::once())->method('count')->willReturn(1);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('list')->willReturnOnConsecutiveCalls($taskList, $taskList);
+        $firstTransport->method('list')
+            ->willReturnOnConsecutiveCalls(
+                $taskList,
+                self::throwException(new RuntimeException('Task list not found'))
+            )
+        ;
 
         $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
+        $secondTransport->expects(self::once())
+            ->method('list')
+            ->willReturn($secondTaskList)
+        ;
 
         $longTailTransport = new LongTailTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertSame($taskList, $longTailTransport->list());
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The transport failed to execute the requested action');
+        self::expectExceptionCode(0);
+        $longTailTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanReturnList(): void
+    {
+        $longTailTransport = new LongTailTransport([
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ]);
+
+        self::assertInstanceOf(TaskList::class, $longTailTransport->list());
+        self::assertCount(0, $longTailTransport->list());
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanReturnLazyList(): void
+    {
+        $longTailTransport = new LongTailTransport([
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ]);
+
+        self::assertInstanceOf(LazyTaskList::class, $longTailTransport->list(true));
+        self::assertCount(0, $longTailTransport->list(true));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

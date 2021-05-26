@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
@@ -21,11 +22,13 @@ interface TransportInterface
     public function get(string $name): TaskInterface;
 
     /**
+     * Can return a {@see LazyTaskList} if @param bool $lazy is used
+     *
      * @return TaskListInterface<string|int, TaskInterface>, the tasks name are used as keys.
      *
      * @throws Throwable
      */
-    public function list(): TaskListInterface;
+    public function list(bool $lazy = false): TaskListInterface;
 
     /**
      * Add the task into the transport list, if the task name already exist, the new task is not added.

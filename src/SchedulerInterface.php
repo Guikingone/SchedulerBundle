@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle;
 
 use DateTimeZone;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
@@ -48,27 +49,22 @@ interface SchedulerInterface
     public function resume(string $taskName): void;
 
     /**
-     * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
-     *
-     * @throws Throwable {@see TransportInterface::list()}
-     *
-     * @return TaskListInterface<string|int, TaskInterface>
-     */
-    public function getDueTasks(): TaskListInterface;
-
-    /**
-     * Return the timezone used by the actual scheduler, each scheduler can use a different timezone.
-     */
-    public function getTimezone(): DateTimeZone;
-
-    /**
      * Return every tasks scheduled.
      *
-     * @throws Throwable {@see TransportInterface::list()}
+     * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getTasks(): TaskListInterface;
+    public function getTasks(bool $lazy = false): TaskListInterface;
+
+    /**
+     * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
+     *
+     * Can lazy-load the task list if @param bool $lazy is used
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function getDueTasks(bool $lazy = false): TaskListInterface;
 
     /**
      * Remove every tasks except the ones that use the '@reboot' expression.
@@ -78,4 +74,9 @@ interface SchedulerInterface
      * @throws Throwable {@see TransportInterface::list()}
      */
     public function reboot(): void;
+
+    /**
+     * Return the timezone used by the actual scheduler, each scheduler can use a different timezone.
+     */
+    public function getTimezone(): DateTimeZone;
 }

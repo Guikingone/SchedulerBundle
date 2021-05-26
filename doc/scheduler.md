@@ -22,14 +22,16 @@ The scheduler provides several methods to help interact with tasks during the wh
 - `resume`: Accept the task name as the only argument, the transport is used to change the task state to `ENABLED`,
             an error can be thrown if the current state does not allow `ENABLED` as the new one.
 
+- `getTasks`: Return every task stored in the transport, a [TaskList](../src/Task/TaskList.php) is returned,
+  if `true` is passed, a [LazyTaskList](../src/Task/LazyTaskList.php) is returned.
+
 - `getDueTasks`: Return the tasks that are dues regarding the current date (thanks to each task expression),
                  a [TaskList](../src/Task/TaskList.php) is returned.
-
-- `getTimezone`: Return the scheduler timezone (used for each task if not set).
-
-- `getTasks`: Return every task stored in the transport, a [TaskList](../src/Task/TaskList.php) is returned.
+                 If `true` is passed, the action is performed using a lazy-loaded task list.
 
 - `reboot`: Reboot the scheduler, each task that use `@reboot` as expression are yielded into the scheduler.
+
+- `getTimezone`: Return the scheduler timezone (used for each task if not set).
 
 ## Asynchronous API
 

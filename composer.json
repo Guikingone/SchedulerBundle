@@ -1,7 +1,13 @@
 {
     "name": "guikingone/scheduler-bundle",
     "description": "A Symfony bundle that allows to schedule and create repetitive tasks",
-    "keywords": ["schedule", "scheduler", "tasks", "cron", "automation"],
+    "keywords": [
+        "schedule",
+        "scheduler",
+        "tasks",
+        "cron",
+        "automation"
+    ],
     "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
@@ -104,6 +110,7 @@
         "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^3.0.0",
         "infection/infection": "^0.22.1",
+        "marcocesarato/php-conventional-changelog": "^1.10",
         "phpstan/phpstan": "^0.12.86",
         "phpstan/phpstan-doctrine": "^0.12.33",
         "phpstan/phpstan-phpunit": "^0.12.19",

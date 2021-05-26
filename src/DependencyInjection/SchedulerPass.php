@@ -22,21 +22,21 @@ final class SchedulerPass implements CompilerPassInterface
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $containerBuilder): void
+    public function process(ContainerBuilder $container): void
     {
-        $this->registerExtra($containerBuilder);
+        $this->registerExtra($container);
     }
 
-    private function registerExtra(ContainerBuilder $containerBuilder): void
+    private function registerExtra(ContainerBuilder $container): void
     {
-        foreach ($containerBuilder->findTaggedServiceIds($this->schedulerExtraTag) as $service => $args) {
-            if (!$containerBuilder->hasDefinition($args[0]['require'])) {
-                $containerBuilder->removeDefinition($service);
+        foreach ($container->findTaggedServiceIds($this->schedulerExtraTag) as $service => $args) {
+            if (!$container->hasDefinition($args[0]['require'])) {
+                $container->removeDefinition($service);
 
                 continue;
             }
 
-            $containerBuilder->getDefinition($service)->addTag($args[0]['tag']);
+            $container->getDefinition($service)->addTag($args[0]['tag']);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use stdClass;
@@ -162,17 +163,16 @@ final class TaskListTest extends TestCase
         self::assertCount(1, $tasks);
     }
 
+    /**
+     * @group foo
+     */
     public function testListCanFilterTaskByNames(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
         $taskList = new TaskList([$task]);
-
-        $task->expects(self::any())->method('getName')->willReturn('foo');
 
         $tasks = $taskList->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
 
-        self::assertNotEmpty($tasks);
-        self::assertInstanceOf(TaskList::class, $tasks);
         self::assertCount(1, $tasks);
     }
 
@@ -238,5 +238,18 @@ final class TaskListTest extends TestCase
         self::assertCount(1, $taskList->toArray(false));
         self::assertArrayHasKey(0, $taskList->toArray(false));
         self::assertArrayNotHasKey('foo', $taskList->toArray(false));
+    }
+
+    public function testListCanApplyClosureOnEachTask(): void
+    {
+        $nullTask = new NullTask('foo');
+
+        self::assertCount(0, $nullTask->getTags());
+
+        $taskList = new TaskList([$nullTask]);
+        $taskList->walk(fn (TaskInterface $task) => $task->addTag('walk'));
+
+        self::assertCount(1, $nullTask->getTags());
+        self::assertContains('walk', $nullTask->getTags());
     }
 }

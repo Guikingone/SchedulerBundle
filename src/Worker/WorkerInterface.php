@@ -10,10 +10,13 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -33,11 +36,20 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
-     * @param array<string, int|string> $options
+     * @param array<string, int|string|bool> $options
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
+     * @throws Throwable                {@see SchedulerInterface::getDueTasks()}
      */
     public function execute(array $options = [], TaskInterface ...$tasks): void;
+
+    /**
+     * Allow to return a "fork" of the current worker,
+     * the final implementation is up to each worker that implement the interface.
+     *
+     * If required, the fact that a given worker instance is a fork can be checked via {@see WorkerInterface::getOptions()}
+     */
+    public function fork(): WorkerInterface;
 
     public function stop(): void;
 
@@ -52,10 +64,18 @@ interface WorkerInterface
      */
     public function getFailedTasks(): TaskListInterface;
 
+    /**
+     * @return TaskInterface|null The latest executed task or null if the worker is just getting started
+     */
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return array<string, mixed>|null
+     * @return RunnerInterface[]
+     */
+    public function getRunners(): array;
+
+    /**
+     * @return array<string, bool|int|null|TaskInterface>
      */
     public function getOptions(): ?array;
 }

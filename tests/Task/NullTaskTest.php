@@ -515,9 +515,11 @@ final class NullTaskTest extends TestCase
             'before_scheduling_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($notificationTaskBag, $nullTask->getBeforeSchedulingNotificationBag());
-        self::assertSame($notification, $nullTask->getBeforeSchedulingNotificationBag()->getNotification());
-        self::assertContains($recipient, $nullTask->getBeforeSchedulingNotificationBag()->getRecipients());
+        $bag = $nullTask->getBeforeSchedulingNotificationBag();
+
+        self::assertSame($notificationTaskBag, $bag);
+        self::assertSame($notification, $bag->getNotification());
+        self::assertContains($recipient, $bag->getRecipients());
 
         $nullTask->beforeSchedulingNotificationBag();
         self::assertNull($nullTask->getBeforeSchedulingNotificationBag());
@@ -534,9 +536,11 @@ final class NullTaskTest extends TestCase
             'after_scheduling_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($notificationTaskBag, $nullTask->getAfterSchedulingNotificationBag());
-        self::assertSame($notification, $nullTask->getAfterSchedulingNotificationBag()->getNotification());
-        self::assertContains($recipient, $nullTask->getAfterSchedulingNotificationBag()->getRecipients());
+        $bag = $nullTask->getAfterSchedulingNotificationBag();
+
+        self::assertSame($notificationTaskBag, $bag);
+        self::assertSame($notification, $bag->getNotification());
+        self::assertContains($recipient, $bag->getRecipients());
 
         $nullTask->afterSchedulingNotificationBag();
         self::assertNull($nullTask->getAfterSchedulingNotificationBag());
@@ -553,9 +557,11 @@ final class NullTaskTest extends TestCase
             'before_executing_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($notificationTaskBag, $nullTask->getBeforeExecutingNotificationBag());
-        self::assertSame($notification, $nullTask->getBeforeExecutingNotificationBag()->getNotification());
-        self::assertContains($recipient, $nullTask->getBeforeExecutingNotificationBag()->getRecipients());
+        $bag = $nullTask->getBeforeExecutingNotificationBag();
+
+        self::assertSame($notificationTaskBag, $bag);
+        self::assertSame($notification, $bag->getNotification());
+        self::assertContains($recipient, $bag->getRecipients());
 
         $nullTask->beforeExecutingNotificationBag();
         self::assertNull($nullTask->getBeforeExecutingNotificationBag());
@@ -572,9 +578,11 @@ final class NullTaskTest extends TestCase
             'after_executing_notification' => $notificationTaskBag,
         ]);
 
-        self::assertSame($notificationTaskBag, $nullTask->getAfterExecutingNotificationBag());
-        self::assertSame($notification, $nullTask->getAfterExecutingNotificationBag()->getNotification());
-        self::assertContains($recipient, $nullTask->getAfterExecutingNotificationBag()->getRecipients());
+        $bag = $nullTask->getAfterExecutingNotificationBag();
+
+        self::assertSame($notificationTaskBag, $bag);
+        self::assertSame($notification, $bag->getNotification());
+        self::assertContains($recipient, $bag->getRecipients());
 
         $nullTask->afterExecutingNotificationBag();
         self::assertNull($nullTask->getAfterExecutingNotificationBag());

@@ -12,10 +12,13 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\CacheTransport;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -28,6 +31,7 @@ use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -133,6 +137,9 @@ final class CacheTransportTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanListTasks(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -158,9 +165,20 @@ final class CacheTransportTest extends TestCase
         $cacheTransport->create(new NullTask('foo'));
 
         $list = $cacheTransport->list();
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(1, $list);
 
-        self::assertNotEmpty($list);
-        self::assertSame('foo', $list->get('foo')->getName());
+        $fooTask = $list->get('foo');
+        self::assertInstanceOf(NullTask::class, $fooTask);
+        self::assertSame('foo', $fooTask->getName());
+
+        $lazyList = $cacheTransport->list(true);
+        self::assertInstanceOf(LazyTaskList::class, $lazyList);
+        self::assertCount(1, $lazyList);
+
+        $lazyStoredFooTask = $lazyList->get('foo');
+        self::assertInstanceOf(NullTask::class, $lazyStoredFooTask);
+        self::assertSame('foo', $lazyStoredFooTask->getName());
     }
 
     public function testTransportCannotCreateExistingTask(): void
@@ -374,6 +392,9 @@ final class CacheTransportTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $cacheTransport->get('foo')->getState());
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotDeleteUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -401,8 +422,17 @@ final class CacheTransportTest extends TestCase
 
         $cacheTransport->delete('bar');
         self::assertNotEmpty($cacheTransport->list());
+
+        $cacheTransport->create(new NullTask('foo'));
+        self::assertNotEmpty($cacheTransport->list(true));
+
+        $cacheTransport->delete('bar');
+        self::assertNotEmpty($cacheTransport->list(true));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanDeleteTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -430,8 +460,17 @@ final class CacheTransportTest extends TestCase
 
         $cacheTransport->delete('foo');
         self::assertEmpty($cacheTransport->list());
+
+        $cacheTransport->create(new NullTask('foo'));
+        self::assertNotEmpty($cacheTransport->list(true));
+
+        $cacheTransport->delete('foo');
+        self::assertEmpty($cacheTransport->list(true));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanClear(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -457,5 +496,6 @@ final class CacheTransportTest extends TestCase
 
         $cacheTransport->clear();
         self::assertEmpty($cacheTransport->list());
+        self::assertEmpty($cacheTransport->list(true));
     }
 }

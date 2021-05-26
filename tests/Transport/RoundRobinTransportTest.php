@@ -7,11 +7,16 @@ namespace Tests\SchedulerBundle\Transport;
 use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\RoundRobinTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -99,6 +104,9 @@ final class RoundRobinTransportTest extends TestCase
         self::assertSame($task, $roundRobinTransport->get('foo'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
         $roundRobinTransport = new RoundRobinTransport([]);
@@ -109,22 +117,53 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->list();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
+    {
+        $roundRobinTransport = new RoundRobinTransport([]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('No transport found');
+        self::expectExceptionCode(0);
+        $roundRobinTransport->list(true);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanRetrieveTaskList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->method('list')->willReturn($taskList);
-
         $roundRobinTransport = new RoundRobinTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ]);
 
-        self::assertEmpty($roundRobinTransport->list());
+        self::assertInstanceOf(TaskList::class, $roundRobinTransport->list());
+        self::assertCount(0, $roundRobinTransport->list());
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanRetrieveLazyTaskList(): void
+    {
+        $roundRobinTransport = new RoundRobinTransport([
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ]);
+
+        self::assertInstanceOf(LazyTaskList::class, $roundRobinTransport->list(true));
+        self::assertCount(0, $roundRobinTransport->list(true));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

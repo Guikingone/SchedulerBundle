@@ -44,15 +44,10 @@ final class ChainedTaskRunnerTest extends TestCase
         $shellTask = new ShellTask('foo', ['ls', '-al']);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([
-            'sleepDurationDelay' => 1,
-            'sleepUntilNextMinute' => false,
-        ]);
+        $worker->expects(self::never())->method('getOptions');
+        $worker->expects(self::once())->method('fork')->willReturnSelf();
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([
-                'sleepDurationDelay' => 1,
-                'sleepUntilNextMinute' => false,
-            ]), self::equalTo($shellTask))
+            ->with(self::equalTo([]), self::equalTo($shellTask))
             ->willThrowException(new RuntimeException('An error occurred'))
         ;
 

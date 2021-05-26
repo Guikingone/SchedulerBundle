@@ -30,10 +30,10 @@ final class TaskFailed extends Constraint
     }
 
     /**
-     * @param mixed|TaskEventList $eventsList
+     * @param mixed|TaskEventList $other
      */
-    protected function matches($eventsList): bool
+    protected function matches($other): bool
     {
-        return $this->expectedCount === (is_countable($eventsList->getFailedTaskEvents()) ? count($eventsList->getFailedTaskEvents()) : 0);
+        return $this->expectedCount === (is_countable($other->getFailedTaskEvents()) ? count($other->getFailedTaskEvents()) : 0);
     }
 }

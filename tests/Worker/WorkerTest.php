@@ -14,7 +14,12 @@ use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\ChainedTaskRunner;
+use SchedulerBundle\Runner\ShellTaskRunner;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -28,11 +33,14 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\Worker;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 
 /**
@@ -40,6 +48,9 @@ use Throwable;
  */
 final class WorkerTest extends TestCase
 {
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedWithoutRunner(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -55,6 +66,153 @@ final class WorkerTest extends TestCase
         $worker->execute();
     }
 
+    public function testWorkerCannotBeConfiguredWithInvalidExecutedTasksCount(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "executedTasksCount" with value "foo" is expected to be of type "int", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'executedTasksCount' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidIsFork(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "isFork" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'isFork' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidIsRunning(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "isRunning" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'isRunning' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidLastExecutedTask(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "lastExecutedTask" with value "foo" is expected to be of type "SchedulerBundle\Task\TaskInterface" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'lastExecutedTask' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidSleepDurationDelay(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "sleepDurationDelay" with value "foo" is expected to be of type "int", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'sleepDurationDelay' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidSleepUntilNextMinute(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "sleepUntilNextMinute" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'sleepUntilNextMinute' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidShouldStop(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "shouldStop" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'shouldStop' => 'foo',
+        ]);
+    }
+
+    public function testWorkerCannotBeConfiguredWithInvalidShouldRetrieveTasksLazily(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "shouldRetrieveTasksLazily" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'shouldRetrieveTasksLazily' => 'foo',
+        ]);
+    }
+
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanBeConfigured(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -67,12 +225,63 @@ final class WorkerTest extends TestCase
         $worker->stop();
 
         $worker->execute([
-            'sleepDurationDelay' => 5,
+            'shouldStop' => true,
         ]);
 
-        self::assertNotNull($worker->getOptions());
+        self::assertCount(8, $worker->getOptions());
+        self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
+        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('isFork', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['isFork']);
+        self::assertArrayHasKey('isRunning', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['isRunning']);
+        self::assertArrayHasKey('lastExecutedTask', $worker->getOptions());
+        self::assertNull($worker->getOptions()['lastExecutedTask']);
         self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
-        self::assertSame(5, $worker->getOptions()['sleepDurationDelay']);
+        self::assertSame(1, $worker->getOptions()['sleepDurationDelay']);
+        self::assertArrayHasKey('sleepUntilNextMinute', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['sleepUntilNextMinute']);
+        self::assertArrayHasKey('shouldStop', $worker->getOptions());
+        self::assertTrue($worker->getOptions()['shouldStop']);
+        self::assertArrayHasKey('shouldRetrieveTasksLazily', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['shouldRetrieveTasksLazily']);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function testWorkerCanBeForked(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+        $worker->execute([
+            'sleepDurationDelay' => 5,
+            'shouldStop' => true,
+        ]);
+        $forkedWorker = $worker->fork();
+
+        self::assertCount(8, $forkedWorker->getOptions());
+        self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
+        self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('isFork', $forkedWorker->getOptions());
+        self::assertTrue($forkedWorker->getOptions()['isFork']);
+        self::assertArrayHasKey('isRunning', $forkedWorker->getOptions());
+        self::assertFalse($forkedWorker->getOptions()['isRunning']);
+        self::assertArrayHasKey('lastExecutedTask', $forkedWorker->getOptions());
+        self::assertNull($forkedWorker->getOptions()['lastExecutedTask']);
+        self::assertArrayHasKey('sleepDurationDelay', $forkedWorker->getOptions());
+        self::assertSame(5, $forkedWorker->getOptions()['sleepDurationDelay']);
+        self::assertArrayHasKey('sleepUntilNextMinute', $forkedWorker->getOptions());
+        self::assertFalse($forkedWorker->getOptions()['sleepUntilNextMinute']);
+        self::assertArrayHasKey('shouldStop', $forkedWorker->getOptions());
+        self::assertTrue($forkedWorker->getOptions()['shouldStop']);
+        self::assertArrayHasKey('shouldRetrieveTasksLazily', $forkedWorker->getOptions());
+        self::assertFalse($forkedWorker->getOptions()['shouldRetrieveTasksLazily']);
     }
 
     /**
@@ -110,6 +319,9 @@ final class WorkerTest extends TestCase
         self::assertNull($worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedWhileWorkerIsStopped(): void
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -129,8 +341,9 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
         ]), $eventDispatcher, $logger);
-        $worker->stop();
-        $worker->execute();
+        $worker->execute([
+            'shouldStop' => true,
+        ]);
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -274,6 +487,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithErroredBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -325,6 +541,9 @@ final class WorkerTest extends TestCase
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -364,6 +583,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -418,10 +640,13 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $logger);
         $worker->execute();
 
-        self::assertNotEmpty($worker->getFailedTasks());
+        self::assertCount(1, $worker->getFailedTasks());
         self::assertSame($validTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithAfterExecutionCallback(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -463,6 +688,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithRunner(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -500,6 +728,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -537,6 +768,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCannotBeExecutedTwiceAsSingleRunTask(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -567,6 +801,9 @@ final class WorkerTest extends TestCase
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanHandleFailedTask(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -601,6 +838,9 @@ final class WorkerTest extends TestCase
         self::assertSame('Random error occurred', $failedTask->getReason());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithoutBeforeExecutionNotificationAndNotifier(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -645,6 +885,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithBeforeExecutionNotificationAndNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -692,6 +935,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithoutAfterExecutionNotificationAndNotifier(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -736,6 +982,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testTaskCanBeExecutedWithAfterExecutionNotificationAndNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -783,6 +1032,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCannotReserveMaxExecutionTokensWithoutRateLimiter(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -822,6 +1074,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCannotReserveMaxExecutionTokensWithoutMaxExecutionLimit(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -868,6 +1123,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanReserveMaxExecutionTokensAndLimitTaskExecutionThenStopTheExecution(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -920,6 +1178,9 @@ final class WorkerTest extends TestCase
         self::assertSame('Rate Limit Exceeded', $failedTask->getReason());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanStopWhenTaskAreConsumedAndWithoutDaemonEnabled(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -956,6 +1217,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testWorkerCanStopWhenTaskAreConsumedWithError(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -992,6 +1256,9 @@ final class WorkerTest extends TestCase
         self::assertSame($task, $worker->getLastExecutedTask());
     }
 
+    /**
+     * @throws Throwable
+     */
     public function testPausedTaskIsNotExecutedIfListContainsASingleTask(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
@@ -1038,5 +1305,128 @@ final class WorkerTest extends TestCase
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function testWorkerCanExecuteChainedTasks(): void
+    {
+        $chainedTask = new ChainedTask(
+            'foo',
+            new ShellTask('chained_foo', ['ls', '-al']),
+            new ShellTask('chained_bar', ['ls', '-al'])
+        );
+        $shellTask = new ShellTask('bar', ['ls', '-al']);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$chainedTask, $shellTask]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(4));
+
+        $worker = new Worker(
+            $scheduler,
+            [
+                new ChainedTaskRunner(),
+                new ShellTaskRunner(),
+            ],
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack([
+                new SingleRunTaskMiddleware($scheduler),
+                new TaskUpdateMiddleware($scheduler),
+            ]),
+            $eventDispatcher,
+            $logger,
+            new FlockStore()
+        );
+        $worker->execute();
+
+        self::assertSame($shellTask, $worker->getLastExecutedTask());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
+        self::assertNotNull($chainedTask->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getExecutionEndTime());
+
+        $chainedFooTask = $chainedTask->getTask('chained_bar');
+        self::assertInstanceOf(ShellTask::class, $chainedFooTask);
+        self::assertSame(TaskInterface::SUCCEED, $chainedFooTask->getExecutionState());
+        self::assertNotNull($chainedFooTask->getExecutionStartTime());
+        self::assertNotNull($chainedFooTask->getExecutionEndTime());
+
+        $chainedBarTask = $chainedTask->getTask('chained_bar');
+        self::assertInstanceOf(ShellTask::class, $chainedBarTask);
+        self::assertSame(TaskInterface::SUCCEED, $chainedBarTask->getExecutionState());
+        self::assertNotNull($chainedBarTask->getExecutionStartTime());
+        self::assertNotNull($chainedBarTask->getExecutionEndTime());
+
+        self::assertSame(TaskInterface::SUCCEED, $shellTask->getExecutionState());
+        self::assertNotNull($shellTask->getExecutionStartTime());
+        self::assertNotNull($shellTask->getExecutionEndTime());
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function testWorkerCanRetrieveTasksLazily(): void
+    {
+        $chainedTask = new ChainedTask(
+            'foo',
+            new ShellTask('chained_foo', ['ls', '-al']),
+            new ShellTask('chained_bar', ['ls', '-al'])
+        );
+        $shellTask = new ShellTask('bar', ['ls', '-al']);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())
+            ->method('getDueTasks')
+            ->with(self::equalTo(true))
+            ->willReturn(new LazyTaskList(new TaskList([$chainedTask, $shellTask])))
+        ;
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(4));
+
+        $worker = new Worker(
+            $scheduler,
+            [
+                new ChainedTaskRunner(),
+                new ShellTaskRunner(),
+            ],
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack([
+                new SingleRunTaskMiddleware($scheduler),
+                new TaskUpdateMiddleware($scheduler),
+            ]),
+            $eventDispatcher,
+            $logger
+        );
+        $worker->execute([
+            'shouldRetrieveTasksLazily' => true,
+        ]);
+
+        self::assertSame($shellTask, $worker->getLastExecutedTask());
+        self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
+        self::assertNotNull($chainedTask->getExecutionStartTime());
+        self::assertNotNull($chainedTask->getExecutionEndTime());
+
+        $chainedFooTask = $chainedTask->getTask('chained_bar');
+        self::assertInstanceOf(ShellTask::class, $chainedFooTask);
+        self::assertSame(TaskInterface::SUCCEED, $chainedFooTask->getExecutionState());
+        self::assertNotNull($chainedFooTask->getExecutionStartTime());
+        self::assertNotNull($chainedFooTask->getExecutionEndTime());
+
+        $chainedBarTask = $chainedTask->getTask('chained_bar');
+        self::assertInstanceOf(ShellTask::class, $chainedBarTask);
+        self::assertSame(TaskInterface::SUCCEED, $chainedBarTask->getExecutionState());
+        self::assertNotNull($chainedBarTask->getExecutionStartTime());
+        self::assertNotNull($chainedBarTask->getExecutionEndTime());
+
+        self::assertSame(TaskInterface::SUCCEED, $shellTask->getExecutionState());
+        self::assertNotNull($shellTask->getExecutionStartTime());
+        self::assertNotNull($shellTask->getExecutionEndTime());
     }
 }

@@ -32,7 +32,6 @@ final class YieldTaskCommand extends Command
         parent::__construct();
     }
 
-
     /**
      * {@inheritdoc}
      */

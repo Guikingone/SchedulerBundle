@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -57,12 +58,14 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
-        return new TaskList($this->schedulePolicyOrchestrator->sort(
+        $list = new TaskList($this->schedulePolicyOrchestrator->sort(
             $this->getExecutionMode(),
             $this->connection->list()->toArray()
         ));
+
+        return $lazy ? new LazyTaskList($list) : $list;
     }
 
     /**

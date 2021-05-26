@@ -31,11 +31,11 @@ final class TaskExecuted extends Constraint
     }
 
     /**
-     * @param mixed|TaskEventList $eventsList
+     * @param mixed|TaskEventList $other
      */
-    protected function matches($eventsList): bool
+    protected function matches($other): bool
     {
-        return $this->expectedCount === $this->countExecutedTasks($eventsList);
+        return $this->expectedCount === $this->countExecutedTasks($other);
     }
 
     private function countExecutedTasks(TaskEventList $taskEventList): int

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -45,9 +46,11 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface
     {
-        return new TaskList($this->orchestrator->sort($this->getExecutionMode(), $this->tasks));
+        $list = new TaskList($this->orchestrator->sort($this->getExecutionMode(), $this->tasks));
+
+        return $lazy ? new LazyTaskList($list) : $list;
     }
 
     /**
