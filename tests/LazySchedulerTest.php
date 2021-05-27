@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -15,6 +16,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -31,6 +33,7 @@ use Throwable;
 final class LazySchedulerTest extends TestCase
 {
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanSchedule(): void
@@ -51,6 +54,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanUnscheduleWhenNotInitialized(): void
@@ -68,6 +72,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanUnschedule(): void
@@ -87,6 +92,9 @@ final class LazySchedulerTest extends TestCase
         self::assertCount(0, $lazyScheduler->getTasks());
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testSchedulerCannotYieldUndefinedTask(): void
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
@@ -102,6 +110,9 @@ final class LazySchedulerTest extends TestCase
         $lazyScheduler->yieldTask('foo');
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testSchedulerCanYield(): void
     {
         $bus = $this->createMock(MessageBusInterface::class);
@@ -121,6 +132,9 @@ final class LazySchedulerTest extends TestCase
         self::assertTrue($lazyScheduler->isInitialized());
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testSchedulerCanYieldAsynchronously(): void
     {
         $bus = $this->createMock(MessageBusInterface::class);
@@ -143,6 +157,9 @@ final class LazySchedulerTest extends TestCase
         self::assertTrue($lazyScheduler->isInitialized());
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testSchedulerCannotPauseUndefinedTask(): void
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
@@ -159,6 +176,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanPause(): void
@@ -185,6 +203,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanPauseAsynchronously(): void
@@ -214,6 +233,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCannotResumeUndefinedTask(): void
@@ -232,6 +252,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanResume(): void
@@ -262,6 +283,25 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function testSchedulerCanGetTasksWhenEmpty(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $lazyScheduler = new LazyScheduler($scheduler);
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $tasks = $lazyScheduler->getTasks();
+        self::assertInstanceOf(TaskList::class, $tasks);
+        self::assertCount(0, $tasks);
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanGetTasks(): void
@@ -283,6 +323,25 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function testSchedulerCanGetTasksLazilyWhenEmpty(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $lazyScheduler = new LazyScheduler($scheduler);
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $tasks = $lazyScheduler->getTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $tasks);
+        self::assertCount(0, $tasks);
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanGetTasksLazily(): void
@@ -311,6 +370,25 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function testSchedulerCanGetDueTasksWhenEmpty(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $lazyScheduler = new LazyScheduler($scheduler);
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $tasks = $lazyScheduler->getDueTasks();
+        self::assertInstanceOf(TaskList::class, $tasks);
+        self::assertCount(0, $tasks);
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function testSchedulerCanGetDueTasks(): void
@@ -332,6 +410,25 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCanGetDueTasksLazilyWhenEmpty(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack());
+
+        $lazyScheduler = new LazyScheduler($scheduler);
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $tasks = $lazyScheduler->getDueTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $tasks);
+        self::assertCount(0, $tasks);
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCanGetDueTasksLazily(): void
@@ -348,11 +445,12 @@ final class LazySchedulerTest extends TestCase
         self::assertTrue($lazyScheduler->isInitialized());
 
         $tasks = $lazyScheduler->getDueTasks(true);
-        self::assertInstanceOf(TaskList::class, $tasks);
+        self::assertInstanceOf(LazyTaskList::class, $tasks);
         self::assertCount(2, $tasks);
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCannotGetNextDueTasksLazilyWhenEmpty(): void
@@ -371,6 +469,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCannotGetNextDueTasksLazilyWhenASingleTaskIsFound(): void
@@ -392,6 +491,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCanGetNextDueTasksWhenSingleTaskFound(): void
@@ -412,6 +512,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCanGetNextDueTasks(): void
@@ -433,6 +534,7 @@ final class LazySchedulerTest extends TestCase
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCanGetNextDueTasksLazily(): void
@@ -448,12 +550,20 @@ final class LazySchedulerTest extends TestCase
         $lazyScheduler->schedule(new NullTask('bar'));
 
         $nextTask = $lazyScheduler->next(true);
+        self::assertInstanceOf(LazyTask::class, $nextTask);
         self::assertTrue($lazyScheduler->isInitialized());
-        self::assertInstanceOf(NullTask::class, $nextTask);
-        self::assertSame('bar', $nextTask->getName());
+        self::assertFalse($nextTask->isInitialized());
+        self::assertSame('bar.lazy', $nextTask->getName());
+
+        $task = $nextTask->getTask();
+        self::assertTrue($lazyScheduler->isInitialized());
+        self::assertTrue($nextTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('bar', $task->getName());
     }
 
     /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::reboot()}
      */
     public function testSchedulerCanReboot(): void
@@ -468,6 +578,9 @@ final class LazySchedulerTest extends TestCase
         self::assertTrue($lazyScheduler->isInitialized());
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testTimezoneCanBeReturned(): void
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([

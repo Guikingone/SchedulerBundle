@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
+use Closure;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -54,9 +56,12 @@ class DoctrineTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
-        return $this->connection->get($name);
+        return $lazy
+            ? new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->connection->get($name), $this))
+            : $this->connection->get($name)
+        ;
     }
 
     /**

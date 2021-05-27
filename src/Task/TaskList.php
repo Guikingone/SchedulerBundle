@@ -61,8 +61,12 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): ?TaskInterface
+    public function get(string $taskName, bool $lazy = false): ?TaskInterface
     {
+        if ($lazy) {
+            return new LazyTask($taskName, Closure::bind(fn (): ?TaskInterface => $this->get($taskName), $this));
+        }
+
         return $this->tasks[$taskName] ?? null;
     }
 

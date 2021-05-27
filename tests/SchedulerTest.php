@@ -21,6 +21,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
@@ -46,6 +47,10 @@ use function in_array;
  */
 final class SchedulerTest extends TestCase
 {
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasks(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -64,6 +69,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasksWithCustomTimezone(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -83,6 +92,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCannotScheduleTasksWithErroredBeforeCallback(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -107,6 +120,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasksWithBeforeCallback(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -128,6 +145,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasksWithBeforeSchedulingNotificationAndWithoutNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -160,6 +181,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasksWithBeforeSchedulingNotificationAndWithNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -192,6 +217,10 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
     }
 
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCanScheduleTasksWithAfterSchedulingNotificationAndWithoutNotifier(): void
     {
         $notification = $this->createMock(Notification::class);
@@ -461,8 +490,6 @@ final class SchedulerTest extends TestCase
         self::assertInstanceOf(LazyTaskList::class, $dueTasks);
 
         $dueTasks = $dueTasks->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
-
-        self::assertInstanceOf(TaskList::class, $dueTasks);
         self::assertCount(1, $dueTasks);
     }
 
@@ -717,7 +744,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->update($task->getName(), $task);
         $updatedTask = $scheduler->getTasks(true)->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
-        self::assertInstanceOf(TaskList::class, $updatedTask);
+        self::assertInstanceOf(LazyTaskList::class, $updatedTask);
         self::assertNotEmpty($updatedTask);
     }
 
@@ -806,7 +833,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithStartAndEndDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(9))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
@@ -821,7 +848,9 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertCount(1, $scheduler->getDueTasks(true));
+        $dueTasks = $scheduler->getDueTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $dueTasks);
+        self::assertCount(1, $dueTasks);
     }
 
     /**
@@ -854,7 +883,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithPreviousStartDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(9))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
@@ -869,7 +898,9 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertCount(1, $scheduler->getDueTasks(true));
+        $dueTasks = $scheduler->getDueTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $dueTasks);
+        self::assertCount(1, $dueTasks);
     }
 
     /**
@@ -902,7 +933,7 @@ final class SchedulerTest extends TestCase
     public function testDueTasksCanBeReturnedWithEndDateUsingLazyLoad(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(7))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(9))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);
@@ -917,7 +948,9 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertCount(1, $scheduler->getDueTasks(true));
+        $dueTasks = $scheduler->getDueTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $dueTasks);
+        self::assertCount(1, $dueTasks);
     }
 
     public function testSchedulerCanYieldTask(): void
@@ -1063,8 +1096,14 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('bar'));
 
         $nextDueTask = $scheduler->next(true);
-        self::assertInstanceOf(NullTask::class, $nextDueTask);
-        self::assertSame('bar', $nextDueTask->getName());
+        self::assertInstanceOf(LazyTask::class, $nextDueTask);
+        self::assertFalse($nextDueTask->isInitialized());
+        self::assertSame('bar.lazy', $nextDueTask->getName());
+
+        $task = $nextDueTask->getTask();
+        self::assertTrue($nextDueTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('bar', $task->getName());
     }
 
     /**

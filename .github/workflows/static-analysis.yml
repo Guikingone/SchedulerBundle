@@ -11,13 +11,14 @@ on:
 
 jobs:
   phpstan:
-    name: Static analysis with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies
-    runs-on: ubuntu-20.04
+    name: Static analysis with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies - ${{ matrix.os }} OS
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
         php-versions: ['7.4', '8.0']
         composer-dependencies: ['highest', 'lowest']
+        os: ['ubuntu-latest', 'macOS-latest']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,6 +27,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          extensions: zip, redis, pcntl
         env:
           update: true
 
@@ -43,3 +45,6 @@ jobs:
 
       - name: Run Psalm
         run: php vendor/bin/psalm
+
+      - name: Run Psalm - Stats
+        run: php vendor/bin/psalm --sheperd --stats src

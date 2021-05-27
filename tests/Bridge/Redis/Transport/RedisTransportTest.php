@@ -12,6 +12,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
@@ -150,6 +151,41 @@ final class RedisTransportTest extends TestCase
         self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
         $this->transport->get('foo');
+    }
+
+    public function testTaskCannotBeRetrievedLazilyWhenNotCreated(): void
+    {
+        $lazytask = $this->transport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazytask);
+        self::assertFalse($lazytask->isInitialized());
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionCode(0);
+        $lazytask->getTask();
+    }
+
+    public function testTaskCanBeRetrieved(): void
+    {
+        $this->transport->create(new NullTask('foo'));
+
+        $task = $this->transport->get('foo');
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+    }
+
+    public function testTaskCanBeRetrievedLazily(): void
+    {
+        $this->transport->create(new NullTask('bar'));
+
+        $lazytask = $this->transport->get('bar', true);
+        self::assertInstanceOf(LazyTask::class, $lazytask);
+        self::assertFalse($lazytask->isInitialized());
+
+        $task = $lazytask->getTask();
+        self::assertTrue($lazytask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('bar', $task->getName());
     }
 
     /**

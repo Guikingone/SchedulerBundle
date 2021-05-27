@@ -9,6 +9,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
+use function is_int;
 use function reset;
 use function usort;
 
@@ -35,9 +36,9 @@ final class LongTailTransport extends AbstractTransport
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
-        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name, $lazy));
     }
 
     /**
@@ -140,7 +141,7 @@ final class LongTailTransport extends AbstractTransport
         try {
             return $func($transport);
         } catch (Throwable $throwable) {
-            throw new TransportException('The transport failed to execute the requested action', $throwable->getCode(), $throwable);
+            throw new TransportException('The transport failed to execute the requested action', is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
         }
     }
 }

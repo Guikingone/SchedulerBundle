@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle;
 
 use DateTimeZone;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -30,6 +31,8 @@ interface SchedulerInterface
      * Dequeue the task {@param string $name} then re-schedule it.
      *
      * If the argument {@param bool $async} is used, the action is done via the message bus (if injected).
+     *
+     * @throws Throwable {@see SchedulerInterface::schedule()}
      */
     public function yieldTask(string $name, bool $async = false): void;
 
@@ -69,7 +72,7 @@ interface SchedulerInterface
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})
      *
-     * Can lazy-load the task list if @param bool $lazy is used
+     * Can lazy-load the task list if @param bool $lazy is used, the task will be returned via a {@see LazyTask}
      *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */

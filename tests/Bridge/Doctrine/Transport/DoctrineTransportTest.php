@@ -20,6 +20,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -156,8 +157,7 @@ final class DoctrineTransportTest extends TestCase
     }
 
     /**
-     * @throws JsonException
-     * @throws Throwable     {@see TransportInterface::list()}
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanListTasksLazily(): void
     {
@@ -209,9 +209,6 @@ final class DoctrineTransportTest extends TestCase
         self::assertCount(0, $list);
     }
 
-    /**
-     * @throws JsonException
-     */
     public function testTransportCanGetATask(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -274,6 +271,77 @@ final class DoctrineTransportTest extends TestCase
         ]));
 
         self::assertSame($task, $doctrineTransport->get('foo'));
+    }
+
+    public function testTransportCanGetATaskLazily(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $expressionBuilder = $this->createMock(ExpressionBuilder::class);
+        $expressionBuilder->expects(self::once())->method('eq')
+            ->with(self::equalTo('t.task_name'), self::equalTo(':name'))
+            ->willReturn('t.task_name = :name')
+        ;
+
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
+        $queryBuilder->expects(self::exactly(2))->method('select')
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('from')
+            ->with(
+                self::equalTo('_symfony_scheduler_tasks'),
+                self::equalTo('t')
+            )
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('where')
+            ->with(self::equalTo('t.task_name = :name'))
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('setParameter')
+            ->with(
+                self::equalTo(':name'),
+                self::equalTo('foo'),
+                self::equalTo(ParameterType::STRING)
+            )
+            ->willReturnSelf()
+        ;
+        $queryBuilder->expects(self::once())->method('getSQL')
+            ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
+        ;
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
+        $queryBuilder->expects(self::once())->method('getParameterTypes')
+            ->willReturn([':name' => ParameterType::STRING])
+        ;
+
+        $statement = $this->createMock(Result::class);
+        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+
+        $connection = $this->getDBALConnectionMock();
+        $connection->expects(self::once())->method('transactional')->willReturn($task);
+        $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
+        $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
+        $connection->expects(self::any())->method('getDatabasePlatform');
+
+        $doctrineTransport = new DoctrineTransport([
+            'execution_mode' => 'normal',
+            'auto_setup' => true,
+            'table_name' => '_symfony_scheduler_tasks',
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $lazyTask = $doctrineTransport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertFalse($lazyTask->isInitialized());
+        self::assertSame('foo.lazy', $lazyTask->getName());
+
+        $storedTask = $lazyTask->getTask();
+        self::assertSame($task, $storedTask);
+        self::assertTrue($lazyTask->isInitialized());
     }
 
     public function testTransportCannotCreateAnExistingTask(): void

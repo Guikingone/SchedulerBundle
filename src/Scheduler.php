@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle;
 
+use Closure;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -11,6 +12,7 @@ use Exception;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Task\LazyTask;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -205,14 +207,17 @@ final class Scheduler implements SchedulerInterface
             throw new RuntimeException('The current due tasks is empty');
         }
 
-        $dueTasks = $dueTasks->toArray(false);
+        $dueTasks = $dueTasks->toArray();
 
         $nextTask = next($dueTasks);
         if (is_bool($nextTask)) {
             throw new RuntimeException('The next due task cannot be found');
         }
 
-        return $nextTask;
+        return $lazy
+            ? new LazyTask($nextTask->getName(), Closure::bind(fn (): TaskInterface => $nextTask, $this))
+            : $nextTask
+        ;
     }
 
     /**

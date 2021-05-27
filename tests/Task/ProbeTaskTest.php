@@ -12,6 +12,16 @@ use SchedulerBundle\Task\ProbeTask;
  */
 final class ProbeTaskTest extends TestCase
 {
+    public function testTaskCanBeConfiguredWithDefaultValues(): void
+    {
+        $task = new ProbeTask('foo', '/_probe');
+
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
+    }
+
     public function testTaskCanBeConfigured(): void
     {
         $task = new ProbeTask('foo', '/_probe', true, 1000);

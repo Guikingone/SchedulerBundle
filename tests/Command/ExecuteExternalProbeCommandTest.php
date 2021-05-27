@@ -76,7 +76,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
 
     public function testCommandCanExecuteProbeTasks(): void
     {
-        $probeTask = new ProbeTask('foo', 'https://www.foo.com/_probe');
+        $probeTask = new ProbeTask('foo_probe', 'https://www.foo.com/_probe');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$probeTask]));
@@ -95,7 +95,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
         self::assertStringNotContainsString('An error occurred during the external probe execution:', $tester->getDisplay());
         self::assertStringContainsString('1 external probe executed', $tester->getDisplay());
         self::assertStringContainsString('Name', $tester->getDisplay());
-        self::assertStringContainsString('foo', $tester->getDisplay());
+        self::assertStringContainsString('foo_probe', $tester->getDisplay());
         self::assertStringContainsString('Path', $tester->getDisplay());
         self::assertStringContainsString('https://www.foo.com/_probe', $tester->getDisplay());
         self::assertStringContainsString('Delay', $tester->getDisplay());

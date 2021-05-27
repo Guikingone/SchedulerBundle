@@ -101,6 +101,7 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Transports](doc/transport.md)
 * [Commands](doc/command.md)
 * [Events](doc/events.md)
+* [Lazy Loading](doc/lazy_loading.md)
 * [Messenger](doc/messenger.md)
 * [HTTP entrypoint](doc/http.md)
 * [Policies](doc/policies.md)

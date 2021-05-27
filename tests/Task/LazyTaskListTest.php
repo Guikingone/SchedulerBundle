@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -50,6 +51,22 @@ final class LazyTaskListTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
+    public function testListCanReturnTaskLazily(): void
+    {
+        $list = new LazyTaskList(new TaskList());
+        self::assertNull($list->get('foo'));
+
+        $list->add(new NullTask('foo'));
+
+        $lazyTask = $list->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertFalse($lazyTask->isInitialized());
+
+        $task = $lazyTask->getTask();
+        self::assertTrue($lazyTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
+    }
+
     public function testListCanFindTaskByName(): void
     {
         $list = new LazyTaskList(new TaskList());
@@ -57,17 +74,24 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(0, $list->findByName(['foo']));
 
         $list->add(new NullTask('foo'));
-        self::assertCount(1, $list->findByName(['foo']));
+        $filteredLazyList = $list->findByName(['foo']);
+
+        self::assertTrue($filteredLazyList->isInitialized());
+        self::assertCount(1, $filteredLazyList);
     }
 
     public function testListCanFilterTask(): void
     {
-        $list = new LazyTaskList(new TaskList());
+        $lazyList = new LazyTaskList(new TaskList());
 
-        self::assertCount(0, $list->filter(fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
+        self::assertFalse($lazyList->isInitialized());
+        self::assertCount(0, $lazyList->filter(fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
 
-        $list->add(new NullTask('foo'));
-        self::assertCount(1, $list->filter(fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *'));
+        $lazyList->add(new NullTask('foo'));
+        $filteredLazyList = $lazyList->filter(fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *');
+
+        self::assertTrue($filteredLazyList->isInitialized());
+        self::assertCount(1, $filteredLazyList);
     }
 
     public function testListCanRemoveTask(): void

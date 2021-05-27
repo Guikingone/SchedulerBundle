@@ -12,6 +12,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
@@ -133,6 +134,41 @@ final class CacheTransportTest extends TestCase
         $cacheTransport->create(new NullTask('foo'));
 
         $task = $cacheTransport->get('foo');
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    public function testTransportCanReturnTaskLazily(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $cacheTransport->create(new NullTask('foo'));
+
+        $lazyTask = $cacheTransport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertSame('foo.lazy', $lazyTask->getName());
+        self::assertFalse($lazyTask->isInitialized());
+
+        $task = $lazyTask->getTask();
+        self::assertTrue($lazyTask->isInitialized());
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
     }

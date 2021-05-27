@@ -13,8 +13,8 @@ use SchedulerBundle\Task\TaskListInterface;
  */
 final class LazyScheduler implements SchedulerInterface, LazyInterface
 {
-    private ?SchedulerInterface $sourceScheduler;
-    private ?SchedulerInterface $scheduler = null;
+    private SchedulerInterface $sourceScheduler;
+    private SchedulerInterface $scheduler;
     private bool $initialized = false;
 
     public function __construct(SchedulerInterface $sourceScheduler)

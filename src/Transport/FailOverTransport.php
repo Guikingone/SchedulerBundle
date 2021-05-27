@@ -46,9 +46,9 @@ final class FailOverTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
-        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name, $lazy));
     }
 
     /**

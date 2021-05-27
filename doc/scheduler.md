@@ -31,7 +31,7 @@ The scheduler provides several methods to help interact with tasks during the wh
 
 - `getDueTasks`: Return the tasks that are dues regarding the current date (thanks to each task expression),
                  a [TaskList](../src/Task/TaskList.php) is returned.
-                 If `true` is passed, the action is performed using a lazy-loaded task list.
+                 If `true` is passed, the due tasks are returned using a [LazyTaskList](../src/Task/LazyTaskList.php).
 
 - `next`: Return the next due task, if none, an exception is thrown.
           If `true` is used, the due tasks are retrieved using a [LazyTaskList](../src/Task/LazyTaskList.php).

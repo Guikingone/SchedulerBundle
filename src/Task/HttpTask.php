@@ -10,6 +10,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function array_key_exists;
 use function array_walk;
 use function count;
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -70,7 +71,7 @@ final class HttpTask extends AbstractTask
      */
     public function getClientOptions(): array
     {
-        return $this->options['client_options'];
+        return is_array($this->options['client_options']) ? $this->options['client_options'] : [];
     }
 
     /**

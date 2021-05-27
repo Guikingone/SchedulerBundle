@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
 use function count;
+use function is_int;
 use function sprintf;
 use function strpos;
 
@@ -126,7 +127,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), $throwable->getCode(), $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
         }
     }
 
@@ -145,7 +146,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), $throwable->getCode(), $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
         }
     }
 

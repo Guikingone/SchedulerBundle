@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -36,8 +38,12 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
+        if ($lazy) {
+            return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
+        }
+
         if (!array_key_exists($name, $this->tasks)) {
             throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
         }

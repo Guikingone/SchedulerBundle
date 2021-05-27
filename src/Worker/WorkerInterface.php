@@ -75,5 +75,5 @@ interface WorkerInterface
     /**
      * @return array<string, bool|int|null|TaskInterface>
      */
-    public function getOptions(): ?array;
+    public function getOptions(): array;
 }

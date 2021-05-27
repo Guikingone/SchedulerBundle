@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -127,6 +128,16 @@ final class TaskListTest extends TestCase
         $taskList = new TaskList([$task]);
 
         self::assertInstanceOf(TaskInterface::class, $taskList->get('foo'));
+    }
+
+    public function testListCanReturnLazyTask(): void
+    {
+        $taskList = new TaskList([new NullTask('foo')]);
+
+        $lazyTask = $taskList->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertFalse($lazyTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $lazyTask->getTask());
     }
 
     public function testListCanReturnTaskUsingOffset(): void

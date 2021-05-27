@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Messenger;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Messenger\TaskToPauseMessage;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,8 +14,8 @@ final class TaskToPauseMessageTest extends TestCase
 {
     public function testTaskCanBeRetrieved(): void
     {
-        $taskToPauseMessageTest = new TaskToPauseMessageTest('foo');
+        $taskToPauseMessage = new TaskToPauseMessage('foo');
 
-        self::assertSame('foo', $taskToPauseMessageTest->getName());
+        self::assertSame('foo', $taskToPauseMessage->getTask());
     }
 }

@@ -39,7 +39,7 @@ phpstan: phpstan.neon.dist
 
 psalm: ## Run Psalm
 psalm: psalm.xml
-	$(PHP) vendor/bin/psalm
+	$(PHP) vendor/bin/psalm --sheperd
 
 psalm-debug: ## Run Psalm (display informations)
 psalm-debug: psalm.xml
