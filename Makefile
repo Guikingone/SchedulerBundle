@@ -59,7 +59,24 @@ infection: infection.json.dist
 ## Versioning
 ##---------------------------------------------------------------------------
 
-.PHONY: generate-changelog
+.PHONY: generate-changelog generate-changelog-release generate-changelog-major generate-changelog-minor generate-changelog-patch
 
+generate-changelog: ## Update CHANGELOG.md
 generate-changelog: .changelog
 	$(PHP) vendor/bin/conventional-changelog --config .changelog
+
+generate-changelog-release: ## Update CHANGELOG.md using the latest commits
+generate-changelog-release: .changelog
+	$(PHP) vendor/bin/conventional-changelog --commit --config .changelog
+
+generate-changelog-major: ## Generate a major release
+generate-changelog-major: .changelog
+	$(PHP) vendor/bin/conventional-changelog --major --commit --config .changelog
+
+generate-changelog-minor: ## Generate a minor release
+generate-changelog-minor: .changelog
+	$(PHP) vendor/bin/conventional-changelog --minor --commit --config .changelog
+
+generate-changelog-patch: ## Generate a patch release
+generate-changelog-patch: .changelog
+	$(PHP) vendor/bin/conventional-changelog --patch --commit --config .changelog
