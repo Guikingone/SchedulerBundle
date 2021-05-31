@@ -109,7 +109,7 @@
         "doctrine/dbal": "^2.12 || ^3.0 || ^3.1",
         "doctrine/orm": "^2.8 || ^2.9",
         "friendsofphp/php-cs-fixer": "^3.0.0",
-        "infection/infection": "^0.22.1",
+        "infection/infection": "^0.23",
         "marcocesarato/php-conventional-changelog": "^1.10",
         "phpstan/phpstan": "^0.12.86",
         "phpstan/phpstan-doctrine": "^0.12.33",
