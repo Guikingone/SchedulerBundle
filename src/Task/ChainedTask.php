@@ -41,6 +41,6 @@ final class ChainedTask extends AbstractTask
 
     public function getTasks(): TaskListInterface
     {
-        return $this->options['tasks'] instanceof TaskListInterface ? $this->options['tasks'] : new TaskList();
+        return $this->options['tasks'] ?? new TaskList();
     }
 }

@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Messenger;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Task\ShellTask;
@@ -37,6 +38,9 @@ final class TaskMessageHandlerTest extends TestCase
 
     public function testHandlerCanWaitForAvailableWorker(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::exactly(2))->method('info')->with(self::equalTo('The task "foo" cannot be executed for now as the worker is currently running'));
+
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
         $shellTask->setScheduledAt(new DateTimeImmutable());
         $shellTask->setExpression('* * * * *');
@@ -46,7 +50,7 @@ final class TaskMessageHandlerTest extends TestCase
         $worker->expects(self::exactly(3))->method('isRunning')->willReturnOnConsecutiveCalls(true, true, false);
         $worker->expects(self::once())->method('execute')->with([], $shellTask);
 
-        $taskMessageHandler = new TaskMessageHandler($worker);
+        $taskMessageHandler = new TaskMessageHandler($worker, $logger);
 
         ($taskMessageHandler)(new TaskMessage($shellTask, 2));
     }

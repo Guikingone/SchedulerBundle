@@ -18,9 +18,9 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function get_class;
 use function implode;
-use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -95,9 +95,12 @@ final class RebootSchedulerCommand extends Command
                 return self::SUCCESS;
             }
 
-            foreach ($tasks as $task) {
-                $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);
-            }
+            $table->addRows(array_map(fn (TaskInterface $task): array => [
+                $task->getName(),
+                get_class($task),
+                $task->getState(),
+                implode(', ', $task->getTags()),
+            ], $tasks->toArray()));
 
             $symfonyStyle->success('The following tasks will be executed when the scheduler will reboot:');
             $table->render();
@@ -116,10 +119,8 @@ final class RebootSchedulerCommand extends Command
         while ($this->worker->isRunning()) {
             $symfonyStyle->warning([
                 'The scheduler cannot be rebooted as the worker is not available,',
-                'The process will be retried in 1 second',
+                'The process will be retried as soon as the worker is available',
             ]);
-
-            sleep(1);
         }
 
         $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));
@@ -127,9 +128,12 @@ final class RebootSchedulerCommand extends Command
 
         $symfonyStyle->success('The scheduler have been rebooted, the following tasks have been executed');
 
-        foreach ($tasks as $task) {
-            $table->addRow([$task->getName(), get_class($task), $task->getState(), implode(', ', $task->getTags())]);
-        }
+        $table->addRows(array_map(fn (TaskInterface $task): array => [
+            $task->getName(),
+            get_class($task),
+            $task->getState(),
+            implode(', ', $task->getTags()),
+        ], $tasks->toArray()));
 
         $table->render();
 

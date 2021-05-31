@@ -7,9 +7,11 @@ namespace SchedulerBundle\Messenger;
 use Cron\CronExpression;
 use DateTimeImmutable;
 use Exception;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use function sleep;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -17,10 +19,14 @@ use function sleep;
 final class TaskMessageHandler implements MessageHandlerInterface
 {
     private WorkerInterface $worker;
+    private ?LoggerInterface $logger;
 
-    public function __construct(WorkerInterface $worker)
-    {
+    public function __construct(
+        WorkerInterface $worker,
+        ?LoggerInterface $logger = null
+    ) {
         $this->worker = $worker;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -35,7 +41,7 @@ final class TaskMessageHandler implements MessageHandlerInterface
         }
 
         while ($this->worker->isRunning()) {
-            sleep($taskMessage->getWorkerTimeout());
+            $this->logger->info(sprintf('The task "%s" cannot be executed for now as the worker is currently running', $task->getName()));
         }
 
         $this->worker->execute([], $task);

@@ -63,12 +63,29 @@ you must use the `scheduler:execute:external-probe` command to launch the probe 
 
 **_Note: By default, the runner will return the task as failed if the response returns a 3/4/5xx status code._**
 
-**_Notice: As each client is transformed into a `ProbeTask`, the name of the client is used as the task name.
+**_Notice: As each client is transformed into a `ProbeTask`, the name of the client is used as the task name with a `.probe` suffix
 To prevent any errors when merging both probe clients and default tasks, using a unique name is highly recommended._**
 
 ## DataCollector integration
 
-// TODO
+The probe is integrated in the debug toolbar thanks to [DataCollector](https://symfony.com/doc/current/profiler/data_collector.html#content_wrapper),
+you can check the state of the probe via the toolbar:
+
+<div align="center">
+    <img src="../assets/toolbar.png" alt="toolbar display" />
+</div>
+
+Then check the current probe state using the `Tasks` menu:
+
+<div align="center">
+    <img src="../assets/dataCollector.png" alt="DataCollector display" />
+</div>
+
+You can also check the external probes state if configured:
+
+<div align="center">
+    <img src="../assets/externalProbe.png" alt="External probe display" />
+</div>
 
 ## Extending
 

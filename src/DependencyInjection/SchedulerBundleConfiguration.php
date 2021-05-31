@@ -7,12 +7,16 @@ namespace SchedulerBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use function array_combine;
 use function array_key_exists;
 use function array_filter;
+use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_replace;
 use function array_values;
 use function count;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -43,12 +47,12 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             $configuration['tasks'] = [];
                         }
 
-                        $configuration['tasks'] = array_map(function (array $configuration): array {
+                        $configuration['tasks'] = array_merge($configuration['tasks'], array_map(function (array $configuration): array {
                             $configuration['type'] = 'probe';
                             $configuration['expression'] = '* * * * *';
 
                             return $configuration;
-                        }, $configuration['probe']['clients']);
+                        }, array_combine(array_map(fn ($key): string => sprintf('%s.probe', $key), array_keys($configuration['probe']['clients'])), $configuration['probe']['clients'])));
 
                         return $configuration;
                     })

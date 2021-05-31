@@ -430,7 +430,7 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
+        $scheduler->expects(self::never())->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
 
         $eventDispatcher = new EventDispatcher();

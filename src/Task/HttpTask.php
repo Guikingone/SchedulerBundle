@@ -56,7 +56,7 @@ final class HttpTask extends AbstractTask
 
     public function getMethod(): string
     {
-        return (is_string($this->options['method']) && $this->options['method'] !== '') ? $this->options['method'] : 'GET';
+        return $this->options['method'] ?? 'GET';
     }
 
     public function setMethod(string $method): self

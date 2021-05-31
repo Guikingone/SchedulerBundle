@@ -62,13 +62,15 @@ final class ProbeTaskBuilderTest extends TestCase
             'name' => 'bar',
             'type' => 'probe',
             'externalProbePath' => '/_probe',
+            'errorOnFailedTasks' => true,
+            'delay' => 100,
         ]);
 
         self::assertInstanceOf(ProbeTask::class, $task);
         self::assertSame('bar', $task->getName());
         self::assertSame('/_probe', $task->getExternalProbePath());
-        self::assertFalse($task->getErrorOnFailedTasks());
-        self::assertSame(0, $task->getDelay());
+        self::assertTrue($task->getErrorOnFailedTasks());
+        self::assertSame(100, $task->getDelay());
     }
 
     /**
@@ -81,7 +83,7 @@ final class ProbeTaskBuilderTest extends TestCase
                 'name' => 'foo',
                 'type' => 'probe',
                 'externalProbePath' => '/_probe',
-                'errorOnFailedTask' => true,
+                'errorOnFailedTasks' => true,
                 'delay' => 100,
             ],
         ];

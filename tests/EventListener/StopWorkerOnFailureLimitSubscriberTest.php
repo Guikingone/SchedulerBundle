@@ -70,7 +70,9 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
     public function testSubscriberCanStopWorker(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('Worker has stopped due to the failure limit of 0 exceeded'));
+        $logger->expects(self::once())->method('info')
+            ->with(self::equalTo('Worker has stopped due to the failure limit of 0 exceeded'))
+        ;
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
@@ -78,6 +80,40 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         $workerRunningEvent = new WorkerRunningEvent($worker, true);
 
         $stopWorkerOnFailureLimitSubscriber = new StopWorkerOnFailureLimitSubscriber(0, $logger);
+        $stopWorkerOnFailureLimitSubscriber->onTaskFailedEvent();
+        $stopWorkerOnFailureLimitSubscriber->onWorkerStarted($workerRunningEvent);
+    }
+
+    public function testSubscriberCanStopWorkerOnEqualFailedTask(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')
+            ->with(self::equalTo('Worker has stopped due to the failure limit of 0 exceeded'))
+        ;
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('stop');
+
+        $workerRunningEvent = new WorkerRunningEvent($worker, true);
+
+        $stopWorkerOnFailureLimitSubscriber = new StopWorkerOnFailureLimitSubscriber(0, $logger);
+        $stopWorkerOnFailureLimitSubscriber->onWorkerStarted($workerRunningEvent);
+    }
+
+    public function testSubscriberCanStopWorkerOnExtraFailedTask(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')
+            ->with(self::equalTo('Worker has stopped due to the failure limit of 0 exceeded'))
+        ;
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('stop');
+
+        $workerRunningEvent = new WorkerRunningEvent($worker, true);
+
+        $stopWorkerOnFailureLimitSubscriber = new StopWorkerOnFailureLimitSubscriber(0, $logger);
+        $stopWorkerOnFailureLimitSubscriber->onTaskFailedEvent();
         $stopWorkerOnFailureLimitSubscriber->onTaskFailedEvent();
         $stopWorkerOnFailureLimitSubscriber->onWorkerStarted($workerRunningEvent);
     }

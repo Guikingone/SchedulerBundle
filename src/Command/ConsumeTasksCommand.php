@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Helper;
@@ -93,12 +94,14 @@ final class ConsumeTasksCommand extends Command
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $dueTasks = $this->scheduler->getDueTasks();
+        $dueTasks = $this->scheduler->getDueTasks()->filter(fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
         if (0 === $dueTasks->count() && !$input->getOption('wait')) {
             $symfonyStyle->warning('No due tasks found');
 
@@ -147,7 +150,7 @@ final class ConsumeTasksCommand extends Command
 
         $symfonyStyle->comment('Quit the worker with CONTROL-C.');
 
-        if (OutputInterface::VERBOSITY_VERBOSE > $output->getVerbosity()) {
+        if (OutputInterface::VERBOSITY_VERY_VERBOSE !== $output->getVerbosity()) {
             $symfonyStyle->note(sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : ''));
         }
 

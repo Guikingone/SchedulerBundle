@@ -82,7 +82,7 @@ final class Worker extends AbstractWorker
                             continue;
                         }
 
-                        if (null !== $task->getExecutionDelay() && 0 !== $this->getSleepDuration()) {
+                        if (null !== $task->getExecutionDelay()) {
                             usleep($task->getExecutionDelay());
                         }
 

@@ -24,8 +24,8 @@ final class CommandTask extends AbstractTask
             'options' => $options,
         ], [
             'command' => 'string',
-            'arguments' => ['array', 'string[]'],
-            'options' => ['array', 'string[]'],
+            'arguments' => 'string[]',
+            'options' => 'string[]',
         ]);
 
         parent::__construct($name);

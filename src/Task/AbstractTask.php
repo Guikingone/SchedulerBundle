@@ -203,7 +203,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getArrivalTime(): ?DateTimeImmutable
     {
-        return $this->options['arrival_time'] instanceof DateTimeImmutable ? $this->options['arrival_time'] : null;
+        return $this->options['arrival_time'] ?? null;
     }
 
     public function setBackground(bool $background): TaskInterface
@@ -243,7 +243,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['before_scheduling_notification'] instanceof NotificationTaskBag ? $this->options['before_scheduling_notification'] : null;
+        return $this->options['before_scheduling_notification'] ?? null;
     }
 
     public function afterSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -255,7 +255,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['after_scheduling_notification'] instanceof NotificationTaskBag ? $this->options['after_scheduling_notification'] : null;
+        return $this->options['after_scheduling_notification'] ?? null;
     }
 
     public function beforeExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -267,7 +267,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['before_executing_notification'] instanceof NotificationTaskBag ? $this->options['before_executing_notification'] : null;
+        return $this->options['before_executing_notification'] ?? null;
     }
 
     public function afterExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface
@@ -279,7 +279,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag
     {
-        return $this->options['after_executing_notification'] instanceof NotificationTaskBag ? $this->options['after_executing_notification'] : null;
+        return $this->options['after_executing_notification'] ?? null;
     }
 
     public function afterScheduling($afterSchedulingCallable = null): TaskInterface
@@ -327,7 +327,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getDescription(): ?string
     {
-        return is_string($this->options['description']) ? $this->options['description'] : null;
+        return $this->options['description'] ?? null;
     }
 
     public function setExpression(string $expression): TaskInterface
@@ -343,7 +343,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExpression(): string
     {
-        return is_string($this->options['expression']) ? $this->options['expression'] : '* * * * *';
+        return $this->options['expression'] ?? '* * * * *';
     }
 
     public function setExecutionAbsoluteDeadline(DateInterval $dateInterval = null): TaskInterface
@@ -355,12 +355,12 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionAbsoluteDeadline(): ?DateInterval
     {
-        return $this->options['execution_absolute_deadline'] instanceof DateInterval ? $this->options['execution_absolute_deadline'] : null;
+        return $this->options['execution_absolute_deadline'] ?? null;
     }
 
     public function getExecutionComputationTime(): ?float
     {
-        return is_float($this->options['execution_computation_time']) ? $this->options['execution_computation_time'] : null;
+        return $this->options['execution_computation_time']  ?? null;
     }
 
     /**
@@ -375,7 +375,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionDelay(): ?int
     {
-        return is_int($this->options['execution_delay']) ? $this->options['execution_delay'] : null;
+        return $this->options['execution_delay'] ?? null;
     }
 
     public function setExecutionDelay(int $executionDelay = null): TaskInterface
@@ -387,7 +387,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionMemoryUsage(): ?int
     {
-        return is_int($this->options['execution_memory_usage']) ? $this->options['execution_memory_usage'] : null;
+        return $this->options['execution_memory_usage'] ?? null;
     }
 
     public function setExecutionMemoryUsage(int $executionMemoryUsage = null): TaskInterface
@@ -399,7 +399,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionPeriod(): ?float
     {
-        return is_float($this->options['execution_period']) ? $this->options['execution_period'] : null;
+        return $this->options['execution_period'] ?? null;
     }
 
     public function setExecutionPeriod(float $executionPeriod = null): TaskInterface
@@ -411,7 +411,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionRelativeDeadline(): ?DateInterval
     {
-        return $this->options['execution_relative_deadline'] instanceof DateInterval ? $this->options['execution_relative_deadline'] : null;
+        return $this->options['execution_relative_deadline'] ?? null;
     }
 
     public function setExecutionRelativeDeadline(DateInterval $dateInterval = null): TaskInterface
@@ -437,7 +437,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionStartDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_start_date'] instanceof DateTimeImmutable ? $this->options['execution_start_date'] : null;
+        return $this->options['execution_start_date'] ?? null;
     }
 
     /**
@@ -456,7 +456,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionEndDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_end_date'] instanceof DateTimeImmutable ? $this->options['execution_end_date'] : null;
+        return $this->options['execution_end_date'] ?? null;
     }
 
     public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface

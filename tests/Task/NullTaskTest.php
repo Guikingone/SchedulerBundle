@@ -479,7 +479,7 @@ final class NullTaskTest extends TestCase
 
         self::assertTrue($nullTask->mustStoreOutput());
 
-        $nullTask->storeOutput(false);
+        $nullTask->storeOutput();
         self::assertFalse($nullTask->mustStoreOutput());
     }
 
@@ -586,6 +586,33 @@ final class NullTaskTest extends TestCase
 
         $nullTask->afterExecutingNotificationBag();
         self::assertNull($nullTask->getAfterExecutingNotificationBag());
+    }
+
+    public function testTaskCanBeCreatedWithInformation(): void
+    {
+        $task = new NullTask('foo', [
+            'arrival_time' => new DateTimeImmutable(),
+            'description' => 'Random description',
+            'execution_start_time' => new DateTimeImmutable(),
+            'last_execution' => new DateTimeImmutable(),
+        ]);
+
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getArrivalTime());
+        self::assertSame('Random description', $task->getDescription());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
+
+        $task->setArrivalTime();
+        self::assertNull($task->getArrivalTime());
+
+        $task->setDescription();
+        self::assertNull($task->getDescription());
+
+        $task->setExecutionStartTime();
+        self::assertNull($task->getExecutionStartTime());
+
+        $task->setLastExecution();
+        self::assertNull($task->getLastExecution());
     }
 
     /**

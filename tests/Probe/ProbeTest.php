@@ -21,6 +21,29 @@ final class ProbeTest extends TestCase
     /**
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
+    public function testProbeCanReceiveInvalidDateExecutedTask(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $nullTask = new NullTask('foo');
+        $secondNullTask = new NullTask('random', [
+            'last_execution' => new DateTimeImmutable('+ 1 month'),
+        ]);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            $nullTask,
+            $secondNullTask,
+        ]));
+
+        $probe = new Probe($scheduler, $worker);
+
+        self::assertSame(0, $probe->getExecutedTasks());
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
     public function testProbeCanReceiveExecutedTask(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
