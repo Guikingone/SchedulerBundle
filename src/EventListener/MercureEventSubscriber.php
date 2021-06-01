@@ -66,7 +66,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         $failedTask = $event->getTask();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
-            'event' => 'task.executed.errored',
+            'event' => 'task.failed',
             'body' => [
                 'task' => $this->serializer->serialize($failedTask->getTask(), 'json'),
                 'reason' => $failedTask->getReason(),
