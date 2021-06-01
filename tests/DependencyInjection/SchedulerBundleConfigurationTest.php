@@ -172,6 +172,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
                         'options' => [
                             'env' => 'test',
                         ],
+                        'last_execution' => 'foo',
                     ],
                 ],
             ],
@@ -184,6 +185,19 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertEmpty($configuration['probe']['clients']);
 
         self::assertCount(1, $configuration['tasks']);
+        self::assertSame([
+            'foo' => [
+                'type' => 'command',
+                'command' => 'cache:clear',
+                'expression' => '*/5 * * * *',
+                'description' => 'A simple cache clear task',
+                'options' => [
+                    'env' => 'test',
+                ],
+                'last_execution' => 'foo',
+            ],
+        ], $configuration['tasks']);
+        self::assertSame('foo', $configuration['tasks']['foo']['last_execution']);
     }
 
     public function testConfigurationCanDefineProbeClients(): void
