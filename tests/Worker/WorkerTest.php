@@ -19,8 +19,10 @@ use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -285,15 +287,14 @@ final class WorkerTest extends TestCase
     }
 
     /**
-     * @throws Throwable
+     * @throws Throwable {@see WorkerInterface::execute()}
      */
     public function testTaskCannotBeExecutedWithoutSupportingRunner(): void
     {
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
@@ -305,15 +306,15 @@ final class WorkerTest extends TestCase
         $runner->expects(self::never())->method('run');
 
         $secondRunner = $this->createMock(RunnerInterface::class);
-        $secondRunner->expects(self::once())->method('support')->willReturn(false);
+        $secondRunner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(false);
         $secondRunner->expects(self::never())->method('run');
 
-        $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
 
         $worker = new Worker($scheduler, [$runner, $secondRunner], $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
-        ]), $eventDispatcher, $logger);
+        ]), null, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());

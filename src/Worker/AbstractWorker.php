@@ -53,8 +53,8 @@ abstract class AbstractWorker implements WorkerInterface
         SchedulerInterface $scheduler,
         iterable $runners,
         TaskExecutionTrackerInterface $tracker,
-        ?EventDispatcherInterface $eventDispatcher,
-        ?LoggerInterface $logger
+        ?EventDispatcherInterface $eventDispatcher = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
         $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);

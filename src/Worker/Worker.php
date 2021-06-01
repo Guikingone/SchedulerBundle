@@ -114,7 +114,7 @@ final class Worker extends AbstractWorker
                         }
                     }
 
-                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === count($tasks) && !$this->getOptions()['sleepUntilNextMinute'])) {
+                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === count($tasks) && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;
                     }
                 }
