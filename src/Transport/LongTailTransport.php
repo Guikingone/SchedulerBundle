@@ -124,8 +124,6 @@ final class LongTailTransport extends AbstractTransport
     }
 
     /**
-     * @return mixed|void
-     *
      * @throws Throwable {@see TransportInterface::list()}
      */
     private function execute(Closure $func)

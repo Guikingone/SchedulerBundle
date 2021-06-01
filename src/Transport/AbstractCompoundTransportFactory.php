@@ -23,7 +23,7 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
      */
     protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
     {
-        $dsnList = $dsn->getOptions() ?? [];
+        $dsnList = $dsn->getOptions();
         if (0 === count($dsnList)) {
             throw new LogicException(sprintf('The %s transport factory cannot create a transport', static::class));
         }

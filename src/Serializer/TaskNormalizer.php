@@ -111,7 +111,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'afterSchedulingNotificationBag' => $notificationTaskBagCallback,
                 'beforeExecutingNotificationBag' => $notificationTaskBagCallback,
                 'afterExecutingNotificationBag' => $notificationTaskBagCallback,
-                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => $this->objectNormalizer->normalize($recipient, $format, $context), $innerObject),
+                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => ['email' => $recipient->getEmail(), 'phone' => $recipient->getPhone()], $innerObject),
                 'notification' => fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                     'subject' => $innerObject->getSubject(),
                     'content' => $innerObject->getContent(),
