@@ -81,7 +81,7 @@ Then check the current probe state using the `Tasks` menu:
     <img src="../assets/dataCollector.png" alt="DataCollector display" />
 </div>
 
-You can also check the external probes state if configured:
+You can also check the external probes state if configured (and **if at least a probe has been defined**):
 
 <div align="center">
     <img src="../assets/externalProbe.png" alt="External probe display" />

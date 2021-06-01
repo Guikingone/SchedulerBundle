@@ -176,12 +176,6 @@
                         {{- 'State' -}}
                     </h3>
 
-                    {% if probe_tasks|length != 0 %}
-                        <h3 class="tab-title">
-                            {{- 'External probe' -}}
-                        </h3>
-                    {% endif %}
-
                     <div class="tab-content">
                         <table class="{{ class|default('') }}">
                             <thead>
@@ -201,6 +195,38 @@
                         </table>
                     </div>
                 </div>
+                {% if probe_tasks|length is not same as(0) %}
+                    <div class="tab">
+                        <h3 class="tab-title">
+                            {{- 'External probe' -}}
+                        </h3>
+
+                        <div class="tab-content">
+                            <table class="{{ class|default('') }}">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="key">{{- 'Name' -}}</th>
+                                    <th scope="col" class="key">{{- 'Url' -}}</th>
+                                    <th scope="col" class="key">{{- 'Delay' -}}</th>
+                                    <th scope="col" class="key">{{- 'Errored if failed tasks' -}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in probe_tasks %}
+                                        {% set task = event.task %}
+
+                                        <tr>
+                                            <th>{{- task.name|replace({'.probe': ''}) -}}</th>
+                                            <th class="colored font-normal">{{- task.externalProbePath -}}</th>
+                                            <th>{{- task.delay -}}</th>
+                                            <th>{{- task.errorOnFailedTasks ? 'True' : 'False' -}}</th>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         {% endif %}
     {% endif %}
