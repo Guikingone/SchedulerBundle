@@ -445,7 +445,9 @@ final class SchedulerBundleConfigurationTest extends TestCase
         ]);
 
         self::assertArrayHasKey('mercure', $configuration);
-        self::assertCount(3, $configuration['mercure']);
+        self::assertCount(4, $configuration['mercure']);
+        self::assertArrayHasKey('enabled', $configuration['mercure']);
+        self::assertTrue($configuration['mercure']['enabled']);
         self::assertArrayHasKey('hub_url', $configuration['mercure']);
         self::assertSame('https://www.foo.com', $configuration['mercure']['hub_url']);
         self::assertArrayHasKey('update_url', $configuration['mercure']);

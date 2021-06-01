@@ -24,6 +24,12 @@ jobs:
         image: redis:6.0.0
         ports:
           - 6379:6379
+      mercure:
+        image: dunglas/mercure
+        env:
+          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+        ports:
+          - 80:80
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -46,5 +52,7 @@ jobs:
       - name: Run Infection
         run: php vendor/bin/infection --no-progress --show-mutations --threads=4
         env:
-          SCHEDULER_REDIS_DSN: redis://127.0.0.1:6379/_symfony_scheduler_tasks
+          SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
           INFECTION_BADGE_API_KEY: ${{ secrets.INFECTION_BADGE_API_KEY }}
+          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+          MERCURE_HUB_URL: 'http://127.0.0.1:80/.well-known/mercure'
