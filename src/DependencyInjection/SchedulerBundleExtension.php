@@ -113,6 +113,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mercure\Hub;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -165,6 +166,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
         $this->registerProbeContext($container, $config);
+        $this->registerMercureSupport($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -177,6 +179,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
         $container->setParameter('scheduler.scheduler_mode', $configuration['scheduler']['mode'] ?? 'default');
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
+        $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -1119,6 +1122,30 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('console.command')
             ->addTag('container.preload', [
                 'class' => ExecuteExternalProbeCommand::class,
+            ])
+        ;
+    }
+
+    private function registerMercureSupport(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->getParameter('scheduler.mercure_support')) {
+            return;
+        }
+
+        if (!class_exists(HttpClientInterface::class)) {
+            return;
+        }
+
+        // TODO: Register the token provider
+
+        $container->register('scheduler.mercure_hub', Hub::class)
+            ->setArguments([
+                $config['mercure']['hub_url'],
+                new Reference('scheduler.mercure.token_provider', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => Hub::class,
             ])
         ;
     }
