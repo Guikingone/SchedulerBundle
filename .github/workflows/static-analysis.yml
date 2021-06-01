@@ -45,6 +45,3 @@ jobs:
 
       - name: Run Psalm
         run: php vendor/bin/psalm
-
-      - name: Run Psalm - Stats
-        run: php vendor/bin/psalm --sheperd --stats src
