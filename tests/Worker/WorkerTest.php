@@ -230,9 +230,11 @@ final class WorkerTest extends TestCase
             'shouldStop' => true,
         ]);
 
-        self::assertCount(8, $worker->getOptions());
+        self::assertCount(9, $worker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('forkedFrom', $worker->getOptions());
+        self::assertNull($worker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $worker->getOptions());
         self::assertFalse($worker->getOptions()['isFork']);
         self::assertArrayHasKey('isRunning', $worker->getOptions());
@@ -267,9 +269,11 @@ final class WorkerTest extends TestCase
         ]);
         $forkedWorker = $worker->fork();
 
-        self::assertCount(8, $forkedWorker->getOptions());
+        self::assertCount(9, $forkedWorker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
         self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('forkedFrom', $forkedWorker->getOptions());
+        self::assertSame($worker, $forkedWorker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $forkedWorker->getOptions());
         self::assertTrue($forkedWorker->getOptions()['isFork']);
         self::assertArrayHasKey('isRunning', $forkedWorker->getOptions());

@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -85,6 +86,9 @@ abstract class AbstractWorker implements WorkerInterface
     {
         $fork = clone $this;
         $fork->options['isFork'] = true;
+        $fork->options['forkedFrom'] = $this;
+
+        $this->dispatch(new WorkerForkedEvent($this, $fork));
 
         return $fork;
     }
@@ -220,6 +224,7 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
             'executedTasksCount' => 0,
+            'forkedFrom' => null,
             'isFork' => false,
             'isRunning' => false,
             'lastExecutedTask' => null,
@@ -230,6 +235,7 @@ abstract class AbstractWorker implements WorkerInterface
         ]);
 
         $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
+        $optionsResolver->setAllowedTypes('forkedFrom', [WorkerInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('isFork', 'bool');
         $optionsResolver->setAllowedTypes('isRunning', 'bool');
         $optionsResolver->setAllowedTypes('lastExecutedTask', [TaskInterface::class, 'null']);
