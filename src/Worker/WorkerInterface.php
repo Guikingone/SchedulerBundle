@@ -73,7 +73,7 @@ interface WorkerInterface
     public function getRunners(): array;
 
     /**
-     * @return array<string, bool|int|null|TaskInterface>
+     * @return array<string, bool|int|null|TaskInterface|WorkerInterface>
      */
     public function getOptions(): array;
 }
