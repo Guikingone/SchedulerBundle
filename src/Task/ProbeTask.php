@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use function is_bool;
-use function is_int;
-use function is_string;
-
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -41,7 +37,7 @@ final class ProbeTask extends AbstractTask
 
     public function getExternalProbePath(): string
     {
-        return is_string($this->options['externalProbePath']) ? $this->options['externalProbePath'] : '';
+        return $this->options['externalProbePath'] ?? '';
     }
 
     public function setErrorOnFailedTasks(bool $errorOnFailedTasks): self
@@ -53,7 +49,7 @@ final class ProbeTask extends AbstractTask
 
     public function getErrorOnFailedTasks(): bool
     {
-        return is_bool($this->options['errorOnFailedTasks']) && $this->options['errorOnFailedTasks'];
+        return $this->options['errorOnFailedTasks'] ?? false;
     }
 
     public function setDelay(int $delay): self
@@ -65,6 +61,6 @@ final class ProbeTask extends AbstractTask
 
     public function getDelay(): int
     {
-        return is_int($this->options['delay']) ? $this->options['delay'] : 0;
+        return $this->options['delay'] ?? 0;
     }
 }

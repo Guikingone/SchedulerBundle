@@ -45,13 +45,13 @@ final class ChainedTaskRunnerTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getOptions')->willReturn([
-            'executedTasksCount' => 0,
+            'executedTasksCount' => 10,
             'forkedFrom' => $worker,
             'isFork' => true,
             'isRunning' => false,
             'lastExecutedTask' => null,
             'sleepDurationDelay' => 1,
-            'sleepUntilNextMinute' => false,
+            'sleepUntilNextMinute' => true,
             'shouldStop' => false,
             'shouldRetrieveTasksLazily' => false,
         ]);
