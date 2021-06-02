@@ -623,8 +623,10 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(3, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
-        self::assertSame('bar', $task->getTask('bar')->getName());
+
+        $barFirstTask = $task->getTask('bar');
+        self::assertInstanceOf(ShellTask::class, $barFirstTask);
+        self::assertSame('bar', $barFirstTask->getName());
 
         $fooSecondTask = $task->getTask('foo_second');
         self::assertInstanceOf(CommandTask::class, $fooSecondTask);
