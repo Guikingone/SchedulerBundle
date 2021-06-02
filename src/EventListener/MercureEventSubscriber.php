@@ -38,7 +38,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     {
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'task.scheduled',
-            'body' => $this->serializer->serialize($event->getTask(), 'json'),
+            'body' => [
+                'task' => $this->serializer->serialize($event->getTask(), 'json'),
+            ],
         ])));
     }
 
@@ -46,7 +48,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     {
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'task.unscheduled',
-            'body' => $this->serializer->serialize($event->getTask(), 'json'),
+            'body' => [
+                'task' => $event->getTask(),
+            ],
         ])));
     }
 
@@ -81,10 +85,10 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            TaskScheduledEvent::class => 'onTaskScheduled',
-            TaskUnscheduledEvent::class => 'onTaskUnscheduled',
-            TaskExecutedEvent::class => 'onTaskExecuted',
-            TaskFailedEvent::class => 'onTaskFailed',
+            TaskScheduledEvent::class => ['onTaskScheduled', -255],
+            TaskUnscheduledEvent::class => ['onTaskUnscheduled', -255],
+            TaskExecutedEvent::class => ['onTaskExecuted', -255],
+            TaskFailedEvent::class => ['onTaskFailed', -255],
         ];
     }
 }

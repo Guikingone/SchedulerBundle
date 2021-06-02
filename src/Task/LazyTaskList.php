@@ -13,7 +13,7 @@ use Traversable;
  */
 final class LazyTaskList implements TaskListInterface, LazyInterface
 {
-    private ?TaskListInterface $sourceList;
+    private TaskListInterface $sourceList;
     private ?TaskListInterface $list = null;
     private bool $initialized = false;
 

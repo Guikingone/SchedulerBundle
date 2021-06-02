@@ -21,7 +21,7 @@ final class YieldTaskCommand extends Command
     private SchedulerInterface $scheduler;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:yield';
 

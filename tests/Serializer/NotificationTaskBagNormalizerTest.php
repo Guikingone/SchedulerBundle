@@ -39,9 +39,11 @@ final class NotificationTaskBagNormalizerTest extends TestCase
 
         $data = $serializer->normalize(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
 
+        self::assertIsArray($data);
         self::assertArrayHasKey('bag', $data);
         self::assertSame(NotificationTaskBag::class, $data['bag']);
         self::assertArrayHasKey('body', $data);
+        self::assertIsArray($data['body']);
         self::assertArrayHasKey('notification', $data['body']);
         self::assertArrayHasKey('subject', $data['body']['notification']);
         self::assertArrayHasKey('content', $data['body']['notification']);

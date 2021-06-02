@@ -25,7 +25,7 @@ final class RemoveFailedTaskCommand extends Command
     private WorkerInterface $worker;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected static $defaultName = 'scheduler:remove:failed';
 
