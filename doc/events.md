@@ -26,6 +26,7 @@ The following events are dispatched
 | [`WorkerRunningEvent`](../src/Event/WorkerRunningEvent.php)                   | Runs when the worker is running (idle or not)                                   |
 | [`WorkerStartedEvent`](../src/Event/WorkerStartedEvent.php)                   | Runs when the worker has been started                                           |
 | [`WorkerStoppedEvent`](../src/Event/WorkerStoppedEvent.php)                   | Runs when the worker has been stopped                                           |
+| [`WorkerForkedEvent`](../src/Event/WorkerForkedEvent.php)                     | Runs when the worker has been forked                                            |
 
 Some events are stored in [TaskEventList](../src/Event/TaskEventList.php) (mainly for data collector usage), 
 the full list is available [here](../src/EventListener/TaskLoggerSubscriber.php).

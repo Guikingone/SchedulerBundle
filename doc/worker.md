@@ -3,6 +3,39 @@
 The worker is one of the main tools of this bundle, every "due" tasks is retrieved via the worker
 and executed thanks to [runners](runners.md).
 
+- [API](#api)
+- [Concepts](#concepts)
+- [Daemon](#daemon)
+- [Loop](#loop)
+- [Forking a worker](#forking-a-worker)
+
+## API
+
+Even if the worker is only responsible for executing tasks thanks to runners,
+some methods can be used to improve its usage:
+
+- `execute`: Allows executing tasks depending on the given options,
+  if an empty set of tasks is submitted,
+  the worker will use the scheduler to retrieve the currently due tasks.
+
+- `fork`: This method allows to retrieve a **cloned** worker,
+  this can be useful when executing tasks outside the main worker process.
+
+- `stop`: This method indicate to the worker that it should be stopped.
+
+- `restart`: This method allows to reset the internal worker state and dispatch an event related to this reset.
+
+- `isRunning`: Returns the state of the worker regarding the current execution.
+
+- `getFailedTasks`: Return a [TaskList](../src/Task/TaskList.php)
+  that contains the failed tasks during the current execution.
+
+- `getLastExecutedTask`: Return the last executed task or null if none.
+
+- `getRunners`: Return the injected runners.
+
+- `getOptions`: Return the current options of the worker (in the case of a forked one, the forked ones).
+
 ## Concepts
 
 The worker uses a very simple approach and can act in two ways:
@@ -21,32 +54,22 @@ has been executed, the worker will determine the "wait" period until the next mi
 
 ## Loop
 
-The worker can act as a simple "while" loop and wait until every due tasks are executed to stop,
+The worker can act as a simple `while` loop and wait until every due tasks are executed to stop,
 that's the default behaviour if the `sleepUntilNextMinute` option is not passed in the `execute` method.
 
-## API
+## Forking a worker
 
-Even if the worker is only responsible for executing tasks thanks to runners, 
-some methods can be used to improve its usage:
+You may face situations where the default worker must be **cloned** or **forked** 
+to  execute properly a task and/or update an option 
+without compromising the default worker behavior.
 
-- `execute`: Allows executing tasks depending on the given options, 
-             if an empty set of tasks is submitted, 
-             the worker will use the scheduler to retrieve the currently due tasks.
+To do so, the worker has a method called `fork()`,
+this method allows to retrieve a new worker (based on the options passed via the first one)
+and execute tasks if needed.
 
-- `fork`: This method allows to retrieve a "cloned" worker, 
-          this can be useful when executing tasks outside the main worker process.
+If you need to interact with both workers right after the fork succeed, 
+a [WorkerForkedEvent](../src/Event/WorkerForkedEvent.php) is dispatched.
 
-- `stop`: This method indicate to the worker that it should be stopped.
+**PS: The default worker can be retrieved via `$forkedWorker->getOptions()['forkedFrom']`.**
 
-- `restart`: This method allows to reset the internal worker state and dispatch an event related to this reset.
-
-- `isRunning`: Returns the state of the worker regarding the current execution.
-
-- `getFailedTasks`: Return a [TaskList](../src/Task/TaskList.php) 
-                    that contains the failed tasks during the current execution.
-
-- `getLastExecutedTask`: Return the last executed task or null if none.
-
-- `getRunners`: Return the injected runners.
-
-- `getOptions`: Return the current options of the worker (in the case of a forked one, the forked ones).
+**PS II: You can determine if the current worker is a fork via the option `isForked`.**

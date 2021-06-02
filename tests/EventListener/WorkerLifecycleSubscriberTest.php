@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\EventListener;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -30,6 +31,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         self::assertSame('onWorkerStarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertArrayHasKey(WorkerStoppedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerStopped', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
+        self::assertArrayHasKey(WorkerForkedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerForked', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerForkedEvent::class]);
     }
 
     public function testSubscriberLogOnWorkerRestartedWithoutExecutedTask(): void
@@ -196,5 +199,23 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
         $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
         $workerLifecycleSubscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
+    }
+
+    public function testSubscriberLogOnWorkerForked(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $secondWorker = $this->createMock(WorkerInterface::class);
+        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been forked'), self::equalTo([
+            'forkedWorker' => [],
+            'newWorker' => [],
+        ]));
+
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
     }
 }

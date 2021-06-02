@@ -6,6 +6,7 @@ namespace SchedulerBundle\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -66,6 +67,17 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         ]);
     }
 
+    public function onWorkerForked(WorkerForkedEvent $workerForkedEvent): void
+    {
+        $forkedWorker = $workerForkedEvent->getForkedWorker();
+        $newWorker = $workerForkedEvent->getNewWorker();
+
+        $this->logger->info('The worker has been forked', [
+            'forkedWorker' => $forkedWorker->getOptions(),
+            'newWorker' => $newWorker->getOptions(),
+        ]);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -76,6 +88,7 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
             WorkerRunningEvent::class => 'onWorkerRunning',
             WorkerStartedEvent::class => 'onWorkerStarted',
             WorkerStoppedEvent::class => 'onWorkerStopped',
+            WorkerForkedEvent::class => 'onWorkerForked',
         ];
     }
 }

@@ -86,6 +86,24 @@ final class WorkerTest extends TestCase
         ]);
     }
 
+    public function testWorkerCannotBeConfiguredWithInvalidForkedFrom(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "forkedFrom" with value "foo" is expected to be of type "SchedulerBundle\Worker\WorkerInterface" or "null", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'forkedFrom' => 'foo',
+        ]);
+    }
+
     public function testWorkerCannotBeConfiguredWithInvalidIsFork(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -230,9 +248,11 @@ final class WorkerTest extends TestCase
             'shouldStop' => true,
         ]);
 
-        self::assertCount(8, $worker->getOptions());
+        self::assertCount(9, $worker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('forkedFrom', $worker->getOptions());
+        self::assertNull($worker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $worker->getOptions());
         self::assertFalse($worker->getOptions()['isFork']);
         self::assertArrayHasKey('isRunning', $worker->getOptions());
@@ -256,9 +276,11 @@ final class WorkerTest extends TestCase
     {
         $runner = $this->createMock(RunnerInterface::class);
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::exactly(3))->method('dispatch');
 
         $worker = new Worker($scheduler, [$runner], $watcher, new WorkerMiddlewareStack(), $eventDispatcher, $logger);
         $worker->execute([
@@ -267,9 +289,12 @@ final class WorkerTest extends TestCase
         ]);
         $forkedWorker = $worker->fork();
 
-        self::assertCount(8, $forkedWorker->getOptions());
+        self::assertCount(9, $forkedWorker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
         self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
+        self::assertArrayHasKey('forkedFrom', $forkedWorker->getOptions());
+        self::assertNotNull($forkedWorker->getOptions()['forkedFrom']);
+        self::assertSame($worker, $forkedWorker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $forkedWorker->getOptions());
         self::assertTrue($forkedWorker->getOptions()['isFork']);
         self::assertArrayHasKey('isRunning', $forkedWorker->getOptions());

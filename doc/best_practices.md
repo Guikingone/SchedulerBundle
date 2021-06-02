@@ -19,7 +19,17 @@ scheduler_bundle:
 
 ## Using the probe
 
-// TODO
+_Introduced in `0.5`_
+
+Ensuring that tasks are scheduled, executed and so on can be hard, 
+thanks to the [Probe](probe.md), you can ease this verification phase and 
+trigger actions if something goes wrong.
+
+The probe can also define [External probes](probe.md#fetching-external-state) that
+will fetch and retrieve others projects (or the main one!) probe state.
+
+Combining the probe with an up-to-date task consumption and adapted error handling strategy
+is a key to succeed using this bundle.
 
 ## Using lazy loading
 
