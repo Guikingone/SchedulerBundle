@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use Closure;
+use SchedulerBundle\LazyInterface;
 use Traversable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazyTaskList implements TaskListInterface
+final class LazyTaskList implements TaskListInterface, LazyInterface
 {
     private ?TaskListInterface $sourceList;
-    private ?TaskListInterface $list;
+    private ?TaskListInterface $list = null;
     private bool $initialized = false;
 
     public function __construct(TaskListInterface $list)
@@ -44,31 +45,37 @@ final class LazyTaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName): ?TaskInterface
+    public function get(string $taskName, bool $lazy = false): ?TaskInterface
     {
         $this->initialize();
 
-        return $this->list->get($taskName);
+        return $this->list->get($taskName, $lazy);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): TaskListInterface
+    public function findByName(array $names): LazyTaskList
     {
         $this->initialize();
 
-        return $this->list->findByName($names);
+        $self = new self($this->list->findByName($names));
+        $self->initialize();
+
+        return $self;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): TaskListInterface
+    public function filter(Closure $filter): LazyTaskList
     {
         $this->initialize();
 
-        return $this->list->filter($filter);
+        $self = new self($this->list->filter($filter));
+        $self->initialize();
+
+        return $self;
     }
 
     /**
@@ -167,6 +174,14 @@ final class LazyTaskList implements TaskListInterface
         $this->initialize();
 
         return $this->list->getIterator();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isInitialized(): bool
+    {
+        return $this->initialized;
     }
 
     private function initialize(): void

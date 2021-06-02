@@ -50,6 +50,13 @@
                     {{- events.queuedTaskEvents|length -}}
                 </span>
             </div>
+
+            <div class="sf-toolbar-info-piece">
+                <b>{{ 'Probe' }}</b>
+                <span class="sf-toolbar-status">
+                    {{- collector.getProbeInformations() is not empty ? 'Enabled' : 'disabled' -}}
+                </span>
+            </div>
         {% endset %}
 
         {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', {link: true}) }}
@@ -156,6 +163,8 @@
                 </div>
             </div>
         </div>
+
+        {{ include('@Scheduler/Collector/probe_display.html.twig') }}
     {% endif %}
 {% endblock %}
 

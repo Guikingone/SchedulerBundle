@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\TransportInterface;
@@ -234,11 +235,53 @@ final class FilesystemTransportTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    public function testTaskCanBeRetrievedLazily(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $filesystemTransport->create(new NullTask('foo'));
+        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+
+        $lazyTask = $filesystemTransport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertFalse($lazyTask->isInitialized());
+
+        $task = $lazyTask->getTask();
+        self::assertTrue($lazyTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+    }
+
     public function testTaskCanBeCreated(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ), $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -253,7 +296,16 @@ final class FilesystemTransportTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -272,7 +324,16 @@ final class FilesystemTransportTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([

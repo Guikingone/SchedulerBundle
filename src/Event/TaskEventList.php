@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Event;
 
 use Countable;
+use SchedulerBundle\Task\ProbeTask;
 use function array_filter;
 use function count;
 
@@ -69,6 +70,14 @@ final class TaskEventList implements Countable
     public function getQueuedTaskEvents(): array
     {
         return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask()->isQueued());
+    }
+
+    /**
+     * @return array<int, TaskScheduledEvent>
+     */
+    public function getProbeTaskEvents(): array
+    {
+        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask() instanceof ProbeTask);
     }
 
     /**

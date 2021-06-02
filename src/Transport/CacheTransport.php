@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -47,8 +49,12 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
+        if ($lazy) {
+            return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
+        }
+
         if (self::TASK_LIST_ITEM_NAME === $name) {
             throw new RuntimeException('This key is internal and cannot be accessed');
         }

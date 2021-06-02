@@ -26,7 +26,7 @@ final class TaskQueued extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('%s %s been queued', $this->expectedCount, $this->expectedCount > 1 ? 'have' : 'has');
+        return sprintf('contains %s task%s that %s been queued', $this->expectedCount, $this->expectedCount > 1 ? 's' : '', $this->expectedCount > 1 ? 'have' : 'has');
     }
 
     /**

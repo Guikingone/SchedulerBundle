@@ -7,11 +7,15 @@ namespace Tests\SchedulerBundle\Transport;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\FailOverTransport;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Throwable;
@@ -80,27 +84,53 @@ final class FailOverTransportTest extends TestCase
 
     public function testTransportCanRetrieveTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
+            ->with(self::equalTo('foo'), self::equalTo(false))
             ->willThrowException(new RuntimeException('Task not found'))
         ;
 
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::exactly(2))->method('get')
-            ->with(self::equalTo('foo'))
-            ->willReturn($task)
-        ;
+        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $secondTransport->create(new NullTask('foo'));
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertSame($task, $failOverTransport->get('foo'));
-        self::assertSame($task, $failOverTransport->get('foo'));
+        $storedTask = $failOverTransport->get('foo');
+        self::assertInstanceOf(NullTask::class, $storedTask);
+        self::assertSame('foo', $storedTask->getName());
+    }
+
+    public function testTransportCanRetrieveTaskLazily(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'), self::equalTo(true))
+            ->willThrowException(new RuntimeException('Task not found'))
+        ;
+
+        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $secondTransport->create(new NullTask('foo'));
+
+        $failOverTransport = new FailOverTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        $lazyTask = $failOverTransport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertFalse($lazyTask->isInitialized());
+        self::assertSame('foo.lazy', $lazyTask->getName());
+
+        $task = $lazyTask->getTask();
+        self::assertTrue($lazyTask->isInitialized());
+        self::assertInstanceOf(NullTask::class, $task);
     }
 
     /**
@@ -190,20 +220,43 @@ final class FailOverTransportTest extends TestCase
      */
     public function testTransportCanRetrieveTaskList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
 
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->method('list')->willReturn($taskList);
+        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
         ]);
 
-        self::assertEmpty($failOverTransport->list());
+        $list = $failOverTransport->list();
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(0, $list);
+    }
+
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testTransportCanRetrieveEmptyLazyTaskList(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->method('list')->willThrowException(new RuntimeException('Task list not found'));
+
+        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $failOverTransport = new FailOverTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        $lazyList = $failOverTransport->list(true);
+        self::assertInstanceOf(LazyTaskList::class, $lazyList);
+        self::assertCount(0, $lazyList);
     }
 
     /**
@@ -219,7 +272,10 @@ final class FailOverTransportTest extends TestCase
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->method('list')
             ->with(self::equalTo(true))
-            ->willReturn(new LazyTaskList(new TaskList()));
+            ->willReturn(new LazyTaskList(new TaskList([
+                new NullTask('foo'),
+            ])))
+        ;
 
         $failOverTransport = new FailOverTransport([
             $firstTransport,
@@ -227,9 +283,11 @@ final class FailOverTransportTest extends TestCase
         ]);
 
         $list = $failOverTransport->list(true);
-
         self::assertInstanceOf(LazyTaskList::class, $list);
-        self::assertCount(0, $list);
+        self::assertFalse($list->isInitialized());
+        self::assertCount(1, $list);
+        self::assertTrue($list->isInitialized());
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
     public function testTransportCannotCreateWithoutTransports(): void

@@ -33,9 +33,9 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     {
         return [
             'bag' => NotificationTaskBag::class,
-            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+            'body' => $this->objectNormalizer->normalize($object, $format, [
                 AbstractNormalizer::CALLBACKS => [
-                    'recipients' => fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => $this->objectNormalizer->normalize($recipient, $format, $context), $innerObject),
+                    'recipients' => fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => ['email' => $recipient->getEmail(), 'phone' => $recipient->getPhone()], $innerObject),
                     'notification' => fn (Notification $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                         'subject' => $innerObject->getSubject(),
                         'content' => $innerObject->getContent(),
@@ -44,7 +44,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
                         'importance' => $innerObject->getImportance(),
                     ],
                 ],
-            ])),
+            ]),
         ];
     }
 

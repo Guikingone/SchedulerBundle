@@ -136,7 +136,7 @@ final class RebootSchedulerCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('[WARNING] The scheduler cannot be rebooted as the worker is not available', $commandTester->getDisplay());
-        self::assertStringContainsString('The process will be retried in 1 second', $commandTester->getDisplay());
+        self::assertStringContainsString('The process will be retried as soon as the worker is available', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] The scheduler have been rebooted', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('foo', $commandTester->getDisplay());

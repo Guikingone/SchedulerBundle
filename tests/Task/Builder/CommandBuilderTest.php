@@ -10,9 +10,9 @@ use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\Task\CommandTask;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\CommandBuilder;
-use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**

@@ -26,8 +26,10 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * Return the desired {@see TaskInterface} if found using its @param string $taskName, otherwise, null.
+     *
+     * Can return a {@see LazyTask} if @param bool $lazy is used and if the task can be found.
      */
-    public function get(string $taskName): ?TaskInterface;
+    public function get(string $taskName, bool $lazy = false): ?TaskInterface;
 
     /**
      * @param array<int, string> $names

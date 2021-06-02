@@ -26,6 +26,7 @@
             "SchedulerBundle\\Bridge\\Doctrine\\Transport\\": "src/Bridge/Doctrine/Transport/",
             "SchedulerBundle\\Bridge\\Redis\\": "src/Bridge/Redis/",
             "SchedulerBundle\\Bridge\\Redis\\Transport\\": "src/Bridge/Redis/Transport/",
+            "SchedulerBundle\\CacheClearer\\": "src/CacheClearer/",
             "SchedulerBundle\\Command\\": "src/Command/",
             "SchedulerBundle\\DataCollector\\": "src/DataCollector/",
             "SchedulerBundle\\DependencyInjection\\": "src/DependencyInjection/",
@@ -35,6 +36,7 @@
             "SchedulerBundle\\Expression\\": "src/Expression/",
             "SchedulerBundle\\Messenger\\": "src/Messenger/",
             "SchedulerBundle\\Middleware\\": "src/Middleware/",
+            "SchedulerBundle\\Probe\\": "src/Probe/",
             "SchedulerBundle\\Runner\\": "src/Runner/",
             "SchedulerBundle\\SchedulePolicy\\": "src/SchedulePolicy/",
             "SchedulerBundle\\Serializer\\": "src/Serializer/",
@@ -43,6 +45,8 @@
             "SchedulerBundle\\Task\\Builder\\": "src/Task/Builder/",
             "SchedulerBundle\\Test\\": "src/Test/",
             "SchedulerBundle\\Test\\Constraint\\": "src/Test/Constraint/",
+            "SchedulerBundle\\Test\\Constraint\\Probe\\": "src/Test/Constraint/Probe/",
+            "SchedulerBundle\\Test\\Constraint\\Scheduler\\": "src/Test/Constraint/Scheduler/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
             "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
             "SchedulerBundle\\Worker\\": "src/Worker/"
@@ -58,6 +62,7 @@
             "Tests\\SchedulerBundle\\Bridge\\Doctrine\\Transport\\Assets\\": "tests/Bridge/Doctrine/Transport/Assets/",
             "Tests\\SchedulerBundle\\Bridge\\Redis\\": "tests/Bridge/Redis/",
             "Tests\\SchedulerBundle\\Bridge\\Redis\\Transport\\": "tests/Bridge/Redis/Transport/",
+            "Tests\\SchedulerBundle\\CacheClearer\\": "tests/CacheClearer/",
             "Tests\\SchedulerBundle\\Command\\": "tests/Command/",
             "Tests\\SchedulerBundle\\DataCollector\\": "tests/DataCollector/",
             "Tests\\SchedulerBundle\\DependencyInjection\\": "tests/DependencyInjection/",
@@ -75,6 +80,8 @@
             "Tests\\SchedulerBundle\\Task\\Builder\\": "tests/Task/Builder/",
             "Tests\\SchedulerBundle\\Test\\": "tests/Test/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\": "tests/Test/Constraint/",
+            "Tests\\SchedulerBundle\\Test\\Constraint\\Probe\\": "tests/Test/Constraint/Probe/",
+            "Tests\\SchedulerBundle\\Test\\Constraint\\Scheduler\\": "tests/Test/Constraint/Scheduler/",
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
             "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
             "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/"
@@ -112,7 +119,7 @@
         "infection/infection": "^0.23",
         "marcocesarato/php-conventional-changelog": "^1.10",
         "phpstan/phpstan": "^0.12.86",
-        "phpstan/phpstan-doctrine": "^0.12.33",
+        "phpstan/phpstan-doctrine": "^0.12.38",
         "phpstan/phpstan-phpunit": "^0.12.19",
         "phpstan/phpstan-strict-rules": "^0.12.9",
         "phpstan/phpstan-symfony": "^0.12.33",
@@ -120,6 +127,7 @@
         "psalm/plugin-phpunit": "^0.15",
         "psalm/plugin-symfony": "^2.1",
         "psr/cache": "^1.0",
+        "rector/rector": "^0.11.5",
         "symfony/cache": "^5.2 || ^5.3",
         "symfony/dependency-injection": "^5.2 || ^5.3",
         "symfony/framework-bundle": "^5.2 || ^5.3",
@@ -132,7 +140,7 @@
         "vimeo/psalm": "^4.7"
     },
     "suggest": {
-        "symfony/http-client": "For dispatching http tasks",
+        "symfony/http-client": "For dispatching http tasks and / or using external probe clients",
         "symfony/messenger": "For dispatching tasks to queue",
         "symfony/notifier": "For dispatching notification tasks"
     }

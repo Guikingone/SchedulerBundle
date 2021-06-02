@@ -7,12 +7,16 @@ namespace SchedulerBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use function array_combine;
 use function array_key_exists;
 use function array_filter;
+use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_replace;
 use function array_values;
 use function count;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,6 +35,25 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             throw new InvalidConfigurationException('The transport must be configured to schedule tasks');
                         }
 
+                        if (!array_key_exists('probe', $configuration)) {
+                            return $configuration;
+                        }
+
+                        if (!array_key_exists('clients', $configuration['probe'])) {
+                            return $configuration;
+                        }
+
+                        if (!array_key_exists('tasks', $configuration)) {
+                            $configuration['tasks'] = [];
+                        }
+
+                        $configuration['tasks'] = array_merge($configuration['tasks'], array_map(function (array $configuration): array {
+                            $configuration['type'] = 'probe';
+                            $configuration['expression'] = '* * * * *';
+
+                            return $configuration;
+                        }, array_combine(array_map(fn ($key): string => sprintf('%s.probe', $key), array_keys($configuration['probe']['clients'])), $configuration['probe']['clients'])));
+
                         return $configuration;
                     })
                 ->end()
@@ -42,6 +65,46 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                     ->scalarNode('timezone')
                         ->info('The timezone used by the scheduler, if not defined, the default value will be "UTC"')
                         ->defaultValue('UTC')
+                    ->end()
+                    ->arrayNode('scheduler')
+                        ->children()
+                            ->enumNode('mode')
+                                ->info('Define the scheduler mode (lazy or default)')
+                                ->values(['default', 'lazy'])
+                                ->defaultValue('default')
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('probe')
+                        ->children()
+                            ->scalarNode('enabled')
+                                ->info('Enable the probe')
+                                ->defaultValue(false)
+                            ->end()
+                            ->scalarNode('path')
+                                ->info('The path used by the probe to return the internal state')
+                                ->defaultValue('/_probe')
+                            ->end()
+                            ->arrayNode('clients')
+                                ->useAttributeAsKey('name')
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->scalarNode('externalProbePath')
+                                            ->info('Define the path where the probe state is available')
+                                            ->defaultValue(null)
+                                        ->end()
+                                        ->scalarNode('errorOnFailedTasks')
+                                            ->info('Define if the probe fails when the "failedTasks" node is higher than 0')
+                                            ->defaultValue(false)
+                                        ->end()
+                                        ->scalarNode('delay')
+                                            ->info('Define the delay before executing the client (in milliseconds)')
+                                            ->defaultValue(0)
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
                     ->end()
                     ->arrayNode('transport')
                         ->children()
@@ -87,8 +150,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             })
                         ->end()
                         ->useAttributeAsKey('name')
-                        ->normalizeKeys(false)
-                            ->variablePrototype()->end()
+                        ->variablePrototype()->end()
                     ->end()
                     ->scalarNode('lock_store')
                         ->info('The store used by every worker to prevent overlapping, by default, a FlockStore is created')

@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Expression;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use function explode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -19,6 +20,50 @@ final class ComputedExpressionBuilderTest extends TestCase
 
         self::assertFalse($computedExpressionBuilder->support('* * * * *'));
         self::assertTrue($computedExpressionBuilder->support('# * * * *'));
+    }
+
+    public function testBuilderCanHandleMinutes(): void
+    {
+        $builder = new ComputedExpressionBuilder();
+
+        $expression = $builder->build('# * * * *');
+        $explodedExpression = explode(' ', $expression->getExpression());
+
+        self::assertGreaterThanOrEqual(0, $explodedExpression[0]);
+        self::assertLessThanOrEqual(59, $explodedExpression[0]);
+    }
+
+    public function testBuilderCanHandleHours(): void
+    {
+        $builder = new ComputedExpressionBuilder();
+
+        $expression = $builder->build('* # * * *');
+        $explodedExpression = explode(' ', $expression->getExpression());
+
+        self::assertGreaterThanOrEqual(0, $explodedExpression[1]);
+        self::assertLessThanOrEqual(23, $explodedExpression[1]);
+    }
+
+    public function testBuilderCanHandleDays(): void
+    {
+        $builder = new ComputedExpressionBuilder();
+
+        $expression = $builder->build('* * # * *');
+        $explodedExpression = explode(' ', $expression->getExpression());
+
+        self::assertGreaterThanOrEqual(1, $explodedExpression[2]);
+        self::assertLessThanOrEqual(31, $explodedExpression[2]);
+    }
+
+    public function testBuilderCanHandleMonths(): void
+    {
+        $builder = new ComputedExpressionBuilder();
+
+        $expression = $builder->build('* * * # *');
+        $explodedExpression = explode(' ', $expression->getExpression());
+
+        self::assertGreaterThanOrEqual(1, $explodedExpression[3]);
+        self::assertLessThanOrEqual(12, $explodedExpression[3]);
     }
 
     /**

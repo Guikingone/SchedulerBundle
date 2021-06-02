@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Closure;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -69,8 +71,12 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
+        if ($lazy) {
+            return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
+        }
+
         if (!$this->fileExist($name)) {
             throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }

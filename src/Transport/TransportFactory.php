@@ -15,18 +15,21 @@ use function sprintf;
 final class TransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
+     * @var TransportFactoryInterface[]
      */
     private iterable $factories;
 
     /**
-     * @param iterable|TransportFactoryInterface[] $transportsFactories
+     * @param TransportFactoryInterface[] $transportsFactories
      */
     public function __construct(iterable $transportsFactories)
     {
         $this->factories = $transportsFactories;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
         foreach ($this->factories as $factory) {

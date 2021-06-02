@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Test\Constraint;
 
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -35,6 +36,11 @@ final class TaskQueuedTest extends TestCase
         $taskQueued = new TaskQueued(1);
 
         self::assertFalse($taskQueued->evaluate($taskEventList, '', true));
+
+        self::expectException(ExpectationFailedException::class);
+        self::expectExceptionMessage('contains 1 task that has been queued');
+        self::expectExceptionCode(0);
+        $taskQueued->evaluate($taskEventList);
     }
 
     public function testConstraintCanMatch(): void

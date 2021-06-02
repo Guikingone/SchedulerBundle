@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use Closure;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -22,7 +24,7 @@ final class RedisTransport extends AbstractTransport
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
     /**
-     * @param array<string, int|string> $options
+     * @param array<string, mixed|int|float|string|bool|array|null> $options
      */
     public function __construct(
         array $options,
@@ -71,9 +73,12 @@ final class RedisTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
-        return $this->connection->get($name);
+        return $lazy
+            ? new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->connection->get($name), $this))
+            : $this->connection->get($name)
+        ;
     }
 
     /**

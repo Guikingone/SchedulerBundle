@@ -13,6 +13,9 @@ use function strpos;
  */
 final class FailOverTransportFactory extends AbstractCompoundTransportFactory
 {
+    /**
+     * @var iterable|TransportFactoryInterface[]
+     */
     private iterable $transportFactories;
 
     /**

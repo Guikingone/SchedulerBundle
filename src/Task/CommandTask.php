@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
+use function is_array;
+use function is_string;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -21,8 +24,8 @@ final class CommandTask extends AbstractTask
             'options' => $options,
         ], [
             'command' => 'string',
-            'arguments' => ['array', 'string[]'],
-            'options' => ['array', 'string[]'],
+            'arguments' => 'string[]',
+            'options' => 'string[]',
         ]);
 
         parent::__construct($name);
@@ -30,6 +33,10 @@ final class CommandTask extends AbstractTask
 
     public function getCommand(): string
     {
+        if (!is_string($this->options['command'])) {
+            throw new RuntimeException('The command is not a string');
+        }
+
         return $this->options['command'];
     }
 
@@ -44,7 +51,7 @@ final class CommandTask extends AbstractTask
 
     public function getArguments(): array
     {
-        return $this->options['arguments'];
+        return is_array($this->options['arguments']) ? $this->options['arguments'] : [];
     }
 
     public function setArguments(array $arguments): self
@@ -56,7 +63,7 @@ final class CommandTask extends AbstractTask
 
     public function getOptions(): array
     {
-        return $this->options['options'];
+        return is_array($this->options['options']) ? $this->options['options'] : [];
     }
 
     public function setOptions(array $options): self

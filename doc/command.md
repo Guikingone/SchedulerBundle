@@ -2,6 +2,8 @@
 
 This bundle provides a set of commands to interact with your tasks
 
+- [Probe](#probe)
+
 ## Listing the tasks
 
 _Description: List every tasks scheduled_
@@ -133,3 +135,69 @@ $ bin/console scheduler:retry foo --async --force
 ```
 **PS: Using the `async` option forces the scheduler to call the message bus, this approach requires
 that you call the related command from it to consume messages**
+
+## Probe
+
+### Displaying the current state of the probe
+
+_Introduced in `0.5`_
+
+_Description: Display the probe state along with (if defined) the external probe states_
+
+```bash
+$ bin/console scheduler:debug:probe
+```
+
+### Options
+
+This command allows using additional options to display information:
+
+- `--external`: Define if the external probes state must be displayed.
+
+#### Example
+
+```bash
+$ bin/console scheduler:debug:probe
+
+[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+
++----------------+--------------+-----------------+
+| Executed tasks | Failed tasks | Scheduled tasks |
++----------------+--------------+-----------------+
+| 0              | 0            | 0               |
++----------------+--------------+-----------------+
+```
+
+- With external probes state
+
+```bash
+$ bin/console scheduler:debug:probe --external
+
+  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+
++----------------+--------------+-----------------+
+| Executed tasks | Failed tasks | Scheduled tasks |
++----------------+--------------+-----------------+
+| 0              | 0            | 0               |
++----------------+--------------+-----------------+
+
+  [INFO] Found 1 external probe
+
++------+-----------------+--------+-----------------------------------+-----------------+
+| Name | Path            | State  | Last execution                    | Execution state |
++------+-----------------+--------+-----------------------------------+-----------------+
+| foo  | /_external_path | paused | Tuesday, 18-May-2021 16:26:34 UTC | Not executed    |
++------+-----------------+--------+-----------------------------------+-----------------+
+```
+
+### Executing external probe
+
+_Introduced in `0.5`_
+
+_Description: Execute external probe_
+
+```bash
+$ bin/console scheduler:execute:external-probe
+```
+
+#### Example

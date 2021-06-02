@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
+use function array_values;
 use function sprintf;
 
 /**
@@ -45,7 +46,7 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
 
         foreach ($tasks as $task) {
             if ($task instanceof ChainedTask) {
-                $task->setTasks(...$this->sort($policy, $task->getTasks()->toArray(false)));
+                $task->setTasks(...$this->sort($policy, array_values($task->getTasks()->toArray())));
             }
         }
 

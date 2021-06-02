@@ -10,7 +10,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
 use Throwable;
-use function array_merge;
 use function count;
 
 /**
@@ -22,6 +21,10 @@ final class RoundRobinTransport extends AbstractTransport
      * @var TransportInterface[]
      */
     private iterable $transports;
+
+    /**
+     * @var SplObjectStorage<object, mixed>
+     */
     private SplObjectStorage $sleepingTransports;
 
     /**
@@ -29,9 +32,9 @@ final class RoundRobinTransport extends AbstractTransport
      */
     public function __construct(iterable $transports, array $options = [])
     {
-        $this->defineOptions(array_merge([
+        $this->defineOptions([
             'quantum' => $options['quantum'] ?? 2,
-        ], $options), [
+        ], [
             'quantum' => 'int',
         ]);
 
@@ -42,9 +45,9 @@ final class RoundRobinTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface
     {
-        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name));
+        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name, $lazy));
     }
 
     /**

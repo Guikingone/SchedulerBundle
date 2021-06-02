@@ -14,6 +14,7 @@ use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -88,11 +89,8 @@ final class ConsumeTasksCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList());
 
         $worker = $this->createMock(WorkerInterface::class);
 
@@ -162,11 +160,10 @@ final class ConsumeTasksCommandTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')->willThrowException(new Exception('Random error occurred'));
@@ -192,11 +189,10 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
@@ -229,11 +225,10 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
@@ -262,11 +257,10 @@ final class ConsumeTasksCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnFailureLimitSubscriber($failureLimit, $logger));
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
@@ -298,11 +292,10 @@ final class ConsumeTasksCommandTest extends TestCase
             )
         ;
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
@@ -325,16 +318,15 @@ final class ConsumeTasksCommandTest extends TestCase
      */
     public function testCommandCanConsumeSchedulersWithWait(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::never())->method('addSubscriber');
 
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')->with([
@@ -360,7 +352,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $eventDispatcher = new EventDispatcher();
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
@@ -384,6 +376,7 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
         self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
         self::assertStringNotContainsString('Output for task "foo":', $commandTester->getDisplay());
         self::assertStringNotContainsString('Success output', $commandTester->getDisplay());
         self::assertStringContainsString('Task "foo" succeed', $commandTester->getDisplay());
@@ -400,7 +393,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $eventDispatcher = new EventDispatcher();
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
@@ -424,12 +417,33 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
         self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());
+        self::assertStringNotContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
         self::assertStringContainsString('Output for task "foo":', $commandTester->getDisplay());
         self::assertStringContainsString('Success output', $commandTester->getDisplay());
         self::assertStringContainsString('Task "foo" succeed', $commandTester->getDisplay());
         self::assertStringContainsString('Duration: < 1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $commandTester->getDisplay());
         self::assertStringNotContainsString('Task failed: "foo"', $commandTester->getDisplay());
+    }
+
+    public function testCommandCannotExecuteExternalProbeTask(): void
+    {
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new ProbeTask('foo', '_/probe'),
+            new ProbeTask('bar', '/_second_probe'),
+        ]));
+
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
+        $commandTester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('No due tasks found', $commandTester->getDisplay());
     }
 
     /**

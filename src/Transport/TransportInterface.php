@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -18,13 +19,13 @@ interface TransportInterface
 {
     /**
      * Return a stored task, if the task does not exist, an {@see InvalidArgumentException} MUST be thrown.
+     *
+     * Can return a {@see LazyTask} if @param bool $lazy is used.
      */
-    public function get(string $name): TaskInterface;
+    public function get(string $name, bool $lazy = false): TaskInterface;
 
     /**
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
-     *
-     * @return TaskListInterface<string|int, TaskInterface>, the tasks name are used as keys.
      *
      * @throws Throwable
      */
@@ -67,7 +68,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string, int|string|bool|array|null>
+     * @return array<string, mixed|int|float|string|bool|array|null>
      */
     public function getOptions(): array;
 }

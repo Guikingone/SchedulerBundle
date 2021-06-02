@@ -9,7 +9,9 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -70,20 +72,13 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanRetrieveTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
         $secondTaskList = $this->createMock(TaskListInterface::class);
         $secondTaskList->expects(self::once())->method('count')->willReturn(1);
 
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
-        $firstTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willReturn($task)
-        ;
+        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $firstTransport->create(new NullTask('foo'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
@@ -94,7 +89,39 @@ final class LongTailTransportTest extends TestCase
             $secondTransport,
         ]);
 
-        self::assertSame($task, $longTailTransport->get('foo'));
+        $storedTask = $longTailTransport->get('foo');
+        self::assertInstanceOf(NullTask::class, $storedTask);
+        self::assertSame('foo', $storedTask->getName());
+    }
+
+    public function testTransportCanRetrieveTaskLazily(): void
+    {
+        $secondTaskList = $this->createMock(TaskListInterface::class);
+        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
+        $secondTransport->expects(self::never())->method('get');
+
+        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $firstTransport->create(new NullTask('foo'));
+
+        $longTailTransport = new LongTailTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        $lazyTask = $longTailTransport->get('foo', true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertSame('foo.lazy', $lazyTask->getName());
+        self::assertFalse($lazyTask->isInitialized());
+
+        $task = $lazyTask->getTask();
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertTrue($lazyTask->isInitialized());
     }
 
     /**

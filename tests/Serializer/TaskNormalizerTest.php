@@ -9,6 +9,7 @@ use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use stdClass;
 use Symfony\Component\Notifier\Notification\Notification;
@@ -525,9 +526,12 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NotificationTask::class, $task);
         self::assertSame('foo', $task->getName());
-        self::assertCount(2, $task->getRecipients());
-        self::assertSame('test@test.fr', $task->getRecipients()[0]->getEmail());
-        self::assertSame('foo@test.fr', $task->getRecipients()[1]->getEmail());
+
+        $recipients = $task->getRecipients();
+        self::assertIsArray($recipients);
+        self::assertCount(2, $recipients);
+        self::assertSame('test@test.fr', $recipients[0]->getEmail());
+        self::assertSame('foo@test.fr', $recipients[1]->getEmail());
         self::assertSame('* * * * *', $task->getExpression());
     }
 
@@ -556,7 +560,13 @@ final class TaskNormalizerTest extends TestCase
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
-            new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer),
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
@@ -587,7 +597,13 @@ final class TaskNormalizerTest extends TestCase
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
-            new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer),
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
@@ -601,6 +617,7 @@ final class TaskNormalizerTest extends TestCase
             new CommandTask('foo_second', 'cache:clear', [], ['--no-warmup']),
             new CommandTask('foo_third', 'cache:clear', [], ['--no-warmup', '-vvv'])
         ), 'json');
+
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
         self::assertInstanceOf(ChainedTask::class, $task);
@@ -609,20 +626,22 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
         self::assertSame('bar', $task->getTask('bar')->getName());
 
-        self::assertInstanceOf(CommandTask::class, $task->getTask('foo_second'));
-        self::assertSame('foo_second', $task->getTask('foo_second')->getName());
-        self::assertSame('cache:clear', $task->getTask('foo_second')->getCommand());
-        self::assertEmpty($task->getTask('foo_second')->getArguments());
-        self::assertNotEmpty($task->getTask('foo_second')->getOptions());
-        self::assertContains('--no-warmup', $task->getTask('foo_second')->getOptions());
+        $fooSecondTask = $task->getTask('foo_second');
+        self::assertInstanceOf(CommandTask::class, $fooSecondTask);
+        self::assertSame('foo_second', $fooSecondTask->getName());
+        self::assertSame('cache:clear', $fooSecondTask->getCommand());
+        self::assertEmpty($fooSecondTask->getArguments());
+        self::assertNotEmpty($fooSecondTask->getOptions());
+        self::assertContains('--no-warmup', $fooSecondTask->getOptions());
 
-        self::assertInstanceOf(CommandTask::class, $task->getTask('foo_third'));
-        self::assertSame('foo_third', $task->getTask('foo_third')->getName());
-        self::assertSame('cache:clear', $task->getTask('foo_third')->getCommand());
-        self::assertEmpty($task->getTask('foo_third')->getArguments());
-        self::assertNotEmpty($task->getTask('foo_third')->getOptions());
-        self::assertContains('--no-warmup', $task->getTask('foo_third')->getOptions());
-        self::assertContains('-vvv', $task->getTask('foo_third')->getOptions());
+        $fooThirdTask = $task->getTask('foo_third');
+        self::assertInstanceOf(CommandTask::class, $fooThirdTask);
+        self::assertSame('foo_third', $fooThirdTask->getName());
+        self::assertSame('cache:clear', $fooThirdTask->getCommand());
+        self::assertEmpty($fooThirdTask->getArguments());
+        self::assertNotEmpty($fooThirdTask->getOptions());
+        self::assertContains('--no-warmup', $fooThirdTask->getOptions());
+        self::assertContains('-vvv', $fooThirdTask->getOptions());
     }
 
     public function testShellTaskWithBeforeSchedulingNotificationTaskBagCanBeNormalized(): void
@@ -787,6 +806,68 @@ final class TaskNormalizerTest extends TestCase
         self::assertNotEmpty($bag->getRecipients());
 
         self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    public function testProbeTaskCanBeDenormalized(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->serialize(new ProbeTask('foo', '/_probe', true, 10), 'json');
+        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertTrue($task->getErrorOnFailedTasks());
+        self::assertSame(10, $task->getDelay());
+    }
+
+    public function testProbeTaskCanBeDenormalizedWithoutExtraInformations(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->serialize(new ProbeTask('foo', '/_probe'), 'json');
+        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
     }
 }
 

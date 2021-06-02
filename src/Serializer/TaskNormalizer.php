@@ -10,6 +10,7 @@ use DatetimeInterface;
 use DateTimeZone;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -110,7 +111,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'afterSchedulingNotificationBag' => $notificationTaskBagCallback,
                 'beforeExecutingNotificationBag' => $notificationTaskBagCallback,
                 'afterExecutingNotificationBag' => $notificationTaskBagCallback,
-                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => $this->objectNormalizer->normalize($recipient, $format, $context), $innerObject),
+                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => ['email' => $recipient->getEmail(), 'phone' => $recipient->getPhone()], $innerObject),
                 'notification' => fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                     'subject' => $innerObject->getSubject(),
                     'content' => $innerObject->getContent(),
@@ -261,6 +262,19 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'url' => $body['url'],
                         'method' => $body['method'],
                         'clientOptions' => $body['clientOptions'],
+                    ],
+                ],
+            ]);
+        }
+
+        if (ProbeTask::class === $objectType) {
+            return $this->objectNormalizer->denormalize($body, $objectType, $format, [
+                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
+                    ProbeTask::class => [
+                        'name' => $body['name'],
+                        'externalProbePath' => $body['externalProbePath'],
+                        'errorOnFailedTasks' => $body['errorOnFailedTasks'] ?? false,
+                        'delay' => $body['delay'] ?? 0,
                     ],
                 ],
             ]);

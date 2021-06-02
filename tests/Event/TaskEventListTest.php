@@ -11,6 +11,8 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -25,11 +27,11 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertNotEmpty($taskEventList->getEvents());
+        self::assertCount(1, $taskEventList->getEvents());
         self::assertSame(1, $taskEventList->count());
         self::assertEmpty($taskEventList->getScheduledTaskEvents());
         self::assertEmpty($taskEventList->getFailedTaskEvents());
-        self::assertNotEmpty($taskEventList->getExecutedTaskEvents());
+        self::assertCount(1, $taskEventList->getExecutedTaskEvents());
         self::assertEmpty($taskEventList->getUnscheduledTaskEvents());
         self::assertEmpty($taskEventList->getQueuedTaskEvents());
     }
@@ -41,7 +43,7 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        self::assertNotEmpty($taskEventList->getScheduledTaskEvents());
+        self::assertCount(1, $taskEventList->getScheduledTaskEvents());
         self::assertSame($task, $taskEventList->getScheduledTaskEvents()[0]->getTask());
     }
 
@@ -50,7 +52,7 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskUnscheduledEvent('foo'));
 
-        self::assertNotEmpty($taskEventList->getUnscheduledTaskEvents());
+        self::assertCount(1, $taskEventList->getUnscheduledTaskEvents());
         self::assertSame('foo', $taskEventList->getUnscheduledTaskEvents()[0]->getTask());
     }
 
@@ -61,7 +63,7 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertNotEmpty($taskEventList->getExecutedTaskEvents());
+        self::assertCount(1, $taskEventList->getExecutedTaskEvents());
         self::assertSame($task, $taskEventList->getExecutedTaskEvents()[0]->getTask());
     }
 
@@ -73,7 +75,7 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskFailedEvent($failedTask));
 
-        self::assertNotEmpty($taskEventList->getFailedTaskEvents());
+        self::assertCount(1, $taskEventList->getFailedTaskEvents());
         self::assertSame($failedTask, $taskEventList->getFailedTaskEvents()[0]->getTask());
         self::assertSame($task, $taskEventList->getFailedTaskEvents()[0]->getTask()->getTask());
     }
@@ -86,7 +88,7 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskExecutedEvent($task));
 
-        self::assertEmpty($taskEventList->getQueuedTaskEvents());
+        self::assertCount(0, $taskEventList->getQueuedTaskEvents());
     }
 
     public function testQueuedTaskEventsCanBeRetrieved(): void
@@ -97,7 +99,21 @@ final class TaskEventListTest extends TestCase
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));
 
-        self::assertNotEmpty($taskEventList->getQueuedTaskEvents());
+        self::assertCount(1, $taskEventList->getQueuedTaskEvents());
         self::assertSame($task, $taskEventList->getQueuedTaskEvents()[0]->getTask());
+    }
+
+    public function testProbeTaskEventsCanBeRetrieved(): void
+    {
+        $task = new ProbeTask('foo', 'https://www.foo.com/_probe');
+        $nullTask = new NullTask('bar');
+
+        $taskEventList = new TaskEventList();
+        $taskEventList->addEvent(new TaskScheduledEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskScheduledEvent($nullTask));
+
+        self::assertCount(1, $taskEventList->getProbeTaskEvents());
+        self::assertSame($task, $taskEventList->getProbeTaskEvents()[0]->getTask());
     }
 }

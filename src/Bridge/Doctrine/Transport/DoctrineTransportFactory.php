@@ -14,6 +14,7 @@ use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function is_int;
 use function sprintf;
 use function strpos;
 
@@ -41,7 +42,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
         try {
             $doctrineConnection = $this->registry->getConnection($dsn->getHost());
         } catch (InvalidArgumentException $invalidArgumentException) {
-            throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()), $invalidArgumentException->getCode(), $invalidArgumentException);
+            throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()), is_int($invalidArgumentException->getCode()) ? $invalidArgumentException->getCode() : 0, $invalidArgumentException);
         }
 
         return new DoctrineTransport([

@@ -21,6 +21,16 @@ final class CommandTaskTest extends TestCase
         new CommandTask('test', '', [], ['--env' => 'test']);
     }
 
+    public function testCommandCantBeCreatedWithInvalidCommand(): void
+    {
+        $commandTask = new CommandTask('test', 'cache:clear', [], ['--env' => 'test']);
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The command argument must be a valid command FQCN|string, empty string given');
+        self::expectExceptionCode(0);
+        $commandTask->setCommand('');
+    }
+
     public function testCommandCanBeCreatedWithoutArgumentsAndOptions(): void
     {
         $commandTask = new CommandTask('test', 'app:foo');

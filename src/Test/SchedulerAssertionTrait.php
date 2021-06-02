@@ -6,6 +6,9 @@ namespace SchedulerBundle\Test;
 
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Test\Constraint\Probe\ProbeEnabled;
+use SchedulerBundle\Test\Constraint\Scheduler\SchedulerDueTask;
 use SchedulerBundle\Test\Constraint\TaskExecuted;
 use SchedulerBundle\Test\Constraint\TaskFailed;
 use SchedulerBundle\Test\Constraint\TaskQueued;
@@ -40,6 +43,16 @@ trait SchedulerAssertionTrait
     public static function assertTaskFailedCount(int $count, string $message = ''): void
     {
         self::assertThat(self::getSchedulerEventList(), new TaskFailed($count), $message);
+    }
+
+    public static function assertProbeIsEnabled(bool $expectedState, string $message = ''): void
+    {
+        self::assertThat(self::$container->getParameter('scheduler.probe_state'), new ProbeEnabled($expectedState), $message);
+    }
+
+    public static function assertSchedulerDueTaskCount(int $count, string $message = ''): void
+    {
+        self::asserThat(self::$container->get(SchedulerInterface::class), new SchedulerDueTask($count), $message);
     }
 
     private static function getSchedulerEventList(): TaskEventList

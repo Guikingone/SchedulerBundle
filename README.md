@@ -15,6 +15,7 @@
             <th>PHPUnit</th>
             <th>Security</th>
             <th>Static analysis</th>
+            <th>Rector</th>
         </tr>
         <tr>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Code%20style/main?style=flat" alt="Code style"></td>
@@ -22,6 +23,7 @@
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/PHPUnit/main?style=flat" alt="PHPUnit"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Security/main?style=flat" alt="Security"></td>
             <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Static%20analysis/main?style=flat" alt="Static analysis"></td>
+            <td><img src="https://img.shields.io/github/workflow/status/Guikingone/SchedulerBundle/Rector/main?style=flat" alt="Rector"></td>
         </tr>
     </table>
 </div>
@@ -93,11 +95,13 @@ When a task is configured, time to execute it, two approaches can be used:
 ## Documentation
 
 * [Usage](doc/usage.md)
+* [Configuration](doc/configuration.md)
 * [Best practices](doc/best_practices.md)
 * [Tasks](doc/tasks.md)
 * [Transports](doc/transport.md)
 * [Commands](doc/command.md)
 * [Events](doc/events.md)
+* [Lazy Loading](doc/lazy_loading.md)
 * [Messenger](doc/messenger.md)
 * [HTTP entrypoint](doc/http.md)
 * [Policies](doc/policies.md)
@@ -105,4 +109,5 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Worker](doc/worker.md)
 * [Scheduler](doc/scheduler.md)
 * [Middleware](doc/middleware.md)
+* [Probe](doc/probe.md)
 * [Tests](doc/test.md)

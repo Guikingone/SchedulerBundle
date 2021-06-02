@@ -11,6 +11,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -43,7 +44,9 @@ final class InMemoryTransportTest extends TestCase
 
     public function testTransportCannotReturnInvalidTask(): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -58,7 +61,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -72,12 +77,58 @@ final class InMemoryTransportTest extends TestCase
 
     /**
      * @dataProvider provideTasks
+     */
+    public function testTransportCanReturnValidTaskLazily(TaskInterface $task): void
+    {
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $inMemoryTransport->create($task);
+
+        $lazyTask = $inMemoryTransport->get($task->getName(), true);
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertSame(sprintf('%s.lazy', $task->getName()), $lazyTask->getName());
+        self::assertFalse($lazyTask->isInitialized());
+
+        $storedTask = $lazyTask->getTask();
+        self::assertTrue($lazyTask->isInitialized());
+        self::assertSame($storedTask, $task);
+        self::assertSame($storedTask->getName(), $task->getName());
+    }
+
+    public function testTransportCannotReturnInvalidTaskLazily(): void
+    {
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $lazyTask = $inMemoryTransport->get('foo', true);
+
+        self::assertInstanceOf(LazyTask::class, $lazyTask);
+        self::assertSame('foo.lazy', $lazyTask->getName());
+        self::assertFalse($lazyTask->isInitialized());
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionCode(0);
+        $lazyTask->getTask();
+    }
+
+    /**
+     * @dataProvider provideTasks
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
     public function testTransportCanCreateATask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -92,7 +143,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanCreateATaskAndReturnItAsLazy(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -112,7 +165,9 @@ final class InMemoryTransportTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::once())->method('getName')->willReturn('foo');
 
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -135,7 +190,9 @@ final class InMemoryTransportTest extends TestCase
         $secondTask->expects(self::any())->method('getName')->willReturn('foo');
         $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -156,7 +213,9 @@ final class InMemoryTransportTest extends TestCase
 
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -176,7 +235,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanUpdateATask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -199,7 +260,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -219,7 +282,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -237,7 +302,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotPauseUndefinedTask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -254,7 +321,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotPausePausedTask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -277,7 +346,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanPauseATask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -300,7 +371,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanResumeAPausedTask(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -324,7 +397,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanEmptyAList(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -342,7 +417,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanEmptyALazyList(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport(['execution_mode' => 'first_in_first_out'], new SchedulePolicyOrchestrator([
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
