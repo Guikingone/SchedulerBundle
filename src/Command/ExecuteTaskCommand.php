@@ -61,7 +61,7 @@ final class ExecuteTaskCommand extends Command
             ->setDescription('Execute tasks (due or not) depending on filters')
             ->setDefinition([
                 new InputOption('due', 'd', InputOption::VALUE_NONE, 'Define if the filters must be applied on due tasks'),
-                new InputOption('name', 'n', InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'The name of the task(s) to execute'),
+                new InputOption('name', null, InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'The name of the task(s) to execute'),
                 new InputOption('expression', null, InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'The expression of the task(s) to execute'),
                 new InputOption('tags', 't', InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'The tags of the task(s) to execute'),
             ])

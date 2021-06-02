@@ -37,7 +37,7 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertFalse($command->getDefinition()->getOption('due')->acceptValue());
         self::assertSame('Define if the filters must be applied on due tasks', $command->getDefinition()->getOption('due')->getDescription());
         self::assertTrue($command->getDefinition()->hasOption('name'));
-        self::assertSame('n', $command->getDefinition()->getOption('name')->getShortcut());
+        self::assertNull($command->getDefinition()->getOption('name')->getShortcut());
         self::assertTrue($command->getDefinition()->getOption('name')->isValueOptional());
         self::assertTrue($command->getDefinition()->getOption('name')->isArray());
         self::assertSame('The name of the task(s) to execute', $command->getDefinition()->getOption('name')->getDescription());
