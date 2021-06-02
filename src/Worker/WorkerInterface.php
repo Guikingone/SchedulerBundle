@@ -7,6 +7,7 @@ namespace SchedulerBundle\Worker;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
@@ -36,7 +37,7 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
-     * @param array<string, int|string|bool> $options
+     * @param array<string, array|string|bool|int|null|TaskInterface|WorkerInterface> $options
      *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      * @throws Throwable                {@see SchedulerInterface::getDueTasks()}
@@ -53,6 +54,9 @@ interface WorkerInterface
 
     public function stop(): void;
 
+    /**
+     * Stop the worker, reinitialize the worker state|options and dispatch a {@see WorkerRestartedEvent}
+     */
     public function restart(): void;
 
     public function isRunning(): bool;
@@ -73,7 +77,7 @@ interface WorkerInterface
     public function getRunners(): array;
 
     /**
-     * @return array<string, bool|int|null|TaskInterface|WorkerInterface>
+     * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>
      */
     public function getOptions(): array;
 }
