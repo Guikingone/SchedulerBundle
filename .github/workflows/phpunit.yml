@@ -27,7 +27,7 @@ jobs:
       mercure:
         image: dunglas/mercure
         env:
-          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+          MERCURE_PUBLISHER_JWT_KEY: '!ChangeMe'
         ports:
           - 80:80
     steps:
@@ -52,7 +52,7 @@ jobs:
         run: php vendor/bin/phpunit tests -v
         env:
           SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
-          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+          MERCURE_PUBLISHER_JWT_KEY: '!ChangeMe'
           MERCURE_HUB_URL: 'http://127.0.0.1:80/.well-known/mercure'
 
       - name: Cache PHPUnit result
