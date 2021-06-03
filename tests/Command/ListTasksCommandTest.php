@@ -55,8 +55,7 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCannotReturnTaskOnEmptyScheduler(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('toArray')->willReturn([]);
+        $taskList = new TaskList();
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -217,7 +216,7 @@ final class ListTasksCommandTest extends TestCase
     public function testCommandCanReturnTasksWithoutFilter(): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
@@ -225,9 +224,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::never())->method('filter');
-        $taskList->expects(self::exactly(2))->method('toArray')->willReturn([$task]);
+        $taskList = new TaskList([$task]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -255,24 +252,22 @@ final class ListTasksCommandTest extends TestCase
     public function testCommandCanReturnTasksWithStateAndExpressionFilter(string $expressionOption, string $stateOption): void
     {
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
-        $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
-        $secondTasks = $this->createMock(TaskInterface::class);
-        $secondTasks->expects(self::once())->method('getName')->willReturn('bar');
-        $secondTasks->expects(self::once())->method('getDescription')->willReturn('A second random task');
-        $secondTasks->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $secondTasks->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $secondTasks->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
-        $secondTasks->expects(self::once())->method('getTags')->willReturn(['app', 'fast']);
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(4))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getDescription')->willReturn('A second random task');
+        $secondTask->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
+        $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'fast']);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::exactly(2))->method('filter')->willReturnSelf();
-        $taskList->expects(self::exactly(2))->method('toArray')->willReturn([$task, $secondTasks]);
+        $taskList = new TaskList([$task, $secondTask]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -309,11 +304,9 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidExpressionFilter(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -329,11 +322,9 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidStateFilter(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -349,11 +340,9 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidStateAndExpressionFilter(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $taskList = $this->createMock(TaskListInterface::class);
         $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
+        $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);

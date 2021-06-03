@@ -16,9 +16,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use ReflectionClass;
-use function array_map;
-use function array_walk;
-use function count;
 use function implode;
 use function sprintf;
 use const DATE_ATOM;
@@ -83,7 +80,7 @@ final class ListTasksCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getTasks();
-        if (0 === count($tasks->toArray())) {
+        if (0 === $tasks->count()) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
@@ -97,18 +94,17 @@ final class ListTasksCommand extends Command
             $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
-        $tasks = $tasks->toArray();
-        if (0 === count($tasks)) {
+        if (0 === $tasks->count()) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
 
-        $symfonyStyle->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
+        $symfonyStyle->success(sprintf('%d task%s found', $tasks->count(), $tasks->count() > 1 ? 's' : ''));
         $table = new Table($output);
         $table->setHeaders(['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
 
-        array_walk($tasks, function (TaskInterface $task) use ($table): void {
+        $tasks->walk(function (TaskInterface $task) use ($table): void {
             $table->addRow([
                 (new ReflectionClass($task))->getShortName(),
                 $task->getName(),
@@ -123,7 +119,7 @@ final class ListTasksCommand extends Command
             ]);
 
             if ($task instanceof ChainedTask) {
-                $table->addRows(array_map(fn (TaskInterface $task): array => [
+                $table->addRows($task->getTasks()->map(fn (TaskInterface $task): array => [
                     '<info>          ></info>',
                     $task->getName(),
                     $task->getDescription() ?? 'No description set',
@@ -134,7 +130,7 @@ final class ListTasksCommand extends Command
                     null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
                     $task->getState(),
                     implode(', ', $task->getTags()) ?? 'No tags set',
-                ], $task->getTasks()->toArray()));
+                ]));
             }
         });
 

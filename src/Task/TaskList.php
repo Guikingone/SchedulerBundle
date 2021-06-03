@@ -12,6 +12,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_values;
 use function array_walk;
+use function array_map;
 use function count;
 use function gettype;
 use function in_array;
@@ -165,6 +166,14 @@ final class TaskList implements TaskListInterface
         array_walk($this->tasks, $func);
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return array_map($func, $this->tasks);
     }
 
     /**

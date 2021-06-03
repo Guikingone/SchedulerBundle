@@ -143,6 +143,25 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(1, $task->getTags());
     }
 
+    public function testInitializedListCanApplyMapClosure(): void
+    {
+        $list = new LazyTaskList(new TaskList());
+
+        $list->add(new NullTask('foo'));
+        $list->add(new NullTask('bar'));
+
+        self::assertTrue($list->isInitialized());
+        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $list->map(fn (TaskInterface $task): string => $task->getName()));
+    }
+
+    public function testNotInitializedListCanApplyMapClosure(): void
+    {
+        $list = new LazyTaskList(new TaskList([new NullTask('foo'), new NullTask('bar')]));
+
+        self::assertFalse($list->isInitialized());
+        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $list->map(fn (TaskInterface $task): string => $task->getName()));
+    }
+
     public function testListCanReturnEmptyListAsArray(): void
     {
         $list = new LazyTaskList(new TaskList());

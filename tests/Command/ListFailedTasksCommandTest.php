@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Command;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -31,11 +31,10 @@ final class ListFailedTasksCommandTest extends TestCase
 
     public function testCommandCannotListEmptyFailedTasks(): void
     {
-        $failedTasks = $this->createMock(TaskListInterface::class);
-        $failedTasks->expects(self::once())->method('toArray')->willReturn([]);
+        $failedTaskList = new TaskList();
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTasks);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTaskList);
 
         $listFailedTasksCommand = new ListFailedTasksCommand($worker);
 
@@ -57,11 +56,10 @@ final class ListFailedTasksCommandTest extends TestCase
 
         $failedTask = new FailedTask($task, 'Foo error occurred');
 
-        $failedTasks = $this->createMock(TaskListInterface::class);
-        $failedTasks->expects(self::once())->method('toArray')->willReturn([$failedTask]);
+        $failedTaskList = new TaskList([$failedTask]);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTasks);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn($failedTaskList);
 
         $listFailedTasksCommand = new ListFailedTasksCommand($worker);
 
