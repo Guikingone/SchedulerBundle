@@ -39,7 +39,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_foo'), 1);
+        $event = new RequestEvent($kernel, Request::create('/_foo'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);
@@ -57,7 +57,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_probe', 'POST'), 1);
+        $event = new RequestEvent($kernel, Request::create('/_probe', 'POST'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);
@@ -79,7 +79,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_probe'), 1);
+        $event = new RequestEvent($kernel, Request::create('/_probe'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);

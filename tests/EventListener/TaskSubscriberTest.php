@@ -47,7 +47,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_foo');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
@@ -67,7 +67,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
 
@@ -100,7 +100,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?name=app.bar');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $taskSubscriber = new TaskSubscriber($scheduler, $worker, $eventSubscriber, $serializer);
         $taskSubscriber->onKernelRequest($requestEvent);
@@ -131,7 +131,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, null));
@@ -161,7 +161,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber');
@@ -196,7 +196,7 @@ final class TaskSubscriberTest extends TestCase
 
         $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('http://www.foo.com/_tasks?expression=* * * * *');
-        $requestEvent = new RequestEvent($kernel, $request, 1);
+        $requestEvent = new RequestEvent($kernel, $request, null);
 
         $eventSubscriber = $this->createMock(EventDispatcher::class);
         $eventSubscriber->expects(self::once())->method('addSubscriber')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
