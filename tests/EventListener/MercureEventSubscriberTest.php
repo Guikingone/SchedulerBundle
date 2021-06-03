@@ -24,19 +24,19 @@ final class MercureEventSubscriberTest extends TestCase
     {
         self::assertArrayHasKey(TaskScheduledEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
-            'onTaskScheduled', -255
+            'onTaskScheduled', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
         self::assertArrayHasKey(TaskUnscheduledEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
-            'onTaskUnscheduled', -255
+            'onTaskUnscheduled', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
         self::assertArrayHasKey(TaskExecutedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
-            'onTaskExecuted', -255
+            'onTaskExecuted', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
         self::assertArrayHasKey(TaskFailedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
-            'onTaskFailed', -255
+            'onTaskFailed', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
     }
 
@@ -73,6 +73,16 @@ final class MercureEventSubscriberTest extends TestCase
 
     public function testHubCanPublishUpdateOnTaskExecuted(): void
     {
+        $task = new NullTask('foo');
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish');
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('serialize')->with(self::equalTo($task), self::equalTo('json'));
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onTaskExecuted(new TaskExecutedEvent($task));
     }
 
     public function testHubCanPublishUpdateOnTaskFailed(): void
