@@ -27,6 +27,7 @@ jobs:
       mercure:
         image: dunglas/mercure
         env:
+          SERVER_NAME: ':80'
           MERCURE_PUBLISHER_JWT_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InN1YnNjcmliZSI6WyJmb28iLCJiYXIiXSwicHVibGlzaCI6WyJmb28iXX19.LRLvirgONK13JgacQ_VbcjySbVhkSmHy3IznH3tA9PM'
         ports:
           - 80:80
