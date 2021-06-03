@@ -13,7 +13,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Throwable;
@@ -40,7 +39,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_foo'), HttpKernelInterface::MASTER_REQUEST);
+        $event = new RequestEvent($kernel, Request::create('/_foo'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);
@@ -58,7 +57,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_probe', 'POST'), HttpKernelInterface::MASTER_REQUEST);
+        $event = new RequestEvent($kernel, Request::create('/_probe', 'POST'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);
@@ -80,7 +79,7 @@ final class ProbeStateSubscriberTest extends TestCase
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
 
         $probe = new Probe($scheduler, $worker);
-        $event = new RequestEvent($kernel, Request::create('/_probe'), HttpKernelInterface::MASTER_REQUEST);
+        $event = new RequestEvent($kernel, Request::create('/_probe'), null);
 
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);

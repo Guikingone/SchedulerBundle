@@ -119,6 +119,7 @@
         "infection/infection": "^0.23",
         "marcocesarato/php-conventional-changelog": "^1.10",
         "phpstan/phpstan": "^0.12.86",
+        "phpstan/phpstan-deprecation-rules": "^0.12.6",
         "phpstan/phpstan-doctrine": "^0.12.38",
         "phpstan/phpstan-phpunit": "^0.12.19",
         "phpstan/phpstan-strict-rules": "^0.12.9",
