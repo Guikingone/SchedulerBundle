@@ -54,7 +54,7 @@ jobs:
         env:
           SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
           MERCURE_PUBLISHER_JWT_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InN1YnNjcmliZSI6WyJmb28iLCJiYXIiXSwicHVibGlzaCI6WyJmb28iXX19.LRLvirgONK13JgacQ_VbcjySbVhkSmHy3IznH3tA9PM'
-          MERCURE_HUB_URL: 'http://127.0.0.1:80/.well-known/mercure'
+          MERCURE_HUB_URL: 'http://127.0.0.1/.well-known/mercure'
 
       - name: Cache PHPUnit result
         uses: actions/cache@v2
