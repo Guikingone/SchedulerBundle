@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
+use DateTimeInterface;
+use JsonException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
@@ -20,6 +22,8 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+use function json_encode;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -62,20 +66,34 @@ final class MercureEventSubscriberTest extends TestCase
         ], MercureEventSubscriber::getSubscribedEvents()[WorkerRestartedEvent::class]);
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnTaskScheduled(): void
     {
         $task = new NullTask('foo');
 
         $hub = $this->createMock(HubInterface::class);
-        $hub->expects(self::once())->method('publish');
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'task.scheduled',
+            'body' => [
+                'task' => 'foo',
+            ],
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('serialize')->with(self::equalTo($task), self::equalTo('json'));
+        $serializer->expects(self::once())->method('serialize')
+            ->with(self::equalTo($task), self::equalTo('json'))
+            ->willReturn('foo')
+        ;
 
         $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
         $subscriber->onTaskScheduled(new TaskScheduledEvent($task));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnTaskUnscheduled(): void
     {
         $hub = $this->createMock(HubInterface::class);
@@ -93,34 +111,63 @@ final class MercureEventSubscriberTest extends TestCase
         $subscriber->onTaskUnscheduled(new TaskUnscheduledEvent('foo'));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnTaskExecuted(): void
     {
         $task = new NullTask('foo');
 
         $hub = $this->createMock(HubInterface::class);
-        $hub->expects(self::once())->method('publish');
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'task.executed',
+            'body' => [
+                'task' => 'foo',
+                'output' => null,
+            ],
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('serialize')->with(self::equalTo($task), self::equalTo('json'));
+        $serializer->expects(self::once())->method('serialize')
+            ->with(self::equalTo($task), self::equalTo('json'))
+            ->willReturn('foo')
+        ;
 
         $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
         $subscriber->onTaskExecuted(new TaskExecutedEvent($task));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnTaskFailed(): void
     {
         $task = new NullTask('foo');
+        $failedTask = new FailedTask($task, 'why not?');
 
         $hub = $this->createMock(HubInterface::class);
-        $hub->expects(self::once())->method('publish');
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'task.failed',
+            'body' => [
+                'task' => 'foo',
+                'reason' => 'why not?',
+                'failedAt' => $failedTask->getFailedAt()->format(DateTimeInterface::W3C),
+            ],
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('serialize')->with(self::equalTo($task), self::equalTo('json'));
+        $serializer->expects(self::once())->method('serialize')
+            ->with(self::equalTo($task), self::equalTo('json'))
+            ->willReturn('foo')
+        ;
 
         $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
-        $subscriber->onTaskFailed(new TaskFailedEvent(new FailedTask($task, 'why not?')));
+        $subscriber->onTaskFailed(new TaskFailedEvent($failedTask));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnWorkerStarted(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
@@ -141,6 +188,9 @@ final class MercureEventSubscriberTest extends TestCase
         $subscriber->onWorkerStarted(new WorkerStartedEvent($worker));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnWorkerStopped(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
@@ -163,6 +213,9 @@ final class MercureEventSubscriberTest extends TestCase
         $subscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnWorkerForked(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
@@ -189,6 +242,9 @@ final class MercureEventSubscriberTest extends TestCase
         $subscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function testHubCanPublishUpdateOnWorkerRestarted(): void
     {
         $worker = $this->createMock(WorkerInterface::class);

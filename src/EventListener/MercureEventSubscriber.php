@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\EventListener;
 
 use DateTimeImmutable;
+use JsonException;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -39,6 +40,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         $this->serializer = $serializer;
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onTaskScheduled(TaskScheduledEvent $event): void
     {
         $this->hub->publish(new Update($this->updateUrl, json_encode([
@@ -49,6 +53,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onTaskUnscheduled(TaskUnscheduledEvent $event): void
     {
         $this->hub->publish(new Update($this->updateUrl, json_encode([
@@ -59,6 +66,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onTaskExecuted(TaskExecutedEvent $event): void
     {
         $this->hub->publish(new Update($this->updateUrl, json_encode([
@@ -70,6 +80,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onTaskFailed(TaskFailedEvent $event): void
     {
         $failedTask = $event->getTask();
@@ -84,6 +97,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onWorkerStarted(WorkerStartedEvent $event): void
     {
         $worker = $event->getWorker();
@@ -96,6 +112,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onWorkerStopped(WorkerStoppedEvent $event): void
     {
         $worker = $event->getWorker();
@@ -109,6 +128,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onWorkerForked(WorkerForkedEvent $event): void
     {
         $worker = $event->getForkedWorker();
@@ -123,6 +145,9 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ], JSON_THROW_ON_ERROR)));
     }
 
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onWorkerRestarted(WorkerRestartedEvent $event): void
     {
         $worker = $event->getWorker();
