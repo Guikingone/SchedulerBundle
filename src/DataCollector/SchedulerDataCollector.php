@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use Throwable;
+use function array_key_exists;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -63,7 +64,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
 
     public function getProbeInformations(): array
     {
-        return $this->data['probe'] ?? [];
+        return array_key_exists('probe', $this->data) ? $this->data['probe'] : [];
     }
 
     public function reset(): void

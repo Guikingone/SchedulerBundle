@@ -107,6 +107,27 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->arrayNode('mercure')
+                        ->beforeNormalization()
+                            ->always(function (array $configuration): array {
+                                if (!array_key_exists('mercure', $configuration)) {
+                                    return $configuration;
+                                }
+
+                                if (!$configuration['mercure']['enabled']) {
+                                    return $configuration;
+                                }
+
+                                if (null === $configuration['mercure']['hub_url']) {
+                                    throw new InvalidConfigurationException('The hub url must be set');
+                                }
+
+                                if (null === $configuration['mercure']['jwt_token']) {
+                                    throw new InvalidConfigurationException('The jwt token must be set');
+                                }
+
+                                return $configuration;
+                            })
+                        ->end()
                         ->canBeEnabled()
                         ->children()
                             ->scalarNode('hub_url')
@@ -114,7 +135,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                 ->defaultNull()
                             ->end()
                             ->scalarNode('update_url')
-                                ->info('Define the update url')
+                                ->info('Define the update url for every update dispatched')
                                 ->defaultNull()
                             ->end()
                             ->scalarNode('jwt_token')

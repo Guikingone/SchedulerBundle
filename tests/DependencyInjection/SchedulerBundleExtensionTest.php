@@ -24,6 +24,7 @@ use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
+use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
@@ -111,6 +112,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -1372,6 +1375,72 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(SchedulerDataCollector::NAME, $container->getDefinition(SchedulerDataCollector::class)->getTag('data_collector')[0]['id']);
         self::assertTrue($container->getDefinition(SchedulerDataCollector::class)->hasTag('container.preload'));
         self::assertSame(SchedulerDataCollector::class, $container->getDefinition(SchedulerDataCollector::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testMercureHubCannotBeRegisteredWithoutBeingEnabled(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'mercure' => [
+                'enabled' => false,
+            ],
+        ]);
+
+        self::assertFalse($container->hasDefinition('scheduler.mercure_hub'));
+        self::assertFalse($container->hasDefinition('scheduler.mercure.token_provider'));
+        self::assertFalse($container->hasDefinition(MercureEventSubscriber::class));
+    }
+
+    public function testMercureSupportCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'mercure' => [
+                'enabled' => true,
+                'hub_url' => 'https://www.hub.com/.well-known/mercure',
+                'update_url' => 'https://www.update.com',
+                'jwt_token' => 'foo',
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition('scheduler.mercure_hub'));
+        self::assertCount(2, $container->getDefinition('scheduler.mercure_hub')->getArguments());
+        self::assertSame('https://www.hub.com/.well-known/mercure', (string) $container->getDefinition('scheduler.mercure_hub')->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.mercure_hub')->getArgument(1));
+        self::assertSame('scheduler.mercure.token_provider', (string) $container->getDefinition('scheduler.mercure_hub')->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition('scheduler.mercure_hub')->getArgument(1)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition('scheduler.mercure_hub')->isPublic());
+        self::assertTrue($container->getDefinition('scheduler.mercure_hub')->hasTag('container.preload'));
+        self::assertSame(Hub::class, $container->getDefinition('scheduler.mercure_hub')->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition('scheduler.mercure.token_provider'));
+        self::assertCount(1, $container->getDefinition('scheduler.mercure.token_provider')->getArguments());
+        self::assertSame('foo', (string) $container->getDefinition('scheduler.mercure.token_provider')->getArgument(0));
+        self::assertFalse($container->getDefinition('scheduler.mercure.token_provider')->isPublic());
+        self::assertTrue($container->getDefinition('scheduler.mercure.token_provider')->hasTag('container.preload'));
+        self::assertSame(StaticTokenProvider::class, $container->getDefinition('scheduler.mercure.token_provider')->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(MercureEventSubscriber::class));
+        self::assertCount(3, $container->getDefinition(MercureEventSubscriber::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(MercureEventSubscriber::class)->getArgument(0));
+        self::assertSame('scheduler.mercure_hub', (string) $container->getDefinition(MercureEventSubscriber::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(MercureEventSubscriber::class)->getArgument(0)->getInvalidBehavior());
+        self::assertSame('https://www.update.com', (string) $container->getDefinition(MercureEventSubscriber::class)->getArgument(1));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(MercureEventSubscriber::class)->getArgument(2));
+        self::assertSame(SerializerInterface::class, (string) $container->getDefinition(MercureEventSubscriber::class)->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(MercureEventSubscriber::class)->getArgument(2)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(MercureEventSubscriber::class)->isPublic());
+        self::assertTrue($container->getDefinition(MercureEventSubscriber::class)->hasTag('kernel.event_subscriber'));
+        self::assertTrue($container->getDefinition(MercureEventSubscriber::class)->hasTag('container.preload'));
+        self::assertSame(MercureEventSubscriber::class, $container->getDefinition(MercureEventSubscriber::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testConfiguration(): void

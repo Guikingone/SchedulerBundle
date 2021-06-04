@@ -14,7 +14,9 @@ use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
+use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -107,21 +109,105 @@ final class MercureEventSubscriberTest extends TestCase
 
     public function testHubCanPublishUpdateOnTaskFailed(): void
     {
+        $task = new NullTask('foo');
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish');
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('serialize')->with(self::equalTo($task), self::equalTo('json'));
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onTaskFailed(new TaskFailedEvent(new FailedTask($task, 'why not?')));
     }
 
     public function testHubCanPublishUpdateOnWorkerStarted(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'worker.started',
+            'body' => [
+                'options' => [],
+            ],
+        ]))));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::never())->method('serialize');
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onWorkerStarted(new WorkerStartedEvent($worker));
     }
 
     public function testHubCanPublishUpdateOnWorkerStopped(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'worker.stopped',
+            'body' => [
+                'lastExecutedTask' => 'foo',
+                'options' => [],
+            ],
+        ]))));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('serialize')->willReturn('foo');
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
     }
 
     public function testHubCanPublishUpdateOnWorkerForked(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::never())->method('getLastExecutedTask');
+
+        $secondWorker = $this->createMock(WorkerInterface::class);
+        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
+        $secondWorker->expects(self::never())->method('getLastExecutedTask');
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'worker.forked',
+            'body' => [
+                'oldWorkerOptions' => [],
+                'forkedWorkerOptions' => [],
+            ],
+        ]))));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::never())->method('serialize');
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
     }
 
     public function testHubCanPublishUpdateOnWorkerRestarted(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'worker.restarted',
+            'body' => [
+                'lastExecutedTask' => 'foo',
+                'options' => [],
+            ],
+        ]))));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('serialize')->willReturn('foo');
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
     }
 }

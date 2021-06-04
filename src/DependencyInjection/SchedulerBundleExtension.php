@@ -22,6 +22,7 @@ use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
+use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
@@ -114,6 +115,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -1132,12 +1134,6 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
-        if (!class_exists(HttpClientInterface::class)) {
-            return;
-        }
-
-        // TODO: Register the token provider
-
         $container->register('scheduler.mercure_hub', Hub::class)
             ->setArguments([
                 $config['mercure']['hub_url'],
@@ -1146,6 +1142,29 @@ final class SchedulerBundleExtension extends Extension
             ->setPublic(false)
             ->addTag('container.preload', [
                 'class' => Hub::class,
+            ])
+        ;
+
+        $container->register('scheduler.mercure.token_provider', StaticTokenProvider::class)
+            ->setArguments([
+                $config['mercure']['jwt_token'],
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => StaticTokenProvider::class,
+            ])
+        ;
+
+        $container->register(MercureEventSubscriber::class, MercureEventSubscriber::class)
+            ->setArguments([
+                new Reference('scheduler.mercure_hub', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                $config['mercure']['update_url'],
+                new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => MercureEventSubscriber::class,
             ])
         ;
     }
