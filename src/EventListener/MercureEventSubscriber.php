@@ -9,6 +9,10 @@ use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
+use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerRestartedEvent;
+use SchedulerBundle\Event\WorkerStartedEvent;
+use SchedulerBundle\Event\WorkerStoppedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -79,6 +83,58 @@ final class MercureEventSubscriber implements EventSubscriberInterface
         ])));
     }
 
+    public function onWorkerStarted(WorkerStartedEvent $event): void
+    {
+        $worker = $event->getWorker();
+
+        $this->hub->publish(new Update($this->updateUrl, json_encode([
+            'event' => 'worker.started',
+            'body' => [
+                'options' => $worker->getOptions(),
+            ],
+        ])));
+    }
+
+    public function onWorkerStopped(WorkerStoppedEvent $event): void
+    {
+        $worker = $event->getWorker();
+
+        $this->hub->publish(new Update($this->updateUrl, json_encode([
+            'event' => 'worker.stopped',
+            'body' => [
+                'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
+                'options' => $worker->getOptions(),
+            ],
+        ])));
+    }
+
+    public function onWorkerForked(WorkerForkedEvent $event): void
+    {
+        $worker = $event->getForkedWorker();
+        $newForker = $event->getNewWorker();
+
+        $this->hub->publish(new Update($this->updateUrl, json_encode([
+            'event' => 'worker.forked',
+            'body' => [
+                'oldWorkerOptions' => $worker->getOptions(),
+                'forkedWorkerOptions' => $newForker->getOptions(),
+            ],
+        ])));
+    }
+
+    public function onWorkerRestarted(WorkerRestartedEvent $event): void
+    {
+        $worker = $event->getWorker();
+
+        $this->hub->publish(new Update($this->updateUrl, json_encode([
+            'event' => 'worker.restarted',
+            'body' => [
+                'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
+                'options' => $worker->getOptions(),
+            ],
+        ])));
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -89,6 +145,10 @@ final class MercureEventSubscriber implements EventSubscriberInterface
             TaskUnscheduledEvent::class => ['onTaskUnscheduled', -255],
             TaskExecutedEvent::class => ['onTaskExecuted', -255],
             TaskFailedEvent::class => ['onTaskFailed', -255],
+            WorkerStartedEvent::class => ['onWorkerStarted', -255],
+            WorkerStoppedEvent::class => ['onWorkerStopped', -255],
+            WorkerForkedEvent::class => ['onWorkerForked', -255],
+            WorkerRestartedEvent::class => ['onWorkerRestarted', -255],
         ];
     }
 }

@@ -9,6 +9,10 @@ use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
+use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerRestartedEvent;
+use SchedulerBundle\Event\WorkerStartedEvent;
+use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\Task\NullTask;
 use Symfony\Component\Mercure\HubInterface;
@@ -38,6 +42,22 @@ final class MercureEventSubscriberTest extends TestCase
         self::assertSame([
             'onTaskFailed', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
+        self::assertArrayHasKey(WorkerStartedEvent::class, MercureEventSubscriber::getSubscribedEvents());
+        self::assertSame([
+            'onWorkerStarted', -255,
+        ], MercureEventSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
+        self::assertArrayHasKey(WorkerStoppedEvent::class, MercureEventSubscriber::getSubscribedEvents());
+        self::assertSame([
+            'onWorkerStopped', -255,
+        ], MercureEventSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
+        self::assertArrayHasKey(WorkerForkedEvent::class, MercureEventSubscriber::getSubscribedEvents());
+        self::assertSame([
+            'onWorkerForked', -255,
+        ], MercureEventSubscriber::getSubscribedEvents()[WorkerForkedEvent::class]);
+        self::assertArrayHasKey(WorkerRestartedEvent::class, MercureEventSubscriber::getSubscribedEvents());
+        self::assertSame([
+            'onWorkerRestarted', -255,
+        ], MercureEventSubscriber::getSubscribedEvents()[WorkerRestartedEvent::class]);
     }
 
     public function testHubCanPublishUpdateOnTaskScheduled(): void
@@ -86,6 +106,22 @@ final class MercureEventSubscriberTest extends TestCase
     }
 
     public function testHubCanPublishUpdateOnTaskFailed(): void
+    {
+    }
+
+    public function testHubCanPublishUpdateOnWorkerStarted(): void
+    {
+    }
+
+    public function testHubCanPublishUpdateOnWorkerStopped(): void
+    {
+    }
+
+    public function testHubCanPublishUpdateOnWorkerForked(): void
+    {
+    }
+
+    public function testHubCanPublishUpdateOnWorkerRestarted(): void
     {
     }
 }
