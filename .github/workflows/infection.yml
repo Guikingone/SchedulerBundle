@@ -27,7 +27,8 @@ jobs:
       mercure:
         image: dunglas/mercure
         env:
-          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+          SERVER_NAME: ':80'
+          MERCURE_PUBLISHER_JWT_KEY: 'scheduler_bundle_jwt_key'
         ports:
           - 80:80
     steps:
@@ -54,5 +55,6 @@ jobs:
         env:
           SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
           INFECTION_BADGE_API_KEY: ${{ secrets.INFECTION_BADGE_API_KEY }}
-          MERCURE_PUBLISHER_JWT_KEY: '!scheduler_bundle_test_jwt'
+          MERCURE_PUBLISHER_JWT_KEY: 'scheduler_bundle_jwt_key'
+          MERCURE_JWT_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InB1Ymxpc2giOlsiKiJdfX0.ZXj-OGe0ujJxKcbMD9XG474EUnlz5y0e-sPT5HiIXIA'
           MERCURE_HUB_URL: 'http://127.0.0.1:80/.well-known/mercure'
