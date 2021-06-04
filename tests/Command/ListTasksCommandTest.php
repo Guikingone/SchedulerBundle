@@ -67,6 +67,21 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
+    public function testCommandCannotReturnTaskOnEmptyTaskList(): void
+    {
+        $taskList = $this->createMock(TaskListInterface::class);
+        $taskList->expects(self::once())->method('count')->willReturn(0);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+
+        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
+        $commandTester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
+    }
+
     /**
      * @dataProvider provideStateOption
      */
@@ -125,6 +140,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::once())->method('getDescription')->willReturn('A foo task');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(5002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -133,12 +149,14 @@ final class ListTasksCommandTest extends TestCase
         $secondTask->expects(self::once())->method('getDescription')->willReturn('A bar task');
         $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setDescription('A nested task');
         $chainedTask->setLastExecution(new DateTimeImmutable());
+        $chainedTask->setExecutionComputationTime(6002.0);
         $chainedTask->setTasks($secondTask, $task);
 
         $taskList = new TaskList([$chainedTask]);
@@ -159,8 +177,12 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('bar', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
         self::assertStringContainsString('A nested task', $commandTester->getDisplay());
+        self::assertStringContainsString('6 secs', $commandTester->getDisplay());
+        self::assertStringContainsString('          >', $commandTester->getDisplay());
         self::assertStringContainsString('A foo task', $commandTester->getDisplay());
+        self::assertStringContainsString('5 secs', $commandTester->getDisplay());
         self::assertStringContainsString('A bar task', $commandTester->getDisplay());
+        self::assertStringContainsString('1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Expression', $commandTester->getDisplay());
         self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
