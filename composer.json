@@ -123,7 +123,7 @@
         "phpstan/phpstan-phpunit": "^0.12.19",
         "phpstan/phpstan-strict-rules": "^0.12.9",
         "phpstan/phpstan-symfony": "^0.12.33",
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^9.5 || ^10.0-dev",
         "psalm/plugin-phpunit": "^0.15",
         "psalm/plugin-symfony": "^2.1",
         "psr/cache": "^1.0",
