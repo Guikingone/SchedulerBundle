@@ -200,8 +200,10 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('* * * * *', $task->getExpression());
-        self::assertInstanceOf(DateTimeImmutable::class, $task->getScheduledAt());
-        self::assertSame($scheduledAt->format("Y-m-d H:i:s.u"), $task->getScheduledAt()->format("Y-m-d H:i:s.u"));
+
+        $taskScheduledAt = $task->getScheduledAt();
+        self::assertInstanceOf(DateTimeImmutable::class, $taskScheduledAt);
+        self::assertSame($scheduledAt->format("Y-m-d H:i:s.u"), $taskScheduledAt->format("Y-m-d H:i:s.u"));
     }
 
     public function testShellTaskWithBeforeSchedulingClosureCannotBeNormalized(): void
@@ -528,7 +530,6 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('foo', $task->getName());
 
         $recipients = $task->getRecipients();
-        self::assertIsArray($recipients);
         self::assertCount(2, $recipients);
         self::assertSame('test@test.fr', $recipients[0]->getEmail());
         self::assertSame('foo@test.fr', $recipients[1]->getEmail());

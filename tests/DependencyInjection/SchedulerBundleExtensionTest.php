@@ -324,8 +324,14 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($containerBuilder->hasDefinition('scheduler.transport'));
         self::assertTrue($containerBuilder->hasAlias(TransportInterface::class));
         self::assertCount(4, $containerBuilder->getDefinition('scheduler.transport')->getArguments());
-        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getFactory()[0]);
-        self::assertSame('createTransport', $containerBuilder->getDefinition('scheduler.transport')->getFactory()[1]);
+
+        $factory = $containerBuilder->getDefinition('scheduler.transport')->getFactory();
+        self::assertIsArray($factory);
+        self::assertArrayHasKey(0, $factory);
+        self::assertArrayHasKey(1, $factory);
+        self::assertInstanceOf(Reference::class, $factory[0]);
+        self::assertSame('createTransport', $factory[1]);
+
         self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
         self::assertSame([
             'execution_mode' => 'first_in_first_out',
@@ -417,9 +423,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(LazyScheduler::class));
         self::assertTrue($container->hasAlias(SchedulerInterface::class));
         self::assertSame(Scheduler::class, (string) $container->getAlias(SchedulerInterface::class));
-        self::assertSame(Scheduler::class, $container->getDefinition(LazyScheduler::class)->getDecoratedService()[0]);
-        self::assertSame('scheduler.scheduler', $container->getDefinition(LazyScheduler::class)->getDecoratedService()[1]);
-        self::assertSame(0, $container->getDefinition(LazyScheduler::class)->getDecoratedService()[2]);
+
+        $decoratedService = $container->getDefinition(LazyScheduler::class)->getDecoratedService();
+        self::assertIsArray($decoratedService);
+        self::assertArrayHasKey(0, $decoratedService);
+        self::assertArrayHasKey(1, $decoratedService);
+        self::assertArrayHasKey(2, $decoratedService);
+        self::assertSame(Scheduler::class, $decoratedService[0]);
+        self::assertSame('scheduler.scheduler', $decoratedService[1]);
+        self::assertSame(0, $decoratedService[2]);
+
         self::assertCount(1, $container->getDefinition(LazyScheduler::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(LazyScheduler::class)->getArgument(0));
         self::assertSame('scheduler.scheduler', (string) $container->getDefinition(LazyScheduler::class)->getArgument(0));
@@ -1034,8 +1047,14 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container->getDefinition('scheduler._foo_task')->getArgument(0));
         self::assertFalse($container->getDefinition('scheduler._foo_task')->isPublic());
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler._foo_task')->getFactory()[0]);
-        self::assertSame('create', $container->getDefinition('scheduler._foo_task')->getFactory()[1]);
+
+        $factory = $container->getDefinition('scheduler._foo_task')->getFactory();
+        self::assertIsArray($factory);
+        self::assertArrayHasKey(0, $factory);
+        self::assertArrayHasKey(1, $factory);
+        self::assertInstanceOf(Reference::class, $factory[0]);
+        self::assertSame('create', $factory[1]);
+
         self::assertTrue($container->getDefinition('scheduler._foo_task')->hasTag('scheduler.task'));
         self::assertTrue($container->getDefinition(Scheduler::class)->hasMethodCall('schedule'));
         self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);
@@ -1084,8 +1103,14 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
         ], $container->getDefinition('scheduler._foo_task')->getArgument(0));
         self::assertFalse($container->getDefinition('scheduler._foo_task')->isPublic());
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler._foo_task')->getFactory()[0]);
-        self::assertSame('create', $container->getDefinition('scheduler._foo_task')->getFactory()[1]);
+
+        $factory = $container->getDefinition('scheduler._foo_task')->getFactory();
+        self::assertIsArray($factory);
+        self::assertArrayHasKey(0, $factory);
+        self::assertArrayHasKey(1, $factory);
+        self::assertInstanceOf(Reference::class, $factory[0]);
+        self::assertSame('create', $factory[1]);
+
         self::assertTrue($container->getDefinition('scheduler._foo_task')->hasTag('scheduler.task'));
         self::assertTrue($container->getDefinition(Scheduler::class)->hasMethodCall('schedule'));
         self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);
@@ -1342,8 +1367,14 @@ final class SchedulerBundleExtensionTest extends TestCase
             'delay' => 1000,
         ], $container->getDefinition('scheduler._foo.probe_task')->getArgument(0));
         self::assertFalse($container->getDefinition('scheduler._foo.probe_task')->isPublic());
-        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler._foo.probe_task')->getFactory()[0]);
-        self::assertSame('create', $container->getDefinition('scheduler._foo.probe_task')->getFactory()[1]);
+
+        $probeTaskFactory = $container->getDefinition('scheduler._foo.probe_task')->getFactory();
+        self::assertIsArray($probeTaskFactory);
+        self::assertArrayHasKey(0, $probeTaskFactory);
+        self::assertInstanceOf(Reference::class, $probeTaskFactory[0]);
+        self::assertArrayHasKey(1, $probeTaskFactory);
+        self::assertSame('create', $probeTaskFactory[1]);
+
         self::assertTrue($container->getDefinition('scheduler._foo.probe_task')->hasTag('scheduler.task'));
         self::assertTrue($container->getDefinition(Scheduler::class)->hasMethodCall('schedule'));
         self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);

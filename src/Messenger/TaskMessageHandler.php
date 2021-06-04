@@ -19,7 +19,7 @@ use function sprintf;
 final class TaskMessageHandler implements MessageHandlerInterface
 {
     private WorkerInterface $worker;
-    private ?LoggerInterface $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         WorkerInterface $worker,

@@ -29,20 +29,22 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
     public function onWorkerRestarted(WorkerRestartedEvent $workerRestartedEvent): void
     {
         $worker = $workerRestartedEvent->getWorker();
+        $lastExecutedTask = $worker->getLastExecutedTask();
 
         $this->logger->info('The worker has been restarted', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
+            'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
         ]);
     }
 
     public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
         $worker = $workerRunningEvent->getWorker();
+        $lastExecutedTask = $worker->getLastExecutedTask();
 
         $this->logger->info('The worker is currently running', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
+            'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
             'idle' => $workerRunningEvent->isIdle(),
         ]);
     }
@@ -50,20 +52,22 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
     public function onWorkerStarted(WorkerStartedEvent $workerStartedEvent): void
     {
         $worker = $workerStartedEvent->getWorker();
+        $lastExecutedTask = $worker->getLastExecutedTask();
 
         $this->logger->info('The worker has been started', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
+            'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
         ]);
     }
 
     public function onWorkerStopped(WorkerStoppedEvent $workerStoppedEvent): void
     {
         $worker = $workerStoppedEvent->getWorker();
+        $lastExecutedTask = $worker->getLastExecutedTask();
 
         $this->logger->info('The worker has been stopped', [
             'failedTasks' => $worker->getFailedTasks()->count(),
-            'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
+            'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
         ]);
     }
 

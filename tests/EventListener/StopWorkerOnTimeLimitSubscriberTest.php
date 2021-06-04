@@ -62,7 +62,7 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
-        $worker->expects(self::exactly(2))->method('getLastExecutedTask')->willReturn($task);
+        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn($task);
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(

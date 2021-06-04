@@ -12,7 +12,6 @@ use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use function is_int;
-use function is_null;
 use function sprintf;
 
 /**
@@ -33,18 +32,19 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
 
     public function preExecute(TaskInterface $task): void
     {
-        if (is_null($this->rateLimiter)) {
+        if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;
         }
 
-        if (is_null($task->getMaxExecutions())) {
+        $maxExecutions = $task->getMaxExecutions();
+        if (null === $maxExecutions) {
             return;
         }
 
         $limiter = $this->rateLimiter->create($task->getName());
 
         try {
-            $limiter->reserve($task->getMaxExecutions());
+            $limiter->reserve($maxExecutions);
         } catch (ReserveNotSupportedException $exception) {
             $this->logger->critical(sprintf(
                 'A reservation cannot be created for task "%s", please ensure that the policy used supports it.',
@@ -57,11 +57,12 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
 
     public function postExecute(TaskInterface $task): void
     {
-        if (is_null($this->rateLimiter)) {
+        if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;
         }
 
-        if (is_null($task->getMaxExecutions())) {
+        $maxExecutions = $task->getMaxExecutions();
+        if (null === $maxExecutions) {
             return;
         }
 

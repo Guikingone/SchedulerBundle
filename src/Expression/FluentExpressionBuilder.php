@@ -6,6 +6,7 @@ namespace SchedulerBundle\Expression;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use function sprintf;
 use function strtotime;
 
@@ -17,6 +18,10 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
     public function build(string $expression, ?string $timezone = 'UTC'): Expression
     {
         $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression));
+        if (!$date) {
+            throw new InvalidArgumentException(sprintf('The "%s" expression cannot be used to create a date', $expression));
+        }
+
         $date = $date->setTimezone(new DateTimeZone($timezone));
 
         $expression = new Expression();

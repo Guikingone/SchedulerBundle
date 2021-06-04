@@ -9,7 +9,6 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use function call_user_func;
 use function get_class;
-use function is_null;
 use function sprintf;
 
 /**
@@ -22,11 +21,12 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
      */
     public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if (is_null($task->getBeforeScheduling())) {
+        $callback = $task->getBeforeScheduling();
+        if (null === $callback) {
             return;
         }
 
-        if (false === call_user_func($task->getBeforeScheduling(), $task)) {
+        if (false === call_user_func($callback, $task)) {
             throw new MiddlewareException('The task cannot be scheduled as an error occurred on the before scheduling callback');
         }
     }
@@ -36,11 +36,12 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
      */
     public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if (is_null($task->getAfterScheduling())) {
+        $callback = $task->getAfterScheduling();
+        if (null === $callback) {
             return;
         }
 
-        if (false === call_user_func($task->getAfterScheduling(), $task)) {
+        if (false === call_user_func($callback, $task)) {
             $scheduler->unschedule($task->getName());
 
             throw new MiddlewareException('The task has encountered an error after scheduling, it has been unscheduled');
@@ -49,22 +50,24 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
 
     public function preExecute(TaskInterface $task): void
     {
-        if (is_null($task->getBeforeExecuting())) {
+        $callback = $task->getBeforeExecuting();
+        if (null === $callback) {
             return;
         }
 
-        if (false === call_user_func($task->getBeforeExecuting(), $task)) {
+        if (false === call_user_func($callback, $task)) {
             throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), get_class($task), ));
         }
     }
 
     public function postExecute(TaskInterface $task): void
     {
-        if (is_null($task->getAfterExecuting())) {
+        $callback = $task->getAfterExecuting();
+        if (null === $callback) {
             return;
         }
 
-        if (false === call_user_func($task->getAfterExecuting(), $task)) {
+        if (false === call_user_func($callback, $task)) {
             throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), get_class($task), ));
         }
     }

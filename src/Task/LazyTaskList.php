@@ -14,7 +14,7 @@ use Traversable;
 final class LazyTaskList implements TaskListInterface, LazyInterface
 {
     private TaskListInterface $sourceList;
-    private ?TaskListInterface $list = null;
+    private TaskListInterface $list;
     private bool $initialized = false;
 
     public function __construct(TaskListInterface $list)

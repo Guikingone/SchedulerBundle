@@ -97,6 +97,7 @@ final class CommandTaskRunnerTest extends TestCase
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
 
+        self::assertNotNull($output->getOutput());
         self::assertStringContainsString('This command is executed in "test" env', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
@@ -113,6 +114,7 @@ final class CommandTaskRunnerTest extends TestCase
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
 
+        self::assertNotNull($output->getOutput());
         self::assertStringContainsString('This command will wait', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
@@ -129,6 +131,7 @@ final class CommandTaskRunnerTest extends TestCase
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
 
+        self::assertNotNull($output->getOutput());
         self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }
@@ -145,6 +148,7 @@ final class CommandTaskRunnerTest extends TestCase
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
 
+        self::assertNotNull($output->getOutput());
         self::assertStringContainsString('This command has the "bar" name', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
     }

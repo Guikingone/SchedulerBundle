@@ -170,11 +170,16 @@ final class TaskSubscriberTest extends TestCase
         $taskSubscriber->onKernelRequest($requestEvent);
 
         self::assertTrue($requestEvent->hasResponse());
-        self::assertInstanceOf(JsonResponse::class, $requestEvent->getResponse());
-        self::assertArrayHasKey('code', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertArrayHasKey('message', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertArrayHasKey('trace', json_decode($requestEvent->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $requestEvent->getResponse()->getStatusCode());
+
+        $response = $requestEvent->getResponse();
+        self::assertInstanceOf(JsonResponse::class, $response);
+
+        $content = $response->getContent();
+        self::assertIsString($content);
+        self::assertArrayHasKey('code', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('message', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        self::assertArrayHasKey('trace', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame(JsonResponse::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
     }
 
     public function testResponseIsSetWhenWorkerSucceed(): void
@@ -208,13 +213,16 @@ final class TaskSubscriberTest extends TestCase
         $taskSubscriber->onKernelRequest($requestEvent);
 
         self::assertTrue($requestEvent->hasResponse());
-        self::assertInstanceOf(JsonResponse::class, $requestEvent->getResponse());
 
         $response = $requestEvent->getResponse();
+        self::assertInstanceOf(JsonResponse::class, $response);
         self::assertSame(JsonResponse::HTTP_OK, $response->getStatusCode());
-        self::assertArrayHasKey('code', json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertSame(Response::HTTP_OK, json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR)['code']);
-        self::assertArrayHasKey('tasks', json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR));
-        self::assertEmpty(json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR)['tasks']);
+
+        $content = $response->getContent();
+        self::assertIsString($content);
+        self::assertArrayHasKey('code', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame(Response::HTTP_OK, json_decode($content, true, 512, JSON_THROW_ON_ERROR)['code']);
+        self::assertArrayHasKey('tasks', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        self::assertEmpty(json_decode($content, true, 512, JSON_THROW_ON_ERROR)['tasks']);
     }
 }

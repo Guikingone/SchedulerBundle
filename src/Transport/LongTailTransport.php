@@ -24,7 +24,7 @@ final class LongTailTransport extends AbstractTransport
     private iterable $transports;
 
     /**
-     * @param iterable|TransportInterface[] $transports
+     * @param TransportInterface[] $transports
      */
     public function __construct(iterable $transports)
     {

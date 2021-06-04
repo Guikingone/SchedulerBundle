@@ -6,24 +6,20 @@ namespace SchedulerBundle\Task;
 
 use Closure;
 use SchedulerBundle\LazyInterface;
-use function is_bool;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class LazyTask extends AbstractTask implements LazyInterface
 {
+    private Closure $sourceTaskClosure;
+    private bool $initialized = false;
+
     public function __construct(string $name, Closure $func)
     {
-        $this->defineOptions([
-            'source_task_closure' => $func,
-            'task' => null,
-            'initialized' => false,
-        ], [
-            'source_task_closure' => Closure::class,
-            'task' => 'null',
-            'initialized' => 'bool',
-        ]);
+        $this->sourceTaskClosure = $func;
+
+        $this->defineOptions();
 
         parent::__construct(sprintf('%s.lazy', $name));
     }
@@ -32,7 +28,9 @@ final class LazyTask extends AbstractTask implements LazyInterface
     {
         $this->initialize();
 
-        return $this->options['task']();
+        $task = $this->sourceTaskClosure;
+
+        return $task();
     }
 
     /**
@@ -40,16 +38,15 @@ final class LazyTask extends AbstractTask implements LazyInterface
      */
     public function isInitialized(): bool
     {
-        return is_bool($this->options['initialized']) && $this->options['initialized'];
+        return $this->initialized;
     }
 
     private function initialize(): void
     {
-        if (is_bool($this->options['initialized']) && $this->options['initialized']) {
+        if ($this->initialized) {
             return;
         }
 
-        $this->options['task'] = $this->options['source_task_closure'];
-        $this->options['initialized'] = true;
+        $this->initialized = true;
     }
 }
