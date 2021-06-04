@@ -18,6 +18,7 @@ use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
 use function json_encode;
+use const JSON_THROW_ON_ERROR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -45,7 +46,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
             'body' => [
                 'task' => $this->serializer->serialize($event->getTask(), 'json'),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onTaskUnscheduled(TaskUnscheduledEvent $event): void
@@ -55,7 +56,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
             'body' => [
                 'task' => $event->getTask(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onTaskExecuted(TaskExecutedEvent $event): void
@@ -66,7 +67,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'task' => $this->serializer->serialize($event->getTask(), 'json'),
                 'output' => $event->getOutput(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onTaskFailed(TaskFailedEvent $event): void
@@ -80,7 +81,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'reason' => $failedTask->getReason(),
                 'failedAt' => $failedTask->getFailedAt()->format(DateTimeImmutable::W3C),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onWorkerStarted(WorkerStartedEvent $event): void
@@ -92,7 +93,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
             'body' => [
                 'options' => $worker->getOptions(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onWorkerStopped(WorkerStoppedEvent $event): void
@@ -105,7 +106,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
                 'options' => $worker->getOptions(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onWorkerForked(WorkerForkedEvent $event): void
@@ -119,7 +120,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'oldWorkerOptions' => $worker->getOptions(),
                 'forkedWorkerOptions' => $newForker->getOptions(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     public function onWorkerRestarted(WorkerRestartedEvent $event): void
@@ -132,7 +133,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
                 'options' => $worker->getOptions(),
             ],
-        ])));
+        ], JSON_THROW_ON_ERROR)));
     }
 
     /**

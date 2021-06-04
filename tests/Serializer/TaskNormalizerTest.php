@@ -584,10 +584,14 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(2, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
-        self::assertSame('bar', $task->getTask('bar')->getName());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('foo_second'));
-        self::assertSame('foo_second', $task->getTask('foo_second')->getName());
+
+        $barTask = $task->getTask('bar');
+        self::assertInstanceOf(ShellTask::class, $barTask);
+        self::assertSame('bar', $barTask->getName());
+
+        $fooSecondTask = $task->getTask('foo_second');
+        self::assertInstanceOf(ShellTask::class, $fooSecondTask);
+        self::assertSame('foo_second', $fooSecondTask->getName());
     }
 
     public function testChainedTaskWithCommandTaskCanBeDenormalized(): void

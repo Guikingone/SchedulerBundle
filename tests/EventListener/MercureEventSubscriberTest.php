@@ -84,7 +84,7 @@ final class MercureEventSubscriberTest extends TestCase
             'body' => [
                 'task' => 'foo',
             ],
-        ]))));
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');
@@ -132,7 +132,7 @@ final class MercureEventSubscriberTest extends TestCase
             'body' => [
                 'options' => [],
             ],
-        ]))));
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');
@@ -154,7 +154,7 @@ final class MercureEventSubscriberTest extends TestCase
                 'lastExecutedTask' => 'foo',
                 'options' => [],
             ],
-        ]))));
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::once())->method('serialize')->willReturn('foo');
@@ -180,7 +180,7 @@ final class MercureEventSubscriberTest extends TestCase
                 'oldWorkerOptions' => [],
                 'forkedWorkerOptions' => [],
             ],
-        ]))));
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::never())->method('serialize');
@@ -202,7 +202,7 @@ final class MercureEventSubscriberTest extends TestCase
                 'lastExecutedTask' => 'foo',
                 'options' => [],
             ],
-        ]))));
+        ], JSON_THROW_ON_ERROR))));
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->expects(self::once())->method('serialize')->willReturn('foo');
