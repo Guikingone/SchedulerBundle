@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use Cron\CronExpression;
+use SchedulerBundle\Task\ChainedTask;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\Table;
@@ -14,8 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use function array_map;
-use function count;
+use ReflectionClass;
 use function implode;
 use function sprintf;
 use const DATE_ATOM;
@@ -80,7 +80,7 @@ final class ListTasksCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $tasks = $this->scheduler->getTasks();
-        if (0 === count($tasks->toArray())) {
+        if (0 === $tasks->count()) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
@@ -94,28 +94,46 @@ final class ListTasksCommand extends Command
             $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
-        $tasks = $tasks->toArray();
-        if (0 === count($tasks)) {
+        if (0 === $tasks->count()) {
             $symfonyStyle->warning('No tasks found');
 
             return self::SUCCESS;
         }
 
-        $symfonyStyle->success(sprintf('%d task%s found', count($tasks), count($tasks) > 1 ? 's' : ''));
-
+        $symfonyStyle->success(sprintf('%d task%s found', $tasks->count(), $tasks->count() > 1 ? 's' : ''));
         $table = new Table($output);
-        $table->setHeaders(['Name', 'Description', 'Expression', 'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
-        $table->addRows(array_map(fn (TaskInterface $task): array => [
-            $task->getName(),
-            $task->getDescription() ?? 'No description set',
-            $task->getExpression(),
-            null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
-            (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
-            null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-            null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
-            $task->getState(),
-            implode(', ', $task->getTags()) ?? 'No tags set',
-        ], $tasks));
+        $table->setHeaders(['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
+
+        $tasks->walk(function (TaskInterface $task) use ($table): void {
+            $table->addRow([
+                (new ReflectionClass($task))->getShortName(),
+                $task->getName(),
+                $task->getDescription() ?? 'No description set',
+                $task->getExpression(),
+                null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+                (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
+                null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
+                null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+                $task->getState(),
+                implode(', ', $task->getTags()) ?? 'No tags set',
+            ]);
+
+            if ($task instanceof ChainedTask) {
+                $table->addRows($task->getTasks()->map(fn (TaskInterface $task): array => [
+                    '<info>          ></info>',
+                    $task->getName(),
+                    $task->getDescription() ?? 'No description set',
+                    '-',
+                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+                    (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
+                    null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
+                    null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+                    $task->getState(),
+                    implode(', ', $task->getTags()) ?? 'No tags set',
+                ]));
+            }
+        });
+
 
         $table->render();
 

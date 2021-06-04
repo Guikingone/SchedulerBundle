@@ -52,6 +52,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function walk(Closure $func): self;
 
     /**
+     * Return an array containing the results of applying @param Closure $func to each tasks
+     */
+    public function map(Closure $func): array;
+
+    /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>

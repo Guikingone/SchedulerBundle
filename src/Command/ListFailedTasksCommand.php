@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\Worker\WorkerInterface;
-use function array_map;
 use function count;
 use function sprintf;
 use const DATE_ATOM;
@@ -52,8 +51,8 @@ final class ListFailedTasksCommand extends Command
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $failedTasksList = $this->worker->getFailedTasks()->toArray();
-        if ([] === $failedTasksList) {
+        $failedTasksList = $this->worker->getFailedTasks();
+        if (0 === $failedTasksList->count()) {
             $symfonyStyle->warning('No failed task has been found');
 
             return self::SUCCESS;
@@ -62,7 +61,7 @@ final class ListFailedTasksCommand extends Command
         $table = new Table($output);
         $table->setHeaders(['Name', 'Expression', 'Reason', 'Date']);
 
-        $table->addRows(array_map(fn (FailedTask $task): array => [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)], $failedTasksList));
+        $table->addRows($failedTasksList->map(fn (FailedTask $task): array => [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)]));
 
         $symfonyStyle->success(sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : ''));
         $table->render();

@@ -263,4 +263,14 @@ final class TaskListTest extends TestCase
         self::assertCount(1, $nullTask->getTags());
         self::assertContains('walk', $nullTask->getTags());
     }
+
+    public function testListCanApplyMapClosure(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+    }
 }
