@@ -22,6 +22,7 @@ use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
+use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
@@ -113,6 +114,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -165,6 +168,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerRedisBridge($container);
         $this->registerMiddlewareStacks($container, $config);
         $this->registerProbeContext($container, $config);
+        $this->registerMercureSupport($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -177,6 +181,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.trigger_path', $configuration['path']);
         $container->setParameter('scheduler.scheduler_mode', $configuration['scheduler']['mode'] ?? 'default');
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
+        $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -1119,6 +1124,47 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('console.command')
             ->addTag('container.preload', [
                 'class' => ExecuteExternalProbeCommand::class,
+            ])
+        ;
+    }
+
+    private function registerMercureSupport(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->getParameter('scheduler.mercure_support')) {
+            return;
+        }
+
+        $container->register('scheduler.mercure_hub', Hub::class)
+            ->setArguments([
+                $config['mercure']['hub_url'],
+                new Reference('scheduler.mercure.token_provider', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => Hub::class,
+            ])
+        ;
+
+        $container->register('scheduler.mercure.token_provider', StaticTokenProvider::class)
+            ->setArguments([
+                $config['mercure']['jwt_token'],
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => StaticTokenProvider::class,
+            ])
+        ;
+
+        $container->register(MercureEventSubscriber::class, MercureEventSubscriber::class)
+            ->setArguments([
+                new Reference('scheduler.mercure_hub', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                $config['mercure']['update_url'],
+                new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('container.preload', [
+                'class' => MercureEventSubscriber::class,
             ])
         ;
     }

@@ -28,7 +28,7 @@ final class RoundRobinTransport extends AbstractTransport
     private SplObjectStorage $sleepingTransports;
 
     /**
-     * @param iterable|TransportInterface[] $transports
+     * @param TransportInterface[] $transports
      */
     public function __construct(iterable $transports, array $options = [])
     {

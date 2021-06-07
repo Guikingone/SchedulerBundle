@@ -44,7 +44,7 @@ final class NotifierMiddlewareTest extends TestCase
         $notifier->expects(self::never())->method('send');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getBeforeExecutingNotificationBag')
+        $task->expects(self::once())->method('getBeforeExecutingNotificationBag')
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
@@ -60,7 +60,7 @@ final class NotifierMiddlewareTest extends TestCase
         $notifier->expects(self::once())->method('send');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getBeforeExecutingNotificationBag')
+        $task->expects(self::once())->method('getBeforeExecutingNotificationBag')
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
@@ -88,7 +88,7 @@ final class NotifierMiddlewareTest extends TestCase
         $notifier->expects(self::never())->method('send');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getAfterExecutingNotificationBag')
+        $task->expects(self::once())->method('getAfterExecutingNotificationBag')
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 
@@ -104,7 +104,7 @@ final class NotifierMiddlewareTest extends TestCase
         $notifier->expects(self::once())->method('send');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getAfterExecutingNotificationBag')
+        $task->expects(self::once())->method('getAfterExecutingNotificationBag')
             ->willReturn(new NotificationTaskBag($notification, new Recipient('test@test.test')))
         ;
 

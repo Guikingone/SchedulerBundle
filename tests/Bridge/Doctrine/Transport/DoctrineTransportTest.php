@@ -694,7 +694,7 @@ final class DoctrineTransportTest extends TestCase
     }
 
     /**
-     * @return Connection|MockObject
+     * @return Connection&MockObject
      */
     private function getDBALConnectionMock()
     {

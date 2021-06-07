@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use Throwable;
+use function array_key_exists;
+use function is_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -50,9 +52,11 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
         $this->data['events'] = $this->events;
 
         if ($this->probe instanceof ProbeInterface) {
-            $this->data['probe']['executedTasks'] = $this->probe->getExecutedTasks();
-            $this->data['probe']['failedTasks'] = $this->probe->getFailedTasks();
-            $this->data['probe']['scheduledTasks'] = $this->probe->getScheduledTasks();
+            $this->data['probe'] = [
+                'executedTasks' => $this->probe->getExecutedTasks(),
+                'failedTasks' => $this->probe->getFailedTasks(),
+                'scheduledTasks' => $this->probe->getScheduledTasks(),
+            ];
         }
     }
 
@@ -63,7 +67,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
 
     public function getProbeInformations(): array
     {
-        return $this->data['probe'] ?? [];
+        return (is_array($this->data) && array_key_exists('probe', $this->data)) ? $this->data['probe'] : [];
     }
 
     public function reset(): void

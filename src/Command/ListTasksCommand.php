@@ -105,15 +105,18 @@ final class ListTasksCommand extends Command
         $table->setHeaders(['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
 
         $tasks->walk(function (TaskInterface $task) use ($table): void {
+            $lastExecutionDate = $task->getLastExecution();
+            $executionMemoryUsage = $task->getExecutionMemoryUsage();
+
             $table->addRow([
                 (new ReflectionClass($task))->getShortName(),
                 $task->getName(),
                 $task->getDescription() ?? 'No description set',
                 $task->getExpression(),
-                null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+                null !== $lastExecutionDate ? $lastExecutionDate->format(DATE_ATOM) : 'Not executed',
                 (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
                 null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+                null !== $executionMemoryUsage ? Helper::formatMemory($executionMemoryUsage) : 'Not tracked',
                 $task->getState(),
                 implode(', ', $task->getTags()) ?? 'No tags set',
             ]);
@@ -124,10 +127,10 @@ final class ListTasksCommand extends Command
                     $task->getName(),
                     $task->getDescription() ?? 'No description set',
                     '-',
-                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+                    null !== $lastExecutionDate ? $lastExecutionDate->format(DATE_ATOM) : 'Not executed',
                     (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
                     null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                    null !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+                    null !== $executionMemoryUsage ? Helper::formatMemory($executionMemoryUsage) : 'Not tracked',
                     $task->getState(),
                     implode(', ', $task->getTags()) ?? 'No tags set',
                 ]));

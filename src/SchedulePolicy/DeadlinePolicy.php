@@ -22,16 +22,17 @@ final class DeadlinePolicy implements PolicyInterface
     public function sort(array $tasks): array
     {
         array_walk($tasks, function (TaskInterface $task): void {
-            if (null === $task->getArrivalTime()) {
+            $arrivalTime = $task->getArrivalTime();
+            if (null === $arrivalTime) {
                 throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
             }
 
-            if (null === $task->getExecutionRelativeDeadline()) {
+            $executionRelativeDeadline = $task->getExecutionRelativeDeadline();
+            if (null === $executionRelativeDeadline) {
                 throw new RuntimeException(sprintf('The execution relative deadline must be defined, consider using %s::setExecutionRelativeDeadline()', TaskInterface::class));
             }
 
-            $arrivalTime = $task->getArrivalTime();
-            $absoluteDeadlineDate = $arrivalTime->add($task->getExecutionRelativeDeadline());
+            $absoluteDeadlineDate = $arrivalTime->add($executionRelativeDeadline);
 
             $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
         });

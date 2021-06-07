@@ -134,6 +134,7 @@
         "symfony/framework-bundle": "^5.2 || ^5.3",
         "symfony/http-client": "^5.2 || ^5.3",
         "symfony/http-kernel": "^5.2 || ^5.3",
+        "symfony/mercure": "^0.5.3",
         "symfony/messenger": "^5.2 || ^5.3",
         "symfony/notifier": "^5.2 || ^5.3",
         "symfony/rate-limiter": "^5.2 || ^5.3",

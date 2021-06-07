@@ -50,7 +50,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
+        $task->expects(self::once())->method('getMaxExecutions')->willReturn(5);
 
         $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',
@@ -74,7 +74,7 @@ final class MaxExecutionMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(2))->method('getMaxExecutions')->willReturn(5);
+        $task->expects(self::once())->method('getMaxExecutions')->willReturn(5);
 
         $maxExecutionMiddleware = new MaxExecutionMiddleware(new RateLimiterFactory([
             'id' => 'foo',

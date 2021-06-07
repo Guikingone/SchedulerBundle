@@ -34,9 +34,9 @@ final class Connection implements ConnectionInterface
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
-        $this->connection->connect($options['host'], $options['port'], $options['timeout']);
+        $this->connection->connect($options['host'] ?? '127.0.0.1', $options['port'] ?? 6379, $options['timeout'] ?? 30);
 
-        if (0 !== strpos($this->list = $options['list'], '_')) {
+        if (0 !== strpos($this->list = $options['list'] ?? '_symfony_scheduler_tasks', '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 

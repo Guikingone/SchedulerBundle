@@ -41,8 +41,9 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
             $worker = $workerRunningEvent->getWorker();
             $worker->stop();
 
+            $lastExecutedTask = $worker->getLastExecutedTask();
             $this->logger->info(sprintf('Worker stopped due to time limit of %d seconds exceeded', $this->timeLimitInSeconds), [
-                'lastExecutedTask' => $worker->getLastExecutedTask() instanceof TaskInterface ? $worker->getLastExecutedTask()->getName() : null,
+                'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
             ]);
         }
     }

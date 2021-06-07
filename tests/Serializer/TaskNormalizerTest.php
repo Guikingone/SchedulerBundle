@@ -200,8 +200,10 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('* * * * *', $task->getExpression());
-        self::assertInstanceOf(DateTimeImmutable::class, $task->getScheduledAt());
-        self::assertSame($scheduledAt->format("Y-m-d H:i:s.u"), $task->getScheduledAt()->format("Y-m-d H:i:s.u"));
+
+        $taskScheduledAt = $task->getScheduledAt();
+        self::assertInstanceOf(DateTimeImmutable::class, $taskScheduledAt);
+        self::assertSame($scheduledAt->format("Y-m-d H:i:s.u"), $taskScheduledAt->format("Y-m-d H:i:s.u"));
     }
 
     public function testShellTaskWithBeforeSchedulingClosureCannotBeNormalized(): void
@@ -528,7 +530,6 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('foo', $task->getName());
 
         $recipients = $task->getRecipients();
-        self::assertIsArray($recipients);
         self::assertCount(2, $recipients);
         self::assertSame('test@test.fr', $recipients[0]->getEmail());
         self::assertSame('foo@test.fr', $recipients[1]->getEmail());
@@ -584,10 +585,14 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(2, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
-        self::assertSame('bar', $task->getTask('bar')->getName());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('foo_second'));
-        self::assertSame('foo_second', $task->getTask('foo_second')->getName());
+
+        $barTask = $task->getTask('bar');
+        self::assertInstanceOf(ShellTask::class, $barTask);
+        self::assertSame('bar', $barTask->getName());
+
+        $fooSecondTask = $task->getTask('foo_second');
+        self::assertInstanceOf(ShellTask::class, $fooSecondTask);
+        self::assertSame('foo_second', $fooSecondTask->getName());
     }
 
     public function testChainedTaskWithCommandTaskCanBeDenormalized(): void
@@ -623,8 +628,10 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertNotEmpty($task->getTasks());
         self::assertCount(3, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask('bar'));
-        self::assertSame('bar', $task->getTask('bar')->getName());
+
+        $barFirstTask = $task->getTask('bar');
+        self::assertInstanceOf(ShellTask::class, $barFirstTask);
+        self::assertSame('bar', $barFirstTask->getName());
 
         $fooSecondTask = $task->getTask('foo_second');
         self::assertInstanceOf(CommandTask::class, $fooSecondTask);

@@ -54,7 +54,7 @@
             <div class="sf-toolbar-info-piece">
                 <b>{{ 'Probe' }}</b>
                 <span class="sf-toolbar-status">
-                    {{- collector.getProbeInformations() is not empty ? 'Enabled' : 'disabled' -}}
+                    {{- collector.getProbeInformations()|length != 0 ? 'Enabled' : 'disabled' -}}
                 </span>
             </div>
         {% endset %}

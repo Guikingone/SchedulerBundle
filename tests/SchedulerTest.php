@@ -102,7 +102,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('setScheduledAt');
         $task->expects(self::never())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
-        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): bool => false);
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): bool => false);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
@@ -130,7 +130,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setScheduledAt');
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
-        $task->expects(self::exactly(2))->method('getBeforeScheduling')->willReturn(fn (): int => 1 + 1);
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): int => 1 + 1);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -164,7 +164,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -200,7 +200,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -237,7 +237,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -269,7 +269,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
+        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));
@@ -293,7 +293,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => false);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => false);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(2))->method('dispatch')->withConsecutive(
@@ -322,7 +322,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getAfterScheduling')->willReturn(fn (): bool => true);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => true);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new TaskScheduledEvent($task));

@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Throwable;
+use function json_decode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -84,10 +85,13 @@ final class ProbeStateSubscriberTest extends TestCase
         $subscriber = new ProbeStateSubscriber($probe);
         $subscriber->onKernelRequest($event);
 
-        self::assertInstanceOf(JsonResponse::class, $event->getResponse());
+        $response = $event->getResponse();
+        self::assertInstanceOf(JsonResponse::class, $response);
 
-        $body = json_decode($event->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $content = $response->getContent();
+        self::assertIsString($content);
 
+        $body = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayHasKey('scheduledTasks', $body);
         self::assertSame(0, $body['scheduledTasks']);
         self::assertArrayHasKey('executedTasks', $body);

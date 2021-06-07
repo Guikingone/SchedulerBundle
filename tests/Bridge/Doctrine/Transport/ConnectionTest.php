@@ -802,7 +802,7 @@ final class ConnectionTest extends TestCase
     }
 
     /**
-     * @return MockObject|Connection
+     * @return Connection&MockObject
      */
     private function getDBALConnectionMock()
     {
@@ -829,7 +829,10 @@ final class ConnectionTest extends TestCase
         return $driverConnection;
     }
 
-    private function getQueryBuilderMock(): MockObject
+    /**
+     * @return QueryBuilder&MockObject
+     */
+    private function getQueryBuilderMock()
     {
         $queryBuilder = $this->createMock(QueryBuilder::class);
 

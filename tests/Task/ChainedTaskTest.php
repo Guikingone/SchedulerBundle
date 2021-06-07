@@ -32,11 +32,11 @@ final class ChainedTaskTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $chainedTask = new ChainedTask('foo');
-        self::assertEmpty($chainedTask->getTasks());
+        self::assertCount(0, $chainedTask->getTasks());
 
         $chainedTask->addTask($task);
 
-        self::assertNotEmpty($chainedTask->getTasks());
+        self::assertCount(1, $chainedTask->getTasks());
         self::assertSame($task, $chainedTask->getTasks()['foo']);
         self::assertSame($task, $chainedTask->getTask('foo'));
     }
@@ -47,11 +47,11 @@ final class ChainedTaskTest extends TestCase
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
         $chainedTask = new ChainedTask('foo');
-        self::assertEmpty($chainedTask->getTasks());
+        self::assertCount(0, $chainedTask->getTasks());
 
         $chainedTask->setTasks($task);
 
-        self::assertNotEmpty($chainedTask->getTasks());
+        self::assertCount(1, $chainedTask->getTasks());
         self::assertSame($task, $chainedTask->getTasks()['foo']);
         self::assertSame($task, $chainedTask->getTask('foo'));
     }

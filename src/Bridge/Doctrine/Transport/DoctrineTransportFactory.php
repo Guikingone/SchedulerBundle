@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
@@ -43,6 +45,10 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             $doctrineConnection = $this->registry->getConnection($dsn->getHost());
         } catch (InvalidArgumentException $invalidArgumentException) {
             throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler DSN "doctrine://%s".', $dsn->getHost()), is_int($invalidArgumentException->getCode()) ? $invalidArgumentException->getCode() : 0, $invalidArgumentException);
+        }
+
+        if (!$doctrineConnection instanceof DoctrineConnection) {
+            throw new RuntimeException('The connection is not a valid one');
         }
 
         return new DoctrineTransport([

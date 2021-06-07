@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 
@@ -13,53 +12,53 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotificationTask extends AbstractTask
 {
+    private Notification $notification;
+
+    /**
+     * @var Recipient[]
+     */
+    private array $recipients;
+
     public function __construct(string $name, Notification $notification, Recipient ...$recipients)
     {
-        $this->defineOptions([
-            'notification' => $notification,
-            'recipients' => $recipients,
-        ], [
-            'notification' => Notification::class,
-            'recipients' => ['Symfony\Component\Notifier\Recipient\Recipient[]', Recipient::class],
-        ]);
+        $this->notification = $notification;
+        $this->recipients = $recipients;
+
+        $this->defineOptions();
 
         parent::__construct($name);
     }
 
     public function getNotification(): Notification
     {
-        if (!$this->options['notification'] instanceof Notification) {
-            throw new RuntimeException('The notification is not set');
-        }
-
-        return $this->options['notification'];
+        return $this->notification;
     }
 
     public function setNotification(Notification $notification): self
     {
-        $this->options['notification'] = $notification;
+        $this->notification = $notification;
 
         return $this;
     }
 
     /**
-     * @return Recipient[]|Recipient|null
+     * @return Recipient[]
      */
-    public function getRecipients()
+    public function getRecipients(): array
     {
-        return $this->options['recipients'];
+        return $this->recipients;
     }
 
     public function addRecipient(Recipient $recipient): self
     {
-        $this->options['recipients'][] = $recipient;
+        $this->recipients[] = $recipient;
 
         return $this;
     }
 
     public function setRecipients(Recipient ...$recipients): self
     {
-        $this->options['recipients'] = $recipients;
+        $this->recipients = $recipients;
 
         return $this;
     }

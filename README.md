@@ -37,6 +37,7 @@
 - Retry / Remove / Sort policies
 - Background worker
 - [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
+- [Mercure](https://www.mercure.rocks) integration
 
 ## Installation
 
@@ -111,3 +112,4 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Middleware](doc/middleware.md)
 * [Probe](doc/probe.md)
 * [Tests](doc/test.md)
+* [Mercure](doc/mercure.md)

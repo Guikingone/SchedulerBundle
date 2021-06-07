@@ -19,7 +19,7 @@ final class HttpBuilder extends AbstractTaskBuilder implements BuilderInterface
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
         return $this->handleTaskAttributes(
-            new HttpTask($options['name'], $options['url'], $options['method'] ?? null, $options['client_options'] ?? []),
+            new HttpTask($options['name'], $options['url'], $options['method'] ?? 'GET', $options['client_options'] ?? []),
             $options,
             $propertyAccessor
         );
