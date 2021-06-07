@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use DateTimeImmutable;
-use SchedulerBundle\Exception\RuntimeException;
-use function is_string;
 use function sprintf;
 
 /**
@@ -14,45 +12,33 @@ use function sprintf;
  */
 final class FailedTask extends AbstractTask
 {
+    private TaskInterface $task;
+    private string $reason;
+    private DateTimeImmutable $failedAt;
+
     public function __construct(TaskInterface $task, string $reason)
     {
-        $this->defineOptions([
-            'task' => $task,
-            'reason' => $reason,
-            'failed_at' => new DateTimeImmutable(),
-        ], [
-            'task' => TaskInterface::class,
-            'reason' => 'string',
-            'failed_at' => DateTimeImmutable::class,
-        ]);
+        $this->task = $task;
+        $this->reason = $reason;
+        $this->failedAt = new DateTimeImmutable();
+
+        $this->defineOptions();
 
         parent::__construct(sprintf('%s.failed', $task->getName()));
     }
 
     public function getTask(): TaskInterface
     {
-        if (!$this->options['task'] instanceof TaskInterface) {
-            throw new RuntimeException('The task is not defined');
-        }
-
-        return $this->options['task'];
+        return $this->task;
     }
 
     public function getReason(): string
     {
-        if (!is_string($this->options['reason'])) {
-            throw new RuntimeException('The failure reason is not defined');
-        }
-
-        return $this->options['reason'];
+        return $this->reason;
     }
 
     public function getFailedAt(): DateTimeImmutable
     {
-        if (!$this->options['failed_at'] instanceof DateTimeImmutable) {
-            throw new RuntimeException('The failure date is not defined');
-        }
-
-        return $this->options['failed_at'];
+        return $this->failedAt;
     }
 }

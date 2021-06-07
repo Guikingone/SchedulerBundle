@@ -19,8 +19,6 @@ final class LazyTask extends AbstractTask implements LazyInterface
     {
         $this->sourceTaskClosure = $func;
 
-        $this->defineOptions();
-
         parent::__construct(sprintf('%s.lazy', $name));
     }
 
@@ -47,6 +45,7 @@ final class LazyTask extends AbstractTask implements LazyInterface
             return;
         }
 
+        $this->defineOptions();
         $this->initialized = true;
     }
 }
