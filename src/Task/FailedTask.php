@@ -22,8 +22,6 @@ final class FailedTask extends AbstractTask
         $this->reason = $reason;
         $this->failedAt = new DateTimeImmutable();
 
-        $this->defineOptions();
-
         parent::__construct(sprintf('%s.failed', $task->getName()));
     }
 

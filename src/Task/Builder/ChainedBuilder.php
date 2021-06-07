@@ -24,10 +24,8 @@ final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterfa
     /**
      * @param iterable|BuilderInterface[] $builders
      */
-    public function __construct(
-        ExpressionBuilderInterface $expressionBuilder,
-        iterable $builders = []
-    ) {
+    public function __construct(ExpressionBuilderInterface $expressionBuilder, iterable $builders = [])
+    {
         $this->builders = $builders;
 
         parent::__construct($expressionBuilder);

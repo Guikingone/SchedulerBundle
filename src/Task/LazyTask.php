@@ -45,7 +45,6 @@ final class LazyTask extends AbstractTask implements LazyInterface
             return;
         }
 
-        $this->defineOptions();
         $this->initialized = true;
     }
 }
