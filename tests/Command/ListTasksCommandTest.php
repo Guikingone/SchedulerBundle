@@ -91,7 +91,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -139,7 +139,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A foo task');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(5002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
@@ -148,7 +148,7 @@ final class ListTasksCommandTest extends TestCase
         $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
         $secondTask->expects(self::once())->method('getDescription')->willReturn('A bar task');
         $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
@@ -201,7 +201,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -241,7 +241,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
@@ -277,7 +277,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
@@ -285,7 +285,7 @@ final class ListTasksCommandTest extends TestCase
         $secondTask->expects(self::exactly(4))->method('getName')->willReturn('bar');
         $secondTask->expects(self::once())->method('getDescription')->willReturn('A second random task');
         $secondTask->expects(self::exactly(3))->method('getExpression')->willReturn('* * * * *');
-        $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
         $secondTask->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
         $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'fast']);
 
