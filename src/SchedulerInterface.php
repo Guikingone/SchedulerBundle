@@ -42,7 +42,12 @@ interface SchedulerInterface
      *
      * The decision is based on @param Closure $func, if the closure returns true, the task(s) can preempt.
      *
-     * If @param bool $preempt is used, th preemption is performed and the running task is delayed until the new one(s) has|have been executed.
+     * If @param bool $preempt is used, the preemption is performed and the running task is delayed until the new one(s) has|have been executed.
+     *
+     * {@internal The preemption is done in an "atomic approach", the currently running worker is paused,
+     *            the remaining tasks are retrieved then the worker is forked, once forked,
+     *            the new worker execute the preempting tasks then stop.
+     *            Once the new worker stopped, the "old" worker is restarted then the remaining tasks are executed.}
      */
     public function preempt(Closure $func, bool $preempt = false): void;
 

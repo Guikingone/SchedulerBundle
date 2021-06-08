@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -271,6 +272,29 @@ final class TaskListTest extends TestCase
             new NullTask('bar'),
         ]);
 
-        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+        self::assertSame([
+            'foo' => 'foo',
+            'bar' => 'bar'
+        ], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+    }
+
+    public function testListCannotReturnLastTaskWhenEmpty(): void
+    {
+        $taskList = new TaskList();
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The last task cannot be found as the list is empty');
+        self::expectExceptionCode(0);
+        $taskList->last();
+    }
+
+    public function testListCanReturnLastTask(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::assertSame('bar', $taskList->last()->getName());
     }
 }

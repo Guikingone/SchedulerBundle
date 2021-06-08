@@ -12,6 +12,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -46,6 +47,7 @@ abstract class AbstractWorker implements WorkerInterface
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
+    private ?TaskListInterface $tasksList;
 
     /**
      * @param RunnerInterface[] $runners
@@ -100,9 +102,7 @@ abstract class AbstractWorker implements WorkerInterface
     {
         $this->options['isRunning'] = false;
 
-        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event): void {
-            $this->options['currentlyExecutedTask'] = $event->getTask();
-        });
+        $this->dispatch(new WorkerPausedEvent($this));
 
         return $this;
     }
@@ -134,6 +134,14 @@ abstract class AbstractWorker implements WorkerInterface
     public function isRunning(): bool
     {
         return $this->options['isRunning'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCurrentTasks(): ?TaskListInterface
+    {
+        return $this->tasksList;
     }
 
     /**
@@ -171,21 +179,24 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
-    protected function getTasks(array $tasks): array
+    protected function getTasks(array $tasks): TaskListInterface
     {
-        $tasks = [] !== $tasks ? $tasks : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+        $tasks = [] === $tasks ? $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']) : new TaskList($tasks);
 
-        return is_array($tasks) ? $tasks : iterator_to_array($tasks);
+        $this->tasksList = $tasks;
+
+        return $tasks;
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void
     {
-        $this->dispatch(new TaskExecutingEvent($task));
+        $this->dispatch(new TaskExecutingEvent($task, $this));
 
         $task->setArrivalTime(new DateTimeImmutable());
         $task->setExecutionStartTime(new DateTimeImmutable());
 
         $this->tracker->startTracking($task);
+        $this->options['currentlyExecutedTask'] = $task;
         $output = $runner->run($task, $this);
         $this->tracker->endTracking($task);
         $task->setExecutionEndTime(new DateTimeImmutable());

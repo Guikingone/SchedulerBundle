@@ -69,7 +69,17 @@ interface WorkerInterface
      */
     public function restart(): void;
 
+    /**
+     * Determine if the worker is currently running, the implementation is up to the final class.
+     */
     public function isRunning(): bool;
+
+    /**
+     * Return the currently found tasks list as a {@see TaskListInterface} or null if not set.
+     *
+     * {@internal During the execution process, this method can be called at any time as the list is updated}
+     */
+    public function getCurrentTasks(): ?TaskListInterface;
 
     /**
      * Every task in this list can also be retrieved independently thanks to {@see TaskFailedEvent}.

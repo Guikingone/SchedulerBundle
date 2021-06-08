@@ -19,7 +19,6 @@ use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function count;
-use function end;
 use function sleep;
 
 /**
@@ -58,7 +57,7 @@ final class Worker extends AbstractWorker
                 $tasks = $this->getTasks($tasks);
 
                 foreach ($tasks as $task) {
-                    if (end($tasks) === $task && !$this->checkTaskState($task)) {
+                    if ($tasks->last() === $task && !$this->checkTaskState($task)) {
                         break 2;
                     }
 
@@ -67,7 +66,7 @@ final class Worker extends AbstractWorker
                     }
 
                     $lockedTask = $this->lockFactory->createLock($task->getName());
-                    if (end($tasks) === $task && !$lockedTask->acquire()) {
+                    if ($tasks->last() === $task && !$lockedTask->acquire()) {
                         break 2;
                     }
 
@@ -105,6 +104,8 @@ final class Worker extends AbstractWorker
                             $this->options['isRunning'] = false;
                             $this->options['lastExecutedTask'] = $task;
                             $this->dispatch(new WorkerRunningEvent($this, true));
+
+                            $tasks->remove($task->getName());
 
                             ++$this->options['executedTasksCount'];
                         }
