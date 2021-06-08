@@ -1,8 +1,19 @@
-CHANGELOG
-=========
+<!--- BEGIN HEADER -->
+# Changelog
 
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
+
+0.5.0
+-----
+
+### Builds
+
+##### Composer
+
+* Constraints (#146) ([31861d](https://github.com/Guikingone/SchedulerBundle/commit/31861d3359866a8974cf59bb385e2ebbc1c94a06))
+
+---
 
 0.5.0
 -----
