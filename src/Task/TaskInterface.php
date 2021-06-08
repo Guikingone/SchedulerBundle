@@ -35,6 +35,11 @@ interface TaskInterface
     /**
      * @var string
      */
+    public const READY_TO_EXECUTE = 'to_execute';
+
+    /**
+     * @var string
+     */
     public const UNDEFINED = 'undefined';
 
     /**
@@ -49,6 +54,7 @@ interface TaskInterface
         self::ENABLED,
         self::PAUSED,
         self::DISABLED,
+        self::READY_TO_EXECUTE,
         self::UNDEFINED,
         self::CANCELLED,
     ];
@@ -183,9 +189,9 @@ interface TaskInterface
 
     public function setExecutionDelay(int $executionDelay = null): self;
 
-    public function getExecutionMemoryUsage(): ?int;
+    public function getExecutionMemoryUsage(): int;
 
-    public function setExecutionMemoryUsage(int $executionMemoryUsage = null): self;
+    public function setExecutionMemoryUsage(int $executionMemoryUsage): self;
 
     public function getExecutionPeriod(): ?float;
 

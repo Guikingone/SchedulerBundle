@@ -71,7 +71,7 @@ abstract class AbstractTask implements TaskInterface
             'execution_absolute_deadline' => null,
             'execution_computation_time' => null,
             'execution_delay' => null,
-            'execution_memory_usage' => null,
+            'execution_memory_usage' => 0,
             'execution_period' => null,
             'execution_relative_deadline' => null,
             'execution_start_date' => null,
@@ -114,7 +114,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('execution_absolute_deadline', [DateInterval::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_computation_time', ['float', 'null']);
         $optionsResolver->setAllowedTypes('execution_delay', ['int', 'null']);
-        $optionsResolver->setAllowedTypes('execution_memory_usage', ['int', 'null']);
+        $optionsResolver->setAllowedTypes('execution_memory_usage', 'int');
         $optionsResolver->setAllowedTypes('execution_relative_deadline', [DateInterval::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_start_date', ['string', 'null']);
         $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
@@ -405,12 +405,12 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function getExecutionMemoryUsage(): ?int
+    public function getExecutionMemoryUsage(): int
     {
-        return $this->options['execution_memory_usage'] ?? null;
+        return $this->options['execution_memory_usage'];
     }
 
-    public function setExecutionMemoryUsage(int $executionMemoryUsage = null): TaskInterface
+    public function setExecutionMemoryUsage(int $executionMemoryUsage): TaskInterface
     {
         $this->options['execution_memory_usage'] = $executionMemoryUsage;
 

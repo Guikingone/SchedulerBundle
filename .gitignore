@@ -9,6 +9,7 @@ infection.log
 summary.log
 
 # Tools
+.deptrac.cache
 .php-cs-fixer.cache
 
 # Tests

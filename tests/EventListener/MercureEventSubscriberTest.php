@@ -12,6 +12,7 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -34,35 +35,48 @@ final class MercureEventSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        self::assertCount(8, MercureEventSubscriber::getSubscribedEvents());
+        self::assertCount(9, MercureEventSubscriber::getSubscribedEvents());
+
         self::assertArrayHasKey(TaskScheduledEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onTaskScheduled', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
+
         self::assertArrayHasKey(TaskUnscheduledEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onTaskUnscheduled', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
+
         self::assertArrayHasKey(TaskExecutedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onTaskExecuted', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
+
         self::assertArrayHasKey(TaskFailedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onTaskFailed', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
+
+        self::assertArrayHasKey(WorkerPausedEvent::class, MercureEventSubscriber::getSubscribedEvents());
+        self::assertSame([
+            'onWorkerPaused', -255,
+        ], MercureEventSubscriber::getSubscribedEvents()[WorkerPausedEvent::class]);
+
         self::assertArrayHasKey(WorkerStartedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onWorkerStarted', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
+
         self::assertArrayHasKey(WorkerStoppedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onWorkerStopped', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
+
         self::assertArrayHasKey(WorkerForkedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onWorkerForked', -255,
         ], MercureEventSubscriber::getSubscribedEvents()[WorkerForkedEvent::class]);
+
         self::assertArrayHasKey(WorkerRestartedEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onWorkerRestarted', -255,
@@ -166,6 +180,29 @@ final class MercureEventSubscriberTest extends TestCase
 
         $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
         $subscriber->onTaskFailed(new TaskFailedEvent($failedTask));
+    }
+
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
+    public function testHubCanPublishUpdateOnWorkerPaused(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $hub = $this->createMock(HubInterface::class);
+        $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
+            'event' => 'worker.paused',
+            'body' => [
+                'options' => [],
+            ],
+        ], JSON_THROW_ON_ERROR))));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::never())->method('serialize');
+
+        $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
+        $subscriber->onWorkerPaused(new WorkerPausedEvent($worker));
     }
 
     /**

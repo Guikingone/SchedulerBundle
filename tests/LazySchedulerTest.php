@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle;
 
+use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
+use SchedulerBundle\Middleware\TaskUpdateMiddleware;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\NullTaskRunner;
+use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
@@ -19,13 +27,18 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\Worker;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 
 /**
@@ -593,5 +606,98 @@ final class LazySchedulerTest extends TestCase
         self::assertFalse($lazyScheduler->isInitialized());
         self::assertSame('UTC', $lazyScheduler->getTimezone()->getName());
         self::assertTrue($lazyScheduler->isInitialized());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testSchedulerCannotPreemptEmptyDueTasks(): void
+    {
+        $task = new NullTask('foo');
+
+        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        self::assertFalse($scheduler->isInitialized());
+
+        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCannotPreemptEmptyToPreemptTasks(): void
+    {
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::never())->method('addListener');
+
+        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher));
+        self::assertFalse($scheduler->isInitialized());
+
+        $scheduler->schedule(new NullTask('foo'));
+        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testSchedulerCanPreemptTasks(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $eventDispatcher = new EventDispatcher();
+
+        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher));
+        self::assertFalse($scheduler->isInitialized());
+
+        $scheduler->schedule(new NullTask('foo'));
+        $scheduler->schedule(new NullTask('bar'));
+        $scheduler->schedule(new NullTask('reboot', [
+            'expression' => '* * 10 * *',
+        ]));
+        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
+
+        $worker->execute();
+        self::assertCount(0, $worker->getFailedTasks());
+
+        $lastExecutedTask = $worker->getLastExecutedTask();
+        self::assertInstanceOf(NullTask::class, $lastExecutedTask);
+        self::assertSame('bar', $lastExecutedTask->getName());
+
+        $preemptTask = $scheduler->getTasks()->get('reboot');
+        self::assertInstanceOf(NullTask::class, $preemptTask);
+        self::assertInstanceOf(DateTimeImmutable::class, $preemptTask->getLastExecution());
+        self::assertInstanceOf(DateTimeImmutable::class, $preemptTask->getExecutionStartTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $preemptTask->getExecutionEndTime());
+
+        $fooTask = $scheduler->getTasks()->get('foo');
+        self::assertInstanceOf(NullTask::class, $fooTask);
+        self::assertInstanceOf(DateTimeImmutable::class, $fooTask->getLastExecution());
+        self::assertInstanceOf(DateTimeImmutable::class, $fooTask->getExecutionStartTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $fooTask->getExecutionEndTime());
+
+        $barTask = $scheduler->getTasks()->get('bar');
+        self::assertInstanceOf(NullTask::class, $barTask);
+        self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
+        self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionStartTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionEndTime());
     }
 }

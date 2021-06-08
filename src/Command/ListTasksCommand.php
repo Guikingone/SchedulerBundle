@@ -106,7 +106,6 @@ final class ListTasksCommand extends Command
 
         $tasks->walk(function (TaskInterface $task) use ($table): void {
             $lastExecutionDate = $task->getLastExecution();
-            $executionMemoryUsage = $task->getExecutionMemoryUsage();
 
             $table->addRow([
                 (new ReflectionClass($task))->getShortName(),
@@ -116,23 +115,23 @@ final class ListTasksCommand extends Command
                 null !== $lastExecutionDate ? $lastExecutionDate->format(DATE_ATOM) : 'Not executed',
                 (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
                 null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                null !== $executionMemoryUsage ? Helper::formatMemory($executionMemoryUsage) : 'Not tracked',
+                0 !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
                 $task->getState(),
                 implode(', ', $task->getTags()) ?? 'No tags set',
             ]);
 
             if ($task instanceof ChainedTask) {
-                $table->addRows($task->getTasks()->map(fn (TaskInterface $task): array => [
+                $table->addRows($task->getTasks()->map(fn (TaskInterface $subTask): array => [
                     '<info>          ></info>',
-                    $task->getName(),
-                    $task->getDescription() ?? 'No description set',
+                    $subTask->getName(),
+                    $subTask->getDescription() ?? 'No description set',
                     '-',
-                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
-                    (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
-                    null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                    null !== $executionMemoryUsage ? Helper::formatMemory($executionMemoryUsage) : 'Not tracked',
-                    $task->getState(),
-                    implode(', ', $task->getTags()) ?? 'No tags set',
+                    null !== $subTask->getLastExecution() ? $subTask->getLastExecution()->format(DATE_ATOM) : 'Not executed',
+                    (new CronExpression($subTask->getExpression()))->getNextRunDate()->format(DATE_ATOM),
+                    null !== $subTask->getExecutionComputationTime() ? Helper::formatTime($subTask->getExecutionComputationTime() / 1000) : 'Not tracked',
+                    0 !== $subTask->getExecutionMemoryUsage() ? Helper::formatMemory($subTask->getExecutionMemoryUsage()) : 'Not tracked',
+                    $subTask->getState(),
+                    implode(', ', $subTask->getTags()) ?? 'No tags set',
                 ]));
             }
         });

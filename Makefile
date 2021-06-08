@@ -58,6 +58,9 @@ rector: rector.php
 rector-dry: rector.php
 	$(PHP) vendor/bin/rector --dry-run
 
+deptrac: depfile.yaml
+	$(PHP) vendor/bin/deptrac
+
 ##
 ## Tests
 ##---------------------------------------------------------------------------

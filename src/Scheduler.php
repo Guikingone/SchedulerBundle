@@ -9,12 +9,16 @@ use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -25,7 +29,6 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function is_bool;
 use function next;
@@ -51,6 +54,7 @@ final class Scheduler implements SchedulerInterface
     private TransportInterface $transport;
     private SchedulerMiddlewareStack $middlewareStack;
     private EventDispatcherInterface $eventDispatcher;
+    private LoggerInterface $logger;
     private ?MessageBusInterface $bus;
 
     /**
@@ -61,7 +65,8 @@ final class Scheduler implements SchedulerInterface
         TransportInterface $transport,
         SchedulerMiddlewareStack $schedulerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher,
-        ?MessageBusInterface $messageBus = null
+        ?MessageBusInterface $messageBus = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
@@ -69,6 +74,7 @@ final class Scheduler implements SchedulerInterface
         $this->middlewareStack = $schedulerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->bus = $messageBus;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -120,6 +126,44 @@ final class Scheduler implements SchedulerInterface
 
         $this->unschedule($name);
         $this->schedule($task);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preempt(Closure $func): void
+    {
+        $tasks = $this->getTasks();
+        if (0 === $tasks->count()) {
+            return;
+        }
+
+        $toPreemptTasks = $tasks->filter($func);
+        if (0 === $toPreemptTasks->count()) {
+            return;
+        }
+
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($toPreemptTasks): void {
+            $worker = $event->getWorker();
+            $worker->pause();
+
+            $remainingTasks = $worker->getCurrentTasks();
+
+            $forkWorker = $worker->fork();
+            try {
+                $forkWorker->execute($worker->getOptions(), ...$toPreemptTasks->toArray(false));
+            } catch (Throwable $throwable) {
+                $this->logger->warning('An error occurred during the execution of the tasks used to preempt the currently executed task');
+            } finally {
+                $forkWorker->stop();
+            }
+
+            $worker->restart();
+
+            if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
+                $worker->execute($worker->getOptions(), ...$remainingTasks->toArray(false));
+            }
+        });
     }
 
     /**

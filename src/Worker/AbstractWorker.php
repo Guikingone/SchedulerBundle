@@ -13,6 +13,7 @@ use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerSleepingEvent;
@@ -83,6 +84,7 @@ abstract class AbstractWorker implements WorkerInterface
 
         $closure();
 
+        $this->configuration->setCurrentTasks(new TaskList());
         $this->eventDispatcher->dispatch(new WorkerStoppedEvent($this));
     }
 
@@ -99,6 +101,17 @@ abstract class AbstractWorker implements WorkerInterface
         $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
 
         return $fork;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function pause(): WorkerInterface
+    {
+        $this->configuration->run(false);
+        $this->eventDispatcher->dispatch(new WorkerPausedEvent($this));
+
+        return $this;
     }
 
     /**
@@ -139,6 +152,14 @@ abstract class AbstractWorker implements WorkerInterface
     public function isRunning(): bool
     {
         return $this->configuration->isRunning();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCurrentTasks(): ?TaskListInterface
+    {
+        return $this->configuration->getCurrentTasks();
     }
 
     /**
@@ -199,7 +220,11 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         });
 
-        return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
+        $lockedTasks = $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
+
+        $this->configuration->setCurrentTasks($lockedTasks);
+
+        return $lockedTasks;
     }
 
     protected function handleTask(TaskInterface $task): void
@@ -216,6 +241,7 @@ abstract class AbstractWorker implements WorkerInterface
             if (!$this->configuration->isRunning()) {
                 $this->middlewareStack->runPreExecutionMiddleware($task);
 
+                $this->configuration->setCurrentlyExecutedTask($task);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
                 $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
                 $task->setArrivalTime(new DateTimeImmutable());
@@ -243,6 +269,7 @@ abstract class AbstractWorker implements WorkerInterface
             $this->getFailedTasks()->add($failedTask);
             $this->eventDispatcher->dispatch(new TaskFailedEvent($failedTask));
         } finally {
+            $this->configuration->setCurrentlyExecutedTask(null);
             $this->configuration->run(false);
             $this->eventDispatcher->dispatch(new WorkerRunningEvent($this, true));
         }

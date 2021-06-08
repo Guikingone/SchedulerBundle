@@ -50,6 +50,7 @@ Here's the full list of update dispatched:
 
 | Task                       | Body                                                   |
 | ---------------------------| -------------------------------------------------------|
+| `worker.paused`            | Contains the worker options                            |
 | `worker.started`           | Contains the worker options                            |
 | `worker.stopped`           | Contains the worker options and the last executed task |
 | `worker.forked`            | Contains both old and forked worker options            |

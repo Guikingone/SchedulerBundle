@@ -241,7 +241,7 @@ final class NullTaskTest extends TestCase
     public function testTaskCannotBeCreatedWithInvalidExecutionMemoryUsage(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "execution_memory_usage" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionMessage('The option "execution_memory_usage" with value "foo" is expected to be of type "int", but is of type "string"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'execution_memory_usage' => 'foo',

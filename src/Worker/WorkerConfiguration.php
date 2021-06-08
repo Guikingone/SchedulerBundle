@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker;
 
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,7 +39,11 @@ final class WorkerConfiguration
         $self->shouldStop = false;
         $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;
+        $self->isFork = false;
         $self->lastExecutedTask = null;
+        $self->forkedFrom = null;
+        $self->sleepDurationDelay = 1;
+        $self->shouldStop = false;
         $self->mustStrictlyCheckDate = false;
 
         return $self;
@@ -81,6 +87,16 @@ final class WorkerConfiguration
     public function isRunning(): bool
     {
         return $this->isRunning;
+    }
+
+    public function isFork(): bool
+    {
+        return $this->isFork;
+    }
+
+    public function fork(): void
+    {
+        $this->isFork = true;
     }
 
     public function setLastExecutedTask(TaskInterface $lastExecutedTask): void

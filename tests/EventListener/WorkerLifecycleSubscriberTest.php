@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\EventListener;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -26,16 +27,61 @@ final class WorkerLifecycleSubscriberTest extends TestCase
     public function testSubscriberIsConfigured(): void
     {
         self::assertCount(5, WorkerLifecycleSubscriber::getSubscribedEvents());
-        self::assertArrayHasKey(WorkerRestartedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
-        self::assertSame('onWorkerRestarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerRestartedEvent::class]);
-        self::assertArrayHasKey(WorkerRunningEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
-        self::assertSame('onWorkerRunning', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
-        self::assertArrayHasKey(WorkerStartedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
-        self::assertSame('onWorkerStarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
-        self::assertArrayHasKey(WorkerStoppedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
-        self::assertSame('onWorkerStopped', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
         self::assertArrayHasKey(WorkerForkedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerForked', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerForkedEvent::class]);
+
+        self::assertArrayHasKey(WorkerPausedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerPaused', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerPausedEvent::class]);
+
+        self::assertArrayHasKey(WorkerRestartedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerRestarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerRestartedEvent::class]);
+
+        self::assertArrayHasKey(WorkerRunningEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerRunning', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
+
+        self::assertArrayHasKey(WorkerStartedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerStarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
+
+        self::assertArrayHasKey(WorkerStoppedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerStopped', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
+    }
+
+    public function testSubscriberLogOnWorkerForked(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $secondWorker = $this->createMock(WorkerInterface::class);
+        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been forked'), self::equalTo([
+            'forkedWorker' => [],
+            'newWorker' => [],
+        ]));
+
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
+    }
+
+    public function testSubscriberLogOnWorkerPaused(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getOptions')->willReturn([
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been paused'), self::equalTo([
+            'options' => [
+                'foo' => 'foo',
+                'bar' => 'bar',
+            ],
+        ]));
+
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerPaused(new WorkerPausedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerRestartedWithoutExecutedTask(): void

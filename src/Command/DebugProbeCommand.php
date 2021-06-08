@@ -86,11 +86,13 @@ final class DebugProbeCommand extends Command
             $secondTable->setHeaders(['Name', 'Path', 'State', 'Last execution', 'Execution state']);
 
             $externalProbeTasks->walk(function (ProbeTask $task) use ($secondTable): void {
+                $lastExecution = $task->getLastExecution();
+
                 $secondTable->addRow([
                     $task->getName(),
                     $task->getExternalProbePath(),
                     $task->getState(),
-                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DateTimeInterface::COOKIE) : 'Not executed',
+                    null !== $lastExecution ? $lastExecution->format(DateTimeInterface::COOKIE) : 'Not executed',
                     $task->getExecutionState() ?? 'Not executed',
                 ]);
             });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle;
 
+use Closure;
 use DateTimeZone;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
@@ -50,6 +51,16 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
         $this->initialize();
 
         $this->scheduler->yieldTask($name, $async);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preempt(Closure $func): void
+    {
+        $this->initialize();
+
+        $this->scheduler->preempt($func);
     }
 
     /**

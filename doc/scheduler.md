@@ -18,6 +18,10 @@ The scheduler provides several methods to help interact with tasks during the wh
 - `yieldTask`: Accept as task name as the only argument, the transport is used to dequeue and requeue the task,
                a transport call is performed to retrieve the task before removing it.
 
+- `preempt`: Accept a closure as the first argument, this closure must filter tasks (thanks to `TaskList::filter()`),
+             once filtered (using lazy-loading or not as the second argument), the tasks are executed
+             BEFORE the current task to execute. 
+
 - `update`: Accept the task name to update with the new "task payload" as the second argument, 
             the transport is used to update the task.
 
