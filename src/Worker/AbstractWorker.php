@@ -96,6 +96,20 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
+    public function pause(): WorkerInterface
+    {
+        $this->options['isRunning'] = false;
+
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event): void {
+            $this->options['currentlyExecutedTask'] = $event->getTask();
+        });
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function restart(): void
     {
         $this->stop();
@@ -223,6 +237,7 @@ abstract class AbstractWorker implements WorkerInterface
     {
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
+            'currentlyExecutedTask' => null,
             'executedTasksCount' => 0,
             'forkedFrom' => null,
             'isFork' => false,
@@ -234,6 +249,7 @@ abstract class AbstractWorker implements WorkerInterface
             'shouldRetrieveTasksLazily' => false,
         ]);
 
+        $optionsResolver->setAllowedTypes('currentlyExecutedTask', [TaskInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
         $optionsResolver->setAllowedTypes('forkedFrom', [WorkerInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('isFork', 'bool');

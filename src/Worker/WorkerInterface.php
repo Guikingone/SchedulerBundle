@@ -52,6 +52,16 @@ interface WorkerInterface
      */
     public function fork(): WorkerInterface;
 
+    /**
+     * Pause the worker and store the currently executing task to resume it later when {@see WorkerInterface::restart()} is called.
+     *
+     * {@internal Be aware that the task can be stored even if the execution has succeed}
+     */
+    public function pause(): WorkerInterface;
+
+    /**
+     * Stop the worker, the internal state can be reset if required, the final implementation is up to the worker.
+     */
     public function stop(): void;
 
     /**

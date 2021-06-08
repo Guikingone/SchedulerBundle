@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle;
 
+use Closure;
 use DateTimeZone;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -35,6 +36,15 @@ interface SchedulerInterface
      * @throws Throwable {@see SchedulerInterface::schedule()}
      */
     public function yieldTask(string $name, bool $async = false): void;
+
+    /**
+     * Determine if a task|set of tasks that entered the runnable state should preempt the currently running task.
+     *
+     * The decision is based on @param Closure $func, if the closure returns true, the task(s) can preempt.
+     *
+     * If @param bool $preempt is used, th preemption is performed and the running task is delayed until the new one(s) has|have been executed.
+     */
+    public function preempt(Closure $func, bool $preempt = false): void;
 
     /**
      * Update a specific task, the name should NOT be changed, every metadata can.

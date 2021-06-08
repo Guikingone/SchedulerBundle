@@ -28,6 +28,7 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -1104,6 +1105,23 @@ final class SchedulerTest extends TestCase
         self::assertTrue($nextDueTask->isInitialized());
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('bar', $task->getName());
+    }
+
+    public function testSchedulerCannotPreemptEmptyDueTasks(): void
+    {
+        $task = new NullTask('foo');
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+
+        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+
+        self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
+    }
+
+    public function testSchedulerCannotPreemptEmptyToPreemptTasks(): void
+    {
     }
 
     /**

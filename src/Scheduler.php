@@ -9,6 +9,7 @@ use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -119,6 +120,37 @@ final class Scheduler implements SchedulerInterface
 
         $this->unschedule($name);
         $this->schedule($task);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preempt(Closure $func, bool $preempt = false): void
+    {
+        $dueTasks = $this->getDueTasks();
+        if (0 === $dueTasks->count()) {
+            return;
+        }
+
+        $toPreemptTasks = $dueTasks->filter($func);
+        if (0 === $toPreemptTasks->count()) {
+            return;
+        }
+
+        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
+            throw new RuntimeException('The event dispatcher must be available to preempt a task');
+        }
+
+        $this->eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($toPreemptTasks): void {
+            $worker = $event->getWorker();
+            $forkedWorker = $worker->fork();
+
+            $worker->pause();
+
+            $toPreemptTasks->walk(function (TaskInterface $task) use ($forkedWorker): void {
+                $forkedWorker->execute([], $task);
+            });
+        });
     }
 
     /**
