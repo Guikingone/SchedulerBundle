@@ -47,16 +47,17 @@ final class FilesystemTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
+        $configuration = $this->getConfiguration()->toArray();
         $tasks = [];
 
         $finder = new Finder();
 
-        $finder->files()->in($this->getOptions()->get('path'))->name('*.json');
+        $finder->files()->in($configuration['path'])->name('*.json');
         foreach ($finder as $singleFinder) {
             $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
         }
 
-        $list = new TaskList($this->orchestrator->sort($this->getOptions()->get('execution_mode'), $tasks));
+        $list = new TaskList($this->orchestrator->sort($configuration['execution_mode'], $tasks));
 
         return $lazy ? new LazyTaskList($list) : $list;
     }
@@ -74,7 +75,9 @@ final class FilesystemTransport extends AbstractTransport
             throw new InvalidArgumentException(sprintf('The "%s" task does not exist', $name));
         }
 
-        return $this->serializer->deserialize(file_get_contents(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name)), TaskInterface::class, 'json');
+        $configuration = $this->configuration->toArray();
+
+        return $this->serializer->deserialize(file_get_contents(sprintf($configuration['filename_mask'], $configuration['path'], $name)), TaskInterface::class, 'json');
     }
 
     /**
@@ -86,8 +89,10 @@ final class FilesystemTransport extends AbstractTransport
             return;
         }
 
+        $configuration = $this->configuration->toArray();
+
         $data = $this->serializer->serialize($task, 'json');
-        $this->filesystem->dumpFile(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $task->getName()), $data);
+        $this->filesystem->dumpFile(sprintf($configuration['filename_mask'], $configuration['path'], $task->getName()), $data);
     }
 
     /**
@@ -101,7 +106,9 @@ final class FilesystemTransport extends AbstractTransport
             return;
         }
 
-        $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name));
+        $configuration = $this->configuration->toArray();
+
+        $this->filesystem->remove(sprintf($configuration['filename_mask'], $configuration['path'], $name));
         $this->create($updatedTask);
     }
 
@@ -146,7 +153,9 @@ final class FilesystemTransport extends AbstractTransport
      */
     public function delete(string $name): void
     {
-        $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $name));
+        $configuration = $this->getConfiguration()->toArray();
+
+        $this->filesystem->remove(sprintf($configuration['filename_mask'], $configuration['path'], $name));
     }
 
     /**
@@ -154,16 +163,20 @@ final class FilesystemTransport extends AbstractTransport
      */
     public function clear(): void
     {
+        $configuration = $this->getConfiguration()->toArray();
+
         $finder = new Finder();
 
-        $finder->files()->in($this->getOptions()->get('path'))->name('*.json');
+        $finder->files()->in($configuration['path'])->name('*.json');
         foreach ($finder as $singleFinder) {
-            $this->filesystem->remove(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), strtr($singleFinder->getFilename(), ['.json' => ''])));
+            $this->filesystem->remove(sprintf($configuration['filename_mask'], $configuration['path'], strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
     }
 
     private function fileExist(string $taskName): bool
     {
-        return $this->filesystem->exists(sprintf($this->getOptions()->get('filename_mask'), $this->getOptions()->get('path'), $taskName));
+        $configuration = $this->getConfiguration()->toArray();
+
+        return $this->filesystem->exists(sprintf($configuration['filename_mask'], $configuration['path'], $taskName));
     }
 }

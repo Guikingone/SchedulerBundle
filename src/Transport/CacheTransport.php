@@ -87,7 +87,7 @@ final class CacheTransport extends AbstractTransport
         }
 
         $list = new TaskList($this->schedulePolicyOrchestrator->sort(
-            $this->getOptions()->get('execution_mode'),
+            $this->getConfiguration()->get('execution_mode'),
             array_map(fn (string $task): TaskInterface => $this->get($task), $listItem->get())
         ));
 

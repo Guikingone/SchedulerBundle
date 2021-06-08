@@ -9,6 +9,9 @@ use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+use function class_exists;
+use function phpversion;
+use function version_compare;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

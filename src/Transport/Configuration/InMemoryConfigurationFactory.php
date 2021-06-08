@@ -19,7 +19,7 @@ final class InMemoryConfigurationFactory implements ConfigurationFactoryInterfac
     {
         return new InMemoryConfiguration([
             'execution_mode' => $dsn->getHost(),
-        ]);
+        ], $dsn->getOptions());
     }
 
     /**

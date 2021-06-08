@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
+use Closure;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
@@ -72,9 +73,32 @@ final class DoctrineConfiguration extends AbstractDoctrineConnection implements 
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): ConfigurationInterface
+    {
+        // TODO: Implement walk() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        // TODO: Implement map() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
         // TODO: Implement getOptions() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
     }
 
     protected function addTableToSchema(Schema $schema): void

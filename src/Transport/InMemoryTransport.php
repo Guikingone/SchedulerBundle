@@ -58,7 +58,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
-        $list = new TaskList($this->orchestrator->sort($this->getOptions()->get('execution_mode'), $this->tasks));
+        $list = new TaskList($this->orchestrator->sort($this->getConfiguration()->get('execution_mode'), $this->tasks));
 
         return $lazy ? new LazyTaskList($list) : $list;
     }
@@ -73,7 +73,7 @@ final class InMemoryTransport extends AbstractTransport
         }
 
         $this->tasks[$task->getName()] = $task;
-        $this->tasks = $this->orchestrator->sort($this->getOptions()->get('execution_mode'), $this->tasks);
+        $this->tasks = $this->orchestrator->sort($this->getConfiguration()->get('execution_mode'), $this->tasks);
     }
 
     /**

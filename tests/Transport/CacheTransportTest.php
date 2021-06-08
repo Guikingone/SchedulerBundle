@@ -51,7 +51,7 @@ final class CacheTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertSame('nice', $cacheTransport->getOptions()->get('execution_mode'));
+        self::assertSame('nice', $cacheTransport->getConfiguration()->get('execution_mode'));
     }
 
     public function testTransportCannotReturnUndefinedTask(): void

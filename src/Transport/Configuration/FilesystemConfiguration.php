@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use Closure;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sys_get_temp_dir;
@@ -32,27 +33,64 @@ final class FilesystemConfiguration extends AbstractConfiguration
         $this->serializer = $serializer;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function set(string $key, $value): void
     {
         // TODO: Implement set() method.
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function update(string $key, $newValue): void
     {
         // TODO: Implement update() method.
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function get(string $key): void
     {
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function remove(string $key): void
     {
         // TODO: Implement remove() method.
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function walk(Closure $func): ConfigurationInterface
+    {
+        // TODO: Implement walk() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
         // TODO: Implement getOptions() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
     }
 }

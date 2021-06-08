@@ -27,9 +27,11 @@ final class InMemoryConfigurationFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new InMemoryConfigurationFactory();
-        $configuration = $factory->create(Dsn::fromString('configuration://memory'), $serializer);
+        $configuration = $factory->create(Dsn::fromString('configuration://memory?foo=bar'), $serializer);
 
-        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
-        self::assertCount(1, $configuration->toArray());
+        self::assertCount(2, $configuration->toArray());
+        self::assertSame('memory', $configuration->get('execution_mode'));
+        self::assertArrayHasKey('foo', $configuration->toArray());
+        self::assertSame('bar', $configuration->get('foo'));
     }
 }

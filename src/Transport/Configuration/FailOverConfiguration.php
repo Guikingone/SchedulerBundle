@@ -74,9 +74,33 @@ final class FailOverConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): ConfigurationInterface
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): ConfigurationInterface => $configuration->walk($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->map($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
         return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): int => $configuration->count());
     }
 
     private function execute(Closure $func)

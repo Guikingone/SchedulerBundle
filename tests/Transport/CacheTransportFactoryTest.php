@@ -42,6 +42,6 @@ final class CacheTransportFactoryTest extends TestCase
 
         $transport = $cacheTransportFactory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), $configuration, $serializer, $orchestrator);
 
-        self::assertSame('normal', $transport->getOptions()->get('execution_mode'));
+        self::assertSame('normal', $transport->getConfiguration()->get('execution_mode'));
     }
 }

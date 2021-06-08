@@ -69,7 +69,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return ConfigurationInterface The configuration set during the transport creation which contains each configuration key
+     * Return the configuration set during the transport creation which contains each configuration key
      */
-    public function getOptions(): ConfigurationInterface;
+    public function getConfiguration(): ConfigurationInterface;
 }

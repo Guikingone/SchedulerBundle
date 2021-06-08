@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use Closure;
 use function array_key_exists;
+use function array_map;
+use function array_walk;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -60,8 +64,34 @@ final class InMemoryConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): ConfigurationInterface
+    {
+        array_walk($this->options, $func);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return array_map($func, $this->options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
         return $this->options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->options);
     }
 }

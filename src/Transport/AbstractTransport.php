@@ -64,7 +64,7 @@ abstract class AbstractTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): ConfigurationInterface
+    public function getConfiguration(): ConfigurationInterface
     {
         return $this->configuration;
     }

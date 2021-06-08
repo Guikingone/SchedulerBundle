@@ -28,7 +28,10 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
+        self::assertSame(2, $inMemoryConfiguration->count());
+        self::assertArrayHasKey('execution_mode', $inMemoryConfiguration->toArray());
         self::assertArrayHasKey('foo', $inMemoryConfiguration->toArray());
+        self::assertSame('first_in_first_out', $inMemoryConfiguration->get('execution_mode'));
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
     }
 
@@ -60,5 +63,18 @@ final class InMemoryConfigurationTest extends TestCase
 
         self::assertArrayNotHasKey('foo', $inMemoryConfiguration->toArray());
         self::assertNull($inMemoryConfiguration->get('foo'));
+    }
+
+    public function testConfigurationCanMapValues(): void
+    {
+        $inMemoryConfiguration = new InMemoryConfiguration();
+
+        $inMemoryConfiguration->set('foo', 'bar');
+        $inMemoryConfiguration->set('bar', 'foo');
+
+        $mappedConfiguration = $inMemoryConfiguration->map(fn (string $value): string => sprintf('%s_value', $value));
+
+        self::assertContains('bar_value', $mappedConfiguration);
+        self::assertContains('foo_value', $mappedConfiguration);
     }
 }

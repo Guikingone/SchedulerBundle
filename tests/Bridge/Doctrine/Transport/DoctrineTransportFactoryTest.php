@@ -65,13 +65,13 @@ final class DoctrineTransportFactoryTest extends TestCase
         $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertTrue($transport->getOptions()['auto_setup']);
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('nice', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getConfiguration());
+        self::assertTrue($transport->getConfiguration()['auto_setup']);
+        self::assertSame('_symfony_scheduler_tasks', $transport->getConfiguration()['table_name']);
+        self::assertArrayHasKey('table_name', $transport->getConfiguration());
+        self::assertNotNull($transport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
+        self::assertSame('nice', $transport->getConfiguration()['execution_mode']);
     }
 
     public function testFactoryReturnTransportWithAutoSetup(): void
@@ -88,13 +88,13 @@ final class DoctrineTransportFactoryTest extends TestCase
         $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?auto_setup=false'), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertFalse($transport->getOptions()['auto_setup']);
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getConfiguration());
+        self::assertFalse($transport->getConfiguration()['auto_setup']);
+        self::assertSame('_symfony_scheduler_tasks', $transport->getConfiguration()['table_name']);
+        self::assertArrayHasKey('table_name', $transport->getConfiguration());
+        self::assertNotNull($transport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()['execution_mode']);
     }
 
     public function testFactoryReturnTransportWithExecutionMode(): void
@@ -127,6 +127,6 @@ final class DoctrineTransportFactoryTest extends TestCase
         $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertSame('test', $transport->getOptions()['table_name']);
+        self::assertSame('test', $transport->getConfiguration()['table_name']);
     }
 }

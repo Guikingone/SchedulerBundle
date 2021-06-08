@@ -65,8 +65,8 @@ final class FailOverTransportFactoryTest extends TestCase
         $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(FailOverTransport::class, $transport);
-        self::assertArrayHasKey('mode', $transport->getOptions()->toArray());
-        self::assertSame('normal', $transport->getOptions()->get('mode'));
+        self::assertArrayHasKey('mode', $transport->getConfiguration()->toArray());
+        self::assertSame('normal', $transport->getConfiguration()->get('mode'));
     }
 
     /**
@@ -85,8 +85,8 @@ final class FailOverTransportFactoryTest extends TestCase
         $transport = $failOverTransportFactory->createTransport(Dsn::fromString($dsn), $configuration, $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(FailOverTransport::class, $transport);
-        self::assertArrayHasKey('mode', $transport->getOptions()->toArray());
-        self::assertSame('normal', $transport->getOptions()->get('mode'));
+        self::assertArrayHasKey('mode', $transport->getConfiguration()->toArray());
+        self::assertSame('normal', $transport->getConfiguration()->get('mode'));
     }
 
     /**

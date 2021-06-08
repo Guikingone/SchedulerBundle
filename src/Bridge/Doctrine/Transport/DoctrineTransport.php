@@ -45,7 +45,7 @@ class DoctrineTransport extends AbstractTransport
         ]);
 
         $this->connection = new Connection(
-            $this->getOptions(),
+            $this->getConfiguration(),
             $dbalConnection,
             $serializer,
             $schedulePolicyOrchestrator,

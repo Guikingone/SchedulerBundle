@@ -14,7 +14,6 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\InMemoryTransport;
@@ -33,10 +32,10 @@ final class FailOverTransportTest extends TestCase
     {
         $failOverTransport = new FailOverTransport([], new InMemoryConfiguration());
 
-        self::assertArrayHasKey('mode', $failOverTransport->getOptions()->toArray());
-        self::assertSame('normal', $failOverTransport->getOptions()->get('mode'));
-        self::assertArrayHasKey('execution_mode', $failOverTransport->getOptions()->toArray());
-        self::assertSame('first_in_first_out', $failOverTransport->getOptions()->get('execution_mode'));
+        self::assertArrayHasKey('mode', $failOverTransport->getConfiguration()->toArray());
+        self::assertSame('normal', $failOverTransport->getConfiguration()->get('mode'));
+        self::assertArrayHasKey('execution_mode', $failOverTransport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $failOverTransport->getConfiguration()->get('execution_mode'));
     }
 
     public function testTransportCannotBeCreatedWithInvalidConfiguration(): void

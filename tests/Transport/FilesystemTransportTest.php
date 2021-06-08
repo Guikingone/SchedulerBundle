@@ -84,12 +84,12 @@ final class FilesystemTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('path', $filesystemTransport->getOptions());
-        self::assertSame(getcwd().'/assets', $filesystemTransport->getOptions()['path']);
-        self::assertArrayHasKey('execution_mode', $filesystemTransport->getOptions());
-        self::assertSame('first_in_first_out', $filesystemTransport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('filename_mask', $filesystemTransport->getOptions());
-        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getOptions()['filename_mask']);
+        self::assertArrayHasKey('path', $filesystemTransport->getConfiguration());
+        self::assertSame(getcwd().'/assets', $filesystemTransport->getConfiguration()['path']);
+        self::assertArrayHasKey('execution_mode', $filesystemTransport->getConfiguration());
+        self::assertSame('first_in_first_out', $filesystemTransport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('filename_mask', $filesystemTransport->getConfiguration());
+        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getConfiguration()['filename_mask']);
     }
 
     /**

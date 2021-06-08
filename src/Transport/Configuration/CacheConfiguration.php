@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use Closure;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use function count;
+use function array_map;
+use function array_walk;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class CacheConfiguration extends AbstractConfiguration
 {
+    private const CONFIGURATION_LIST_KEY = '_symfony_configuration';
+
     private CacheItemPoolInterface $pool;
 
     public function __construct(CacheItemPoolInterface $cacheItemPool, array $options = [])
@@ -78,8 +84,37 @@ final class CacheConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
+    public function walk(Closure $func): ConfigurationInterface
+    {
+        $items = $this->toArray();
+
+        array_walk($items, $func);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        $items = $this->toArray();
+
+        return array_map($func, $items);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
-        return $this->pool->getItems();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->toArray());
     }
 }

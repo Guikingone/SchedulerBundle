@@ -37,8 +37,8 @@ final class InMemoryTransportFactoryTest extends TestCase
         $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
+        self::assertNotNull($transport->getConfiguration()['execution_mode']);
     }
 
     /**
@@ -53,11 +53,11 @@ final class InMemoryTransportFactoryTest extends TestCase
         $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/app', $transport->getOptions()['path']);
-        self::assertCount(2, $transport->getOptions());
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
+        self::assertSame('normal', $transport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('path', $transport->getConfiguration());
+        self::assertSame('/srv/app', $transport->getConfiguration()['path']);
+        self::assertCount(2, $transport->getConfiguration());
     }
 
     /**

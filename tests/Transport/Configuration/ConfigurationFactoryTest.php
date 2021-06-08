@@ -11,6 +11,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FailOverConfiguration;
 use SchedulerBundle\Transport\Configuration\FilesystemConfiguration;
 use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
@@ -76,6 +77,10 @@ final class ConfigurationFactoryTest extends TestCase
         $factory = new ConfigurationFactory([
             new InMemoryConfigurationFactory(),
             new FilesystemConfigurationFactory(),
+            new FailOverConfiguration([
+                new InMemoryConfigurationFactory(),
+                new FilesystemConfigurationFactory(),
+            ]),
         ]);
 
         self::assertInstanceOf($expectedConfiguration, $factory->build($dsn, $serializer));
@@ -89,5 +94,7 @@ final class ConfigurationFactoryTest extends TestCase
         yield 'InMemory' => ['configuration://memory', InMemoryConfiguration::class];
         yield 'Filesystem - Short' => ['configuration://fs', FilesystemConfiguration::class];
         yield 'Filesystem - Full' => ['configuration://filesystem', FilesystemConfiguration::class];
+        yield 'FailOver - Short' => ['configuration://failover', FailOverConfiguration::class];
+        yield 'FailOver - Full' => ['configuration://fo', FailOverConfiguration::class];
     }
 }

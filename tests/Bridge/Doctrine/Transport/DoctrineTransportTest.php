@@ -73,12 +73,12 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('execution_mode', $doctrineTransport->getOptions());
-        self::assertSame('first_in_first_out', $doctrineTransport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('auto_setup', $doctrineTransport->getOptions());
-        self::assertTrue($doctrineTransport->getOptions()['auto_setup']);
-        self::assertArrayHasKey('table_name', $doctrineTransport->getOptions());
-        self::assertSame('_symfony_scheduler_tasks', $doctrineTransport->getOptions()['table_name']);
+        self::assertArrayHasKey('execution_mode', $doctrineTransport->getConfiguration());
+        self::assertSame('first_in_first_out', $doctrineTransport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $doctrineTransport->getConfiguration());
+        self::assertTrue($doctrineTransport->getConfiguration()['auto_setup']);
+        self::assertArrayHasKey('table_name', $doctrineTransport->getConfiguration());
+        self::assertSame('_symfony_scheduler_tasks', $doctrineTransport->getConfiguration()['table_name']);
     }
 
     public function testTransportCanBeConfigured(): void
@@ -94,12 +94,12 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('execution_mode', $doctrineTransport->getOptions());
-        self::assertSame('normal', $doctrineTransport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('auto_setup', $doctrineTransport->getOptions());
-        self::assertFalse($doctrineTransport->getOptions()['auto_setup']);
-        self::assertArrayHasKey('table_name', $doctrineTransport->getOptions());
-        self::assertSame('_custom_table_name_scheduler_tasks', $doctrineTransport->getOptions()['table_name']);
+        self::assertArrayHasKey('execution_mode', $doctrineTransport->getConfiguration());
+        self::assertSame('normal', $doctrineTransport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $doctrineTransport->getConfiguration());
+        self::assertFalse($doctrineTransport->getConfiguration()['auto_setup']);
+        self::assertArrayHasKey('table_name', $doctrineTransport->getConfiguration());
+        self::assertSame('_custom_table_name_scheduler_tasks', $doctrineTransport->getConfiguration()['table_name']);
     }
 
     /**
@@ -690,7 +690,7 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertNotEmpty($doctrineTransport->getOptions());
+        self::assertNotEmpty($doctrineTransport->getConfiguration());
     }
 
     /**
