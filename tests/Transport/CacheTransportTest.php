@@ -159,7 +159,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));

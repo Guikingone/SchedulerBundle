@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
@@ -21,10 +22,10 @@ final class FilesystemTransportFactoryTest extends TestCase
     {
         $filesystemTransportFactory = new FilesystemTransportFactory();
 
-        self::assertFalse($filesystemTransportFactory->support('test://'));
-        self::assertTrue($filesystemTransportFactory->support('fs://'));
-        self::assertTrue($filesystemTransportFactory->support('file://'));
-        self::assertTrue($filesystemTransportFactory->support('filesystem://'));
+        self::assertFalse($filesystemTransportFactory->support('test://', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('fs://', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('file://', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('filesystem://', new InMemoryConfiguration()));
     }
 
     public function testFactoryCanCreateTransport(): void
@@ -33,7 +34,7 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
@@ -51,7 +52,7 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
@@ -66,7 +67,7 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), new InMemoryConfiguration(), $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());

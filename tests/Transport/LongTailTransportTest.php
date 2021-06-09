@@ -15,6 +15,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -75,7 +76,7 @@ final class LongTailTransportTest extends TestCase
         $secondTaskList = $this->createMock(TaskListInterface::class);
         $secondTaskList->expects(self::once())->method('count')->willReturn(1);
 
-        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $firstTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $firstTransport->create(new NullTask('foo'));
@@ -103,7 +104,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('get');
 
-        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $firstTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $firstTransport->create(new NullTask('foo'));
@@ -223,10 +224,10 @@ final class LongTailTransportTest extends TestCase
     public function testTransportCanReturnList(): void
     {
         $longTailTransport = new LongTailTransport([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
         ]);
@@ -241,10 +242,10 @@ final class LongTailTransportTest extends TestCase
     public function testTransportCanReturnLazyList(): void
     {
         $longTailTransport = new LongTailTransport([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
         ]);

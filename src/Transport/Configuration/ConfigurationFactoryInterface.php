@@ -12,7 +12,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 interface ConfigurationFactoryInterface
 {
+    /**
+     * Create a new configuration (which can contains the options stored in @param Dsn $dsn) and receive the @param SerializerInterface $serializer.
+     */
     public function create(Dsn $dsn, SerializerInterface $serializer): ConfigurationInterface;
 
+    /**
+     * Determine if the factory can create a configuration using @param string $dsn.
+     */
     public function support(string $dsn): bool;
 }

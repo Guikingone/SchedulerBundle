@@ -12,6 +12,7 @@ use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -69,9 +70,9 @@ final class FilesystemTransportTest extends TestCase
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "path" with value 135 is expected to be of type "string", but is of type "int".');
         self::expectExceptionCode(0);
-        new FilesystemTransport(null, [
+        new FilesystemTransport(new InMemoryConfiguration([
             'path' => 135,
-        ], $serializer, new SchedulePolicyOrchestrator([
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
     }
@@ -80,16 +81,20 @@ final class FilesystemTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('path', $filesystemTransport->getConfiguration());
-        self::assertSame(getcwd().'/assets', $filesystemTransport->getConfiguration()['path']);
-        self::assertArrayHasKey('execution_mode', $filesystemTransport->getConfiguration());
-        self::assertSame('first_in_first_out', $filesystemTransport->getConfiguration()['execution_mode']);
-        self::assertArrayHasKey('filename_mask', $filesystemTransport->getConfiguration());
-        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getConfiguration()['filename_mask']);
+        self::assertArrayHasKey('path', $filesystemTransport->getConfiguration()->toArray());
+        self::assertSame(getcwd().'/assets', $filesystemTransport->getConfiguration()->get('path'));
+        self::assertArrayHasKey('execution_mode', $filesystemTransport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $filesystemTransport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('filename_mask', $filesystemTransport->getConfiguration()->toArray());
+        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getConfiguration()->get('filename_mask'));
     }
 
     /**
@@ -114,7 +119,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -174,9 +183,10 @@ final class FilesystemTransportTest extends TestCase
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$nullTask]);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
             'execution_mode' => 'first_in_first_out',
-        ], $serializer, $schedulePolicyOrchestrator);
+        ]), $serializer, $schedulePolicyOrchestrator);
 
         $filesystemTransport->create($nullTask);
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
@@ -206,7 +216,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -222,7 +236,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -251,7 +269,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -284,7 +306,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -308,7 +334,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -336,7 +366,11 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 

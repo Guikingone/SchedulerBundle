@@ -36,7 +36,7 @@ final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ): RoundRobinTransport {
-        return new RoundRobinTransport($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator));
+        return new RoundRobinTransport($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator), $configuration);
     }
 
     /**

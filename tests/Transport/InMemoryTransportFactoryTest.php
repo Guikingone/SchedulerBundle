@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
@@ -21,8 +22,8 @@ final class InMemoryTransportFactoryTest extends TestCase
     {
         $inMemoryTransportFactory = new InMemoryTransportFactory();
 
-        self::assertFalse($inMemoryTransportFactory->support('test://'));
-        self::assertTrue($inMemoryTransportFactory->support('memory://'));
+        self::assertFalse($inMemoryTransportFactory->support('test://', new InMemoryConfiguration()));
+        self::assertTrue($inMemoryTransportFactory->support('memory://', new InMemoryConfiguration()));
     }
 
     /**
@@ -34,11 +35,11 @@ final class InMemoryTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
-        self::assertNotNull($transport->getConfiguration()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertNotNull($transport->getConfiguration()->get('execution_mode'));
     }
 
     /**
@@ -50,13 +51,13 @@ final class InMemoryTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getConfiguration());
-        self::assertSame('normal', $transport->getConfiguration()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getConfiguration());
-        self::assertSame('/srv/app', $transport->getConfiguration()['path']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('normal', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
+        self::assertSame('/srv/app', $transport->getConfiguration()->get('path'));
         self::assertCount(2, $transport->getConfiguration());
     }
 

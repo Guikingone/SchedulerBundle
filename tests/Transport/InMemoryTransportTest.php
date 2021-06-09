@@ -66,9 +66,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTaskLazily(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport([
+        $inMemoryTransport = new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -87,9 +87,9 @@ final class InMemoryTransportTest extends TestCase
 
     public function testTransportCannotReturnInvalidTaskLazily(): void
     {
-        $inMemoryTransport = new InMemoryTransport([
+        $inMemoryTransport = new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -130,9 +130,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanCreateATaskAndReturnItAsLazy(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport([
+        $inMemoryTransport = new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -415,9 +415,9 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanEmptyALazyList(TaskInterface $task): void
     {
-        $inMemoryTransport = new InMemoryTransport([
+        $inMemoryTransport = new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
