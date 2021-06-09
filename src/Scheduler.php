@@ -259,9 +259,9 @@ final class Scheduler implements SchedulerInterface
 
         $this->transport->clear();
 
-        foreach ($rebootTasks as $rebootTask) {
-            $this->transport->create($rebootTask);
-        }
+        $rebootTasks->walk(function (TaskInterface $task): void {
+            $this->transport->create($task);
+        });
 
         $this->dispatch(new SchedulerRebootedEvent($this));
     }

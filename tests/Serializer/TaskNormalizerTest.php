@@ -176,7 +176,7 @@ final class TaskNormalizerTest extends TestCase
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
-            $objectNormalizer
+            $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 

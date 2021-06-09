@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\FlockStore;
-use SchedulerBundle\Event\TaskExecutedEvent;
-use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Runner\RunnerInterface;
@@ -20,16 +16,10 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function array_key_last;
 use function count;
 use function end;
-use function in_array;
 use function sleep;
 
 /**
