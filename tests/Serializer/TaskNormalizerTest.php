@@ -129,6 +129,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -137,7 +138,8 @@ final class TaskNormalizerTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                $notificationTaskBagNormalizer
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer,
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
@@ -159,8 +161,23 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([$notificationTaskBagNormalizer, new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer), new DateTimeNormalizer(), new DateIntervalNormalizer(), new JsonSerializableNormalizer(), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer,
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->serialize(new CommandTask('foo', 'cache:clear', [], ['--env' => 'test']), 'json');

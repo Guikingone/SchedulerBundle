@@ -114,6 +114,22 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
+    public function map(Closure $func): array
+    {
+        return array_map($func, $this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(bool $keepKeys = true): array
+    {
+        return $keepKeys ? $this->tasks : array_values($this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset): bool
     {
         return $this->has($offset);
@@ -166,31 +182,5 @@ final class TaskList implements TaskListInterface
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->tasks);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function walk(Closure $func): TaskListInterface
-    {
-        array_walk($this->tasks, $func);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function map(Closure $func): array
-    {
-        return array_map($func, $this->tasks);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(bool $keepKeys = true): array
-    {
-        return $keepKeys ? $this->tasks : array_values($this->tasks);
     }
 }

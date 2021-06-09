@@ -8,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
-use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use stdClass;
