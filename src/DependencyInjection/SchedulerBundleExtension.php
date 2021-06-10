@@ -64,8 +64,8 @@ use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\ProbeTaskRunner;
 use SchedulerBundle\Runner\RunnerInterface;
-use SchedulerBundle\Runner\RunnerList;
-use SchedulerBundle\Runner\RunnerListInterface;
+use SchedulerBundle\Runner\RunnerRegistry;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -674,16 +674,16 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(RunnerList::class, RunnerList::class)
+        $container->register(RunnerRegistry::class, RunnerRegistry::class)
             ->setArguments([
                 new TaggedIteratorArgument(self::SCHEDULER_RUNNER_TAG),
             ])
             ->setPublic(false)
             ->addTag('container.preload', [
-                'class' => RunnerList::class,
+                'class' => RunnerRegistry::class,
             ])
         ;
-        $container->setAlias(RunnerListInterface::class, RunnerList::class);
+        $container->setAlias(RunnerRegistryInterface::class, RunnerRegistry::class);
 
         $container->register(ShellTaskRunner::class, ShellTaskRunner::class)
             ->addTag(self::SCHEDULER_RUNNER_TAG)
@@ -918,7 +918,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(Worker::class, Worker::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(RunnerListInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),

@@ -66,8 +66,8 @@ use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\ProbeTaskRunner;
 use SchedulerBundle\Runner\RunnerInterface;
-use SchedulerBundle\Runner\RunnerList;
-use SchedulerBundle\Runner\RunnerListInterface;
+use SchedulerBundle\Runner\RunnerRegistry;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -719,13 +719,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.application')->getArgument(0));
         self::assertSame(KernelInterface::class, (string) $container->getDefinition('scheduler.application')->getArgument(0));
 
-        self::assertTrue($container->hasDefinition(RunnerList::class));
-        self::assertTrue($container->hasAlias(RunnerListInterface::class));
-        self::assertFalse($container->getDefinition(RunnerList::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(RunnerList::class)->getArguments());
-        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(RunnerList::class)->getArgument(0));
-        self::assertTrue($container->getDefinition(RunnerList::class)->hasTag('container.preload'));
-        self::assertSame(RunnerList::class, $container->getDefinition(RunnerList::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(RunnerRegistry::class));
+        self::assertTrue($container->hasAlias(RunnerRegistryInterface::class));
+        self::assertFalse($container->getDefinition(RunnerRegistry::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(RunnerRegistry::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(RunnerRegistry::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(RunnerRegistry::class)->hasTag('container.preload'));
+        self::assertSame(RunnerRegistry::class, $container->getDefinition(RunnerRegistry::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(ShellTaskRunner::class));
         self::assertTrue($container->getDefinition(ShellTaskRunner::class)->hasTag('scheduler.runner'));
@@ -988,7 +988,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(1));
-        self::assertInstanceOf(RunnerListInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(1));
+        self::assertInstanceOf(RunnerRegistryInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(1));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(1)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(2));
         self::assertSame(TaskExecutionTrackerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(2));

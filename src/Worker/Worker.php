@@ -6,11 +6,10 @@ namespace SchedulerBundle\Worker;
 
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\Runner\RunnerListInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use Symfony\Component\Lock\LockFactory;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
-use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
@@ -29,7 +28,7 @@ final class Worker extends AbstractWorker
 
     public function __construct(
         SchedulerInterface $scheduler,
-        RunnerListInterface $runnerList,
+        RunnerRegistryInterface $runnerList,
         TaskExecutionTrackerInterface $taskExecutionTracker,
         WorkerMiddlewareStack $workerMiddlewareStack,
         LockFactory $lockFactory,
@@ -71,35 +70,34 @@ final class Worker extends AbstractWorker
 
                     $this->dispatch(new WorkerRunningEvent($this));
 
-                    $runners = $this->getRunners()->filter(fn(RunnerInterface $runner): bool => $runner->support($task));
-                    $runners->walk(function (RunnerInterface $runner) use ($task, $lockedTask): void {
-                        if (null !== $executionDelay = $task->getExecutionDelay()) {
-                            usleep($executionDelay);
+                    $runner = $this->getRunners()->find($task);
+
+                    if (null !== $executionDelay = $task->getExecutionDelay()) {
+                        usleep($executionDelay);
+                    }
+
+                    try {
+                        $this->middlewareStack->runPreExecutionMiddleware($task);
+
+                        if (!$this->getOptions()['isRunning']) {
+                            $this->options['isRunning'] = true;
+                            $this->dispatch(new WorkerRunningEvent($this));
+                            $this->handleTask($runner, $task);
                         }
 
-                        try {
-                            $this->middlewareStack->runPreExecutionMiddleware($task);
+                        $this->middlewareStack->runPostExecutionMiddleware($task);
+                    } catch (Throwable $throwable) {
+                        $failedTask = new FailedTask($task, $throwable->getMessage());
+                        $this->getFailedTasks()->add($failedTask);
+                        $this->dispatch(new TaskFailedEvent($failedTask));
+                    } finally {
+                        $lockedTask->release();
+                        $this->options['isRunning'] = false;
+                        $this->options['lastExecutedTask'] = $task;
+                        $this->dispatch(new WorkerRunningEvent($this, true));
 
-                            if (!$this->getOptions()['isRunning']) {
-                                $this->options['isRunning'] = true;
-                                $this->dispatch(new WorkerRunningEvent($this));
-                                $this->handleTask($runner, $task);
-                            }
-
-                            $this->middlewareStack->runPostExecutionMiddleware($task);
-                        } catch (Throwable $throwable) {
-                            $failedTask = new FailedTask($task, $throwable->getMessage());
-                            $this->getFailedTasks()->add($failedTask);
-                            $this->dispatch(new TaskFailedEvent($failedTask));
-                        } finally {
-                            $lockedTask->release();
-                            $this->options['isRunning'] = false;
-                            $this->options['lastExecutedTask'] = $task;
-                            $this->dispatch(new WorkerRunningEvent($this, true));
-
-                            ++$this->options['executedTasksCount'];
-                        }
-                    });
+                        ++$this->options['executedTasksCount'];
+                    }
 
                     if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $tasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;

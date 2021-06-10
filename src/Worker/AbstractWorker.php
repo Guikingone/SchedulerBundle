@@ -18,7 +18,7 @@ use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Runner\RunnerInterface;
-use SchedulerBundle\Runner\RunnerListInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
@@ -28,8 +28,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function is_array;
-use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -38,7 +36,7 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
 
-    private RunnerListInterface $runnerList;
+    private RunnerRegistryInterface $runnerList;
     private TaskListInterface $failedTasks;
     private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
@@ -47,7 +45,7 @@ abstract class AbstractWorker implements WorkerInterface
 
     public function __construct(
         SchedulerInterface $scheduler,
-        RunnerListInterface $runnerList,
+        RunnerRegistryInterface $runnerList,
         TaskExecutionTrackerInterface $tracker,
         EventDispatcherInterface $eventDispatcher,
         ?LoggerInterface $logger = null
@@ -136,7 +134,7 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getRunners(): RunnerListInterface
+    public function getRunners(): RunnerRegistryInterface
     {
         return $this->runnerList;
     }

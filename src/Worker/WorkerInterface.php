@@ -11,7 +11,7 @@ use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
-use SchedulerBundle\Runner\RunnerListInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
@@ -81,7 +81,7 @@ interface WorkerInterface
     /**
      * Return the runners available in the worker.
      */
-    public function getRunners(): RunnerListInterface;
+    public function getRunners(): RunnerRegistryInterface;
 
     /**
      * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>
