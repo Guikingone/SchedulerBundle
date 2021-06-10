@@ -65,12 +65,9 @@ interface SchedulerInterface
      *
      * Can lazy-load the task list if @param bool $lazy is used
      *
-     * @param bool $lock Define if each task should be locked before being returned,
-     *                   the actual lock process should not be handled by the scheduler.
-     *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false, bool $lock = false): TaskListInterface;
+    public function getDueTasks(bool $lazy = false): TaskListInterface;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})

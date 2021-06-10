@@ -48,6 +48,9 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function preExecute(TaskInterface $task): void
     {
         $callback = $task->getBeforeExecuting();
@@ -60,6 +63,9 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function postExecute(TaskInterface $task): void
     {
         $callback = $task->getAfterExecuting();

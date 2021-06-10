@@ -8,6 +8,7 @@ use ArrayAccess;
 use Closure;
 use Countable;
 use IteratorAggregate;
+use SchedulerBundle\Exception\RuntimeException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -55,6 +56,13 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * Return an array containing the results of applying @param Closure $func to each tasks
      */
     public function map(Closure $func): array;
+
+    /**
+     * Return the last task of the list.
+     *
+     * @throws RuntimeException If the list is empty or if the last task cannot be found.
+     */
+    public function last(): TaskInterface;
 
     /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.

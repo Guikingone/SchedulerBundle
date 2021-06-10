@@ -201,3 +201,19 @@ $ bin/console scheduler:execute:external-probe
 ```
 
 #### Example
+
+// TODO
+
+### Debugging middleware list
+
+_Introduced in `0.6`_
+
+_Description: Display the middleware list (both scheduler and worker)_
+
+```bash
+$ bin/console scheduler:debug:middleware
+```
+
+#### Example
+
+// TODO
