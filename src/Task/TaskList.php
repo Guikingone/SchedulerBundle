@@ -12,14 +12,12 @@ use Throwable;
 use function array_filter;
 use function array_key_exists;
 use function array_key_last;
-use function array_search;
 use function array_values;
 use function array_walk;
 use function array_map;
 use function count;
 use function gettype;
 use function in_array;
-use function is_bool;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 
@@ -133,12 +131,12 @@ final class TaskList implements TaskListInterface
             throw new RuntimeException('The current list is empty');
         }
 
-        $index = array_search($lastIndex, $this->tasks, true);
-        if (is_bool($index)) {
+        $task = $this->tasks[$lastIndex];
+        if (null === $task) {
             throw new RuntimeException('The last task cannot be found');
         }
 
-        return $this->tasks[$index];
+        return $task;
     }
 
     /**

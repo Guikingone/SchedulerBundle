@@ -12,6 +12,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Serializer\LockTaskBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\MessengerTask;
@@ -51,6 +52,7 @@ final class ConnectionIntegrationTest extends TestCase
     protected function setUp(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -58,7 +60,8 @@ final class ConnectionIntegrationTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),

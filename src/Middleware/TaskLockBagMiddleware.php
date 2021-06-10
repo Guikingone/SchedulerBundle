@@ -17,7 +17,7 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskExecutionLockBagMiddleware implements PostSchedulingMiddlewareInterface
+final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
 {
     private const TASK_LOCK_MASK = '_symfony_scheduler_';
 
@@ -54,7 +54,7 @@ final class TaskExecutionLockBagMiddleware implements PostSchedulingMiddlewareIn
         try {
             $this->scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
         } catch (Throwable $throwable) {
-            $this->logger->warning(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
+            $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
 
             $lock->release();
         }

@@ -6,9 +6,8 @@ namespace SchedulerBundle\Worker;
 
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\RunnerListInterface;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\PersistingStoreInterface;
-use Symfony\Component\Lock\Store\FlockStore;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Runner\RunnerInterface;
@@ -28,22 +27,19 @@ final class Worker extends AbstractWorker
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
 
-    /**
-     * @param RunnerInterface[] $runners
-     */
     public function __construct(
         SchedulerInterface $scheduler,
-        iterable $runners,
+        RunnerListInterface $runnerList,
         TaskExecutionTrackerInterface $taskExecutionTracker,
         WorkerMiddlewareStack $workerMiddlewareStack,
-        ?EventDispatcherInterface $eventDispatcher = null,
-        ?LoggerInterface $logger = null,
-        ?PersistingStoreInterface $persistingStore = null
+        LockFactory $lockFactory,
+        EventDispatcherInterface $eventDispatcher,
+        ?LoggerInterface $logger = null
     ) {
         $this->middlewareStack = $workerMiddlewareStack;
-        $this->lockFactory = new LockFactory($persistingStore ?? new FlockStore());
+        $this->lockFactory = $lockFactory;
 
-        parent::__construct($scheduler, $runners, $taskExecutionTracker, $eventDispatcher, $logger);
+        parent::__construct($scheduler, $runnerList, $taskExecutionTracker, $eventDispatcher, $logger);
     }
 
     /**
@@ -75,11 +71,8 @@ final class Worker extends AbstractWorker
 
                     $this->dispatch(new WorkerRunningEvent($this));
 
-                    foreach ($this->getRunners() as $runner) {
-                        if (!$runner->support($task)) {
-                            continue;
-                        }
-
+                    $runners = $this->getRunners()->filter(fn(RunnerInterface $runner): bool => $runner->support($task));
+                    $runners->walk(function (RunnerInterface $runner) use ($task, $lockedTask): void {
                         if (null !== $executionDelay = $task->getExecutionDelay()) {
                             usleep($executionDelay);
                         }
@@ -106,11 +99,7 @@ final class Worker extends AbstractWorker
 
                             ++$this->options['executedTasksCount'];
                         }
-
-                        if ($this->getOptions()['shouldStop']) {
-                            break 3;
-                        }
-                    }
+                    });
 
                     if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $tasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;
