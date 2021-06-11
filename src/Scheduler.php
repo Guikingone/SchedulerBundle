@@ -105,8 +105,6 @@ final class Scheduler implements SchedulerInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @throws {@see Scheduler::schedule()}
      */
     public function yieldTask(string $name, bool $async = false): void
     {

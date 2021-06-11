@@ -988,7 +988,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(1));
-        self::assertInstanceOf(RunnerRegistryInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(1));
+        self::assertSame(RunnerRegistryInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(1));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(1)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(2));
         self::assertSame(TaskExecutionTrackerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(2));
@@ -1013,8 +1013,11 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition('scheduler.lock_store.store'));
         self::assertSame(PersistingStoreInterface::class, $container->getDefinition('scheduler.lock_store.store')->getClass());
         self::assertFalse($container->getDefinition('scheduler.lock_store.store')->isPublic());
-        self::assertSame(StoreFactory::class, $container->getDefinition('scheduler.lock_store.store')->getFactory()[0]);
-        self::assertSame('createStore', (string) $container->getDefinition('scheduler.lock_store.store')->getFactory()[1]);
+
+        $factory = $container->getDefinition('scheduler.lock_store.store')->getFactory();
+        self::assertIsArray($factory);
+        self::assertSame(StoreFactory::class, $factory[0]);
+        self::assertSame('createStore', (string) $factory[1]);
         self::assertCount(1, $container->getDefinition('scheduler.lock_store.store')->getArguments());
         self::assertSame('flock', $container->getDefinition('scheduler.lock_store.store')->getArgument('$connection'));
         self::assertTrue($container->getDefinition('scheduler.lock_store.store')->hasTag('container.preload'));

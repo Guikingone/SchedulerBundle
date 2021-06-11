@@ -95,11 +95,11 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $lock = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false): TaskListInterface
     {
         $this->initialize();
 
-        return $this->scheduler->getDueTasks($lazy, $lock);
+        return $this->scheduler->getDueTasks($lazy);
     }
 
     /**

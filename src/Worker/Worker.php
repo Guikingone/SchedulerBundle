@@ -46,10 +46,10 @@ final class Worker extends AbstractWorker
     {
         $this->run($options, function () use ($options, $tasks): void {
             while (!$this->getOptions()['shouldStop']) {
-                $tasks = $this->getTasks($tasks);
+                $toExecuteTasks = $this->getTasks($tasks);
 
-                foreach ($tasks as $task) {
-                    if ($tasks->last() === $task && !$this->checkTaskState($task)) {
+                foreach ($toExecuteTasks as $task) {
+                    if ($toExecuteTasks->last() === $task && !$this->checkTaskState($task)) {
                         break 2;
                     }
 
@@ -58,7 +58,7 @@ final class Worker extends AbstractWorker
                     }
 
                     $lockedTask = $this->getLockedTask($task);
-                    if ($tasks->last() === $task && !$lockedTask->acquire()) {
+                    if ($toExecuteTasks->last() === $task && !$lockedTask->acquire()) {
                         break 2;
                     }
 
@@ -97,7 +97,7 @@ final class Worker extends AbstractWorker
                         ++$this->options['executedTasksCount'];
                     }
 
-                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $tasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
+                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;
                     }
                 }

@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Serializer\LockTaskBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
@@ -49,6 +50,7 @@ final class ConnectionIntegrationTest extends TestCase
 
         $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
         $objectNormalizer = new ObjectNormalizer();
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -56,7 +58,8 @@ final class ConnectionIntegrationTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ), $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);

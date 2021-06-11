@@ -131,12 +131,7 @@ final class TaskList implements TaskListInterface
             throw new RuntimeException('The current list is empty');
         }
 
-        $task = $this->tasks[$lastIndex];
-        if (null === $task) {
-            throw new RuntimeException('The last task cannot be found');
-        }
-
-        return $task;
+        return $this->tasks[$lastIndex];
     }
 
     /**

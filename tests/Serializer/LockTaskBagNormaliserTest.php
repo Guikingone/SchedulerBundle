@@ -49,6 +49,7 @@ final class LockTaskBagNormaliserTest extends TestCase
 
         $data = $serializer->normalize(new LockTaskBag(new Key('foo')));
 
+        self::assertIsArray($data);
         self::assertArrayHasKey('bag', $data);
         self::assertSame(LockTaskBag::class, $data['bag']);
         self::assertArrayHasKey('body', $data);
@@ -69,7 +70,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         $data = $serializer->normalize(new LockTaskBag($key));
         $bag = $serializer->denormalize($data, LockTaskBag::class);
 
-        self::assertInstanceOf(LockTaskBag::class, $bag);
+        self::assertNotNull($bag->getKey());
         self::assertInstanceOf(Key::class, $bag->getKey());
     }
 }
