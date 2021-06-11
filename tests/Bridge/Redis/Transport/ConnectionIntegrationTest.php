@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Throwable;
 use function getenv;
+use function is_bool;
 use function sprintf;
 
 /**
@@ -44,11 +45,12 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!getenv('SCHEDULER_REDIS_DSN')) {
+        $redisDsn = getenv('SCHEDULER_REDIS_DSN');
+        if (is_bool($redisDsn)) {
             self::markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
         }
 
-        $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
+        $dsn = Dsn::fromString($redisDsn);
         $objectNormalizer = new ObjectNormalizer();
         $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 

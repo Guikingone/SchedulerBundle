@@ -165,7 +165,15 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->getTasks($lazy)->filter(fn (TaskInterface $task): bool => (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $task->getTimezone()->getName()) && (null === $task->getLastExecution() || $task->getLastExecution()->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i')));
+        $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+            $timezone = $task->getTimezone() ?? $this->getTimezone();
+            $lastExecution = $task->getLastExecution();
+            if (null === $lastExecution) {
+                return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName());
+            }
+
+            return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName()) && ($lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i'));
+        });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
