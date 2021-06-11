@@ -33,7 +33,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $task = new NullTask('foo');
         $task->setExecutionLockBag(new LockTaskBag());
 
-        $middleware = new TaskLockBagMiddleware($scheduler, new LockFactory(new FlockStore()), $logger);
+        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), $logger);
         $middleware->postScheduling($task, $scheduler);
     }
 

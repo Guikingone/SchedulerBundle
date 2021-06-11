@@ -9,8 +9,10 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\TaskInterface;
 use function array_filter;
 use function array_walk;
+use function is_array;
 use function count;
 use function current;
+use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -27,7 +29,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function __construct(iterable $runners)
     {
-        $this->runners = $runners;
+        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
     }
 
     /**

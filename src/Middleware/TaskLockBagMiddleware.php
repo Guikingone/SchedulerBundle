@@ -19,18 +19,15 @@ use Throwable;
  */
 final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
 {
-    private const TASK_LOCK_MASK = '_symfony_scheduler_';
+    public const TASK_LOCK_MASK = '_symfony_scheduler_';
 
     private LockFactory $lockFactory;
-    private SchedulerInterface $scheduler;
     private ?LoggerInterface $logger;
 
     public function __construct(
-        SchedulerInterface $scheduler,
         LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
-        $this->scheduler = $scheduler;
         $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
     }
@@ -52,11 +49,14 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
         }
 
         try {
-            $this->scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
+            $scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
         } catch (Throwable $throwable) {
             $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
 
             $lock->release();
+
+            $scheduler->update($task->getName(), $task->setExecutionLockBag());
+            $this->logger->warning(sprintf('The task "%s" has been scheduled without a dedicated lock key', $task->getName()));
         }
     }
 }

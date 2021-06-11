@@ -24,7 +24,6 @@ use function sleep;
 final class Worker extends AbstractWorker
 {
     private WorkerMiddlewareStack $middlewareStack;
-    private LockFactory $lockFactory;
 
     public function __construct(
         SchedulerInterface $scheduler,
@@ -36,9 +35,8 @@ final class Worker extends AbstractWorker
         ?LoggerInterface $logger = null
     ) {
         $this->middlewareStack = $workerMiddlewareStack;
-        $this->lockFactory = $lockFactory;
 
-        parent::__construct($scheduler, $runnerList, $taskExecutionTracker, $eventDispatcher, $logger);
+        parent::__construct($scheduler, $runnerList, $taskExecutionTracker, $eventDispatcher, $lockFactory, $logger);
     }
 
     /**
@@ -59,7 +57,7 @@ final class Worker extends AbstractWorker
                         continue;
                     }
 
-                    $lockedTask = $this->lockFactory->createLock($task->getName());
+                    $lockedTask = $this->getLockedTask($task);
                     if ($tasks->last() === $task && !$lockedTask->acquire()) {
                         break 2;
                     }

@@ -17,6 +17,7 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
@@ -24,6 +25,9 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use Symfony\Component\Lock\Key;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -42,18 +46,21 @@ abstract class AbstractWorker implements WorkerInterface
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
+    private LockFactory $lockFactory;
 
     public function __construct(
         SchedulerInterface $scheduler,
         RunnerRegistryInterface $runnerList,
         TaskExecutionTrackerInterface $tracker,
         EventDispatcherInterface $eventDispatcher,
+        LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
         $this->runnerList = $runnerList;
         $this->tracker = $tracker;
         $this->eventDispatcher = $eventDispatcher;
+        $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
@@ -153,6 +160,16 @@ abstract class AbstractWorker implements WorkerInterface
     protected function getTasks(array $tasks): TaskListInterface
     {
         return [] === $tasks ? $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']) : new TaskList($tasks);
+    }
+
+    protected function getLockedTask(TaskInterface $task): LockInterface
+    {
+        $executionLockBag = $task->getExecutionLockBag();
+        if (null !== $executionLockBag && null !== $key = $executionLockBag->getKey()) {
+            return $this->lockFactory->createLockFromKey($key);
+        }
+
+        return $this->lockFactory->createLockFromKey(new Key(sprintf('%s_%s_%s', TaskLockBagMiddleware::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i'))));
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void

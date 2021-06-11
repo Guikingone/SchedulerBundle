@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;

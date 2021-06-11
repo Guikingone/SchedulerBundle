@@ -317,6 +317,10 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(TransportInterface::class, 'scheduler.transport');
     }
 
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
     private function registerLockStore(ContainerBuilder $container, array $configuration): void
     {
         if (null === $configuration['lock_store']) {
@@ -328,22 +332,18 @@ final class SchedulerBundleExtension extends Extension
                     'class' => PersistingStoreInterface::class,
                 ])
             ;
-
-            $container->register('scheduler.lock_store.factory', LockFactory::class)
-                ->setArgument('$store', new Reference('scheduler.lock_store.store', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE))
-                ->addMethodCall('setLogger', [
-                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                ])
-                ->setPublic(false)
-                ->addTag('container.preload', [
-                    'class' => LockFactory::class,
-                ])
-            ;
-
-            return;
         }
 
-        $container->setAlias('scheduler.lock_store.factory', $configuration['lock_store']);
+        $container->register('scheduler.lock_store.factory', LockFactory::class)
+            ->setArgument('$store', new Reference($configuration['lock_store'] ?? 'scheduler.lock_store.store', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE))
+            ->addMethodCall('setLogger', [
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => LockFactory::class,
+            ])
+        ;
     }
 
     private function registerScheduler(ContainerBuilder $container): void
@@ -1075,7 +1075,6 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(TaskLockBagMiddleware::class, TaskLockBagMiddleware::class)
             ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])

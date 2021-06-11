@@ -1280,16 +1280,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(TaskLockBagMiddleware::class));
         self::assertFalse($container->getDefinition(TaskLockBagMiddleware::class)->isPublic());
-        self::assertCount(3, $container->getDefinition(TaskLockBagMiddleware::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(TaskLockBagMiddleware::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(0));
-        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(0));
+        self::assertSame('scheduler.lock_store.factory', (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1));
-        self::assertSame('scheduler.lock_store.factory', (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1));
-        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1)->getInvalidBehavior());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(2));
-        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(2));
-        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(2)->getInvalidBehavior());
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(TaskLockBagMiddleware::class)->hasTag('scheduler.scheduler_middleware'));
         self::assertTrue($container->getDefinition(TaskLockBagMiddleware::class)->hasTag('container.preload'));
         self::assertSame(TaskLockBagMiddleware::class, $container->getDefinition(TaskLockBagMiddleware::class)->getTag('container.preload')[0]['class']);

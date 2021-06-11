@@ -13,6 +13,7 @@ use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
@@ -377,7 +378,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -421,7 +422,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher);
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
