@@ -364,9 +364,6 @@ final class ConsumeTasksCommandTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('- 1 month'));
-        $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -384,8 +381,6 @@ final class ConsumeTasksCommandTest extends TestCase
         $commandTester->execute([
             '--limit' => 1,
         ], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        dump($commandTester->getDisplay(true));
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
@@ -409,8 +404,6 @@ final class ConsumeTasksCommandTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
-        $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
         $scheduler = $this->createMock(SchedulerInterface::class);

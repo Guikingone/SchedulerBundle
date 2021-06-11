@@ -910,9 +910,6 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(TaskExecutionTrackerInterface::class, TaskExecutionTracker::class);
     }
 
-    /**
-     * @param array<string, mixed> $configuration
-     */
     private function registerWorker(ContainerBuilder $container): void
     {
         $container->register(Worker::class, Worker::class)
