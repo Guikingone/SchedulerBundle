@@ -15,6 +15,7 @@ use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\Runner\ShellTaskRunner;
@@ -327,30 +328,29 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = new NullTask('foo');
-
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
         $scheduler->expects(self::never())->method('update');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
-
-        $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(false);
-        $runner->expects(self::never())->method('run');
-
-        $secondRunner = $this->createMock(RunnerInterface::class);
-        $secondRunner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(false);
-        $secondRunner->expects(self::never())->method('run');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::never())->method('dispatch');
+        $eventDispatcher->expects(self::exactly(5))->method('dispatch');
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner, $secondRunner]), $watcher, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new CallbackTaskRunner(),
+            new ShellTaskRunner(),
+        ]), $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
         ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
-        self::assertNull($worker->getLastExecutedTask());
+        $lastExecutedTask = $worker->getLastExecutedTask();
+        self::assertInstanceOf(NullTask::class, $lastExecutedTask);
+        self::assertSame('foo', $lastExecutedTask->getName());
+        self::assertNull($lastExecutedTask->getExecutionState());
+        self::assertNull($lastExecutedTask->getLastExecution());
     }
 
     /**
@@ -837,7 +837,10 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner, $secondRunner]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+            $secondRunner,
+        ]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
@@ -848,15 +851,14 @@ final class WorkerTest extends TestCase
      */
     public function testWorkerCanHandleFailedTask(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+
         $runner = $this->createMock(RunnerInterface::class);
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->willThrowException(new RuntimeException('Random error occurred'));
 
-        $logger = $this->createMock(LoggerInterface::class);
-
         $task = $this->createMock(TaskInterface::class);
         $task->method('getName')->willReturn('failed');
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
@@ -869,12 +871,16 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner
+        ]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
-        /** @var FailedTask $failedTask */
-        $failedTask = $worker->getFailedTasks()->get('failed.failed');
+        $failedTasks = $worker->getFailedTasks();
+        self::assertCount(1, $failedTasks);
 
+        $failedTask = $failedTasks->get('failed.failed');
+        self::assertInstanceOf(FailedTask::class, $failedTask);
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertCount(1, $worker->getFailedTasks());

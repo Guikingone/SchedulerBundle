@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use Generator;
+use PDO;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
@@ -15,20 +16,29 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
+use SchedulerBundle\Middleware\AbstractMiddlewareStack;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
+use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\Store\PdoStore;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -39,9 +49,21 @@ use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function in_array;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -836,7 +858,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -861,7 +883,6 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(3))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -888,7 +909,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable('- 2 minutes'));
         $task->expects(self::once())->method('getExecutionEndDate')->willReturn(null);
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -913,7 +934,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(4))->method('getExecutionStartDate')->willReturn(new DateTimeImmutable('- 2 minutes'));
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('- 2 minutes'));
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable('- 2 minutes'));
         $task->expects(self::once())->method('getExecutionEndDate')->willReturn(null);
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -939,7 +960,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -963,7 +984,6 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
         $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
         $task->expects(self::exactly(2))->method('getExecutionStartDate')->willReturn(null);
-        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('+ 10 minutes'));
         $task->expects(self::exactly(2))->method('getExecutionEndDate')->willReturn(new DateTimeImmutable('+ 10 minutes'));
 
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
@@ -1056,8 +1076,88 @@ final class SchedulerTest extends TestCase
         $scheduler->yieldTask('foo', true);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerInterface::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testSchedulerCannotLockTaskWithInvalidLockFactory(): void
     {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([
+            new TaskLockBagMiddleware(new LockFactory(new FlockStore())),
+        ]), new EventDispatcher());
+
+        $scheduler->schedule(new NullTask('foo'));
+
+        $list = $scheduler->getTasks();
+        self::assertCount(1, $list);
+
+        $task = $list->get('foo');
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertNull($task->getExecutionLockBag());
+    }
+
+    public function testSchedulerCannotLockTaskWithValidLockFactory(): void
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([
+            new TaskLockBagMiddleware(new LockFactory(new PdoStore(new PDO('')))),
+        ]), new EventDispatcher());
+
+        $scheduler->schedule(new NullTask('foo'));
+
+        $list = $scheduler->getTasks();
+        self::assertCount(1, $list);
+
+        $task = $list->get('foo');
+        self::assertInstanceOf(NullTask::class, $task);
+        self::assertNull($task->getExecutionLockBag());
     }
 
     /**

@@ -40,7 +40,7 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
 
-    private RunnerRegistryInterface $runnerList;
+    private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
     private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
@@ -50,14 +50,14 @@ abstract class AbstractWorker implements WorkerInterface
 
     public function __construct(
         SchedulerInterface $scheduler,
-        RunnerRegistryInterface $runnerList,
+        RunnerRegistryInterface $runnerRegistry,
         TaskExecutionTrackerInterface $tracker,
         EventDispatcherInterface $eventDispatcher,
         LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
-        $this->runnerList = $runnerList;
+        $this->runnerRegistry = $runnerRegistry;
         $this->tracker = $tracker;
         $this->eventDispatcher = $eventDispatcher;
         $this->lockFactory = $lockFactory;
@@ -67,7 +67,7 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function run(array $options, Closure $closure): void
     {
-        if (0 === $this->runnerList->count()) {
+        if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -143,7 +143,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function getRunners(): RunnerRegistryInterface
     {
-        return $this->runnerList;
+        return $this->runnerRegistry;
     }
 
     /**

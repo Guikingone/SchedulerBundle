@@ -54,6 +54,8 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
             $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
 
             $lock->release();
+        } finally {
+            $scheduler->update($task->getName(), $task->setExecutionLockBag());
         }
     }
 }

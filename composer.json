@@ -111,6 +111,7 @@
     },
     "require-dev": {
         "ext-pcntl": "*",
+        "ext-pdo": "*",
         "ext-redis": "*",
         "api-platform/core": "^2.6",
         "doctrine/dbal": "^2.12 || ^3.0",

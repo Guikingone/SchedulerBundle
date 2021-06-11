@@ -68,13 +68,13 @@ final class Worker extends AbstractWorker
 
                     $this->dispatch(new WorkerRunningEvent($this));
 
-                    $runner = $this->getRunners()->find($task);
-
-                    if (null !== $executionDelay = $task->getExecutionDelay()) {
-                        usleep($executionDelay);
-                    }
-
                     try {
+                        $runner = $this->getRunners()->find($task);
+
+                        if (null !== $executionDelay = $task->getExecutionDelay()) {
+                            usleep($executionDelay);
+                        }
+
                         $this->middlewareStack->runPreExecutionMiddleware($task);
 
                         if (!$this->getOptions()['isRunning']) {
