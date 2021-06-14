@@ -12,6 +12,7 @@ use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Configuration\FailOverConfiguration;
+use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\FilesystemConfiguration;
 use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
@@ -77,7 +78,7 @@ final class ConfigurationFactoryTest extends TestCase
         $factory = new ConfigurationFactory([
             new InMemoryConfigurationFactory(),
             new FilesystemConfigurationFactory(),
-            new FailOverConfiguration([
+            new FailOverConfigurationFactory([
                 new InMemoryConfigurationFactory(),
                 new FilesystemConfigurationFactory(),
             ]),

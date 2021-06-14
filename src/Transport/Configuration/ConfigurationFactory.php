@@ -16,12 +16,12 @@ use function sprintf;
 final class ConfigurationFactory
 {
     /**
-     * @var iterable|ConfigurationFactoryInterface[] $factories
+     * @var ConfigurationFactoryInterface[] $factories
      */
     private iterable $factories;
 
     /**
-     * @param iterable|ConfigurationFactoryInterface[] $factories
+     * @param ConfigurationFactoryInterface[] $factories
      */
     public function __construct($factories)
     {

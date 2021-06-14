@@ -16,7 +16,7 @@ final class InMemoryConfigurationTest extends TestCase
     public function testTransportCannotBeConfiguredWithInvalidOptionType(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "execution_mode" with value 350 is expected to be of type "string" or "null", but is of type "int"');
+        self::expectExceptionMessage('The option "execution_mode" with value 350 is expected to be of type "string", but is of type "int"');
         self::expectExceptionCode(0);
         $configuration = new InMemoryConfiguration();
         $configuration->init(['execution_mode' => 350]);

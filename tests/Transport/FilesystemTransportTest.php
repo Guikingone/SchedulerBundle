@@ -395,7 +395,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -413,7 +417,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -437,7 +445,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -457,7 +469,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -485,7 +501,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -510,7 +530,11 @@ final class FilesystemTransportTest extends TestCase
         $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
+        $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
+            'path' => getcwd().'/assets',
+        ], [
+            'path' => 'string',
+        ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 

@@ -392,6 +392,9 @@ final class SchedulerBundleExtensionTest extends TestCase
             'scheduler_bundle' => [
                 'path' => '/_foo',
                 'timezone' => 'Europe/Paris',
+                'configuration' => [
+                    'dsn' => 'configuration://memory',
+                ],
                 'transport' => [
                     'dsn' => 'memory://first_in_first_out',
                 ],
@@ -429,6 +432,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         $container = $this->getContainer([
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
             'transport' => [
                 'dsn' => 'memory://first_in_first_out',
             ],

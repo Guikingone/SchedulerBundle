@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -18,8 +19,8 @@ final class FilesystemConfigurationFactory implements ConfigurationFactoryInterf
     public function create(Dsn $dsn, SerializerInterface $serializer): FilesystemConfiguration
     {
         return new FilesystemConfiguration([
-            'execution_mode' => $dsn->getOption('execution_mode'),
-            'path' => $dsn->getOption('path'),
+            'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
+            'path' => $dsn->getOption('path', sys_get_temp_dir()),
         ], $serializer);
     }
 

@@ -108,6 +108,9 @@ final class CacheConfiguration extends AbstractConfiguration
      */
     public function toArray(): array
     {
+        $items = $this->pool->getItem(self::CONFIGURATION_LIST_KEY);
+
+        return iterator_to_array($items);
     }
 
     /**

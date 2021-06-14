@@ -30,7 +30,7 @@ final class InMemoryConfigurationFactoryTest extends TestCase
         $configuration = $factory->create(Dsn::fromString('configuration://memory?foo=bar'), $serializer);
 
         self::assertCount(2, $configuration->toArray());
-        self::assertSame('memory', $configuration->get('execution_mode'));
+        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
         self::assertArrayHasKey('foo', $configuration->toArray());
         self::assertSame('bar', $configuration->get('foo'));
     }
