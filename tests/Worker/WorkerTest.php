@@ -492,7 +492,7 @@ final class WorkerTest extends TestCase
         $task->expects(self::exactly(4))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(fn (): bool => false);
-        $task->expects(self::never())->method('isSingleRun');
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::never())->method('setArrivalTime');
         $task->expects(self::never())->method('setExecutionStartTime');
         $task->expects(self::never())->method('setExecutionEndTime');
@@ -742,8 +742,8 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
-        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
+        $task->expects(self::never())->method('getScheduledAt');
+        $task->expects(self::exactly(2))->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::once())->method('setExecutionEndTime');
@@ -840,7 +840,9 @@ final class WorkerTest extends TestCase
         $worker = new Worker($scheduler, new RunnerRegistry([
             $runner,
             $secondRunner,
-        ]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
@@ -1243,7 +1245,7 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('-1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -1263,7 +1265,7 @@ final class WorkerTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::exactly(7))->method('dispatch');
+        $eventDispatcher->expects(self::exactly(8))->method('dispatch');
 
         $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
@@ -1283,10 +1285,10 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
-        $task->expects(self::never())->method('isSingleRun');
+        $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
         $task->expects(self::never())->method('setExecutionEndTime');
