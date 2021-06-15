@@ -22,10 +22,10 @@ final class FilesystemTransportFactoryTest extends TestCase
     {
         $filesystemTransportFactory = new FilesystemTransportFactory();
 
-        self::assertFalse($filesystemTransportFactory->support('test://', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('fs://', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('file://', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('filesystem://', new InMemoryConfiguration()));
+        self::assertFalse($filesystemTransportFactory->support('configuration://test', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://fs', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://file', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://filesystem', new InMemoryConfiguration()));
     }
 
     public function testFactoryCanCreateTransport(): void

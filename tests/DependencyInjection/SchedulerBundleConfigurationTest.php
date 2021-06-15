@@ -462,7 +462,9 @@ final class SchedulerBundleConfigurationTest extends TestCase
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
             'scheduler_bundle' => [
-                'configuration' => 'configuration://fs',
+                'configuration' => [
+                    'dsn' => 'configuration://fs',
+                ],
             ],
         ]);
 

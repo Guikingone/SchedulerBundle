@@ -19,7 +19,8 @@ final class FilesystemConfigurationFactory implements ConfigurationFactoryInterf
     public function create(Dsn $dsn, SerializerInterface $serializer): FilesystemConfiguration
     {
         return new FilesystemConfiguration([
-            'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
+            'file_extension' => $dsn->getOption('file_extension', 'json'),
+            'filename_mask' => $dsn->getOption('filename_mask', '%s/_symfony_scheduler_/configuration'),
             'path' => $dsn->getOption('path', sys_get_temp_dir()),
         ], $serializer);
     }

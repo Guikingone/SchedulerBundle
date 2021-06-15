@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
-use function getcwd;
+use function sys_get_temp_dir;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -51,7 +51,7 @@ final class FilesystemTransportTest extends TestCase
     protected function setUp(): void
     {
         $this->filesystem = new Filesystem();
-        $this->filesystem->remove(getcwd().'/assets/**/*.json');
+        $this->filesystem->remove(sys_get_temp_dir().'/assets/**/*.json');
     }
 
     /**
@@ -59,8 +59,8 @@ final class FilesystemTransportTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $this->filesystem->remove(getcwd().'/assets/_symfony_scheduler_/bar.json');
-        $this->filesystem->remove(getcwd().'/assets/_symfony_scheduler_/foo.json');
+        $this->filesystem->remove(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json');
+        $this->filesystem->remove(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json');
     }
 
     public function testTransportCannotBeConfiguredWithInvalidPath(): void
@@ -72,6 +72,8 @@ final class FilesystemTransportTest extends TestCase
         self::expectExceptionCode(0);
         new FilesystemTransport(new InMemoryConfiguration([
             'path' => 135,
+        ], [
+            'path' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -82,19 +84,22 @@ final class FilesystemTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertArrayHasKey('path', $filesystemTransport->getConfiguration()->toArray());
-        self::assertSame(getcwd().'/assets', $filesystemTransport->getConfiguration()->get('path'));
-        self::assertArrayHasKey('execution_mode', $filesystemTransport->getConfiguration()->toArray());
-        self::assertSame('first_in_first_out', $filesystemTransport->getConfiguration()->get('execution_mode'));
-        self::assertArrayHasKey('filename_mask', $filesystemTransport->getConfiguration()->toArray());
-        self::assertSame('%s/_symfony_scheduler_/%s.json', $filesystemTransport->getConfiguration()->get('filename_mask'));
+        $configuration = $filesystemTransport->getConfiguration();
+        self::assertArrayHasKey('path', $configuration->toArray());
+        self::assertSame(sys_get_temp_dir().'/assets', $configuration->get('path'));
+        self::assertArrayHasKey('execution_mode', $configuration->toArray());
+        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
+        self::assertArrayHasKey('filename_mask', $configuration->toArray());
+        self::assertSame('%s/_symfony_scheduler_/%s.json', $configuration->get('filename_mask'));
     }
 
     /**
@@ -120,9 +125,11 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -136,8 +143,8 @@ final class FilesystemTransportTest extends TestCase
 
         $filesystemTransport->create($nullTask);
         $filesystemTransport->create($secondNullTask);
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json'));
 
         $list = $filesystemTransport->list();
         self::assertInstanceOf(TaskList::class, $list);
@@ -184,12 +191,16 @@ final class FilesystemTransportTest extends TestCase
         $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$nullTask]);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
             'execution_mode' => 'first_in_first_out',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
+        ], [
+            'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, $schedulePolicyOrchestrator);
 
         $filesystemTransport->create($nullTask);
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json'));
 
         $list = $filesystemTransport->list();
         self::assertNotEmpty($list);
@@ -217,9 +228,11 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -237,15 +250,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $task = $filesystemTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
@@ -270,15 +285,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $lazyTask = $filesystemTransport->get('foo', true);
         self::assertInstanceOf(LazyTask::class, $lazyTask);
@@ -307,15 +324,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
     }
 
     public function testTaskCannotBeUpdatedWhenUndefinedButShouldBeCreated(): void
@@ -335,9 +354,11 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -367,15 +388,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new ShellTask('foo', ['echo', 'Symfony']));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $task = $filesystemTransport->get('foo');
         $task->setExpression('0 * * * *');
@@ -385,7 +408,7 @@ final class FilesystemTransportTest extends TestCase
         $updatedTask = $filesystemTransport->get('foo');
 
         self::assertSame('0 * * * *', $updatedTask->getExpression());
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
     }
 
     public function testTaskCanBeDeleted(): void
@@ -396,18 +419,20 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $filesystemTransport->delete('foo');
-        self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertFalse($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
     }
 
     public function testTaskCannotBePausedTwice(): void
@@ -418,15 +443,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $filesystemTransport->pause('foo');
 
@@ -446,15 +473,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $filesystemTransport->pause('foo');
 
@@ -470,15 +499,17 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $filesystemTransport->pause('foo');
 
@@ -498,19 +529,30 @@ final class FilesystemTransportTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer)
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
 
         $filesystemTransport->pause('foo');
 
@@ -531,20 +573,22 @@ final class FilesystemTransportTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
-            'path' => getcwd().'/assets',
+            'path' => sys_get_temp_dir().'/assets',
+            'filename_mask' => '%s/_symfony_scheduler_/%s.json',
         ], [
             'path' => 'string',
+            'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         $filesystemTransport->create(new NullTask('bar'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
-        self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json'));
 
         $filesystemTransport->clear();
-        self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
-        self::assertFalse($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));
+        self::assertFalse($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/foo.json'));
+        self::assertFalse($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json'));
     }
 }

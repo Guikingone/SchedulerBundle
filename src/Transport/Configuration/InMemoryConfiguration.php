@@ -90,6 +90,16 @@ final class InMemoryConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
+    public function clear(): void
+    {
+        $this->walk(function ($value, string $key): void {
+            $this->remove($key);
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count(): int
     {
         return count($this->options);

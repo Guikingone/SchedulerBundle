@@ -21,8 +21,8 @@ final class FilesystemConfiguration extends AbstractConfiguration
     {
         $this->init(array_merge([
             'path' => $options['path'] ?? sys_get_temp_dir(),
-            'filename_mask' => '%s/_symfony_scheduler_/configuration',
-            'file_extension' => 'json',
+            'filename_mask' => $options['filename_mask'],
+            'file_extension' => $options['file_extension'],
         ], $options), [
             'path' => 'string',
             'filename_mask' => 'string',
@@ -85,6 +85,14 @@ final class FilesystemConfiguration extends AbstractConfiguration
     public function toArray(): array
     {
         // TODO: Implement getOptions() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(): void
+    {
+        // TODO: Implement clear() method.
     }
 
     /**

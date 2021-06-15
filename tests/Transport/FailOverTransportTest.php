@@ -45,6 +45,8 @@ final class FailOverTransportTest extends TestCase
         self::expectExceptionCode(0);
         new FailOverTransport([], new InMemoryConfiguration([
             'mode' => 135,
+        ], [
+            'mode' => 'string',
         ]));
     }
 

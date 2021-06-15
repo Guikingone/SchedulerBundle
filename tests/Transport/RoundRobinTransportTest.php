@@ -33,6 +33,8 @@ final class RoundRobinTransportTest extends TestCase
         self::expectExceptionCode(0);
         new RoundRobinTransport([], new InMemoryConfiguration([
             'quantum' => 'foo',
+        ], [
+            'quantum' => 'int',
         ]));
     }
 
@@ -40,9 +42,10 @@ final class RoundRobinTransportTest extends TestCase
     {
         $roundRobinTransport = new RoundRobinTransport([], new InMemoryConfiguration());
 
-        self::assertCount(3, $roundRobinTransport->getConfiguration());
-        self::assertArrayHasKey('quantum', $roundRobinTransport->getConfiguration()->toArray());
-        self::assertSame(2, $roundRobinTransport->getConfiguration()['quantum']);
+        $configuration = $roundRobinTransport->getConfiguration();
+        self::assertCount(2, $configuration);
+        self::assertArrayHasKey('quantum', $configuration->toArray());
+        self::assertSame(2, $configuration->get('quantum'));
     }
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void

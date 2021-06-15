@@ -232,7 +232,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         $container = $this->getContainer([
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
-            'configuration' => 'configuration://memory',
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
             'transport' => [
                 'dsn' => 'memory://first_in_first_out',
             ],
@@ -273,7 +275,9 @@ final class SchedulerBundleExtensionTest extends TestCase
     public function testConfigurationCanBeConfigured(): void
     {
         $container = $this->getContainer([
-            'configuration' => 'configuration://memory',
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
             'transport' => [
                 'dsn' => 'memory://first_in_first_out',
             ],

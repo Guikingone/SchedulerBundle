@@ -76,6 +76,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->arrayNode('configuration')
+                        ->addDefaultsIfNotSet()
                         ->children()
                             ->enumNode('mode')
                                 ->info('Define the configuration mode (lazy or default)')

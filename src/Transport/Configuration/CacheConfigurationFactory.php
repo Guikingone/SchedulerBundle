@@ -26,9 +26,7 @@ final class CacheConfigurationFactory implements ConfigurationFactoryInterface
      */
     public function create(Dsn $dsn, SerializerInterface $serializer): CacheConfiguration
     {
-        return new CacheConfiguration($this->pool, [
-            'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
-        ]);
+        return new CacheConfiguration($this->pool);
     }
 
     /**

@@ -53,4 +53,9 @@ interface ConfigurationInterface extends Countable
      * @return array<string, mixed>
      */
     public function toArray(): array;
+
+    /**
+     * Remove each key in the configuration.
+     */
+    public function clear(): void;
 }

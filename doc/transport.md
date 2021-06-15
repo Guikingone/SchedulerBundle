@@ -23,7 +23,7 @@ This bundle defines a set of transports, each transport has its own configuratio
 
 ## Configuration
 
-- [Transport configuration storage](transport.md#Storage)
+- [Transport configuration storage](configuration_storage.md)
 
 ## Informations
 

@@ -104,6 +104,16 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
+    public function clear(): void
+    {
+        $this->initialize();
+
+        $this->configuration->clear();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count(): int
     {
         $this->initialize();

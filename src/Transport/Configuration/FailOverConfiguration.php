@@ -98,6 +98,16 @@ final class FailOverConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
+    public function clear(): void
+    {
+        $this->execute(function (ConfigurationInterface $configuration): void {
+            $configuration->clear();
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function count(): int
     {
         return $this->execute(fn (ConfigurationInterface $configuration): int => $configuration->count());

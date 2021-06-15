@@ -80,7 +80,7 @@ final class InMemoryTransportFactoryTest extends TestCase
     public function provideAdvancedDsn(): Generator
     {
         yield 'advanced configuration' => [
-            'memory://normal?path=/srv/app',
+            'memory://normal&path=/srv/app',
         ];
     }
 }
