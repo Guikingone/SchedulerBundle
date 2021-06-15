@@ -89,6 +89,14 @@ final class DoctrineConfiguration extends AbstractDoctrineConnection implements 
     /**
      * {@inheritdoc}
      */
+    public function clear(): void
+    {
+        // TODO: Implement clear() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(): array
     {
         // TODO: Implement getOptions() method.
@@ -103,7 +111,7 @@ final class DoctrineConfiguration extends AbstractDoctrineConnection implements 
 
     protected function addTableToSchema(Schema $schema): void
     {
-        $table = $schema->createTable($this->configuration['table_name']);
+        $table = $schema->createTable($this->configuration->get('table_name'));
         $table->addColumn('id', Types::BIGINT)
             ->setAutoincrement(true)
             ->setNotnull(true)

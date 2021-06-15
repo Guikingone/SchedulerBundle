@@ -58,7 +58,7 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
         ], [
-            'auto_setup' => 'string',
+            'auto_setup' => 'bool',
             'connection' => 'string',
             'execution_mode' => 'string',
             'table_name' => 'string',

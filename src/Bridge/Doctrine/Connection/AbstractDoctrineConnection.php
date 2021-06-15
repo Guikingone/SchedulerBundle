@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -16,11 +17,11 @@ use Throwable;
  */
 abstract class AbstractDoctrineConnection
 {
-    protected array $configuration;
+    protected ConfigurationInterface $configuration;
     protected DoctrineConnection $driverConnection;
 
     public function __construct(
-        array $configuration,
+        ConfigurationInterface $configuration,
         DoctrineConnection $driverConnection
     ) {
         $this->configuration = $configuration;
@@ -35,7 +36,7 @@ abstract class AbstractDoctrineConnection
             return;
         }
 
-        if ($schema->hasTable($this->configuration['table_name'])) {
+        if ($schema->hasTable($this->configuration->get('table_name'))) {
             return;
         }
 
@@ -50,7 +51,7 @@ abstract class AbstractDoctrineConnection
         $this->updateSchema();
         $configuration->setSchemaAssetsFilter($assetFilter);
 
-        $this->configuration['auto_setup'] = false;
+        $this->configuration->set('auto_setup', false);
     }
 
     protected function getSchema(): Schema
@@ -65,7 +66,7 @@ abstract class AbstractDoctrineConnection
     {
         return $this->driverConnection->createQueryBuilder()
             ->select(sprintf('%s.*', $alias))
-            ->from($this->configuration['table_name'], $alias)
+            ->from($this->configuration->get('table_name'), $alias)
         ;
     }
 
@@ -78,7 +79,7 @@ abstract class AbstractDoctrineConnection
                 throw $throwable;
             }
 
-            if ($this->configuration['auto_setup']) {
+            if ($this->configuration->get('auto_setup')) {
                 $this->setup();
             }
 
