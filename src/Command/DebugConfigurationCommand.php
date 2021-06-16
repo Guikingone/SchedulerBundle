@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
-use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,16 +16,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 final class DebugConfigurationCommand extends Command
 {
-    private TransportInterface $transport;
+    private ConfigurationInterface $configuration;
 
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:debug:configuration';
 
-    public function __construct(TransportInterface $transport)
+    public function __construct(ConfigurationInterface $configuration)
     {
-        $this->transport = $transport;
+        $this->configuration = $configuration;
 
         parent::__construct();
     }
@@ -47,13 +47,12 @@ final class DebugConfigurationCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
 
-        $configuration = $this->transport->getConfiguration();
-        $style->info(sprintf('Found %d configuration key%s', $configuration->count(), 1 === $configuration->count() ? '' : 's'));
+        $style->info(sprintf('Found %d configuration key%s', $this->configuration->count(), 1 === $this->configuration->count() ? '' : 's'));
 
         $table = new Table($output);
         $table->setHeaders(['Key', 'Value']);
 
-        $configuration->walk(function ($value, string $key) use ($table): void {
+        $this->configuration->walk(function ($value, string $key) use ($table): void {
             $table->addRow([$key, $value]);
         });
 

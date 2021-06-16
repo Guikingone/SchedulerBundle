@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle\Command;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Command\DebugConfigurationCommand;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -18,9 +17,7 @@ final class DebugConfigurationCommandTest extends TestCase
 {
     public function testCommandIsConfigured(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-
-        $command = new DebugConfigurationCommand($transport);
+        $command = new DebugConfigurationCommand(new InMemoryConfiguration());
 
         $tester = new CommandTester($command);
         $tester->execute([]);
@@ -33,10 +30,7 @@ final class DebugConfigurationCommandTest extends TestCase
 
     public function testCommandCanDisplayDefaultConfiguration(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('getConfiguration')->willReturn(new InMemoryConfiguration());
-
-        $tester = new CommandTester(new DebugConfigurationCommand($transport));
+        $tester = new CommandTester(new DebugConfigurationCommand(new InMemoryConfiguration()));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
@@ -49,14 +43,11 @@ final class DebugConfigurationCommandTest extends TestCase
 
     public function testCommandCanDisplayWholeConfiguration(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('getConfiguration')->willReturn(new InMemoryConfiguration([
+        $tester = new CommandTester(new DebugConfigurationCommand(new InMemoryConfiguration([
             'foo' => 'bar',
         ], [
             'foo' => 'string',
-        ]));
-
-        $tester = new CommandTester(new DebugConfigurationCommand($transport));
+        ])));
         $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());

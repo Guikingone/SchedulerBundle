@@ -278,7 +278,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(self::TRANSPORT_CONFIGURATION_TAG, TransportConfigurationInterface::class)
             ->setFactory([new Reference(ConfigurationFactory::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE), 'build'])
             ->setArguments([
-                $configuration['configuration'],
+                $configuration['configuration']['dsn'],
                 new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -386,7 +386,7 @@ final class SchedulerBundleExtension extends Extension
             ->setFactory([new Reference(TransportFactoryInterface::class), 'createTransport'])
             ->setArguments([
                 $configuration['transport']['dsn'],
-                $configuration['transport']['options'],
+                new Reference(TransportConfigurationInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(SchedulePolicyOrchestratorInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])

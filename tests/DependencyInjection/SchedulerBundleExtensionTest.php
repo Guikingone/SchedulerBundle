@@ -410,6 +410,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($containerBuilder->hasDefinition('scheduler.transport'));
         self::assertTrue($containerBuilder->hasAlias(TransportInterface::class));
         self::assertCount(4, $containerBuilder->getDefinition('scheduler.transport')->getArguments());
+        self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
+        self::assertSame(ConfigurationInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(1)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
+        self::assertSame(SerializerInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
+        self::assertSame(SchedulePolicyOrchestratorInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3)->getInvalidBehavior());
 
         $factory = $containerBuilder->getDefinition('scheduler.transport')->getFactory();
         self::assertIsArray($factory);
@@ -418,13 +428,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $factory[0]);
         self::assertSame('createTransport', $factory[1]);
 
-        self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
-        self::assertSame([
-            'execution_mode' => 'first_in_first_out',
-            'path' => '%kernel.project_dir%/var/tasks',
-        ], $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
-        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
-        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
         self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->isShared());
         self::assertFalse($containerBuilder->getDefinition('scheduler.transport')->isPublic());
         self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->hasTag('container.preload'));

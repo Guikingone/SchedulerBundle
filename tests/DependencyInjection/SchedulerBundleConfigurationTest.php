@@ -23,7 +23,10 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('path', $configuration);
         self::assertArrayHasKey('timezone', $configuration);
         self::assertArrayHasKey('configuration', $configuration);
-        self::assertSame('configuration://memory', $configuration['configuration']);
+        self::assertArrayHasKey('dsn', $configuration['configuration']);
+        self::assertSame('configuration://memory', $configuration['configuration']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['configuration']);
+        self::assertSame('default', $configuration['configuration']['mode']);
         self::assertArrayHasKey('tasks', $configuration);
         self::assertArrayNotHasKey('probe', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
@@ -470,6 +473,9 @@ final class SchedulerBundleConfigurationTest extends TestCase
 
         self::assertArrayHasKey('configuration', $configuration);
         self::assertNotNull($configuration['configuration']);
-        self::assertSame('configuration://fs', $configuration['configuration']);
+        self::assertArrayHasKey('dsn', $configuration['configuration']);
+        self::assertSame('configuration://fs', $configuration['configuration']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['configuration']);
+        self::assertSame('default', $configuration['configuration']['mode']);
     }
 }
