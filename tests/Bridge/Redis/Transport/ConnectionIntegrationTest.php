@@ -76,15 +76,15 @@ final class ConnectionIntegrationTest extends TestCase
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             ], [
-                'host' => 'string',
-                'password' => 'string',
-                'port' => 'string',
+                'host' => ['string', 'null'],
+                'password' => ['string', 'null'],
+                'port' => ['int', 'null'],
                 'scheme' => 'string',
                 'timeout' => 'int',
-                'auth' => 'string',
-                'list' => 'string',
+                'auth' => ['string', 'null'],
+                'list' => ['string', 'null'],
                 'dbindex' => 'int',
-                'transaction_mode' => 'string',
+                'transaction_mode' => ['string', 'null'],
                 'execution_mode' => 'string',
             ]), $serializer, $this->redis);
             $this->connection->empty();

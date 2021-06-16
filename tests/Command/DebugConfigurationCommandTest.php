@@ -34,7 +34,7 @@ final class DebugConfigurationCommandTest extends TestCase
     public function testCommandCanDisplayDefaultConfiguration(): void
     {
         $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('getOptions')->willReturn(new InMemoryConfiguration());
+        $transport->expects(self::once())->method('getConfiguration')->willReturn(new InMemoryConfiguration());
 
         $tester = new CommandTester(new DebugConfigurationCommand($transport));
         $tester->execute([]);
@@ -50,7 +50,7 @@ final class DebugConfigurationCommandTest extends TestCase
     public function testCommandCanDisplayWholeConfiguration(): void
     {
         $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('getOptions')->willReturn(new InMemoryConfiguration([
+        $transport->expects(self::once())->method('getConfiguration')->willReturn(new InMemoryConfiguration([
             'foo' => 'bar',
         ], [
             'foo' => 'string',

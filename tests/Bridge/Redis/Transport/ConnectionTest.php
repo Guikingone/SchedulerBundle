@@ -232,6 +232,13 @@ final class ConnectionTest extends TestCase
             'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
         ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -265,6 +272,13 @@ final class ConnectionTest extends TestCase
             'auth' => 'root',
             'dbindex' => 0,
             'list' => $list,
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
         ]), $serializer, $redis);
         $connection->create($taskToCreate);
     }
@@ -282,10 +296,17 @@ final class ConnectionTest extends TestCase
         $connection = new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
             'timeout' => 30,
-            'auth' => 'root',
             'port' => 6379,
+            'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
         ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -313,6 +334,13 @@ final class ConnectionTest extends TestCase
             'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
         ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
@@ -336,14 +364,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hSet')->willReturn(false);
         $redis->expects(self::once())->method('getLastError')->willReturn('Random error');
 
-        $connection = new Connection([
+        $connection = new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
             'timeout' => 30,
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be updated, error: Random error');
@@ -365,7 +400,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(0);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
         $connection->update('foo', $task);
     }
 
@@ -378,7 +427,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hExists')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
@@ -400,7 +463,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" is already paused');
@@ -425,7 +502,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(false);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be paused');
@@ -450,7 +541,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->with(self::equalTo('_symfony_scheduler_tasks'), 'foo', 'foo')->willReturn(0);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
         $connection->pause('foo');
     }
 
@@ -464,7 +569,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hExists')->willReturn(false);
         $redis->expects(self::never())->method('hGet');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
@@ -486,7 +605,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hExists')->willReturn(true);
         $redis->expects(self::once())->method('hGet');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" is already enabled');
@@ -512,7 +645,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hSet')->willReturn(false);
         $redis->expects(self::once())->method('getLastError')->willReturn('Random error');
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be enabled');
@@ -537,7 +684,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hGet');
         $redis->expects(self::once())->method('hSet')->willReturn(0);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => '_symfony_scheduler_tasks'], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
         $connection->resume('foo');
     }
 
@@ -553,7 +714,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo')->willReturn(0);
 
-        $connection = new Connection(['host' => 'localhost', 'timeout' => 30, 'port' => 6379, 'auth' => 'root', 'dbindex' => 0, 'list' => $list], $serializer, $redis);
+        $connection = new Connection(new InMemoryConfiguration([
+            'host' => 'localhost',
+            'timeout' => 30,
+            'port' => 6379,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => $list,
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be deleted as it does not exist');
@@ -573,14 +748,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('auth')->willReturn(true);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo')->willReturn(self::equalTo(1));
 
-        $connection = new Connection([
+        $connection = new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
             'timeout' => 30,
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => $list,
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
         $connection->delete('foo');
     }
 
@@ -597,14 +779,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hKeys')->with(self::equalTo($list))->willReturn(['foo', 'bar']);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo', 'bar')->willReturn(false);
 
-        $connection = new Connection([
+        $connection = new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
             'timeout' => 30,
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => $list,
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The list cannot be emptied');
@@ -625,14 +814,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('hKeys')->with(self::equalTo($list))->willReturn(['foo', 'bar']);
         $redis->expects(self::once())->method('hDel')->with(self::equalTo($list), 'foo', 'bar')->willReturn(2);
 
-        $connection = new Connection([
+        $connection = new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
             'timeout' => 30,
             'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => $list,
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
         $connection->empty();
     }
 
