@@ -10,6 +10,7 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -68,7 +69,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string, mixed|int|float|string|bool|array|null>
+     * Return the configuration set during the transport creation which contains each configuration key
      */
-    public function getOptions(): array;
+    public function getConfiguration(): ConfigurationInterface;
 }

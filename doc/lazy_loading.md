@@ -16,6 +16,7 @@ This bundle provides a small integration of this pattern via multiple usages:
 - [LazyTaskList](#lazytasklist)
 - [LazyTask](#lazytask)
 - [LazyScheduler](#lazyscheduler)
+- [LazyConfiguration](#lazyconfiguration)
 
 ## LazyTaskList
 
@@ -119,3 +120,7 @@ final class FooController
     }
 }
 ```
+
+## LazyConfiguration
+
+// TODO

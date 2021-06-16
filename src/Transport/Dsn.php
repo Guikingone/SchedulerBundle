@@ -106,7 +106,7 @@ final class Dsn
 
     public function getOptionAsBool(string $key, $default = null): bool
     {
-        return 'false' === $this->getOption($key, $default) ? false : (bool) $this->getOption($key, $default);
+        return !('false' === $this->getOption($key, $default)) && $this->getOption($key, $default);
     }
 
     /**

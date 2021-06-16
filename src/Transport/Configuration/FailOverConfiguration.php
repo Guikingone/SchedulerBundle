@@ -12,10 +12,10 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailOverConfiguration implements ConfigurationInterface
+final class FailOverConfiguration extends AbstractConfiguration
 {
     /**
-     * @var iterable|ConfigurationInterface[]
+     * @var ConfigurationInterface[]
      */
     private iterable $configurationStorages;
 
@@ -25,7 +25,7 @@ final class FailOverConfiguration implements ConfigurationInterface
     private SplObjectStorage $failedConfigurations;
 
     /**
-     * @param iterable|ConfigurationInterface[] $configurationStorages
+     * @param ConfigurationInterface[] $configurationStorages
      */
     public function __construct(iterable $configurationStorages)
     {
@@ -74,9 +74,43 @@ final class FailOverConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function walk(Closure $func): ConfigurationInterface
     {
-        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
+        return $this->execute(fn (ConfigurationInterface $configuration): ConfigurationInterface => $configuration->walk($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->map($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(): void
+    {
+        $this->execute(function (ConfigurationInterface $configuration): void {
+            $configuration->clear();
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return $this->execute(fn (ConfigurationInterface $configuration): int => $configuration->count());
     }
 
     private function execute(Closure $func)

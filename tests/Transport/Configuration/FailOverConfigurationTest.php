@@ -130,7 +130,7 @@ final class FailOverConfigurationTest extends TestCase
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
         self::expectExceptionCode(0);
-        $failOverConfiguration->getOptions();
+        $failOverConfiguration->toArray();
     }
 
     public function testTransportCanRetrieveOptions(): void
@@ -140,7 +140,7 @@ final class FailOverConfigurationTest extends TestCase
         ]);
 
         $failOverConfiguration->set('foo', 'bar');
-        self::assertArrayHasKey('foo', $failOverConfiguration->getOptions());
-        self::assertSame('bar', $failOverConfiguration->getOptions()['foo']);
+        self::assertArrayHasKey('foo', $failOverConfiguration->toArray());
+        self::assertSame('bar', $failOverConfiguration->toArray()['foo']);
     }
 }

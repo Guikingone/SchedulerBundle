@@ -6,19 +6,32 @@ namespace Tests\SchedulerBundle\Transport\Configuration;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class InMemoryConfigurationTest extends TestCase
 {
+    public function testTransportCannotBeConfiguredWithInvalidOptionType(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "execution_mode" with value 350 is expected to be of type "string", but is of type "int"');
+        self::expectExceptionCode(0);
+        $configuration = new InMemoryConfiguration();
+        $configuration->init(['execution_mode' => 350]);
+    }
+
     public function testConfigurationCanBeCreated(): void
     {
         $inMemoryConfiguration = new InMemoryConfiguration();
 
         $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertSame(2, $inMemoryConfiguration->count());
+        self::assertArrayHasKey('execution_mode', $inMemoryConfiguration->toArray());
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->toArray());
+        self::assertSame('first_in_first_out', $inMemoryConfiguration->get('execution_mode'));
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
     }
 
@@ -28,12 +41,12 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->toArray());
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
         $inMemoryConfiguration->update('foo', 'foo_new');
 
-        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->toArray());
         self::assertSame('foo_new', $inMemoryConfiguration->get('foo'));
     }
 
@@ -43,12 +56,25 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
-        self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertArrayHasKey('foo', $inMemoryConfiguration->toArray());
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
         $inMemoryConfiguration->remove('foo');
 
-        self::assertArrayNotHasKey('foo', $inMemoryConfiguration->getOptions());
+        self::assertArrayNotHasKey('foo', $inMemoryConfiguration->toArray());
         self::assertNull($inMemoryConfiguration->get('foo'));
+    }
+
+    public function testConfigurationCanMapValues(): void
+    {
+        $inMemoryConfiguration = new InMemoryConfiguration();
+
+        $inMemoryConfiguration->set('foo', 'bar');
+        $inMemoryConfiguration->set('bar', 'foo');
+
+        $mappedConfiguration = $inMemoryConfiguration->map(fn (string $value): string => sprintf('%s_value', $value));
+
+        self::assertContains('bar_value', $mappedConfiguration);
+        self::assertContains('foo_value', $mappedConfiguration);
     }
 }

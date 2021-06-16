@@ -8,6 +8,7 @@ use Closure;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SplObjectStorage;
 use Throwable;
 use function count;
@@ -30,9 +31,9 @@ final class RoundRobinTransport extends AbstractTransport
     /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(iterable $transports, array $options = [])
+    public function __construct(iterable $transports, ConfigurationInterface $configuration)
     {
-        $this->defineOptions([
+        $configuration->init([
             'quantum' => $options['quantum'] ?? 2,
         ], [
             'quantum' => 'int',
@@ -40,6 +41,8 @@ final class RoundRobinTransport extends AbstractTransport
 
         $this->transports = $transports;
         $this->sleepingTransports = new SplObjectStorage();
+
+        parent::__construct($configuration);
     }
 
     /**

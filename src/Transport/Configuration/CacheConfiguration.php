@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use Closure;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
+use function count;
+use function array_map;
+use function array_walk;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CacheConfiguration implements ConfigurationInterface
+final class CacheConfiguration extends AbstractConfiguration
 {
+    private const CONFIGURATION_LIST_KEY = '_symfony_configuration';
+
     private CacheItemPoolInterface $pool;
 
-    public function __construct(CacheItemPoolInterface $cacheItemPool)
+    public function __construct(CacheItemPoolInterface $cacheItemPool, array $options = [])
     {
         $this->pool = $cacheItemPool;
+
+        $this->init($options);
     }
 
     /**
@@ -76,8 +85,50 @@ final class CacheConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function walk(Closure $func): ConfigurationInterface
     {
-        return $this->pool->getItems();
+        $items = $this->toArray();
+
+        array_walk($items, $func);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        $items = $this->toArray();
+
+        return array_map($func, $items);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
+    {
+        $items = $this->pool->getItem(self::CONFIGURATION_LIST_KEY);
+
+        return iterator_to_array($items);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(): void
+    {
+        if (!$this->pool->clear()) {
+            throw new RuntimeException('The configuration cannot clear the keys');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->toArray());
     }
 }

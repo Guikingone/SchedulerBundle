@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,7 +17,7 @@ final class RedisTransportFactoryTest extends TestCase
 {
     public function testTransportCanSupport(): void
     {
-        self::assertFalse((new RedisTransportFactory())->support('test://'));
-        self::assertTrue((new RedisTransportFactory())->support('redis://'));
+        self::assertFalse((new RedisTransportFactory())->support('test://', new InMemoryConfiguration()));
+        self::assertTrue((new RedisTransportFactory())->support('redis://', new InMemoryConfiguration()));
     }
 }

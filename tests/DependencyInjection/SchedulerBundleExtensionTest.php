@@ -15,6 +15,7 @@ use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
+use SchedulerBundle\Command\DebugConfigurationCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -95,6 +96,12 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
+use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
@@ -169,6 +176,10 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertArrayHasKey(RunnerInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[RunnerInterface::class]->hasTag('scheduler.runner'));
+        self::assertArrayHasKey(ConfigurationInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ConfigurationInterface::class]->hasTag('scheduler.configuration'));
+        self::assertArrayHasKey(ConfigurationFactoryInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ConfigurationFactoryInterface::class]->hasTag('scheduler.configuration_factory'));
         self::assertArrayHasKey(TransportInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[TransportInterface::class]->hasTag('scheduler.transport'));
         self::assertArrayHasKey(TransportFactoryInterface::class, $autoconfigurationInterfaces);
@@ -214,6 +225,78 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('kernel.cache_clearer'));
         self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('container.preload'));
         self::assertSame(SchedulerCacheClearer::class, $container->getDefinition(SchedulerCacheClearer::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testConfigurationFactoriesAreRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertTrue($container->hasDefinition(ConfigurationFactory::class));
+        self::assertCount(1, $container->getDefinition(ConfigurationFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ConfigurationFactory::class)->getArgument(0));
+        self::assertFalse($container->getDefinition(ConfigurationFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(ConfigurationFactory::class)->hasTag('container.preload'));
+        self::assertSame(ConfigurationFactory::class, $container->getDefinition(ConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(InMemoryConfigurationFactory::class));
+        self::assertCount(0, $container->getDefinition(InMemoryConfigurationFactory::class)->getArguments());
+        self::assertFalse($container->getDefinition(InMemoryConfigurationFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(InMemoryConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
+        self::assertTrue($container->getDefinition(InMemoryConfigurationFactory::class)->hasTag('container.preload'));
+        self::assertSame(InMemoryConfigurationFactory::class, $container->getDefinition(InMemoryConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FilesystemConfigurationFactory::class));
+        self::assertCount(0, $container->getDefinition(FilesystemConfigurationFactory::class)->getArguments());
+        self::assertFalse($container->getDefinition(FilesystemConfigurationFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(FilesystemConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
+        self::assertTrue($container->getDefinition(FilesystemConfigurationFactory::class)->hasTag('container.preload'));
+        self::assertSame(FilesystemConfigurationFactory::class, $container->getDefinition(FilesystemConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FailOverConfigurationFactory::class));
+        self::assertCount(1, $container->getDefinition(FailOverConfigurationFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(FailOverConfigurationFactory::class)->getArgument(0));
+        self::assertFalse($container->getDefinition(FailOverConfigurationFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(FailOverConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
+        self::assertTrue($container->getDefinition(FailOverConfigurationFactory::class)->hasTag('container.preload'));
+        self::assertSame(FailOverConfigurationFactory::class, $container->getDefinition(FailOverConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testConfigurationCanBeConfigured(): void
+    {
+        $container = $this->getContainer([
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+        ]);
+
+        self::assertTrue($container->hasDefinition('scheduler.configuration'));
+        self::assertTrue($container->hasAlias(ConfigurationInterface::class));
+        self::assertSame('scheduler.configuration', (string) $container->getAlias(ConfigurationInterface::class));
+        self::assertCount(2, $container->getDefinition('scheduler.configuration')->getArguments());
+        self::assertSame('configuration://memory', $container->getDefinition('scheduler.configuration')->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.configuration')->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition('scheduler.configuration')->getArgument(1)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.configuration')->getFactory()[0]);
+        self::assertSame('build', $container->getDefinition('scheduler.configuration')->getFactory()[1]);
+        self::assertFalse($container->getDefinition('scheduler.configuration')->isPublic());
+        self::assertTrue($container->getDefinition('scheduler.configuration')->hasTag('scheduler.configuration'));
+        self::assertTrue($container->getDefinition('scheduler.configuration')->hasTag('container.preload'));
+        self::assertSame(ConfigurationInterface::class, $container->getDefinition('scheduler.configuration')->getTag('container.preload')[0]['class']);
     }
 
     public function testTransportFactoriesAreRegistered(): void
@@ -313,6 +396,9 @@ final class SchedulerBundleExtensionTest extends TestCase
             'scheduler_bundle' => [
                 'path' => '/_foo',
                 'timezone' => 'Europe/Paris',
+                'configuration' => [
+                    'dsn' => 'configuration://memory',
+                ],
                 'transport' => [
                     'dsn' => 'memory://first_in_first_out',
                 ],
@@ -324,6 +410,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($containerBuilder->hasDefinition('scheduler.transport'));
         self::assertTrue($containerBuilder->hasAlias(TransportInterface::class));
         self::assertCount(4, $containerBuilder->getDefinition('scheduler.transport')->getArguments());
+        self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
+        self::assertSame(ConfigurationInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(1)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
+        self::assertSame(SerializerInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
+        self::assertSame(SchedulePolicyOrchestratorInterface::class, (string) $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3)->getInvalidBehavior());
 
         $factory = $containerBuilder->getDefinition('scheduler.transport')->getFactory();
         self::assertIsArray($factory);
@@ -332,13 +428,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $factory[0]);
         self::assertSame('createTransport', $factory[1]);
 
-        self::assertSame('memory://first_in_first_out', $containerBuilder->getDefinition('scheduler.transport')->getArgument(0));
-        self::assertSame([
-            'execution_mode' => 'first_in_first_out',
-            'path' => '%kernel.project_dir%/var/tasks',
-        ], $containerBuilder->getDefinition('scheduler.transport')->getArgument(1));
-        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(2));
-        self::assertInstanceOf(Reference::class, $containerBuilder->getDefinition('scheduler.transport')->getArgument(3));
         self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->isShared());
         self::assertFalse($containerBuilder->getDefinition('scheduler.transport')->isPublic());
         self::assertTrue($containerBuilder->getDefinition('scheduler.transport')->hasTag('container.preload'));
@@ -350,6 +439,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         $container = $this->getContainer([
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
+            'configuration' => [
+                'dsn' => 'configuration://memory',
+            ],
             'transport' => [
                 'dsn' => 'memory://first_in_first_out',
             ],
@@ -553,6 +645,15 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('container.preload'));
         self::assertSame(YieldTaskCommand::class, $container->getDefinition(YieldTaskCommand::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(DebugConfigurationCommand::class));
+        self::assertCount(1, $container->getDefinition(DebugConfigurationCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(DebugConfigurationCommand::class)->getArgument(0));
+        self::assertSame(ConfigurationInterface::class, (string) $container->getDefinition(DebugConfigurationCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(DebugConfigurationCommand::class)->getArgument(0)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(DebugConfigurationCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(DebugConfigurationCommand::class)->hasTag('container.preload'));
+        self::assertSame(DebugConfigurationCommand::class, $container->getDefinition(DebugConfigurationCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void

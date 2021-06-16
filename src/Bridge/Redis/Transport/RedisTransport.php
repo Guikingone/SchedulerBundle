@@ -12,8 +12,8 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,38 +23,15 @@ final class RedisTransport extends AbstractTransport
     private Connection $connection;
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
 
-    /**
-     * @param array<string, mixed|int|float|string|bool|array|null> $options
-     */
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions(array_merge([
-            'host' => '127.0.0.1',
-            'password' => null,
-            'port' => 6379,
-            'scheme' => null,
-            'timeout' => 30,
-            'auth' => null,
-            'dbindex' => 0,
-            'transaction_mode' => null,
-            'list' => '_symfony_scheduler_tasks',
-        ], $options), [
-            'host' => 'string',
-            'password' => ['string', 'null'],
-            'port' => 'int',
-            'scheme' => ['string', 'null'],
-            'timeout' => 'int',
-            'auth' => ['string', 'null'],
-            'dbindex' => 'int',
-            'transaction_mode' => ['string', 'null'],
-            'list' => 'string',
-        ]);
-
-        $this->connection = new Connection($this->getOptions(), $serializer);
+        $this->connection = new Connection($configuration, $serializer);
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($configuration);
     }
 
     /**
@@ -63,7 +40,7 @@ final class RedisTransport extends AbstractTransport
     public function list(bool $lazy = false): TaskListInterface
     {
         $list = new TaskList($this->schedulePolicyOrchestrator->sort(
-            $this->getExecutionMode(),
+            $this->getConfiguration()->get('execution_mode'),
             $this->connection->list()->toArray()
         ));
 

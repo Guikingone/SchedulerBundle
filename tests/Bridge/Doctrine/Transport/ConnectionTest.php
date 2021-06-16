@@ -29,6 +29,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -64,11 +65,15 @@ final class ConnectionTest extends TestCase
             new NullTask('bar'),
         ]));
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
             'execution_mode' => 'first_in_first_out',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+            'execution_mode' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $taskList = $connection->list();
@@ -107,11 +112,15 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::never())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
             'execution_mode' => 'first_in_first_out',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+            'execution_mode' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -161,11 +170,15 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::never())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
             'execution_mode' => 'first_in_first_out',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+            'execution_mode' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -226,10 +239,13 @@ final class ConnectionTest extends TestCase
         )->willReturn($statement);
         $driverConnection->expects(self::once())->method('transactional')->willReturn(new NullTask('foo'));
 
-        $connection = new DoctrineConnection([
-            'auto_setup' => false,
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
+            'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $task = $connection->get('foo');
@@ -282,10 +298,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::never())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->create($task);
@@ -340,10 +359,13 @@ final class ConnectionTest extends TestCase
             ->willThrowException(new Exception('The given data are invalid.'))
         ;
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -399,10 +421,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->create($task);
@@ -444,10 +469,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::never())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -501,10 +529,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($task);
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->pause('foo');
@@ -546,10 +577,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::never())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -603,10 +637,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::exactly(2))->method('transactional')->willReturn($nullTask);
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->resume('foo');
@@ -622,10 +659,13 @@ final class ConnectionTest extends TestCase
             ->willThrowException(new InvalidArgumentException('The given identifier is invalid.'))
         ;
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $doctrineConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $doctrineConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -642,10 +682,13 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->delete('foo');
@@ -658,10 +701,13 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('transactional')->willThrowException(new Exception());
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -677,10 +723,13 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('transactional');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -706,10 +755,13 @@ final class ConnectionTest extends TestCase
         $table->expects(self::never())->method('setPrimaryKey');
         $table->expects(self::never())->method('addIndex');
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $connection->configureSchema($schema, $driverConnection);
@@ -749,10 +801,13 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo(['task_name']), self::equalTo('_symfony_scheduler_tasks_name'))
         ;
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -791,10 +846,13 @@ final class ConnectionTest extends TestCase
         $driverConnection->method('getConfiguration')->willReturn($configuration);
         $driverConnection->method('getSchemaManager')->willReturn($schemaManager);
 
-        $connection = new DoctrineConnection([
+        $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
+        ], [
+            'auto_setup' => 'bool',
+            'table_name' => 'string',
+        ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 

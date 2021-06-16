@@ -10,6 +10,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
@@ -28,23 +29,20 @@ final class Connection implements ConnectionInterface
     private string $list;
     private SerializerInterface $serializer;
 
-    /**
-     * @param array<string, mixed|string|int|float|null> $options
-     */
-    public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
+    public function __construct(ConfigurationInterface $configuration, SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
-        $this->connection->connect($options['host'] ?? '127.0.0.1', $options['port'] ?? 6379, $options['timeout'] ?? 30);
+        $this->connection->connect($configuration->get('host'), $configuration->get('port'), $configuration->get('timeout'));
 
-        if (0 !== strpos($this->list = $options['list'] ?? '_symfony_scheduler_tasks', '_')) {
+        if (0 !== strpos($this->list = $configuration->get('list'), '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 
-        if (null !== $options['auth'] && !$this->connection->auth($options['auth'])) {
+        if (null !== $configuration->get('auth') && !$this->connection->auth($configuration->get('auth'))) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $this->connection->getLastError() ?? ''));
         }
 
-        if (!$this->connection->select($options['dbindex'] ?? 0)) {
+        if (!$this->connection->select($configuration->get('dbindex') ?? 0)) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $this->connection->getLastError() ?? ''));
         }
 

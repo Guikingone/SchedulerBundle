@@ -14,6 +14,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_merge;
 
@@ -24,33 +25,32 @@ class DoctrineTransport extends AbstractTransport
 {
     private Connection $connection;
 
-    /**
-     * @param array<string, bool|int|string|null> $options
-     */
     public function __construct(
-        array $options,
+        ConfigurationInterface $configuration,
         DbalConnection $dbalConnection,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
         $this->defineOptions(array_merge([
-            'auto_setup' => $options['auto_setup'] ?? true,
-            'connection' => $options['connection'] ?? null,
+            'auto_setup' => $configuration->get('auto_setup') ?? true,
+            'connection' => $configuration->get('connection') ?? null,
             'table_name' => '_symfony_scheduler_tasks',
-        ], $options), [
+        ], $configuration->toArray()), [
             'auto_setup' => 'bool',
             'connection' => ['string', 'null'],
             'table_name' => 'string',
         ]);
 
         $this->connection = new Connection(
-            $this->getOptions(),
+            $configuration,
             $dbalConnection,
             $serializer,
             $schedulePolicyOrchestrator,
             $logger
         );
+
+        parent::__construct($configuration);
     }
 
     /**
