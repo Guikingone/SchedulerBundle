@@ -27,7 +27,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
     /**
      * @param RunnerInterface[] $runners
      */
-    public function __construct(iterable $runners)
+    public function __construct(iterable $runners = [])
     {
         $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
     }

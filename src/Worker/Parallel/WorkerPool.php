@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker\Parallel;
 
+use Psr\Log\LoggerInterface;
+use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use function array_walk;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,13 +19,23 @@ final class WorkerPool implements WorkerPoolInterface
      * @var WorkerInterface[]
      */
     private array $workers;
+    private WorkerInterface $worker;
+    private LoggerInterface $logger;
 
     /**
      * {@inheritdoc}
      */
-    public function boot(int $subWorkerAmount): void
+    public function boot(WorkerInterface $worker, int $subWorkerAmount): void
     {
-        // TODO: Implement boot() method.
+        $this->worker = $worker;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function run(TaskListInterface $taskList): TaskListInterface
+    {
+
     }
 
     /**
@@ -30,7 +43,9 @@ final class WorkerPool implements WorkerPoolInterface
      */
     public function scaleUp(int $newSubWorkerAmount): void
     {
-        // TODO: Implement scaleUp() method.
+        while ($this->count() < $newSubWorkerAmount) {
+            $this->workers[] = $this->worker->fork();
+        }
     }
 
     /**
@@ -38,7 +53,9 @@ final class WorkerPool implements WorkerPoolInterface
      */
     public function scaleDown(int $newSubWorkerAmount): void
     {
-        // TODO: Implement scaleDown() method.
+        while ($this->count() > $newSubWorkerAmount) {
+
+        }
     }
 
     /**
@@ -51,5 +68,13 @@ final class WorkerPool implements WorkerPoolInterface
         });
 
         $this->workers = [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->workers);
     }
 }

@@ -18,6 +18,7 @@ use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
@@ -27,8 +28,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function is_array;
-use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,28 +36,22 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
 
-    /**
-     * @var RunnerInterface[]
-     */
-    private iterable $runners;
+    private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
     private ?EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
 
-    /**
-     * @param RunnerInterface[] $runners
-     */
     public function __construct(
         SchedulerInterface $scheduler,
-        iterable $runners,
+        RunnerRegistryInterface $runnerRgistry,
         TaskExecutionTrackerInterface $tracker,
-        ?EventDispatcherInterface $eventDispatcher = null,
+        EventDispatcherInterface $eventDispatcher,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
-        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
+        $this->runnerRegistry = $runnerRgistry;
         $this->tracker = $tracker;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
@@ -67,7 +60,7 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function run(array $options, Closure $closure): void
     {
-        if ([] === $this->runners) {
+        if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -141,9 +134,9 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getRunners(): array
+    public function getRunners(): RunnerRegistryInterface
     {
-        return $this->runners;
+        return $this->runnerRegistry;
     }
 
     /**
@@ -210,10 +203,6 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function dispatch(Event $event): void
     {
-        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
-            return;
-        }
-
         $this->eventDispatcher->dispatch($event);
     }
 

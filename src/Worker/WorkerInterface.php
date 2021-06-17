@@ -11,7 +11,7 @@ use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
-use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
@@ -59,6 +59,9 @@ interface WorkerInterface
      */
     public function restart(): void;
 
+    /**
+     * Determine if the current worker is running.
+     */
     public function isRunning(): bool;
 
     /**
@@ -72,9 +75,9 @@ interface WorkerInterface
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return RunnerInterface[]
+     * Return the list of runner via the registry.
      */
-    public function getRunners(): array;
+    public function getRunners(): RunnerRegistryInterface;
 
     /**
      * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>
