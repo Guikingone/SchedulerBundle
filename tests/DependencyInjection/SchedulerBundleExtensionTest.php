@@ -731,6 +731,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.application')->getArgument(0));
         self::assertSame(KernelInterface::class, (string) $container->getDefinition('scheduler.application')->getArgument(0));
 
+        // TODO Add tests for the RunnerRegistry
+
         self::assertTrue($container->hasDefinition(ShellTaskRunner::class));
         self::assertTrue($container->getDefinition(ShellTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ShellTaskRunner::class)->hasTag('container.preload'));
