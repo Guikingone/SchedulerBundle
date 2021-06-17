@@ -812,7 +812,7 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('run')->with($shellTask)->willReturn(new Output($shellTask, null));
 
         $secondRunner = $this->createMock(RunnerInterface::class);
-        $secondRunner->expects(self::never())->method('support')->willReturn(true);
+        $secondRunner->expects(self::once())->method('support')->willReturn(false);
         $secondRunner->expects(self::never())->method('run')->willReturn(new Output($shellTask, null));
 
         $scheduler = $this->createMock(SchedulerInterface::class);

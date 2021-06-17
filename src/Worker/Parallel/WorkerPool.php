@@ -35,7 +35,6 @@ final class WorkerPool implements WorkerPoolInterface
      */
     public function run(TaskListInterface $taskList): TaskListInterface
     {
-
     }
 
     /**
@@ -54,7 +53,6 @@ final class WorkerPool implements WorkerPoolInterface
     public function scaleDown(int $newSubWorkerAmount): void
     {
         while ($this->count() > $newSubWorkerAmount) {
-
         }
     }
 
