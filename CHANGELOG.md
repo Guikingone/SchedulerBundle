@@ -4,7 +4,18 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
-0.5.0
+0.5.2
+-----
+
+### Code Refactoring
+
+##### Transport
+
+* FilesystemTransportFactory improved (#149) ([35632d](https://github.com/Guikingone/SchedulerBundle/commit/35632d8ed23c529595f88572472d29be67f3ff76))
+
+---
+
+0.5.1
 -----
 
 ### Builds
