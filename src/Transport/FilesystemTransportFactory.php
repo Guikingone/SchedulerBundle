@@ -19,7 +19,7 @@ final class FilesystemTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new FilesystemTransport($dsn->getOption('path', sys_get_temp_dir()), [
+        return new FilesystemTransport($dsn->getOption('path', $options['path'] ?? sys_get_temp_dir()), [
             'execution_mode' => $dsn->getHost(),
             'filename_mask' => $dsn->getOption('filename_mask', '%s/_symfony_scheduler_/%s.json'),
         ], $serializer, $schedulePolicyOrchestrator);

@@ -74,4 +74,21 @@ final class FilesystemTransportFactoryTest extends TestCase
         self::assertArrayHasKey('path', $transport->getOptions());
         self::assertSame('/srv/app', $transport->getOptions()['path']);
     }
+
+    public function testFactoryCanCreateTransportWithSpecificPathFromExtraOptions(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
+
+        $filesystemTransportFactory = new FilesystemTransportFactory();
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
+            'path' => sys_get_temp_dir(),
+        ], $serializer, $schedulerPolicyOrchestrator);
+
+        self::assertInstanceOf(FilesystemTransport::class, $transport);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('path', $transport->getOptions());
+        self::assertSame(sys_get_temp_dir(), $transport->getOptions()['path']);
+    }
 }
