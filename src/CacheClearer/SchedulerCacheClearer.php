@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\CacheClearer;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
@@ -15,10 +17,14 @@ use Throwable;
 final class SchedulerCacheClearer implements CacheClearerInterface
 {
     private SchedulerInterface $scheduler;
+    private LoggerInterface $logger;
 
-    public function __construct(SchedulerInterface $scheduler)
-    {
+    public function __construct(
+        SchedulerInterface $scheduler,
+        ?LoggerInterface $logger = null
+    ) {
         $this->scheduler = $scheduler;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -28,18 +34,14 @@ final class SchedulerCacheClearer implements CacheClearerInterface
      */
     public function clear(string $cacheDir): void
     {
-        $tasks = $this->scheduler->getTasks();
+        try {
+            $tasks = $this->scheduler->getTasks();
 
-        $tasks->walk(function (TaskInterface $task): void {
-            $this->scheduler->unschedule($task->getName());
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isOptional(): bool
-    {
-        return true;
+            $tasks->walk(function (TaskInterface $task): void {
+                $this->scheduler->unschedule($task->getName());
+            });
+        } catch (Throwable $throwable) {
+            $this->logger->warning('The cache clearer cannot be called due to an error when retrieving tasks');
+        }
     }
 }

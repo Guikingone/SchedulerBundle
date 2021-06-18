@@ -206,6 +206,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(SchedulerCacheClearer::class, SchedulerCacheClearer::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag('kernel.cache_clearer')

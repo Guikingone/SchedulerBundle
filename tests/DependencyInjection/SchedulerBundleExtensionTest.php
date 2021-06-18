@@ -206,10 +206,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         ]);
 
         self::assertTrue($container->hasDefinition(SchedulerCacheClearer::class));
-        self::assertCount(1, $container->getDefinition(SchedulerCacheClearer::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(SchedulerCacheClearer::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0));
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(SchedulerCacheClearer::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(1)->getInvalidBehavior());
         self::assertFalse($container->getDefinition(SchedulerCacheClearer::class)->isPublic());
         self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('kernel.cache_clearer'));
         self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('container.preload'));
