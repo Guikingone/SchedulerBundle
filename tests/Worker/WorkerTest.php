@@ -451,9 +451,8 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('endTracking');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -586,7 +585,7 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(fn (): bool => true);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -781,9 +780,8 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('endTracking');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -819,7 +817,6 @@ final class WorkerTest extends TestCase
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
         $shellTask->setExpression('* * * * *');
-        $shellTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
         $shellTask->setSingleRun(true);
 
         $runner = $this->createMock(RunnerInterface::class);
@@ -827,7 +824,7 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('run')->with($shellTask)->willReturn(new Output($shellTask, null));
 
         $secondRunner = $this->createMock(RunnerInterface::class);
-        $secondRunner->expects(self::never())->method('support')->willReturn(true);
+        $secondRunner->expects(self::once())->method('support')->willReturn(false);
         $secondRunner->expects(self::never())->method('run')->willReturn(new Output($shellTask, null));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -874,7 +871,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $worker = new Worker($scheduler, new RunnerRegistry([
-            $runner
+            $runner,
         ]), $tracker, new WorkerMiddlewareStack(), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute();
 
@@ -956,7 +953,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('endTracking');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
@@ -1055,9 +1052,8 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('endTracking');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('getBeforeExecuting')->willReturn(null);
         $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
@@ -1139,9 +1135,8 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('- 1 month'));
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
