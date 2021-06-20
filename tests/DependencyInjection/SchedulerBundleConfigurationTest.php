@@ -456,34 +456,4 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('jwt_token', $configuration['mercure']);
         self::assertNull($configuration['mercure']['jwt_token']);
     }
-
-    public function testMercureSlowDownTaskSupportCanBeEnabled(): void
-    {
-        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
-            'scheduler_bundle' => [
-                'transport' => [
-                    'dsn' => 'cache://app',
-                ],
-                'mercure' => [
-                    'enabled' => true,
-                    'hub_url' => 'https://www.foo.com',
-                    'update_url' => 'https://www.bar.com',
-                    'on_slow_task' => true,
-                ],
-            ],
-        ]);
-
-        self::assertArrayHasKey('mercure', $configuration);
-        self::assertCount(4, $configuration['mercure']);
-        self::assertArrayHasKey('enabled', $configuration['mercure']);
-        self::assertTrue($configuration['mercure']['enabled']);
-        self::assertArrayHasKey('hub_url', $configuration['mercure']);
-        self::assertSame('https://www.foo.com', $configuration['mercure']['hub_url']);
-        self::assertArrayHasKey('update_url', $configuration['mercure']);
-        self::assertSame('https://www.bar.com', $configuration['mercure']['update_url']);
-        self::assertArrayHasKey('jwt_token', $configuration['mercure']);
-        self::assertNull($configuration['mercure']['jwt_token']);
-        self::assertArrayHasKey('on_slow_task', $configuration['mercure']);
-        self::assertTrue($configuration['mercure']['on_slow_task']);
-    }
 }
