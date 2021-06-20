@@ -4,6 +4,17 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+0.5.3
+-----
+
+### Bug Fixes
+
+##### Kernel
+
+* SchedulerCacheClearer improved (#153) ([15b746](https://github.com/Guikingone/SchedulerBundle/commit/15b74620b689fb167ff61f78555ee4516c4178d2))
+
+---
+
 0.5.2
 -----
 
