@@ -10,7 +10,6 @@ use Redis;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
-use SchedulerBundle\CacheClearer\SchedulerCacheClearer;
 use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
@@ -150,7 +149,6 @@ final class SchedulerBundleExtension extends Extension
 
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
-        $this->registerKernelDependencies($container);
         $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
         $this->registerScheduler($container);
@@ -199,20 +197,6 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
-    }
-
-    private function registerKernelDependencies(ContainerBuilder $container): void
-    {
-        $container->register(SchedulerCacheClearer::class, SchedulerCacheClearer::class)
-            ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-            ])
-            ->setPublic(false)
-            ->addTag('kernel.cache_clearer')
-            ->addTag('container.preload', [
-                'class' => SchedulerCacheClearer::class,
-            ])
-        ;
     }
 
     private function registerTransportFactories(ContainerBuilder $container, array $configuration): void

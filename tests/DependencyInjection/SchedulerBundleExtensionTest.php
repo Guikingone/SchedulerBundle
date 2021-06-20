@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
-use SchedulerBundle\CacheClearer\SchedulerCacheClearer;
 use SchedulerBundle\Command\ConsumeTasksCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
@@ -193,27 +192,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[BuilderInterface::class]->hasTag('scheduler.task_builder'));
         self::assertArrayHasKey(ProbeInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[ProbeInterface::class]->hasTag('scheduler.probe'));
-    }
-
-    public function testKernelDependenciesAreRegistered(): void
-    {
-        $container = $this->getContainer([
-            'path' => '/_foo',
-            'timezone' => 'Europe/Paris',
-            'transport' => [
-                'dsn' => 'memory://first_in_first_out',
-            ],
-        ]);
-
-        self::assertTrue($container->hasDefinition(SchedulerCacheClearer::class));
-        self::assertCount(1, $container->getDefinition(SchedulerCacheClearer::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0));
-        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0));
-        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerCacheClearer::class)->getArgument(0)->getInvalidBehavior());
-        self::assertFalse($container->getDefinition(SchedulerCacheClearer::class)->isPublic());
-        self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('kernel.cache_clearer'));
-        self::assertTrue($container->getDefinition(SchedulerCacheClearer::class)->hasTag('container.preload'));
-        self::assertSame(SchedulerCacheClearer::class, $container->getDefinition(SchedulerCacheClearer::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testTransportFactoriesAreRegistered(): void

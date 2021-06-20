@@ -67,9 +67,36 @@ final class StopWorkerOnTimeLimitSubscriberTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(
             self::equalTo(sprintf('Worker stopped due to time limit of %d seconds exceeded', $timeLimit)),
-            [
+            self::equalTo([
                 'lastExecutedTask' => 'foo',
-            ]
+            ])
+        );
+
+        $stopWorkerOnTimeLimitSubscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
+        $workerRunningEvent = new WorkerRunningEvent($worker);
+
+        $stopWorkerOnTimeLimitSubscriber->onWorkerStarted();
+        sleep($timeLimit + 1);
+        $stopWorkerOnTimeLimitSubscriber->onWorkerRunning($workerRunningEvent);
+    }
+
+    /**
+     * @dataProvider provideTimeLimit
+     *
+     * @group time-sensitive
+     */
+    public function testSubscriberCanStopOnExceededTimeLimitWithoutLastExecutedTask(int $timeLimit): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('stop');
+        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(
+            self::equalTo(sprintf('Worker stopped due to time limit of %d seconds exceeded', $timeLimit)),
+            self::equalTo([
+                'lastExecutedTask' => null,
+            ])
         );
 
         $stopWorkerOnTimeLimitSubscriber = new StopWorkerOnTimeLimitSubscriber($timeLimit, $logger);
