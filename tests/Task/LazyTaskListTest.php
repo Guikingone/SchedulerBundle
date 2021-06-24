@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
@@ -259,5 +260,29 @@ final class LazyTaskListTest extends TestCase
 
         $list->offsetUnset('foo');
         self::assertCount(0, $list);
+    }
+
+    public function testListCannotReturnLastTaskWhileEmpty(): void
+    {
+        $taskList = new LazyTaskList(new TaskList());
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The current list is empty');
+        self::expectExceptionCode(0);
+        $taskList->last();
+    }
+
+    public function testListCanReturnLastTask(): void
+    {
+        $taskList = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+
+        self::assertFalse($taskList->isInitialized());
+
+        $lastTask = $taskList->last();
+        self::assertTrue($taskList->isInitialized());
+        self::assertSame('bar', $lastTask->getName());
     }
 }

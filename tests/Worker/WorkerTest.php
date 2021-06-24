@@ -1213,7 +1213,7 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
@@ -1252,7 +1252,7 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::never())->method('isSingleRun');
         $task->expects(self::once())->method('setArrivalTime');
