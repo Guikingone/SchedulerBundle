@@ -10,13 +10,20 @@ use Symfony\Contracts\EventDispatcher\Event;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerStartedEvent extends Event implements WorkerEventInterface
+final class WorkerSleepingEvent extends Event implements WorkerEventInterface
 {
+    private int $sleepDuration;
     private WorkerInterface $worker;
 
-    public function __construct(WorkerInterface $worker)
+    public function __construct(int $sleepDuration, WorkerInterface $worker)
     {
+        $this->sleepDuration = $sleepDuration;
         $this->worker = $worker;
+    }
+
+    public function getSleepDuration(): int
+    {
+        return $this->sleepDuration;
     }
 
     public function getWorker(): WorkerInterface

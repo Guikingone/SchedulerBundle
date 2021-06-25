@@ -10,7 +10,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerRunningEvent extends Event
+final class WorkerRunningEvent extends Event implements WorkerEventInterface
 {
     private WorkerInterface $worker;
     private bool $isIdle;

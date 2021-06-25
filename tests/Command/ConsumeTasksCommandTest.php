@@ -360,7 +360,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 
@@ -401,7 +401,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
+        $task->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
         $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
 

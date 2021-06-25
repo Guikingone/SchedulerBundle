@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker;
 
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
@@ -18,6 +19,7 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function end;
 use function sleep;
 
 /**
@@ -53,10 +55,10 @@ final class Worker extends AbstractWorker
     {
         $this->run($options, function () use ($options, $tasks): void {
             while (!$this->getOptions()['shouldStop']) {
-                $tasks = $this->getTasks($tasks);
+                $toExecuteTasks = $this->getTasks($tasks);
 
-                foreach ($tasks as $task) {
-                    if ($tasks->last() === $task && !$this->checkTaskState($task)) {
+                foreach ($toExecuteTasks as $task) {
+                    if (end($toExecuteTasks) === $task && !$this->checkTaskState($task)) {
                         break 2;
                     }
 
@@ -65,7 +67,7 @@ final class Worker extends AbstractWorker
                     }
 
                     $lockedTask = $this->lockFactory->createLock($task->getName());
-                    if ($tasks->last() === $task && !$lockedTask->acquire()) {
+                    if (end($toExecuteTasks) === $task && !$lockedTask->acquire()) {
                         break 2;
                     }
 
@@ -85,15 +87,15 @@ final class Worker extends AbstractWorker
                         }
 
                         try {
-                            $this->middlewareStack->runPreExecutionMiddleware($task);
-
                             if (!$this->getOptions()['isRunning']) {
+                                $this->middlewareStack->runPreExecutionMiddleware($task);
+
                                 $this->options['isRunning'] = true;
                                 $this->dispatch(new WorkerRunningEvent($this));
                                 $this->handleTask($runner, $task);
-                            }
 
-                            $this->middlewareStack->runPostExecutionMiddleware($task);
+                                $this->middlewareStack->runPostExecutionMiddleware($task);
+                            }
                         } catch (Throwable $throwable) {
                             $failedTask = new FailedTask($task, $throwable->getMessage());
                             $this->getFailedTasks()->add($failedTask);
@@ -112,13 +114,17 @@ final class Worker extends AbstractWorker
                         }
                     }
 
-                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $tasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
+                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;
                     }
                 }
 
                 if ($this->getOptions()['sleepUntilNextMinute']) {
-                    sleep($this->getSleepDuration());
+                    $sleepDuration = $this->getSleepDuration();
+
+                    $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
+
+                    sleep($sleepDuration);
 
                     $this->execute($options);
                 }
