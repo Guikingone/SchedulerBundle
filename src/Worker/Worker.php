@@ -62,6 +62,7 @@ final class Worker extends AbstractWorker
                         break 2;
                     }
 
+                    dump($this->checkTaskState($task));
                     if (!$this->checkTaskState($task)) {
                         continue;
                     }

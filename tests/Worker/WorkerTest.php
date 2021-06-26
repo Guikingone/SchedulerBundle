@@ -1303,13 +1303,16 @@ final class WorkerTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([new NullTask('foo', [
-            'expression' => '* * * * *',
-            'state' => TaskInterface::PAUSED,
-        ]), new NullTask('bar', [
-            'expression' => '* * * * *',
-            'state' => TaskInterface::PAUSED,
-        ])]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo', [
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ]),
+            new NullTask('bar', [
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ]),
+        ]));
 
         $worker = new Worker($scheduler, [
             new NullTaskRunner(),

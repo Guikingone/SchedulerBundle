@@ -63,6 +63,8 @@ use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\ProbeTaskRunner;
 use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistry;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -633,6 +635,17 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(KernelInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
         ;
+
+        $container->register(RunnerRegistry::class, RunnerRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_RUNNER_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => RunnerRegistry::class,
+            ])
+        ;
+        $container->setAlias(RunnerRegistryInterface::class, RunnerRegistry::class);
 
         $container->register(ShellTaskRunner::class, ShellTaskRunner::class)
             ->addTag(self::SCHEDULER_RUNNER_TAG)
