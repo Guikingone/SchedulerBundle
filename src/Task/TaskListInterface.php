@@ -63,6 +63,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function last(): TaskInterface;
 
     /**
+     * Move the internal pointer to the latest {@see TaskInterface}.
+     */
+    public function end(): TaskInterface;
+
+    /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>

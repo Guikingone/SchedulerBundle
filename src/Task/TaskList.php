@@ -16,8 +16,10 @@ use function array_values;
 use function array_walk;
 use function array_map;
 use function count;
+use function end;
 use function gettype;
 use function in_array;
+use function is_bool;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 
@@ -189,6 +191,19 @@ final class TaskList implements TaskListInterface
         }
 
         return $this->tasks[$lastIndex];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function end(): TaskInterface
+    {
+        $lastTask = end($this->tasks);
+        if (is_bool($lastTask)) {
+            throw new RuntimeException('The latest task cannot be used as the current list is empty');
+        }
+
+        return $lastTask;
     }
 
     /**

@@ -421,6 +421,8 @@ final class ConsumeTasksCommandTest extends TestCase
             '--limit' => 1,
         ], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
 
+        dump($commandTester->getDisplay());
+
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
         self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());

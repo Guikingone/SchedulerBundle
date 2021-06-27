@@ -1279,8 +1279,6 @@ final class WorkerTest extends TestCase
 
     /**
      * @throws Throwable
-     *
-     * @group foo
      */
     public function testPausedTaskIsNotExecutedIfListContainsASingleTask(): void
     {
