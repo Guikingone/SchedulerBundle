@@ -1279,6 +1279,8 @@ final class WorkerTest extends TestCase
 
     /**
      * @throws Throwable
+     *
+     * @group foo
      */
     public function testPausedTaskIsNotExecutedIfListContainsASingleTask(): void
     {
@@ -1286,40 +1288,44 @@ final class WorkerTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::exactly(2))->method('info')->withConsecutive([
-            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
-            [
-                'name' => 'foo',
-                'expression' => '* * * * *',
-                'state' => TaskInterface::PAUSED,
-            ],
-        ], [
             self::equalTo('The following task "bar" is paused|disabled, consider enable it if it should be executed!'),
             [
                 'name' => 'bar',
                 'expression' => '* * * * *',
                 'state' => TaskInterface::PAUSED,
             ],
+        ], [
+            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
+            [
+                'name' => 'foo',
+                'expression' => '* * * * *',
+                'state' => TaskInterface::PAUSED,
+            ],
         ]);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $task->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::PAUSED);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(3))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $secondTask->expects(self::exactly(3))->method('getState')->willReturn(TaskInterface::PAUSED);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo', [
-                'expression' => '* * * * *',
-                'state' => TaskInterface::PAUSED,
-            ]),
-            new NullTask('bar', [
-                'expression' => '* * * * *',
-                'state' => TaskInterface::PAUSED,
-            ]),
-        ]));
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$secondTask, $task]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $worker = new Worker($scheduler, [
             new NullTaskRunner(),
         ], $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
-        ]), new EventDispatcher(), $logger);
+        ]), $eventDispatcher, $logger);
         $worker->execute();
 
         self::assertNull($worker->getLastExecutedTask());
