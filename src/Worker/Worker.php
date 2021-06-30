@@ -19,6 +19,7 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function end;
 use function sleep;
 
 /**
@@ -57,7 +58,7 @@ final class Worker extends AbstractWorker
                 $toExecuteTasks = $this->getTasks($tasks);
 
                 foreach ($toExecuteTasks as $task) {
-                    if ($toExecuteTasks->end() === $task && !$this->checkTaskState($task)) {
+                    if (end($toExecuteTasks) === $task && !$this->checkTaskState($task)) {
                         break 2;
                     }
 
@@ -66,7 +67,7 @@ final class Worker extends AbstractWorker
                     }
 
                     $lockedTask = $this->lockFactory->createLock($task->getName());
-                    if ($toExecuteTasks->end() === $task && !$lockedTask->acquire()) {
+                    if (end($toExecuteTasks) === $task && !$lockedTask->acquire()) {
                         break 2;
                     }
 
