@@ -19,8 +19,8 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function end;
 use function sleep;
+use function usleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -58,7 +58,7 @@ final class Worker extends AbstractWorker
                 $toExecuteTasks = $this->getTasks($tasks);
 
                 foreach ($toExecuteTasks as $task) {
-                    if (end($toExecuteTasks) === $task && !$this->checkTaskState($task)) {
+                    if (($toExecuteTasks->last() === $task && !$this->checkTaskState($task)) && !$this->getOptions()['sleepUntilNextMinute']) {
                         break 2;
                     }
 
@@ -67,7 +67,7 @@ final class Worker extends AbstractWorker
                     }
 
                     $lockedTask = $this->lockFactory->createLock($task->getName());
-                    if (end($toExecuteTasks) === $task && !$lockedTask->acquire()) {
+                    if (($toExecuteTasks->last() === $task && !$lockedTask->acquire()) && !$this->getOptions()['sleepUntilNextMinute']) {
                         break 2;
                     }
 
@@ -117,10 +117,6 @@ final class Worker extends AbstractWorker
                     if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
                         break 2;
                     }
-                }
-
-                if ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) {
-                    break;
                 }
 
                 if ($this->getOptions()['sleepUntilNextMinute']) {

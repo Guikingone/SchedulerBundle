@@ -435,7 +435,6 @@ final class ConsumeTasksCommandTest extends TestCase
 
     public function testCommandCannotExecuteExternalProbeTask(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcher::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -446,7 +445,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
 
-        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, new EventDispatcher(), $logger));
         $commandTester->execute([]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
