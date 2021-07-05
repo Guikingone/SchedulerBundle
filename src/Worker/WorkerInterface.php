@@ -59,6 +59,11 @@ interface WorkerInterface
      */
     public function restart(): void;
 
+    /**
+     * Start a "sleeping" phase in the current worker.
+     */
+    public function sleep(): void;
+
     public function isRunning(): bool;
 
     /**

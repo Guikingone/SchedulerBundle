@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker;
 
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
@@ -19,7 +18,6 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function sleep;
 use function usleep;
 
 /**
@@ -120,12 +118,7 @@ final class Worker extends AbstractWorker
                 }
 
                 if ($this->getOptions()['sleepUntilNextMinute']) {
-                    $sleepDuration = $this->getSleepDuration();
-
-                    $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
-
-                    sleep($sleepDuration);
-
+                    $this->sleep();
                     $this->execute($options);
                 }
             }
