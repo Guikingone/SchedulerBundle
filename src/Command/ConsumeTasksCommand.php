@@ -69,6 +69,7 @@ final class ConsumeTasksCommand extends Command
                 new InputOption('time-limit', 't', InputOption::VALUE_REQUIRED, 'Limit the time in seconds the worker can run'),
                 new InputOption('failure-limit', 'f', InputOption::VALUE_REQUIRED, 'Limit the amount of task allowed to fail'),
                 new InputOption('wait', 'w', InputOption::VALUE_NONE, 'Set the worker to wait for tasks every minutes'),
+                new InputOption('force', null, InputOption::VALUE_NONE, 'Force the worker to wait for tasks even if no tasks are currently available'),
             ])
             ->setHelp(
                 <<<'EOF'
@@ -87,6 +88,9 @@ final class ConsumeTasksCommand extends Command
 
                     Use the --wait option to set the worker to wait for tasks every minutes:
                         <info>php %command.full_name% --wait</info>
+
+                    Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
+                        <info>php %command.full_name% --force</info>
                     EOF
             )
         ;
@@ -108,14 +112,16 @@ final class ConsumeTasksCommand extends Command
             return self::SUCCESS;
         }
 
-        $nonPausedTasks = $dueTasks->filter(fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
-        if (0 === count($nonPausedTasks)) {
-            $symfonyStyle->warning([
-                'Each tasks has already been executed for the current minute',
-                sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable('+ 1 minute'))->format('Y-m-d h:i')),
-            ]);
+        if (!$input->getOption('force')) {
+            $nonPausedTasks = $dueTasks->filter(fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
+            if (0 === $nonPausedTasks->count()) {
+                $symfonyStyle->warning([
+                    'Each tasks has already been executed for the current minute',
+                    sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable('+ 1 minute'))->format('Y-m-d h:i')),
+                ]);
 
-            return self::SUCCESS;
+                return self::SUCCESS;
+            }
         }
 
         $stopOptions = [];
