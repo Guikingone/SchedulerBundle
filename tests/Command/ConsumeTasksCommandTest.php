@@ -48,7 +48,7 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame('scheduler:consume', $consumeTasksCommand->getName());
         self::assertSame('Consumes due tasks', $consumeTasksCommand->getDescription());
         self::assertSame(0, $consumeTasksCommand->getDefinition()->getArgumentCount());
-        self::assertCount(4, $consumeTasksCommand->getDefinition()->getOptions());
+        self::assertCount(5, $consumeTasksCommand->getDefinition()->getOptions());
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('limit'));
         self::assertSame('Limit the number of tasks consumed', $consumeTasksCommand->getDefinition()->getOption('limit')->getDescription());
         self::assertSame('l', $consumeTasksCommand->getDefinition()->getOption('limit')->getShortcut());
@@ -62,6 +62,10 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertFalse($consumeTasksCommand->getDefinition()->getOption('wait')->acceptValue());
         self::assertSame('Set the worker to wait for tasks every minutes', $consumeTasksCommand->getDefinition()->getOption('wait')->getDescription());
         self::assertSame('w', $consumeTasksCommand->getDefinition()->getOption('wait')->getShortcut());
+        self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('force'));
+        self::assertFalse($consumeTasksCommand->getDefinition()->getOption('force')->acceptValue());
+        self::assertSame('Force the worker to wait for tasks even if no tasks are currently available', $consumeTasksCommand->getDefinition()->getOption('force')->getDescription());
+        self::assertNull($consumeTasksCommand->getDefinition()->getOption('force')->getShortcut());
         self::assertSame(
             $consumeTasksCommand->getHelp(),
             <<<'EOF'
@@ -80,6 +84,9 @@ final class ConsumeTasksCommandTest extends TestCase
 
                 Use the --wait option to set the worker to wait for tasks every minutes:
                     <info>php %command.full_name% --wait</info>
+
+                Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
+                    <info>php %command.full_name% --force</info>
                 EOF
         );
     }
@@ -444,6 +451,32 @@ final class ConsumeTasksCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('No due tasks found', $commandTester->getDisplay());
+    }
+
+    public function testCommandCanWaitForTasksWithoutPauseFilter(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::exactly(1))->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('execute')->with(
+            self::equalTo([
+                'sleepUntilNextMinute' => true,
+            ])
+        );
+
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, new EventDispatcher()));
+        $commandTester->execute([
+            '--wait' => true,
+            '--force' => true,
+        ]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[NOTE] The worker will wait for tasks every minutes', $commandTester->getDisplay());
+        self::assertStringContainsString('// Quit the worker with CONTROL-C.', $commandTester->getDisplay());
+        self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
     }
 
     /**
