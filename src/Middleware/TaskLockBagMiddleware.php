@@ -22,7 +22,7 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
     public const TASK_LOCK_MASK = '_symfony_scheduler_';
 
     private LockFactory $lockFactory;
-    private ?LoggerInterface $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         LockFactory $lockFactory,
@@ -54,8 +54,6 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
             $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
 
             $lock->release();
-        } finally {
-            $scheduler->update($task->getName(), $task->setExecutionLockBag());
         }
     }
 }

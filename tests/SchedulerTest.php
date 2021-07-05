@@ -10,6 +10,7 @@ use Exception;
 use Generator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
@@ -30,6 +31,7 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -61,6 +63,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function in_array;
+use function sprintf;
 use function sys_get_temp_dir;
 
 /**
@@ -1082,7 +1085,6 @@ final class SchedulerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1092,7 +1094,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                $lockTaskBagNormalizer
+                new LockTaskBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
@@ -1118,11 +1120,16 @@ final class SchedulerTest extends TestCase
         self::assertNull($task->getExecutionLockBag());
     }
 
-    public function testSchedulerCannotLockTaskWithValidLockFactory(): void
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
+    public function testSchedulerCanLockTaskWithValidLockFactory(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1132,7 +1139,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                $lockTaskBagNormalizer
+                new LockTaskBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
@@ -1142,10 +1149,13 @@ final class SchedulerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
+        $pdoConnection = new PDO(sprintf('sqlite://%s/tasks.db', sys_get_temp_dir()));
+        $pdoConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
         $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
-            new TaskLockBagMiddleware(new LockFactory(new PdoStore(new PDO('')))),
+            new TaskLockBagMiddleware(new LockFactory(new PdoStore($pdoConnection)), $logger),
         ]), new EventDispatcher());
 
         $scheduler->schedule(new NullTask('foo'));
@@ -1155,7 +1165,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertNull($task->getExecutionLockBag());
+        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
     }
 
     /**
