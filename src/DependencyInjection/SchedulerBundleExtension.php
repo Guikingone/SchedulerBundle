@@ -676,7 +676,7 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->addTag(self::SCHEDULER_RUNNER_TAG)
             ->addTag('scheduler.extra', [
-                'require' => 'messenger.default_bus',
+                'require' => 'messenger.bus.default',
                 'tag' => self::SCHEDULER_RUNNER_TAG,
             ])
             ->addTag('container.preload', [

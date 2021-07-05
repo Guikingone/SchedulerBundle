@@ -746,7 +746,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(MessengerTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(MessengerTaskRunner::class, $container->getDefinition(MessengerTaskRunner::class)->getTag('container.preload')[0]['class']);
         self::assertTrue($container->getDefinition(MessengerTaskRunner::class)->hasTag('scheduler.extra'));
-        self::assertSame('messenger.default_bus', $container->getDefinition(MessengerTaskRunner::class)->getTag('scheduler.extra')[0]['require']);
+        self::assertSame('messenger.bus.default', $container->getDefinition(MessengerTaskRunner::class)->getTag('scheduler.extra')[0]['require']);
         self::assertSame('scheduler.runner', $container->getDefinition(MessengerTaskRunner::class)->getTag('scheduler.extra')[0]['tag']);
 
         self::assertTrue($container->hasDefinition(NotificationTaskRunner::class));
