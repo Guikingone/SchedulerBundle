@@ -115,6 +115,16 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
+    public function last(): TaskInterface
+    {
+        $this->initialize();
+
+        return $this->list->last();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(bool $keepKeys = true): array
     {
         $this->initialize();

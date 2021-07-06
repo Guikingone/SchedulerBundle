@@ -57,6 +57,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function map(Closure $func): array;
 
     /**
+     * Return the latest task in the current list.
+     */
+    public function last(): TaskInterface;
+
+    /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>
