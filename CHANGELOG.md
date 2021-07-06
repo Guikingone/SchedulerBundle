@@ -1,8 +1,21 @@
-<!--- BEGIN HEADER -->
 # Changelog
 
-All notable changes to this project will be documented in this file.
-<!--- END HEADER -->
+0.5.4
+-----
+
+### Features
+
+##### Command
+
+* --force option added to scheduler:consume (#161) ([81b23a](https://github.com/Guikingone/SchedulerBundle/commit/81b23a790a7e0f87e25011a4895fa427ff5cd1cc))
+
+### Code Refactoring
+
+##### DIC
+
+* MessengerTaskRunner injection fixed (#163) ([a27a85](https://github.com/Guikingone/SchedulerBundle/commit/a27a8515f60e03d5a76165be868f95f2578886f7))
+
+---
 
 0.5.3
 -----
