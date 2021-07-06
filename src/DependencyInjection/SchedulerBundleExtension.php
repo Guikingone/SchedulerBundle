@@ -123,6 +123,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function array_key_exists;
 use function array_merge;
 use function class_exists;
+use function interface_exists;
 use function sprintf;
 use function strpos;
 
@@ -670,20 +671,6 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(MessengerTaskRunner::class, MessengerTaskRunner::class)
-            ->setArguments([
-                new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-            ])
-            ->addTag(self::SCHEDULER_RUNNER_TAG)
-            ->addTag('scheduler.extra', [
-                'require' => 'messenger.bus.default',
-                'tag' => self::SCHEDULER_RUNNER_TAG,
-            ])
-            ->addTag('container.preload', [
-                'class' => MessengerTaskRunner::class,
-            ])
-        ;
-
         $container->register(NotificationTaskRunner::class, NotificationTaskRunner::class)
             ->setArguments([
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
@@ -772,6 +759,18 @@ final class SchedulerBundleExtension extends Extension
                 'class' => TaskToPauseMessageHandler::class,
             ])
         ;
+
+        if (interface_exists(MessageBusInterface::class)) {
+            $container->register(MessengerTaskRunner::class, MessengerTaskRunner::class)
+                ->setArguments([
+                    new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->addTag(self::SCHEDULER_RUNNER_TAG)
+                ->addTag('container.preload', [
+                    'class' => MessengerTaskRunner::class,
+                ])
+            ;
+        }
     }
 
     private function registerSubscribers(ContainerBuilder $container): void
