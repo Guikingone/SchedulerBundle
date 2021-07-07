@@ -7,7 +7,7 @@ namespace SchedulerBundle\Command;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Event\WorkerSleepingStartedEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
@@ -225,7 +225,7 @@ final class ConsumeTasksCommand extends Command
 
     private function registerWorkerSleepingListener(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(WorkerSleepingStartedEvent::class, function (WorkerSleepingStartedEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(WorkerSleepingEvent ::class, function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
             $symfonyStyle->info(sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
         });
     }

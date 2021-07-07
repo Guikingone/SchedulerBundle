@@ -14,7 +14,6 @@ use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerSleepingEvent;
-use SchedulerBundle\Event\WorkerSleepingStartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
@@ -115,15 +114,10 @@ abstract class AbstractWorker implements WorkerInterface
     public function sleep(): void
     {
         $sleepDuration = $this->getSleepDuration();
-        $sleepCount = 0;
 
-        $this->dispatch(new WorkerSleepingStartedEvent($sleepDuration, $this));
+        $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
 
-        while ($sleepCount < $sleepDuration) {
-            $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
-
-            ++$sleepCount;
-        }
+        sleep($sleepDuration);
     }
 
     /**

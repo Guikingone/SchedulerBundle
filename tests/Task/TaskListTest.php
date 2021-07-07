@@ -175,9 +175,6 @@ final class TaskListTest extends TestCase
         self::assertCount(1, $tasks);
     }
 
-    /**
-     * @group foo
-     */
     public function testListCanFilterTaskByNames(): void
     {
         $task = new NullTask('foo');
