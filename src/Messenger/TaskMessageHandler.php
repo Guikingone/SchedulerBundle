@@ -6,6 +6,7 @@ namespace SchedulerBundle\Messenger;
 
 use Cron\CronExpression;
 use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -35,8 +36,9 @@ final class TaskMessageHandler implements MessageHandlerInterface
     public function __invoke(TaskMessage $taskMessage): void
     {
         $task = $taskMessage->getTask();
+        $timezone = $task->getTimezone() ?? new DateTimeZone('UTC');
 
-        if (!(new CronExpression($task->getExpression()))->isDue(new DateTimeImmutable('now', $task->getTimezone()), $task->getTimezone()->getName())) {
+        if (!(new CronExpression($task->getExpression()))->isDue(new DateTimeImmutable('now', $timezone), $timezone->getName())) {
             return;
         }
 

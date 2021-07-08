@@ -35,7 +35,7 @@ final class NotificationTaskRunner implements RunnerInterface
         }
 
         try {
-            if (null === $this->notifier) {
+            if (!$this->notifier instanceof NotifierInterface) {
                 $task->setExecutionState(TaskInterface::ERRORED);
 
                 return new Output($task, 'The task cannot be handled as the notifier is not defined', Output::ERROR);

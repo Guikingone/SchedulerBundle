@@ -11,6 +11,7 @@ use DateTimeZone;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -54,19 +55,22 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private ObjectNormalizer $objectNormalizer;
     private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
     private NotificationTaskBagNormalizer $notificationTaskBagNormalizer;
+    private LockTaskBagNormalizer $lockTaskBagNormalizer;
 
     public function __construct(
         DateTimeNormalizer $dateTimeNormalizer,
         DateTimeZoneNormalizer $dateTimeZoneNormalizer,
         DateIntervalNormalizer $dateIntervalNormalizer,
         ObjectNormalizer $objectNormalizer,
-        NotificationTaskBagNormalizer $notificationTaskBagNormalizer
+        NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
+        LockTaskBagNormalizer $lockTaskBagNormalizer
     ) {
         $this->dateTimeNormalizer = $dateTimeNormalizer;
         $this->dateTimeZoneNormalizer = $dateTimeZoneNormalizer;
         $this->dateIntervalNormalizer = $dateIntervalNormalizer;
         $this->objectNormalizer = $objectNormalizer;
         $this->notificationTaskBagNormalizer = $notificationTaskBagNormalizer;
+        $this->lockTaskBagNormalizer = $lockTaskBagNormalizer;
     }
 
     /**
@@ -133,6 +137,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'options' => [],
                     ],
                 ])), $innerObject->toArray(false)),
+                'executionLockBag' => fn (?LockTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof LockTaskBag ? $this->lockTaskBagNormalizer->normalize($innerObject, $format, $context) : null,
             ],
         ];
 

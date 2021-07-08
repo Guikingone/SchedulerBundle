@@ -87,7 +87,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1, 2]);
+        $callbackTask = new CallbackTask('foo', fn (int $a, int $b): int => $a * $b, [1, 2]);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -101,7 +101,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn ($a, $b): int => $a * $b, [1]);
+        $callbackTask = new CallbackTask('foo', fn (int $a, $b): int => $a * $b, [1]);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 

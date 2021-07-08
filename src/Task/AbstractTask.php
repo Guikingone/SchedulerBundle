@@ -11,6 +11,7 @@ use DateTimeZone;
 use Exception;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -76,6 +77,7 @@ abstract class AbstractTask implements TaskInterface
             'execution_end_date' => null,
             'execution_start_time' => null,
             'execution_end_time' => null,
+            'execution_lock_bag' => null,
             'last_execution' => null,
             'max_duration' => null,
             'max_executions' => null,
@@ -116,6 +118,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
         $optionsResolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_lock_bag', [LockTaskBag::class, 'null']);
         $optionsResolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('max_duration', ['float', 'null']);
         $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
@@ -154,6 +157,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setInfo('execution_end_time', 'The limit date since the task must not be executed');
         $optionsResolver->setInfo('execution_start_time', '[Internal] The start time of the task execution, mostly used by the internal sort process');
         $optionsResolver->setInfo('execution_end_time', '[Internal] The date where the execution is finished, mostly used by the internal sort process');
+        $optionsResolver->setInfo('execution_lock_bag', '[Internal] The lock bag used by the worker to lock and execute the task (and which contains the lock key)');
         $optionsResolver->setInfo('last_execution', 'Define the last execution date of the task');
         $optionsResolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
         $optionsResolver->setInfo('max_executions', 'Define the maximum amount of execution of a task');
@@ -481,6 +485,18 @@ abstract class AbstractTask implements TaskInterface
     public function getExecutionEndTime(): ?DateTimeImmutable
     {
         return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
+    }
+
+    public function setExecutionLockBag(?LockTaskBag $bag = null): TaskInterface
+    {
+        $this->options['execution_lock_bag'] = $bag;
+
+        return $this;
+    }
+
+    public function getExecutionLockBag(): ?LockTaskBag
+    {
+        return $this->options['execution_lock_bag'];
     }
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
