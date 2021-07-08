@@ -218,4 +218,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
         $workerLifecycleSubscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
     }
+
+    public function testSubscriberLogOnWorkerPaused(): void
+    {
+    }
 }

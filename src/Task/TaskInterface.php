@@ -32,6 +32,11 @@ interface TaskInterface
     /**
      * @var string
      */
+    public const READY_TO_EXECUTE = 'to_execute';
+
+    /**
+     * @var string
+     */
     public const UNDEFINED = 'undefined';
 
     /**
@@ -41,6 +46,7 @@ interface TaskInterface
         self::ENABLED,
         self::PAUSED,
         self::DISABLED,
+        self::READY_TO_EXECUTE,
         self::UNDEFINED,
     ];
 

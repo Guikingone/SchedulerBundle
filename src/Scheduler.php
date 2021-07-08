@@ -9,6 +9,8 @@ use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -23,7 +25,6 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function is_bool;
@@ -49,7 +50,7 @@ final class Scheduler implements SchedulerInterface
     private DateTimeZone $timezone;
     private TransportInterface $transport;
     private SchedulerMiddlewareStack $middlewareStack;
-    private ?EventDispatcherInterface $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
     private ?MessageBusInterface $bus;
 
     /**
@@ -59,7 +60,7 @@ final class Scheduler implements SchedulerInterface
         string $timezone,
         TransportInterface $transport,
         SchedulerMiddlewareStack $schedulerMiddlewareStack,
-        EventDispatcherInterface $eventDispatcher = null,
+        EventDispatcherInterface $eventDispatcher,
         MessageBusInterface $messageBus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
@@ -84,13 +85,13 @@ final class Scheduler implements SchedulerInterface
 
         if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
             $this->bus->dispatch(new TaskMessage($task));
-            $this->dispatch(new TaskScheduledEvent($task));
+            $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
 
             return;
         }
 
         $this->transport->create($task);
-        $this->dispatch(new TaskScheduledEvent($task));
+        $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
 
         $this->middlewareStack->runPostSchedulingMiddleware($task, $this);
     }
@@ -101,7 +102,7 @@ final class Scheduler implements SchedulerInterface
     public function unschedule(string $taskName): void
     {
         $this->transport->delete($taskName);
-        $this->dispatch(new TaskUnscheduledEvent($taskName));
+        $this->eventDispatcher->dispatch(new TaskUnscheduledEvent($taskName));
     }
 
     /**
@@ -119,6 +120,51 @@ final class Scheduler implements SchedulerInterface
 
         $this->unschedule($name);
         $this->schedule($task);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preempt(Closure $func, bool $preempt = false): void
+    {
+        $dueTasks = $this->getDueTasks();
+        if (0 === $dueTasks->count()) {
+            return;
+        }
+
+        $toPreemptTasks = $dueTasks->filter($func);
+        if (0 === $toPreemptTasks->count()) {
+            return;
+        }
+
+        if (!$preempt) {
+            return;
+        }
+
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($toPreemptTasks): void {
+            $worker = $event->getWorker();
+
+            $worker->pause();
+
+            $remainingTasks = $worker->getCurrentTasks();
+
+            $forkWorker = $worker->fork();
+            try {
+                $forkWorker->execute($worker->getOptions(), ...$toPreemptTasks->toArray(false));
+            } catch (Throwable $throwable) {
+
+            } finally {
+                $forkWorker->stop();
+            }
+
+            $worker->restart();
+
+            if (null !== $remainingTasks || 0 !== $remainingTasks->count()) {
+                $worker->execute($worker->getOptions(), ...$remainingTasks->toArray(false));
+            }
+
+            unset($forkWorker);
+        });
     }
 
     /**
@@ -229,11 +275,11 @@ final class Scheduler implements SchedulerInterface
 
         $this->transport->clear();
 
-        foreach ($rebootTasks as $rebootTask) {
-            $this->transport->create($rebootTask);
-        }
+        $rebootTasks->walk(function (TaskInterface $task): void {
+            $this->transport->create($task);
+        });
 
-        $this->dispatch(new SchedulerRebootedEvent($this));
+        $this->eventDispatcher->dispatch(new SchedulerRebootedEvent($this));
     }
 
     /**
@@ -242,15 +288,6 @@ final class Scheduler implements SchedulerInterface
     public function getTimezone(): DateTimeZone
     {
         return $this->timezone;
-    }
-
-    private function dispatch(Event $event): void
-    {
-        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
-            return;
-        }
-
-        $this->eventDispatcher->dispatch($event);
     }
 
     /**

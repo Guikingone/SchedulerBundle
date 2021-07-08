@@ -7,9 +7,12 @@ namespace SchedulerBundle\Task;
 use ArrayIterator;
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use Throwable;
 use function array_filter;
 use function array_key_exists;
+use function array_key_last;
+use function array_search;
 use function array_values;
 use function array_walk;
 use function array_map;
@@ -174,6 +177,20 @@ final class TaskList implements TaskListInterface
     public function map(Closure $func): array
     {
         return array_map($func, $this->tasks);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function last(): TaskInterface
+    {
+        $lastTask = $this->tasks[array_search(array_key_last($this->tasks), $this->tasks, true)];
+
+        if (!$lastTask instanceof TaskInterface) {
+            throw new RuntimeException('The last task cannot be found as the list is empty');
+        }
+
+        return $lastTask;
     }
 
     /**

@@ -1455,4 +1455,8 @@ final class WorkerTest extends TestCase
         self::assertNotNull($shellTask->getExecutionStartTime());
         self::assertNotNull($shellTask->getExecutionEndTime());
     }
+
+    public function testWorkerCanBePaused(): void
+    {
+    }
 }
