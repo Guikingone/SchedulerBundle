@@ -17,7 +17,7 @@
             "homepage": "https://www.guillaumeloulier.fr/"
         }
     ],
-    "version": "0.5.3",
+    "version": "0.5.4",
     "autoload": {
         "psr-4": {
             "SchedulerBundle\\": "src/",
