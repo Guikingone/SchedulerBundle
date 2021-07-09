@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use SchedulerBundle\Event\WorkerEventInterface;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -21,11 +23,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
     public function onWorkerStarted(WorkerStartedEvent $workerStartedEvent): void
     {
-        foreach ([SIGTERM, SIGINT, SIGQUIT] as $signal) {
-            pcntl_signal($signal, static function () use ($workerStartedEvent): void {
-                $workerStartedEvent->getWorker()->stop();
-            });
-        }
+        $this->stopWorker($workerStartedEvent);
     }
 
     public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
@@ -33,6 +31,11 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
         pcntl_signal(SIGHUP, static function () use ($workerRunningEvent): void {
             $workerRunningEvent->getWorker()->restart();
         });
+    }
+
+    public function onWorkerSleeping(WorkerSleepingEvent $workerSleepingEvent): void
+    {
+        $this->stopWorker($workerSleepingEvent);
     }
 
     /**
@@ -47,6 +50,16 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
         return [
             WorkerStartedEvent::class => ['onWorkerStarted', 100],
             WorkerRunningEvent::class => ['onWorkerRunning', 100],
+            WorkerSleepingEvent::class => ['onWorkerSleeping', 100],
         ];
+    }
+
+    private function stopWorker(WorkerEventInterface $event): void
+    {
+        foreach ([SIGTERM, SIGINT, SIGQUIT, SIGHUP] as $signal) {
+            pcntl_signal($signal, static function () use ($event): void {
+                $event->getWorker()->stop();
+            });
+        }
     }
 }

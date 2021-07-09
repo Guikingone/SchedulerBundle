@@ -13,6 +13,7 @@ use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
@@ -29,6 +30,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function is_array;
 use function iterator_to_array;
+use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -109,6 +111,18 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
+    public function sleep(): void
+    {
+        $sleepDuration = $this->getSleepDuration();
+
+        $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
+
+        sleep($sleepDuration);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function stop(): void
     {
         $this->options['shouldStop'] = true;
@@ -157,11 +171,9 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
-    protected function getTasks(array $tasks): array
+    protected function getTasks(array $tasks): TaskListInterface
     {
-        $tasks = [] !== $tasks ? $tasks : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
-
-        return is_array($tasks) ? $tasks : iterator_to_array($tasks);
+        return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void

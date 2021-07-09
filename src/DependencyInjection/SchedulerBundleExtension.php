@@ -63,6 +63,8 @@ use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\ProbeTaskRunner;
 use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistry;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -136,6 +138,7 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_RUNNER_TAG = 'scheduler.runner';
     private const SCHEDULER_TASK_BUILDER_TAG = 'scheduler.task_builder';
     private const SCHEDULER_PROBE_TAG = 'scheduler.probe';
+    private const SCHEDULER_SCHEDULER_MIDDLEWARE_TAG = 'scheduler.scheduler_middleware';
     private const SCHEDULER_WORKER_MIDDLEWARE_TAG = 'scheduler.worker_middleware';
 
     public function load(array $configs, ContainerBuilder $container): void
@@ -191,8 +194,8 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PolicyInterface::class)->addTag('scheduler.schedule_policy');
         $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
         $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
-        $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
-        $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag('scheduler.scheduler_middleware');
+        $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
@@ -633,6 +636,17 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
+        $container->register(RunnerRegistry::class, RunnerRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_RUNNER_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => RunnerRegistry::class,
+            ])
+        ;
+        $container->setAlias(RunnerRegistryInterface::class, RunnerRegistry::class);
+
         $container->register(ShellTaskRunner::class, ShellTaskRunner::class)
             ->addTag(self::SCHEDULER_RUNNER_TAG)
             ->addTag('container.preload', [
@@ -944,7 +958,7 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->register(SchedulerMiddlewareStack::class, SchedulerMiddlewareStack::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.scheduler_middleware'),
+                new TaggedIteratorArgument(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG),
             ])
             ->setPublic(false)
             ->addTag('scheduler.middleware_hub')
@@ -969,7 +983,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(NotifierInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.scheduler_middleware')
+            ->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => NotifierMiddleware::class,
@@ -978,7 +992,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(TaskCallbackMiddleware::class, TaskCallbackMiddleware::class)
             ->setPublic(false)
-            ->addTag('scheduler.scheduler_middleware')
+            ->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => TaskCallbackMiddleware::class,

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
@@ -164,6 +165,7 @@ final class ConsumeTasksCommand extends Command
             $this->registerOutputSubscriber($symfonyStyle);
         }
 
+        $this->registerWorkerSleepingListener($symfonyStyle);
         $this->registerTaskExecutedSubscriber($symfonyStyle);
 
         try {
@@ -218,6 +220,13 @@ final class ConsumeTasksCommand extends Command
             $symfonyStyle->success([
                 sprintf('Task "%s" succeed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
             ]);
+        });
+    }
+
+    private function registerWorkerSleepingListener(SymfonyStyle $symfonyStyle): void
+    {
+        $this->eventDispatcher->addListener(WorkerSleepingEvent ::class, function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
+            $symfonyStyle->info(sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
         });
     }
 }
