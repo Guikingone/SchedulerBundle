@@ -215,10 +215,12 @@ final class ConnectionIntegrationTest extends TestCase
         $nullTask = new NullTask('foo');
         $nullTask->setExpression('0 * * * *');
 
-        self::expectException(TransportException::class);
-        self::expectExceptionMessage('The given task cannot be updated as the identifier or the body is invalid');
-        self::expectExceptionCode(0);
         $this->connection->update('foo', $nullTask);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" cannot be found');
+        self::expectExceptionCode(0);
+        $this->connection->get('foo');
     }
 
     public function testTaskCanBeUpdated(): void

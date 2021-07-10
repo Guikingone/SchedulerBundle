@@ -210,10 +210,6 @@ final class Connection implements ConnectionInterface
                     $queryBuilder->getParameters(),
                     $queryBuilder->getParameterTypes()
                 );
-
-                if (1 !== $statement->rowCount()) {
-                    throw new Exception('The given task cannot be updated as the identifier or the body is invalid');
-                }
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
