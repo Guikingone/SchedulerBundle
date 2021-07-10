@@ -1,5 +1,22 @@
 # Changelog
 
+0.5.5
+-----
+
+### Code Refactoring
+
+##### Bridge
+
+* Doctrine connection improved (#166) ([145fbf](https://github.com/Guikingone/SchedulerBundle/commit/145fbfb5334d464f9efd19f67bf9fed11fe35f70))
+
+### Bug Fixes
+
+##### Command
+
+* scheduler:consume --wait (#160) ([145fbf](https://github.com/Guikingone/SchedulerBundle/commit/795067ae212739291edf6f34416429050fcb4f71))
+
+---
+
 0.5.4
 -----
 
