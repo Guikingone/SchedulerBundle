@@ -29,6 +29,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
@@ -56,6 +57,9 @@ final class TaskNormalizerTest extends TestCase
         self::assertTrue($taskNormalizer->supportsNormalization(new NullTask('foo')));
     }
 
+    /**
+     * @throws ExceptionInterface {@see Serializer::normalize()}
+     */
     public function testNormalizerCanNormalizeValidObject(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
@@ -107,6 +111,9 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('foo', $task->getName());
     }
 
+    /**
+     * @throws ExceptionInterface {@see Serializer::normalize()}
+     */
     public function testCallbackTaskCannotBeDenormalizedWithClosure(): void
     {
         $taskNormalizer = new TaskNormalizer(
@@ -595,7 +602,10 @@ final class TaskNormalizerTest extends TestCase
 
     public function testTaskWithDatetimeCanBeDenormalized(): void
     {
-        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [
+            new PhpDocExtractor(),
+            new ReflectionExtractor(),
+        ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
         $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
@@ -642,7 +652,10 @@ final class TaskNormalizerTest extends TestCase
 
     public function testMessengerTaskCanBeDenormalized(): void
     {
-        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [
+            new PhpDocExtractor(),
+            new ReflectionExtractor(),
+        ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
         $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
@@ -674,9 +687,15 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws ExceptionInterface {@see Serializer::normalize()}
+     */
     public function testMessengerTaskCanBeNormalized(): void
     {
-        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [
+            new PhpDocExtractor(),
+            new ReflectionExtractor(),
+        ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
         $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 

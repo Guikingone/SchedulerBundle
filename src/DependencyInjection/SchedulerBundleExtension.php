@@ -320,7 +320,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerLockStore(ContainerBuilder $container, array $configuration): void

@@ -19,6 +19,7 @@ use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
@@ -48,18 +49,21 @@ abstract class AbstractWorker implements WorkerInterface
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
     private LockFactory $lockFactory;
+    private WorkerMiddlewareStack $middlewareStack;
 
     public function __construct(
         SchedulerInterface $scheduler,
         RunnerRegistryInterface $runnerRegistry,
         TaskExecutionTrackerInterface $tracker,
-        EventDispatcherInterface $eventDispatcher,
+        WorkerMiddlewareStack $workerMiddlewareStack,
         LockFactory $lockFactory,
+        EventDispatcherInterface $eventDispatcher,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
         $this->runnerRegistry = $runnerRegistry;
         $this->tracker = $tracker;
+        $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
@@ -218,6 +222,11 @@ abstract class AbstractWorker implements WorkerInterface
         }
 
         return true;
+    }
+
+    protected function getMiddlewareStack(): WorkerMiddlewareStack
+    {
+        return $this->middlewareStack;
     }
 
     /**

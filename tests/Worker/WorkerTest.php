@@ -1244,7 +1244,6 @@ final class WorkerTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getScheduledAt')->willReturn(new DateTimeImmutable('-1 month'));
         $task->expects(self::exactly(2))->method('isSingleRun')->willReturn(false);
         $task->expects(self::once())->method('setArrivalTime');
         $task->expects(self::once())->method('setExecutionStartTime');
@@ -1262,9 +1261,11 @@ final class WorkerTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::exactly(8))->method('dispatch');
+        $eventDispatcher->expects(self::exactly(7))->method('dispatch');
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
         ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
         $worker->execute([], $task);

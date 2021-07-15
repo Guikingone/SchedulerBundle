@@ -168,11 +168,16 @@ final class Scheduler implements SchedulerInterface
         $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $timezone = $task->getTimezone() ?? $this->getTimezone();
             $lastExecution = $task->getLastExecution();
-            if (null === $lastExecution) {
+
+            if (!$lastExecution instanceof DateTimeImmutable) {
                 return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName());
             }
 
-            return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName()) && ($lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i'));
+            if (!(new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName())) {
+                return false;
+            }
+
+            return $lastExecution->format('Y-m-d h:i:s') !== $synchronizedCurrentDate->format('Y-m-d h:i');
         });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {

@@ -51,7 +51,10 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [
+            new PhpDocExtractor(),
+            new ReflectionExtractor(),
+        ]));
         $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
@@ -239,6 +242,7 @@ final class ConnectionIntegrationTest extends TestCase
 
         $task = $this->connection->get('foo');
         $task->setExpression('0 * * * *');
+        $task->setLastExecution(new DateTimeImmutable());
 
         $this->connection->update('foo', $task);
 
@@ -247,6 +251,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('0 * * * *', $task->getExpression());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
     }
 
     public function testTaskCanBePaused(): void

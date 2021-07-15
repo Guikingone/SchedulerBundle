@@ -4,17 +4,10 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use Psr\Log\LoggerInterface;
-use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\Runner\RunnerRegistryInterface;
-use Symfony\Component\Lock\LockFactory;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
-use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
-use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function usleep;
 
@@ -23,22 +16,6 @@ use function usleep;
  */
 final class Worker extends AbstractWorker
 {
-    private WorkerMiddlewareStack $middlewareStack;
-
-    public function __construct(
-        SchedulerInterface $scheduler,
-        RunnerRegistryInterface $runnerList,
-        TaskExecutionTrackerInterface $taskExecutionTracker,
-        WorkerMiddlewareStack $workerMiddlewareStack,
-        LockFactory $lockFactory,
-        EventDispatcherInterface $eventDispatcher,
-        ?LoggerInterface $logger = null
-    ) {
-        $this->middlewareStack = $workerMiddlewareStack;
-
-        parent::__construct($scheduler, $runnerList, $taskExecutionTracker, $eventDispatcher, $lockFactory, $logger);
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -76,13 +53,13 @@ final class Worker extends AbstractWorker
                         }
 
                         if (!$this->getOptions()['isRunning']) {
-                            $this->middlewareStack->runPreExecutionMiddleware($task);
+                            $this->getMiddlewareStack()->runPreExecutionMiddleware($task);
 
                             $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
 
-                            $this->middlewareStack->runPostExecutionMiddleware($task);
+                            $this->getMiddlewareStack()->runPostExecutionMiddleware($task);
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
