@@ -16,10 +16,8 @@ use function array_values;
 use function array_walk;
 use function array_map;
 use function count;
-use function end;
 use function gettype;
 use function in_array;
-use function is_bool;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 
