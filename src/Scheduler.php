@@ -76,6 +76,8 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
+        dump(debug_backtrace());
+
         $this->middlewareStack->runPreSchedulingMiddleware($task, $this);
 
         $task->setScheduledAt($this->getSynchronizedCurrentDate());
@@ -177,7 +179,7 @@ final class Scheduler implements SchedulerInterface
                 return false;
             }
 
-            return $lastExecution->format('Y-m-d h:i:s') !== $synchronizedCurrentDate->format('Y-m-d h:i');
+            return $lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i');
         });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {

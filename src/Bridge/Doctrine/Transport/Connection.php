@@ -204,8 +204,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($updatedTask, 'json'), ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
-                $statement = $connection->executeQuery(
+                $connection->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),
                     $queryBuilder->getParameterTypes()

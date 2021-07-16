@@ -37,16 +37,13 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
      */
     public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if (null !== $task->getExecutionLockBag()) {
+        if ($task->getExecutionLockBag() instanceof LockTaskBag) {
             return;
         }
 
         $key = new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i')));
 
         $lock = $this->lockFactory->createLockFromKey($key, null, false);
-        if (!$lock->acquire(true)) {
-            return;
-        }
 
         try {
             $scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));

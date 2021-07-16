@@ -27,6 +27,7 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\TaskBag\LockTaskBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
@@ -182,7 +183,7 @@ abstract class AbstractWorker implements WorkerInterface
     protected function getLockedTask(TaskInterface $task): LockInterface
     {
         $executionLockBag = $task->getExecutionLockBag();
-        if (null !== $executionLockBag && null !== $key = $executionLockBag->getKey()) {
+        if ($executionLockBag instanceof LockTaskBag && null !== $key = $executionLockBag->getKey()) {
             return $this->lockFactory->createLockFromKey($key);
         }
 

@@ -9,10 +9,13 @@ use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use SchedulerBundle\Middleware\AbstractMiddlewareStack;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -20,6 +23,9 @@ use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\Runner\ShellTaskRunner;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
@@ -28,7 +34,9 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -731,43 +739,53 @@ final class WorkerTest extends TestCase
 
     /**
      * @throws Throwable {@see TaskListInterface::add()}
+     *
+     * @group foo
      */
     public function testTaskCanBeExecutedWithRunner(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('info');
 
-        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $tracker->expects(self::once())->method('startTracking');
-        $tracker->expects(self::once())->method('endTracking');
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(4))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::never())->method('getScheduledAt');
-        $task->expects(self::exactly(2))->method('isSingleRun')->willReturn(false);
-        $task->expects(self::once())->method('setArrivalTime');
-        $task->expects(self::once())->method('setExecutionStartTime');
-        $task->expects(self::once())->method('setExecutionEndTime');
-        $task->expects(self::once())->method('setLastExecution');
-
-        $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
-        $runner->expects(self::once())->method('run')->with($task)->willReturn(new Output($task, null));
-
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
-
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack([
-            new SingleRunTaskMiddleware($scheduler),
-        ]), new LockFactory(new FlockStore()), $eventDispatcher, $logger);
-        $worker->execute();
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([
+            new TaskLockBagMiddleware(new LockFactory(new FlockStore())),
+        ]), $eventDispatcher);
+        $scheduler->schedule(new NullTask('foo'));
 
-        self::assertSame($task, $worker->getLastExecutedTask());
+        $task = $scheduler->getTasks()->get('foo');
+        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
+
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([
+                new NullTaskRunner(),
+            ]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack([
+                new TaskCallbackMiddleware(),
+                new NotifierMiddleware(),
+                new SingleRunTaskMiddleware($scheduler),
+                new TaskUpdateMiddleware($scheduler),
+            ]),
+            new LockFactory(new FlockStore()),
+            $eventDispatcher,
+            $logger
+        );
+
+        $worker->execute();
+        self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
+
+        $task = $scheduler->getTasks()->get('foo');
+        self::assertFalse($task->isSingleRun());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getArrivalTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndTime());
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
     }
 
     /**
