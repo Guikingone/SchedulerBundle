@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\LockTaskBag;
@@ -17,7 +18,7 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
+final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface
 {
     public const TASK_LOCK_MASK = '_symfony_scheduler_';
 
@@ -35,7 +36,7 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
     /**
      * {@inheritdoc}
      */
-    public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
+    public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
         if ($task->getExecutionLockBag() instanceof LockTaskBag) {
             return;
@@ -43,14 +44,14 @@ final class TaskLockBagMiddleware implements PostSchedulingMiddlewareInterface
 
         $key = new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i')));
 
-        $lock = $this->lockFactory->createLockFromKey($key, null, false);
-
-        try {
-            $scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
-        } catch (Throwable $throwable) {
-            $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
-
-            $lock->release();
-        }
+        $task->setExecutionLockBag(new LockTaskBag($key));
+//
+//        try {
+//            $scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
+//        } catch (Throwable $throwable) {
+//            $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
+//
+//            $lock->release();
+//        }
     }
 }
