@@ -7,18 +7,17 @@ namespace SchedulerBundle\Middleware;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
-use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface
+final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
 {
     public const TASK_LOCK_MASK = '_symfony_scheduler_';
 
@@ -38,20 +37,47 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface
      */
     public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        if ($task->getExecutionLockBag() instanceof LockTaskBag) {
+        $executionLockTaskBag = $task->getExecutionLockBag();
+
+        if ($executionLockTaskBag instanceof LockTaskBag) {
+            $this->logger->info(sprintf('The task "%s" has already an execution lock bag', $task->getName()));
+
             return;
         }
 
-        $key = new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i')));
+        $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
+    }
 
-        $task->setExecutionLockBag(new LockTaskBag($key));
-//
-//        try {
-//            $scheduler->update($task->getName(), $task->setExecutionLockBag(new LockTaskBag($key)));
-//        } catch (Throwable $throwable) {
-//            $this->logger->critical(sprintf('The lock for the task "%s" cannot be serialized / stored, consider using a supporting store', $task->getName()));
-//
-//            $lock->release();
-//        }
+    /**
+     * {@inheritdoc}
+     */
+    public function preExecute(TaskInterface $task): void
+    {
+        $executionLockTaskBag = $task->getExecutionLockBag();
+
+        if (!$executionLockTaskBag->getKey() instanceof Key) {
+            $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
+        }
+
+        $executionLockTaskBag = $task->getExecutionLockBag();
+
+        $lock = $this->lockFactory->createLockFromKey($executionLockTaskBag->getKey());
+        $lock->acquire(true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function postExecute(TaskInterface $task): void
+    {
+        $executionLockTaskBag = $task->getExecutionLockBag();
+
+        $lock = $this->lockFactory->createLockFromKey($executionLockTaskBag->getKey());
+        $lock->release();
+    }
+
+    private function createKey(TaskInterface $task): Key
+    {
+        return new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i')));
     }
 }
