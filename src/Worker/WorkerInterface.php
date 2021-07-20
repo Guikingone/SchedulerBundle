@@ -52,6 +52,9 @@ interface WorkerInterface
      */
     public function fork(): WorkerInterface;
 
+    /**
+     * Stop the worker and reset its internal state.
+     */
     public function stop(): void;
 
     /**
@@ -66,6 +69,9 @@ interface WorkerInterface
      */
     public function sleep(): void;
 
+    /**
+     * Determine if the worker is currently running
+     */
     public function isRunning(): bool;
 
     /**

@@ -52,7 +52,7 @@ final class Worker extends AbstractWorker
                             usleep($executionDelay);
                         }
 
-                        if (!$this->getOptions()['isRunning']) {
+                        if (!$this->isRunning()) {
                             $this->getMiddlewareStack()->runPreExecutionMiddleware($task);
 
                             $this->options['isRunning'] = true;

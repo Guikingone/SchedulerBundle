@@ -6,8 +6,8 @@ This bundle provides multiple type of tasks:
 - [CommandTask](#CommandTask)
 - [ChainedTask](#ChainedTask)
 - [CallbackTask](#CallbackTask)
-- HttpTask
-- MessengerTask
+- [HttpTask](#httptask)
+- [MessengerTask](#messengertask)
 - [NotificationTask](#NotificationTask)
 - [NullTask](#NullTask)
 
@@ -30,9 +30,20 @@ A [ShellTask](../src/Task/ShellTask.php) represent a shell operation done via a 
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ShellTask;
 
-$task = new ShellTask('foo', ['ls', '-al']);
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new ShellTask('foo', ['ls', '-al']));
+    }
+}
 ```
 
 This type of command can be configured via the configuration:
@@ -55,9 +66,20 @@ A [CommandTask](../src/Task/CommandTask.php) represent a Symfony command that ne
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\CommandTask;
 
-$task = new CommandTask('foo', 'cache:clear');
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new CommandTask('foo', 'cache:clear'));
+    }
+}
 ```
 
 This type of command can be configured via the configuration:
@@ -84,10 +106,21 @@ at the same time and in a specific order:
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\ShellTask;
 
-$task = new ChainedTask('bar', new ShellTask('foo', ['ls', '-al']));
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new ChainedTask('bar', new ShellTask('foo', ['ls', '-al'])));
+    }
+}
 ```
 
 This type of command can be configured via the configuration:
@@ -113,14 +146,86 @@ A [CallbackTask](../src/Task/CallbackTask.php) represent a callback defined as a
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\CallbackTask;
 
-$task = new CallbackTask('foo', [new Foo(), 'echo']);
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new CallbackTask('foo', [new Foo(), 'echo']));
+    }
+}
 ```
 
-This type of command cannot be configured via the configuration.
+**This type of command cannot be configured via the configuration.**
 
 _Note: This type of task can use closures but cannot be sent to external transports or filesystem one if so._
+
+## HttpTask
+
+A [HttpTask](../src/Task/HttpTask.php) represent an HTTP call to perform:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\HttpTask;
+
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new HttpTask('bar', 'www.symfony.com'));
+    }
+}
+```
+
+This type of command can be configured via the configuration:
+
+```yaml
+# config/packages/scheduler.yaml
+scheduler_bundle:
+    # ...
+    tasks:
+        bar:
+            type: 'http'
+            url: 'www.symfony.com'
+# ...
+```
+
+## MessengerTask
+
+A [MessengerTask](../src/Task/MessengerTask.php) represent a Messenger message:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\MessengerTask;
+
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new MessengerTask('bar', new BarMessage(...)));
+    }
+}
+```
+
+**This type of command cannot be configured via the configuration.**
 
 ## NotificationTask
 
@@ -129,14 +234,25 @@ A [NotificationTask](../src/Task/NotificationTask.php) represent an [Symfony/Not
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NotificationTask;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 
-$task = new NotificationTask('bar', new Notification(...), new Recipient(...));
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new NotificationTask('bar', new Notification(...), new Recipient(...)));
+    }
+}
 ```
 
-This type of command cannot be configured via the configuration.
+**This type of command cannot be configured via the configuration.**
 
 ## NullTask
 
@@ -145,9 +261,20 @@ A [NullTask](../src/Task/NullTask.php) represent an empty task that can be used 
 ```php
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 
-$task = new NullTask('bar');
+final class FooController
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new NullTask('bar'));
+    }
+}
 ```
 
 This type of command can be configured via the configuration:
@@ -164,11 +291,11 @@ scheduler_bundle:
 
 ## Scheduling lifecycle
 
-Once defined via the configuration or scheduled via `$scheduler->schedule(...);`, 
+Once defined via the configuration or scheduled via `$scheduler->schedule(...);`,
 a task is sent to the specified transport which is responsible for storing the task (no matter the stored format),
-before sending it, the "pre-scheduling" middleware are executed (if an error occurs, the task is not sent).
+before sending it, the "pre-scheduling" middleware are executed (if an error occurs, the task isn't sent).
 
-Once stored, the "post-scheduling" middleware are executed, if an error occurs, the task is unscheduled.
+Once stored, the "post-scheduling" middlewares are executed, if an error occurs, the task is unscheduled.
 
 ## Execution lifecycle
 
