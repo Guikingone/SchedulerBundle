@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Throwable;
+use function array_merge;
 use function serialize;
 use function unserialize;
 
@@ -19,10 +23,14 @@ use function unserialize;
 final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     private ObjectNormalizer $objectNormalizer;
+    private LoggerInterface $logger;
 
-    public function __construct(ObjectNormalizer $objectNormalizer)
-    {
+    public function __construct(
+        ObjectNormalizer $objectNormalizer,
+        ?LoggerInterface $logger = null
+    ) {
         $this->objectNormalizer = $objectNormalizer;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -30,14 +38,25 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        return [
-            'bag' => LockTaskBag::class,
-            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
-                AbstractNormalizer::CALLBACKS => [
-                    'key' => fn (Key $innerObject, LockTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+        try {
+            return [
+                'bag' => LockTaskBag::class,
+                'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+                    AbstractNormalizer::CALLBACKS => [
+                        'key' => fn (Key $innerObject, LockTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+                    ],
+                ])),
+            ];
+        } catch (Throwable $throwable) {
+            $this->logger->warning('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
+
+            return [
+                'bag' => LockTaskBag::class,
+                'body' => [
+                    'key' => null,
                 ],
-            ])),
-        ];
+            ];
+        }
     }
 
     /**

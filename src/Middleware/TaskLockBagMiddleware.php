@@ -45,7 +45,16 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
             return;
         }
 
-        $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
+        $key = $this->createKey($task);
+
+        $lock = $this->lockFactory->createLockFromKey($key, null, false);
+        if (!$lock->acquire(false)) {
+            $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired, it will be created before executing the task', $task->getName()));
+
+            return;
+        }
+
+        $task->setExecutionLockBag(new LockTaskBag($key));
     }
 
     /**

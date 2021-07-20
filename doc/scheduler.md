@@ -124,7 +124,6 @@ final class Foo
 _Introduced in `0.5`_
 
 The [LazyScheduler](../src/LazyScheduler.php) act as a wrapper around
-the default `Scheduler`, when enabled via the configuration, each action
-is performed in a "lazy" approach.
+the default `Scheduler`, when enabled via the configuration, each action performed in a "lazy" approach.
 
 The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).
