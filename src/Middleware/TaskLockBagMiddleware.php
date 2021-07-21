@@ -19,7 +19,7 @@ use function sprintf;
  */
 final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
 {
-    public const TASK_LOCK_MASK = '_symfony_scheduler_';
+    private const TASK_LOCK_MASK = '_symfony_scheduler_';
 
     private LockFactory $lockFactory;
     private LoggerInterface $logger;
@@ -62,6 +62,11 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
      */
     public function preExecute(TaskInterface $task): void
     {
+        $executionLockTaskBag = $task->getExecutionLockBag();
+        if (!$executionLockTaskBag instanceof LockTaskBag) {
+            $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
+        }
+
         $executionLockTaskBag = $task->getExecutionLockBag();
 
         if (!$executionLockTaskBag->getKey() instanceof Key) {

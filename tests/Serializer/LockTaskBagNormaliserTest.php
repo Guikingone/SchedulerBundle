@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Serializer;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Serializer\LockTaskBagNormalizer;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use stdClass;
@@ -40,11 +41,42 @@ final class LockTaskBagNormaliserTest extends TestCase
         self::assertTrue($lockTaskBagNormalizer->supportsDenormalization(null, LockTaskBag::class));
     }
 
+    public function testNormalizerCanNormalizeBagWithUnserializableKey(): void
+    {
+        $objectNormalizer = new ObjectNormalizer();
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with(self::equalTo('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key'))
+        ;
+
+        $serializer = new Serializer([
+            new LockTaskBagNormalizer($objectNormalizer, $logger),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $key = new Key('foo');
+        $key->markUnserializable();
+
+        $data = $serializer->normalize(new LockTaskBag($key));
+
+        self::assertIsArray($data);
+        self::assertArrayHasKey('bag', $data);
+        self::assertSame(LockTaskBag::class, $data['bag']);
+        self::assertArrayHasKey('body', $data);
+        self::assertArrayNotHasKey('key', $data['body']);
+    }
+
     public function testNormalizerCanNormalize(): void
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new LockTaskBagNormalizer($objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new LockTaskBagNormalizer($objectNormalizer),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->normalize(new LockTaskBag(new Key('foo')));
@@ -56,11 +88,18 @@ final class LockTaskBagNormaliserTest extends TestCase
         self::assertArrayHasKey('key', $data['body']);
     }
 
+    public function testNormalizerCanDenormalizeBagWithNullKey(): void
+    {
+    }
+
     public function testNormalizerCanDenormalize(): void
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new LockTaskBagNormalizer($objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new LockTaskBagNormalizer($objectNormalizer),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $key = new Key('foo');

@@ -18,7 +18,6 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
-use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
@@ -27,10 +26,6 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\TaskBag\LockTaskBag;
-use Symfony\Component\Lock\Key;
-use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -49,7 +44,6 @@ abstract class AbstractWorker implements WorkerInterface
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
-    private LockFactory $lockFactory;
     private WorkerMiddlewareStack $middlewareStack;
 
     public function __construct(
@@ -57,7 +51,6 @@ abstract class AbstractWorker implements WorkerInterface
         RunnerRegistryInterface $runnerRegistry,
         TaskExecutionTrackerInterface $tracker,
         WorkerMiddlewareStack $workerMiddlewareStack,
-        LockFactory $lockFactory,
         EventDispatcherInterface $eventDispatcher,
         ?LoggerInterface $logger = null
     ) {
@@ -66,7 +59,6 @@ abstract class AbstractWorker implements WorkerInterface
         $this->tracker = $tracker;
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
-        $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
@@ -178,16 +170,6 @@ abstract class AbstractWorker implements WorkerInterface
     protected function getTasks(array $tasks): TaskListInterface
     {
         return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
-    }
-
-    protected function getLockedTask(TaskInterface $task): LockInterface
-    {
-        $executionLockBag = $task->getExecutionLockBag();
-        if ($executionLockBag instanceof LockTaskBag && null !== $key = $executionLockBag->getKey()) {
-            return $this->lockFactory->createLockFromKey($key);
-        }
-
-        return $this->lockFactory->createLockFromKey(new Key(sprintf('%s_%s_%s', TaskLockBagMiddleware::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i'))));
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void

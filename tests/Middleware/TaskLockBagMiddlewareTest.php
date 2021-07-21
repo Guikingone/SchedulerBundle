@@ -11,7 +11,9 @@ use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\TaskBag\LockTaskBag;
+use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Lock\Store\FlockStore;
 use Throwable;
 
@@ -25,19 +27,70 @@ final class TaskLockBagMiddlewareTest extends TestCase
      */
     public function testMiddlewareCannotBeCalledIfBagAlreadyExist(): void
     {
-        $logger = $this->createMock(LoggerInterface::class);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('update');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The task "foo" has already an execution lock bag'));
 
         $task = new NullTask('foo');
-        $task->setExecutionLockBag(new LockTaskBag());
+        $task->setExecutionLockBag(new LockTaskBag(new Key('foo')));
 
         $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), $logger);
-        $middleware->postScheduling($task, $scheduler);
+        $middleware->preScheduling($task, $scheduler);
     }
 
-    public function testMiddlewareCannotStoreKeyIfTheFactoryDoesNotSupportIt(): void
+    /**
+     * @throws Throwable {@see PostSchedulingMiddlewareInterface::postScheduling()}
+     */
+    public function testMiddlewareCannotStoreKeyIfTheStoreCannotAcquireIt(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The lock related to the task "foo" cannot be acquired, it will be created before executing the task'));
+
+        $lock = $this->createMock(LockInterface::class);
+        $lock->expects(self::once())->method('acquire')->with(self::equalTo(false))->willReturn(false);
+
+        $lockFactory = $this->createMock(LockFactory::class);
+        $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
+
+        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware->preScheduling(new NullTask('foo'), $scheduler);
+    }
+
+    /**
+     * @throws Throwable {@see PostSchedulingMiddlewareInterface::postScheduling()}
+     */
+    public function testMiddlewareCanStoreKeyIfTheStoreCanAcquireIt(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $lock = $this->createMock(LockInterface::class);
+        $lock->expects(self::once())->method('acquire')->with(self::equalTo(false))->willReturn(true);
+
+        $lockFactory = $this->createMock(LockFactory::class);
+        $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
+
+        $task = new NullTask('foo');
+
+        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware->preScheduling($task, $scheduler);
+
+        $executionLockBag = $task->getExecutionLockBag();
+
+        self::assertInstanceOf(LockTaskBag::class, $executionLockBag);
+        self::assertInstanceOf(Key::class, $executionLockBag->getKey());
+    }
+
+    public function testMiddlewareCanCreateLockBagIfUndefined(): void
+    {
+    }
+
+    public function testMiddlewareCanLockTaskWithExistingBag(): void
     {
     }
 }

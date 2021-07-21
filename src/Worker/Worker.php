@@ -34,15 +34,6 @@ final class Worker extends AbstractWorker
                         continue;
                     }
 
-                    $lockedTask = $this->getLockedTask($task);
-                    if (($toExecuteTasks->last() === $task && !$lockedTask->acquire()) && !$this->getOptions()['sleepUntilNextMinute']) {
-                        break 2;
-                    }
-
-                    if (!$lockedTask->acquire()) {
-                        continue;
-                    }
-
                     $this->dispatch(new WorkerRunningEvent($this));
 
                     try {
@@ -66,7 +57,6 @@ final class Worker extends AbstractWorker
                         $this->getFailedTasks()->add($failedTask);
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
-                        $lockedTask->release();
                         $this->options['isRunning'] = false;
                         $this->options['lastExecutedTask'] = $task;
                         $this->dispatch(new WorkerRunningEvent($this, true));

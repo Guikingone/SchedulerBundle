@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Throwable;
+use function array_key_exists;
 use function array_merge;
 use function serialize;
 use function unserialize;
@@ -52,9 +53,11 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
 
             return [
                 'bag' => LockTaskBag::class,
-                'body' => [
-                    'key' => null,
-                ],
+                'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+                    AbstractNormalizer::IGNORED_ATTRIBUTES => [
+                        'key',
+                    ],
+                ])),
             ];
         }
     }
@@ -75,7 +78,7 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
         return $this->objectNormalizer->denormalize($data, $type, $format, array_merge($context, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 LockTaskBag::class => [
-                    'key' => null !== $data['body']['key'] ? unserialize($data['body']['key']) : null,
+                    'key' => (array_key_exists('key', $data['body']) && null !== $data['body']['key']) ? unserialize($data['body']['key']) : null,
                 ],
             ],
         ]));
