@@ -41,6 +41,9 @@ psalm: ## Run Psalm
 psalm: psalm.xml
 	$(PHP) vendor/bin/psalm
 
+static-analysis: ## Launch the static analysis tools
+static-analysis: phpstan psalm
+
 psalm-debug: ## Run Psalm (display informations)
 psalm-debug: psalm.xml
 	$(PHP) vendor/bin/psalm --show-info=true

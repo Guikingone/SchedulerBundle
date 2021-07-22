@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
-use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\SchedulerInterface;
@@ -96,6 +95,6 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
 
     private function createKey(TaskInterface $task): Key
     {
-        return new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), (new DateTimeImmutable())->format($task->isSingleRun() ? 'Y_m_d_h' : 'Y_m_d_h_i')));
+        return new Key(sprintf('%s_%s_%s', self::TASK_LOCK_MASK, $task->getName(), $task->isSingleRun() ? 'single' : ''));
     }
 }

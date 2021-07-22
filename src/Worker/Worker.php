@@ -72,6 +72,8 @@ final class Worker extends AbstractWorker
                 if ($this->getOptions()['sleepUntilNextMinute']) {
                     $this->sleep();
                     $this->execute($options);
+
+                    break;
                 }
             }
         });

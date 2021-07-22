@@ -32,6 +32,8 @@ final class ProbeTaskBuilderTest extends TestCase
     }
 
     /**
+     * @param array<string, string|bool|int> $options
+     *
      * @dataProvider provideTaskData
      */
     public function testTaskCanBeBuilt(array $options): void

@@ -11,7 +11,6 @@ use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
-use function is_int;
 use function sprintf;
 
 /**
@@ -51,7 +50,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), is_int($exception->getCode()) ? $exception->getCode() : 0, $exception);
+            throw new MiddlewareException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
@@ -76,7 +75,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), is_int($exception->getCode()) ? $exception->getCode() : 0, $exception);
+            throw new MiddlewareException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 }
