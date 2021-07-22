@@ -359,10 +359,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
+        $task = new NullTask('foo', [
+            'execution_memory_usage' => 9_507_552,
+        ]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -399,10 +398,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
+        $task = new NullTask('foo', [
+            'execution_memory_usage' => 9_507_552,
+        ]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));

@@ -76,7 +76,9 @@ final class CommandTaskRunnerTest extends TestCase
         $application = new Application();
         $application->add(new FooCommand());
 
-        $commandTask = new CommandTask('foo', 'app:foo');
+        $commandTask = new CommandTask('foo', 'app:foo', [], [
+            '--env' => '',
+        ]);
 
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
@@ -178,7 +180,7 @@ final class FooCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env = $input->getOption('env');
-        if (null !== $env) {
+        if ('' !== $env) {
             $output->write(sprintf('This command is executed in "%s" env', $env));
         }
 

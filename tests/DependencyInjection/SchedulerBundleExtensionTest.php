@@ -1051,7 +1051,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(Worker::class));
         self::assertTrue($container->hasAlias(WorkerInterface::class));
-        self::assertCount(7, $container->getDefinition(Worker::class)->getArguments());
+        self::assertCount(6, $container->getDefinition(Worker::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(0));
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(0)->getInvalidBehavior());
@@ -1065,14 +1065,11 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(WorkerMiddlewareStack::class, (string) $container->getDefinition(Worker::class)->getArgument(3));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(3)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(4));
-        self::assertSame('scheduler.lock_store.factory', (string) $container->getDefinition(Worker::class)->getArgument(4));
+        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(4));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(4)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(5));
-        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(5));
-        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(5)->getInvalidBehavior());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(6));
-        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(6));
-        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(6)->getInvalidBehavior());
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(5));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(5)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Worker::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.preload'));

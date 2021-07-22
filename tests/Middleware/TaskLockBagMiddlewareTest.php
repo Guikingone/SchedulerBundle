@@ -86,11 +86,63 @@ final class TaskLockBagMiddlewareTest extends TestCase
         self::assertInstanceOf(Key::class, $executionLockBag->getKey());
     }
 
-    public function testMiddlewareCanCreateLockBagIfUndefined(): void
+    public function testMiddlewareCanCreateLockBagBeforeExecutionIfUndefined(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('An execution lock bag has been created for task "foo"'));
+
+        $lock = $this->createMock(LockInterface::class);
+        $lock->expects(self::once())->method('acquire')->with(self::equalTo(true))->willReturn(true);
+
+        $lockFactory = $this->createMock(LockFactory::class);
+        $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
+
+        $task = new NullTask('foo');
+
+        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware->preExecute($task);
+
+        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
     }
 
-    public function testMiddlewareCanLockTaskWithExistingBag(): void
+    public function testMiddlewareCanCreateLockBagBeforeExecutionIfKeyIsNotSet(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $lock = $this->createMock(LockInterface::class);
+        $lock->expects(self::once())->method('acquire')->with(self::equalTo(true))->willReturn(true);
+
+        $lockFactory = $this->createMock(LockFactory::class);
+        $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
+
+        $lockTaskBag = new LockTaskBag();
+
+        $task = new NullTask('foo');
+        $task->setExecutionLockBag($lockTaskBag);
+
+        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware->preExecute($task);
+
+        self::assertNotSame($lockTaskBag, $task->getExecutionLockBag());
+    }
+
+    public function testMiddlewareCanReleaseTaskAfterExecution(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The lock for task "foo" has been released'));
+
+        $lock = $this->createMock(LockInterface::class);
+        $lock->expects(self::never())->method('acquire');
+        $lock->expects(self::once())->method('release');
+
+        $lockFactory = $this->createMock(LockFactory::class);
+        $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
+
+        $task = new NullTask('foo');
+        $task->setExecutionLockBag(new LockTaskBag(new Key('foo')));
+
+        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware->postExecute($task);
     }
 }

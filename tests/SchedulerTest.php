@@ -1081,7 +1081,7 @@ final class SchedulerTest extends TestCase
      * @throws Throwable {@see SchedulerInterface::__construct()}
      * @throws Throwable {@see SchedulerInterface::schedule()}
      */
-    public function testSchedulerCannotLockTaskWithInvalidLockFactory(): void
+    public function testSchedulerCanLockTaskWithInvalidLockFactory(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
@@ -1117,7 +1117,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertNull($task->getExecutionLockBag());
+        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
     }
 
     /**

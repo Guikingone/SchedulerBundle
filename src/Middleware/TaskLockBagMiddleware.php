@@ -65,6 +65,8 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
         $executionLockTaskBag = $task->getExecutionLockBag();
         if (!$executionLockTaskBag instanceof LockTaskBag) {
             $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
+
+            $this->logger->info(sprintf('An execution lock bag has been created for task "%s"', $task->getName()));
         }
 
         $executionLockTaskBag = $task->getExecutionLockBag();
@@ -88,6 +90,8 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
 
         $lock = $this->lockFactory->createLockFromKey($executionLockTaskBag->getKey());
         $lock->release();
+
+        $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
     }
 
     private function createKey(TaskInterface $task): Key

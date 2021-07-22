@@ -90,6 +90,18 @@ final class LockTaskBagNormaliserTest extends TestCase
 
     public function testNormalizerCanDenormalizeBagWithNullKey(): void
     {
+        $objectNormalizer = new ObjectNormalizer();
+
+        $serializer = new Serializer([
+            new LockTaskBagNormalizer($objectNormalizer),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        $data = $serializer->normalize(new LockTaskBag());
+        $bag = $serializer->denormalize($data, LockTaskBag::class);
+
+        self::assertNull($bag->getKey());
     }
 
     public function testNormalizerCanDenormalize(): void
