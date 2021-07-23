@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulerInterface;
@@ -81,11 +82,16 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $middleware->preScheduling($task, $scheduler);
 
         $executionLockBag = $task->getExecutionLockBag();
-
         self::assertInstanceOf(LockTaskBag::class, $executionLockBag);
+
+        $key = $executionLockBag->getKey();
         self::assertInstanceOf(Key::class, $executionLockBag->getKey());
+        self::assertSame('_symfony_scheduler__foo_', (string) $key);
     }
 
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
     public function testMiddlewareCanCreateLockBagBeforeExecutionIfUndefined(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -105,6 +111,9 @@ final class TaskLockBagMiddlewareTest extends TestCase
         self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
     }
 
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
     public function testMiddlewareCanCreateLockBagBeforeExecutionIfKeyIsNotSet(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
@@ -127,6 +136,9 @@ final class TaskLockBagMiddlewareTest extends TestCase
         self::assertNotSame($lockTaskBag, $task->getExecutionLockBag());
     }
 
+    /**
+     * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
+     */
     public function testMiddlewareCanReleaseTaskAfterExecution(): void
     {
         $logger = $this->createMock(LoggerInterface::class);

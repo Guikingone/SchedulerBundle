@@ -6,9 +6,9 @@ includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
 
 parameters:
-    level: 5
+    level: 6
     paths:
         - src
-        - tests
+        #- tests
     excludePaths:
         - vendor
