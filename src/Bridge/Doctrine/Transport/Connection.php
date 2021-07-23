@@ -227,6 +227,7 @@ final class Connection implements ConnectionInterface
             }
 
             $task->setState(AbstractTask::PAUSED);
+
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);

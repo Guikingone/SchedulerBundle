@@ -269,7 +269,10 @@ final class TaskListTest extends TestCase
             new NullTask('bar'),
         ]);
 
-        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+        self::assertSame([
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
     }
 
     public function testListCannotReturnLastTaskWhileEmpty(): void
