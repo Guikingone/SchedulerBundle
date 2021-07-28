@@ -11,6 +11,7 @@ use DateTimeZone;
 use Exception;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
@@ -56,6 +57,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
             'arrival_time' => null,
+            'access_lock_bag' => null,
             'background' => false,
             'before_scheduling' => null,
             'before_scheduling_notification' => null,
@@ -98,6 +100,7 @@ abstract class AbstractTask implements TaskInterface
         ]);
 
         $optionsResolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('access_lock_bag', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('background', 'bool');
         $optionsResolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
         $optionsResolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
@@ -485,6 +488,18 @@ abstract class AbstractTask implements TaskInterface
     public function getExecutionEndTime(): ?DateTimeImmutable
     {
         return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
+    }
+
+    public function getAccessLockBag(): ?AccessLockBag
+    {
+        return $this->options['access_lock_bag'];
+    }
+
+    public function setAccessLockBag(?AccessLockBag $dateTimeImmutable = null): TaskInterface
+    {
+        $this->options['access_lock_bag'] = $dateTimeImmutable;
+
+        return $this;
     }
 
     public function setExecutionLockBag(?LockTaskBag $bag = null): TaskInterface

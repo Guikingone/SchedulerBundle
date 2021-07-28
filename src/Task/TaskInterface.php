@@ -7,6 +7,7 @@ namespace SchedulerBundle\Task;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 
@@ -190,6 +191,10 @@ interface TaskInterface
     public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getExecutionEndTime(): ?DateTimeImmutable;
+
+    public function setAccessLockBag(?AccessLockBag $bag = null): TaskInterface;
+
+    public function getAccessLockBag(): ?AccessLockBag;
 
     public function setExecutionLockBag(?LockTaskBag $bag = null): TaskInterface;
 

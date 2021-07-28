@@ -173,7 +173,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     protected function getTasks(array $tasks): TaskListInterface
     {
-        return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+        return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily'], true);
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void

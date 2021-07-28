@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\LockTaskBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
@@ -91,6 +92,14 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
         $lock->release();
 
         $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
+
+        $accessLockBag = $task->getAccessLockBag();
+        if (!$accessLockBag instanceof AccessLockBag) {
+            return;
+        }
+
+        $lock = $accessLockBag->getLock();
+        $lock->release();
     }
 
     private function createKey(TaskInterface $task): Key
