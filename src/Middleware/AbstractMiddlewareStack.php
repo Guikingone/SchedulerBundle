@@ -50,6 +50,14 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
     }
 
     /**
+     * @return PreListingMiddlewareInterface[]|OrderedMiddlewareInterface[]
+     */
+    protected function getPreListingMiddleware(): array
+    {
+        return $this->orderMiddleware(array_filter($this->stack, fn (object $middleware): bool => $middleware instanceof PreListingMiddlewareInterface));
+    }
+
+    /**
      * @return PreExecutionMiddlewareInterface[]|OrderedMiddlewareInterface[]
      */
     protected function getPreExecutionMiddleware(): array

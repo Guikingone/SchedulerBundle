@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\TaskBag;
 
-use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\Key;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 final class AccessLockBag implements TaskBagInterface
 {
-    private LockInterface $lock;
+    private ?Key $lock;
 
-    public function __construct(LockInterface $lock)
+    public function __construct(?Key $lock = null)
     {
         $this->lock = $lock;
     }
 
-    public function getLock(): LockInterface
+    public function getKey(): ?Key
     {
         return $this->lock;
     }

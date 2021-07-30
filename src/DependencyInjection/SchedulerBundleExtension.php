@@ -81,6 +81,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\LockTaskBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
@@ -355,7 +356,6 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(LockFactory::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -764,6 +764,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LockTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(AccessLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
@@ -789,6 +790,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
                 'class' => LockTaskBagNormalizer::class,
+            ])
+        ;
+
+        $container->register(AccessLockBagNormalizer::class, AccessLockBagNormalizer::class)
+            ->setArguments([
+                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('serializer.normalizer')
+            ->addTag('container.preload', [
+                'class' => AccessLockBagNormalizer::class,
             ])
         ;
     }

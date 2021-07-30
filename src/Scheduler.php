@@ -13,8 +13,6 @@ use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Task\LazyTask;
-use SchedulerBundle\TaskBag\AccessLockBag;
-use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -52,7 +50,6 @@ final class Scheduler implements SchedulerInterface
     private SchedulerMiddlewareStack $middlewareStack;
     private EventDispatcherInterface $eventDispatcher;
     private ?MessageBusInterface $bus;
-    private LockFactory $lockFactory;
 
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
@@ -62,7 +59,6 @@ final class Scheduler implements SchedulerInterface
         TransportInterface $transport,
         SchedulerMiddlewareStack $schedulerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher,
-        LockFactory $lockFactory,
         ?MessageBusInterface $messageBus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
@@ -70,7 +66,6 @@ final class Scheduler implements SchedulerInterface
         $this->transport = $transport;
         $this->middlewareStack = $schedulerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
-        $this->lockFactory = $lockFactory;
         $this->bus = $messageBus;
     }
 
@@ -158,22 +153,13 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTasks(bool $lazy = false, bool $lock = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface
     {
         $tasks = $this->transport->list($lazy);
 
-        if ($lock) {
-            $tasks->walk(function (TaskInterface $task) use (&$tasks): void {
-                $taskLock = $this->lockFactory->createLock(sprintf('_scheduler_due_%s', $task->getName()), null, false);
-                if ($taskLock->isAcquired()) {
-                    $tasks->remove($task->getName());
-                }
-
-                $taskLock->acquire(true);
-
-                $task->setAccessLockBag(new AccessLockBag($taskLock));
-            });
-        }
+        $tasks->walk(function (TaskInterface $task) use ($tasks): void {
+            $this->middlewareStack->runPreListingMiddleware($task, $tasks);
+        });
 
         return $tasks;
     }
@@ -181,11 +167,11 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $lock = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false): TaskListInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        $dueTasks = $this->getTasks($lazy, $lock)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $timezone = $task->getTimezone() ?? $this->getTimezone();
             $lastExecution = $task->getLastExecution();
 

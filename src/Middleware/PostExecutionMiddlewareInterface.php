@@ -13,7 +13,7 @@ use Throwable;
 interface PostExecutionMiddlewareInterface
 {
     /**
-     * Allow to execute logic AFTER executing the task,
+     * Allow executing logic AFTER executing the task,
      * the @param TaskInterface $task is the one returned via {@see SchedulerInterface::getDueTasks()} or
      * {@see SchedulerInterface::getTasks()}.
      *
