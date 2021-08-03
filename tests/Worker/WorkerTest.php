@@ -33,7 +33,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -689,7 +689,7 @@ final class WorkerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $task = $scheduler->getTasks()->get('foo');
-        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
+        self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
 
         $worker = new Worker(
             $scheduler,

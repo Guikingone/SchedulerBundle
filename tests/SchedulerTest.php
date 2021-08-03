@@ -31,7 +31,7 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -1117,7 +1117,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
+        self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
     }
 
     /**
@@ -1165,7 +1165,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(LockTaskBag::class, $task->getExecutionLockBag());
+        self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
     }
 
     /**

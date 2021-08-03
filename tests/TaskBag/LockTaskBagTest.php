@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\TaskBag;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use Symfony\Component\Lock\Key;
 
 /**
@@ -15,8 +15,8 @@ final class LockTaskBagTest extends TestCase
 {
     public function testBagContains(): void
     {
-        $bag = new LockTaskBag(new Key('foo'));
+        $bag = new ExecutionLockBag(new Key('foo'));
 
-        self::assertInstanceOf(Key::class, $bag->getKey());
+        self::assertInstanceOf(Key::class, $bag->getLock());
     }
 }

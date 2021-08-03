@@ -8,7 +8,7 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 
 /**
@@ -196,9 +196,9 @@ interface TaskInterface
 
     public function getAccessLockBag(): ?AccessLockBag;
 
-    public function setExecutionLockBag(?LockTaskBag $bag = null): TaskInterface;
+    public function setExecutionLockBag(?ExecutionLockBag $bag = null): TaskInterface;
 
-    public function getExecutionLockBag(): ?LockTaskBag;
+    public function getExecutionLockBag(): ?ExecutionLockBag;
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): self;
 

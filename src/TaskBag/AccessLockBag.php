@@ -11,15 +11,15 @@ use Symfony\Component\Lock\Key;
  */
 final class AccessLockBag implements TaskBagInterface
 {
-    private ?Key $lock;
+    private ?Key $key;
 
-    public function __construct(?Key $lock = null)
+    public function __construct(?Key $key = null)
     {
-        $this->lock = $lock;
+        $this->key = $key;
     }
 
     public function getKey(): ?Key
     {
-        return $this->lock;
+        return $this->key;
     }
 }

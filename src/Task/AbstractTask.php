@@ -12,7 +12,7 @@ use Exception;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -121,7 +121,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
         $optionsResolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
-        $optionsResolver->setAllowedTypes('execution_lock_bag', [LockTaskBag::class, 'null']);
+        $optionsResolver->setAllowedTypes('execution_lock_bag', [ExecutionLockBag::class, 'null']);
         $optionsResolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('max_duration', ['float', 'null']);
         $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
@@ -502,14 +502,14 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function setExecutionLockBag(?LockTaskBag $bag = null): TaskInterface
+    public function setExecutionLockBag(?ExecutionLockBag $bag = null): TaskInterface
     {
         $this->options['execution_lock_bag'] = $bag;
 
         return $this;
     }
 
-    public function getExecutionLockBag(): ?LockTaskBag
+    public function getExecutionLockBag(): ?ExecutionLockBag
     {
         return $this->options['execution_lock_bag'];
     }

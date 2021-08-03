@@ -6,7 +6,7 @@ namespace SchedulerBundle\Serializer;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\TaskBag\LockTaskBag;
+use SchedulerBundle\TaskBag\ExecutionLockBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -41,10 +41,10 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
     {
         try {
             return [
-                'bag' => LockTaskBag::class,
+                'bag' => ExecutionLockBag::class,
                 'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
                     AbstractNormalizer::CALLBACKS => [
-                        'key' => fn (Key $innerObject, LockTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+                        'key' => fn (Key $innerObject, ExecutionLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
                     ],
                 ])),
             ];
@@ -52,7 +52,7 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
             $this->logger->warning('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
 
             return [
-                'bag' => LockTaskBag::class,
+                'bag' => ExecutionLockBag::class,
                 'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => [
                         'key',
@@ -67,17 +67,17 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
      */
     public function supportsNormalization($data, string $format = null): bool
     {
-        return $data instanceof LockTaskBag;
+        return $data instanceof ExecutionLockBag;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, string $type, string $format = null, array $context = []): LockTaskBag
+    public function denormalize($data, string $type, string $format = null, array $context = []): ExecutionLockBag
     {
         return $this->objectNormalizer->denormalize($data, $type, $format, array_merge($context, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
-                LockTaskBag::class => [
+                ExecutionLockBag::class => [
                     'key' => (array_key_exists('key', $data['body']) && null !== $data['body']['key']) ? unserialize($data['body']['key']) : null,
                 ],
             ],
@@ -89,6 +89,6 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
      */
     public function supportsDenormalization($data, string $type, string $format = null): bool
     {
-        return LockTaskBag::class === $type;
+        return ExecutionLockBag::class === $type;
     }
 }
