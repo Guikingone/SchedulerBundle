@@ -6,7 +6,7 @@ namespace Tests\SchedulerBundle\Serializer;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\TaskBag\ExecutionLockBag;
 use stdClass;
 use Symfony\Component\Lock\Key;
@@ -25,7 +25,7 @@ final class LockTaskBagNormaliserTest extends TestCase
     {
         $objectNormalizer = $this->createMock(ObjectNormalizer::class);
 
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         self::assertFalse($lockTaskBagNormalizer->supportsNormalization(new stdClass()));
         self::assertTrue($lockTaskBagNormalizer->supportsNormalization(new ExecutionLockBag()));
@@ -35,7 +35,7 @@ final class LockTaskBagNormaliserTest extends TestCase
     {
         $objectNormalizer = $this->createMock(ObjectNormalizer::class);
 
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         self::assertFalse($lockTaskBagNormalizer->supportsDenormalization(null, stdClass::class));
         self::assertTrue($lockTaskBagNormalizer->supportsDenormalization(null, ExecutionLockBag::class));
@@ -52,7 +52,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         ;
 
         $serializer = new Serializer([
-            new LockTaskBagNormalizer($objectNormalizer, $logger),
+            new ExecutionLockBagNormalizer($objectNormalizer, $logger),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -74,7 +74,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new LockTaskBagNormalizer($objectNormalizer),
+            new ExecutionLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -93,7 +93,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new LockTaskBagNormalizer($objectNormalizer),
+            new ExecutionLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -109,7 +109,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new LockTaskBagNormalizer($objectNormalizer),
+            new ExecutionLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);

@@ -7,7 +7,8 @@ namespace SchedulerBundle\Serializer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\TaskBag\ExecutionLockBag;
-use Symfony\Component\Lock\Key;
+use Symfony\Component\Lock\Lock;
+use Symfony\Component\Lock\LockInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -15,13 +16,11 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Throwable;
 use function array_key_exists;
 use function array_merge;
-use function serialize;
-use function unserialize;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerInterface
+final class ExecutionLockBagNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     private ObjectNormalizer $objectNormalizer;
     private LoggerInterface $logger;
@@ -44,7 +43,7 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
                 'bag' => ExecutionLockBag::class,
                 'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
                     AbstractNormalizer::CALLBACKS => [
-                        'key' => fn (Key $innerObject, ExecutionLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+                        'lock' => fn (LockInterface $innerObject, ExecutionLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => $this->objectNormalizer->normalize($innerObject),
                     ],
                 ])),
             ];
@@ -55,7 +54,7 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
                 'bag' => ExecutionLockBag::class,
                 'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => [
-                        'key',
+                        'lock',
                     ],
                 ])),
             ];
@@ -78,7 +77,7 @@ final class LockTaskBagNormalizer implements NormalizerInterface, DenormalizerIn
         return $this->objectNormalizer->denormalize($data, $type, $format, array_merge($context, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 ExecutionLockBag::class => [
-                    'key' => (array_key_exists('key', $data['body']) && null !== $data['body']['key']) ? unserialize($data['body']['key']) : null,
+                    'lock' => (array_key_exists('lock', $data['body']) && null !== $data['body']['lock']) ? $this->objectNormalizer->denormalize($data['body']['lock'], Lock::class) : null,
                 ],
             ],
         ]));

@@ -155,13 +155,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
-        $tasks = $this->transport->list($lazy);
-
-        $tasks->walk(function (TaskInterface $task) use ($tasks): void {
-            $this->middlewareStack->runPreListingMiddleware($task, $tasks);
-        });
-
-        return $tasks;
+        return $this->transport->list($lazy);
     }
 
     /**

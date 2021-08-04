@@ -25,6 +25,8 @@ final class Worker extends AbstractWorker
             while (!$this->getOptions()['shouldStop']) {
                 $toExecuteTasks = $this->getTasks($tasks);
 
+                $this->getMiddlewareStack()->runPostWorkerStartMiddleware($toExecuteTasks);
+
                 foreach ($toExecuteTasks as $task) {
                     if (($toExecuteTasks->last() === $task && !$this->checkTaskState($task)) && !$this->getOptions()['sleepUntilNextMinute']) {
                         break 2;

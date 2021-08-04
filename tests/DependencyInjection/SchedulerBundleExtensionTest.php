@@ -83,7 +83,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
@@ -818,7 +818,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(NotificationTaskBagNormalizer::class, (string) $container->getDefinition(TaskNormalizer::class)->getArgument(4));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TaskNormalizer::class)->getArgument(4)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskNormalizer::class)->getArgument(5));
-        self::assertSame(LockTaskBagNormalizer::class, (string) $container->getDefinition(TaskNormalizer::class)->getArgument(5));
+        self::assertSame(ExecutionLockBagNormalizer::class, (string) $container->getDefinition(TaskNormalizer::class)->getArgument(5));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TaskNormalizer::class)->getArgument(5)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(TaskNormalizer::class)->hasTag('serializer.normalizer'));
         self::assertTrue($container->getDefinition(TaskNormalizer::class)->hasTag('container.preload'));
@@ -832,17 +832,17 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(NotificationTaskBagNormalizer::class)->hasTag('container.preload'));
         self::assertSame(NotificationTaskBagNormalizer::class, $container->getDefinition(NotificationTaskBagNormalizer::class)->getTag('container.preload')[0]['class']);
 
-        self::assertTrue($container->hasDefinition(LockTaskBagNormalizer::class));
-        self::assertCount(2, $container->getDefinition(LockTaskBagNormalizer::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(0));
-        self::assertSame('serializer.normalizer.object', (string) $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(0));
-        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(0)->getInvalidBehavior());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(1));
-        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(1));
-        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(LockTaskBagNormalizer::class)->getArgument(1)->getInvalidBehavior());
-        self::assertTrue($container->getDefinition(LockTaskBagNormalizer::class)->hasTag('serializer.normalizer'));
-        self::assertTrue($container->getDefinition(LockTaskBagNormalizer::class)->hasTag('container.preload'));
-        self::assertSame(LockTaskBagNormalizer::class, $container->getDefinition(LockTaskBagNormalizer::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(ExecutionLockBagNormalizer::class));
+        self::assertCount(2, $container->getDefinition(ExecutionLockBagNormalizer::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(0));
+        self::assertSame('serializer.normalizer.object', (string) $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(ExecutionLockBagNormalizer::class)->getArgument(1)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(ExecutionLockBagNormalizer::class)->hasTag('serializer.normalizer'));
+        self::assertTrue($container->getDefinition(ExecutionLockBagNormalizer::class)->hasTag('container.preload'));
+        self::assertSame(ExecutionLockBagNormalizer::class, $container->getDefinition(ExecutionLockBagNormalizer::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testMessengerToolsAreRegistered(): void

@@ -8,9 +8,12 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\PostWorkerStartMiddlewareInterface;
+use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\ExecutionLockBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
@@ -23,6 +26,15 @@ use Throwable;
  */
 final class TaskLockBagMiddlewareTest extends TestCase
 {
+    public function testMiddlewareIsConfigured(): void
+    {
+        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()));
+
+        self::assertInstanceOf(PreSchedulingMiddlewareInterface::class, $middleware);
+        self::assertInstanceOf(PostWorkerStartMiddlewareInterface::class, $middleware);
+        self::assertInstanceOf(PostExecutionMiddlewareInterface::class, $middleware);
+    }
+
     /**
      * @throws Throwable {@see PostSchedulingMiddlewareInterface::postScheduling()}
      */
@@ -31,13 +43,15 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The task "foo" has already an execution lock bag'));
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The task "foo" has already an access lock bag'));
 
         $task = new NullTask('foo');
-        $task->setExecutionLockBag(new ExecutionLockBag(new Key('foo')));
+        $task->setAccessLockBag(new AccessLockBag(new Key('foo')));
 
         $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), $logger);
         $middleware->preScheduling($task, $scheduler);
+
+        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
     }
 
     /**

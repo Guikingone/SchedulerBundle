@@ -12,7 +12,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\MessengerTask;
@@ -55,7 +55,7 @@ final class ConnectionIntegrationTest extends TestCase
             new PhpDocExtractor(),
             new ReflectionExtractor(),
         ]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(

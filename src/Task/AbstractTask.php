@@ -490,16 +490,20 @@ abstract class AbstractTask implements TaskInterface
         return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getAccessLockBag(): ?AccessLockBag
     {
         return $this->options['access_lock_bag'];
     }
 
-    public function setAccessLockBag(?AccessLockBag $bag = null): TaskInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function setAccessLockBag(?AccessLockBag $bag = null): void
     {
         $this->options['access_lock_bag'] = $bag;
-
-        return $this;
     }
 
     public function setExecutionLockBag(?ExecutionLockBag $bag = null): TaskInterface

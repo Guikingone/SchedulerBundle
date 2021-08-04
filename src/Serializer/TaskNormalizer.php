@@ -56,17 +56,17 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private ObjectNormalizer $objectNormalizer;
     private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
     private NotificationTaskBagNormalizer $notificationTaskBagNormalizer;
-    private LockTaskBagNormalizer $lockTaskBagNormalizer;
+    private ExecutionLockBagNormalizer $lockTaskBagNormalizer;
     private AccessLockBagNormalizer $accessLockBagNormalizer;
 
     public function __construct(
-        DateTimeNormalizer $dateTimeNormalizer,
-        DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        DateIntervalNormalizer $dateIntervalNormalizer,
-        ObjectNormalizer $objectNormalizer,
+        DateTimeNormalizer            $dateTimeNormalizer,
+        DateTimeZoneNormalizer        $dateTimeZoneNormalizer,
+        DateIntervalNormalizer        $dateIntervalNormalizer,
+        ObjectNormalizer              $objectNormalizer,
         NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
-        LockTaskBagNormalizer $lockTaskBagNormalizer,
-        AccessLockBagNormalizer $accessLockBagNormalizer
+        ExecutionLockBagNormalizer    $lockTaskBagNormalizer,
+        AccessLockBagNormalizer       $accessLockBagNormalizer
     ) {
         $this->dateTimeNormalizer = $dateTimeNormalizer;
         $this->dateTimeZoneNormalizer = $dateTimeZoneNormalizer;

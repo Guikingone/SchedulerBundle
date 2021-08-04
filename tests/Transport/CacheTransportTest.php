@@ -10,7 +10,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
@@ -56,7 +56,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotReturnUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -87,7 +87,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotReturnInternalTaskList(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -117,7 +117,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanReturnTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -148,7 +148,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanReturnTaskLazily(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -188,7 +188,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanListTasks(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -231,7 +231,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotCreateExistingTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -266,7 +266,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotUpdateUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -297,7 +297,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanUpdateTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -328,7 +328,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotPauseAlreadyPausedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -362,7 +362,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanPauseTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -392,7 +392,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotResumeAlreadyResumedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -424,7 +424,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanResumePausedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -459,7 +459,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCannotDeleteUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -500,7 +500,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanDeleteTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -541,7 +541,7 @@ final class CacheTransportTest extends TestCase
     public function testTransportCanClear(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(

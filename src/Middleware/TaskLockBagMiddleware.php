@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface, PreListingMiddlewareInterface
+final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostWorkerStartMiddlewareInterface, PostExecutionMiddlewareInterface
 {
     private const TASK_LOCK_MASK = '_symfony_scheduler_';
 
@@ -51,25 +51,30 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
     /**
      * {@inheritdoc}
      */
-    public function preExecute(TaskInterface $task): void
+    public function postWorkerStart(TaskListInterface $taskList): void
     {
-//        $executionLockTaskBag = $task->getExecutionLockBag();
-//        if (!$executionLockTaskBag instanceof LockTaskBag) {
-//            $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
-//
-//            $this->logger->info(sprintf('An execution lock bag has been created for task "%s"', $task->getName()));
-//        }
-//
-//        $executionLockTaskBag = $task->getExecutionLockBag();
-//
-//        if (!$executionLockTaskBag->getKey() instanceof Key) {
-//            $task->setExecutionLockBag(new LockTaskBag($this->createKey($task)));
-//        }
-//
-//        $executionLockTaskBag = $task->getExecutionLockBag();
-//
-//        $lock = $this->lockFactory->createLockFromKey($executionLockTaskBag->getKey());
-//        $lock->acquire(true);
+        $taskList->walk(function (TaskInterface $task) use (&$taskList): void {
+            $accessLockBag = $task->getAccessLockBag();
+            if (!$accessLockBag instanceof AccessLockBag) {
+                $this->logger->info(sprintf('The task "%s" does not have an access lock bag, consider calling %s::schedule()', $task->getName(), SchedulerInterface::class));
+
+                return;
+            }
+
+            $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
+            dump($lock->acquire());
+
+            if (!$lock->acquire()) {
+                dump($task->getName());
+                $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired, it will be created before executing the task', $task->getName()));
+
+                $taskList->remove($task->getName());
+
+                return;
+            }
+
+            $task->setExecutionLockBag(new ExecutionLockBag($lock));
+        });
     }
 
     /**
@@ -88,39 +93,6 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
         $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
 
         $task->setExecutionLockBag();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function preListing(TaskInterface $task, TaskListInterface $taskList): void
-    {
-        $accessLockBag = $task->getAccessLockBag();
-        if (!$accessLockBag instanceof AccessLockBag) {
-            $this->logger->info(sprintf('The task "%s" does not have an access lock bag, consider calling %s::schedule()', $task->getName(), SchedulerInterface::class));
-
-            return;
-        }
-
-        $executionLockBag = $task->getExecutionLockBag();
-        if ($executionLockBag instanceof ExecutionLockBag) {
-            $lock = $executionLockBag->getLock();
-            $lock->acquire();
-
-            return;
-        }
-
-        $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
-        if (!$lock->acquire()) {
-            dump($task->getName());
-            $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired, it will be created before executing the task', $task->getName()));
-
-            $taskList->remove($task->getName());
-
-            return;
-        }
-
-        $task->setExecutionLockBag(new ExecutionLockBag($lock));
     }
 
     private function createKey(TaskInterface $task): Key

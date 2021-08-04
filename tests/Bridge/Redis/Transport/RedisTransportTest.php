@@ -10,7 +10,7 @@ use SchedulerBundle\Bridge\Redis\Transport\RedisTransport;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
@@ -54,7 +54,7 @@ final class RedisTransportTest extends TestCase
 
         $dsn = Dsn::fromString($redisDsn);
         $objectNormalizer = new ObjectNormalizer();
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(

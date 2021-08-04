@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
@@ -52,7 +52,7 @@ final class ConnectionIntegrationTest extends TestCase
 
         $dsn = Dsn::fromString($redisDsn);
         $objectNormalizer = new ObjectNormalizer();
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(

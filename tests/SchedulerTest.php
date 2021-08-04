@@ -24,7 +24,7 @@ use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
@@ -1094,7 +1094,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                new LockTaskBagNormalizer($objectNormalizer)
+                new ExecutionLockBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
@@ -1139,7 +1139,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                new LockTaskBagNormalizer($objectNormalizer)
+                new ExecutionLockBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),

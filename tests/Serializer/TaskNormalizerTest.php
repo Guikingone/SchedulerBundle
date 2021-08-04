@@ -7,7 +7,7 @@ namespace Tests\SchedulerBundle\Serializer;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\ProbeTask;
@@ -50,7 +50,7 @@ final class TaskNormalizerTest extends TestCase
             new DateIntervalNormalizer(),
             new ObjectNormalizer(),
             new NotificationTaskBagNormalizer(new ObjectNormalizer()),
-            new LockTaskBagNormalizer(new ObjectNormalizer())
+            new ExecutionLockBagNormalizer(new ObjectNormalizer())
         );
 
         self::assertFalse($taskNormalizer->supportsNormalization(new stdClass()));
@@ -64,7 +64,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -122,7 +122,7 @@ final class TaskNormalizerTest extends TestCase
             new DateIntervalNormalizer(),
             new ObjectNormalizer(),
             new NotificationTaskBagNormalizer(new ObjectNormalizer()),
-            new LockTaskBagNormalizer(new ObjectNormalizer())
+            new ExecutionLockBagNormalizer(new ObjectNormalizer())
         );
 
         self::expectException(InvalidArgumentException::class);
@@ -137,7 +137,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -170,7 +170,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -202,7 +202,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -242,7 +242,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -280,7 +280,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -314,7 +314,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -352,7 +352,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -386,7 +386,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -424,7 +424,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -458,7 +458,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -496,7 +496,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -530,7 +530,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -568,7 +568,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -607,7 +607,7 @@ final class TaskNormalizerTest extends TestCase
             new ReflectionExtractor(),
         ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -657,7 +657,7 @@ final class TaskNormalizerTest extends TestCase
             new ReflectionExtractor(),
         ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -697,7 +697,7 @@ final class TaskNormalizerTest extends TestCase
             new ReflectionExtractor(),
         ]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $normalizer = new TaskNormalizer(
             new DateTimeNormalizer(),
@@ -741,7 +741,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -773,7 +773,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -810,7 +810,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -844,7 +844,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -888,7 +888,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -947,7 +947,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -991,7 +991,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1035,7 +1035,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1079,7 +1079,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1123,7 +1123,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,
@@ -1157,7 +1157,7 @@ final class TaskNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-        $lockTaskBagNormalizer = new LockTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             $notificationTaskBagNormalizer,

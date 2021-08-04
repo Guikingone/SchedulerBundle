@@ -42,6 +42,7 @@ use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\PostWorkerStartMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\ProbeTaskMiddleware;
@@ -82,7 +83,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
-use SchedulerBundle\Serializer\LockTaskBagNormalizer;
+use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
@@ -209,6 +210,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(PostWorkerStartMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
@@ -763,7 +765,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('serializer.normalizer.dateinterval', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(LockTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(ExecutionLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(AccessLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
@@ -782,14 +784,14 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        $container->register(LockTaskBagNormalizer::class, LockTaskBagNormalizer::class)
+        $container->register(ExecutionLockBagNormalizer::class, ExecutionLockBagNormalizer::class)
             ->setArguments([
                 new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
-                'class' => LockTaskBagNormalizer::class,
+                'class' => ExecutionLockBagNormalizer::class,
             ])
         ;
 
@@ -1089,6 +1091,7 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
+            ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => TaskLockBagMiddleware::class,
             ])

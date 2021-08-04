@@ -6,7 +6,6 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
 
 /**
@@ -31,16 +30,6 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
     {
         $this->runMiddleware($this->getPostSchedulingMiddleware(), function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
             $middleware->postScheduling($task, $scheduler);
-        });
-    }
-
-    /**
-     * @throws Throwable {@see PreListingMiddlewareInterface::preListing()}
-     */
-    public function runPreListingMiddleware(TaskInterface $task, TaskListInterface $taskList): void
-    {
-        $this->runMiddleware($this->getPreListingMiddleware(), function (PreListingMiddlewareInterface $middleware) use ($task, $taskList): void {
-            $middleware->preListing($task, $taskList);
         });
     }
 }

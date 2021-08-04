@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
 
 /**
@@ -12,6 +13,16 @@ use Throwable;
  */
 final class WorkerMiddlewareStack extends AbstractMiddlewareStack
 {
+    /**
+     * @throws Throwable {@see PostWorkerStartMiddlewareInterface::postWorkerStart()}
+     */
+    public function runPostWorkerStartMiddleware(TaskListInterface $taskList): void
+    {
+        $this->runMiddleware($this->getPostWorkerStartMiddleware(), function (PostWorkerStartMiddlewareInterface $middleware) use ($taskList): void {
+            $middleware->postWorkerStart($taskList);
+        });
+    }
+
     /**
      * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
      */
