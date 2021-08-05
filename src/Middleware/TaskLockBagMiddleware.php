@@ -9,8 +9,9 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Task\TaskLockRegistryInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\ExecutionLockBag;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use function sprintf;
@@ -18,18 +19,21 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostWorkerStartMiddlewareInterface, PostExecutionMiddlewareInterface
+final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostWorkerStartMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
     private const TASK_LOCK_MASK = '_symfony_scheduler_';
 
     private LockFactory $lockFactory;
+    private TaskLockRegistryInterface $taskLockRegistry;
     private LoggerInterface $logger;
 
     public function __construct(
         LockFactory $lockFactory,
+        TaskLockRegistryInterface $taskLockRegistry,
         ?LoggerInterface $logger = null
     ) {
         $this->lockFactory = $lockFactory;
+        $this->taskLockRegistry = $taskLockRegistry;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -51,21 +55,19 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
     /**
      * {@inheritdoc}
      */
-    public function postWorkerStart(TaskListInterface $taskList): void
+    public function postWorkerStart(TaskListInterface $taskList, WorkerInterface $worker): void
     {
-        $taskList->walk(function (TaskInterface $task) use (&$taskList): void {
-            $accessLockBag = $task->getAccessLockBag();
-            if (!$accessLockBag instanceof AccessLockBag) {
-                $this->logger->info(sprintf('The task "%s" does not have an access lock bag, consider calling %s::schedule()', $task->getName(), SchedulerInterface::class));
+        $taskList->walk(function (TaskInterface $task) use (&$taskList, $worker): void {
+            if (!$task->getAccessLockBag() instanceof AccessLockBag) {
+                $this->logger->info(sprintf('The task "%s" does not have an access lock bag, consider calling %s::schedule() next time', $task->getName(), SchedulerInterface::class));
 
-                return;
+                $task->setAccessLockBag(new AccessLockBag($this->createKey($task)));
             }
 
-            $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
-            dump($lock->acquire());
+            $accessLockBag = $task->getAccessLockBag();
 
+            $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
             if (!$lock->acquire()) {
-                dump($task->getName());
                 $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired, it will be created before executing the task', $task->getName()));
 
                 $taskList->remove($task->getName());
@@ -73,26 +75,29 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
                 return;
             }
 
-            $task->setExecutionLockBag(new ExecutionLockBag($lock));
+            $this->taskLockRegistry->add($task, $lock);
         });
     }
 
     /**
      * {@inheritdoc}
      */
-    public function postExecute(TaskInterface $task): void
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
-        $executionLockBag = $task->getExecutionLockBag();
-        if (!$executionLockBag instanceof ExecutionLockBag) {
-            return;
-        }
-
-        $lock = $executionLockBag->getLock();
+        $lock = $this->taskLockRegistry->find($task);
         $lock->release();
 
         $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
 
-        $task->setExecutionLockBag();
+        $this->taskLockRegistry->remove($task);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPriority(): int
+    {
+        return 5;
     }
 
     private function createKey(TaskInterface $task): Key

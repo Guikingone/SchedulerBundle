@@ -159,7 +159,7 @@ This command allows using additional options to display information:
 ```bash
 $ bin/console scheduler:debug:probe
 
-[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00
 
 +----------------+--------------+-----------------+
 | Executed tasks | Failed tasks | Scheduled tasks |
@@ -173,7 +173,7 @@ $ bin/console scheduler:debug:probe
 ```bash
 $ bin/console scheduler:debug:probe --external
 
-  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00
 
 +----------------+--------------+-----------------+
 | Executed tasks | Failed tasks | Scheduled tasks |

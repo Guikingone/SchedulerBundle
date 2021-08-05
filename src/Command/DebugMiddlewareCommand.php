@@ -45,6 +45,7 @@ final class DebugMiddlewareCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+
         return self::SUCCESS;
     }
 }

@@ -13,6 +13,7 @@ use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskLockRegistry;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\ExecutionLockBag;
 use Symfony\Component\Lock\Key;
@@ -28,7 +29,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
 {
     public function testMiddlewareIsConfigured(): void
     {
-        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()));
+        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), new TaskLockRegistry());
 
         self::assertInstanceOf(PreSchedulingMiddlewareInterface::class, $middleware);
         self::assertInstanceOf(PostWorkerStartMiddlewareInterface::class, $middleware);
@@ -48,7 +49,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $task = new NullTask('foo');
         $task->setAccessLockBag(new AccessLockBag(new Key('foo')));
 
-        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), $logger);
+        $middleware = new TaskLockBagMiddleware(new LockFactory(new FlockStore()), new TaskLockRegistry(), $logger);
         $middleware->preScheduling($task, $scheduler);
 
         self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
@@ -70,7 +71,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $lockFactory = $this->createMock(LockFactory::class);
         $lockFactory->expects(self::once())->method('createLockFromKey')->willReturn($lock);
 
-        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware = new TaskLockBagMiddleware($lockFactory, new TaskLockRegistry(), $logger);
         $middleware->preScheduling(new NullTask('foo'), $scheduler);
     }
 
@@ -92,7 +93,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
 
         $task = new NullTask('foo');
 
-        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware = new TaskLockBagMiddleware($lockFactory, new TaskLockRegistry(), $logger);
         $middleware->preScheduling($task, $scheduler);
 
         $executionLockBag = $task->getExecutionLockBag();
@@ -119,7 +120,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
 
         $task = new NullTask('foo');
 
-        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware = new TaskLockBagMiddleware($lockFactory, new TaskLockRegistry(), $logger);
         $middleware->preExecute($task);
 
         self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
@@ -144,7 +145,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $task = new NullTask('foo');
         $task->setExecutionLockBag($lockTaskBag);
 
-        $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
+        $middleware = new TaskLockBagMiddleware($lockFactory, new TaskLockRegistry(), $logger);
         $middleware->preExecute($task);
 
         self::assertNotSame($lockTaskBag, $task->getExecutionLockBag());

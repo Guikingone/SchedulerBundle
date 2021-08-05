@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Throwable;
+use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,5 +32,13 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
         $this->runMiddleware($this->getPostSchedulingMiddleware(), function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
             $middleware->postScheduling($task, $scheduler);
         });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMiddlewareList(): array
+    {
+        return array_merge($this->getPreSchedulingMiddleware(), $this->getPostSchedulingMiddleware());
     }
 }

@@ -83,7 +83,6 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
-use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
@@ -98,6 +97,8 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskLockRegistry;
+use SchedulerBundle\Task\TaskLockRegistryInterface;
 use SchedulerBundle\TaskBag\TaskBagInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Dsn;
@@ -348,6 +349,19 @@ final class SchedulerBundleExtension extends Extension
                 'class' => LockFactory::class,
             ])
         ;
+
+        $container->register(TaskLockRegistry::class, TaskLockRegistry::class)
+            ->setArguments([
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => TaskLockRegistry::class,
+            ])
+        ;
+        $container->setAlias(TaskLockRegistryInterface::class, TaskLockRegistry::class);
     }
 
     private function registerScheduler(ContainerBuilder $container): void
@@ -765,7 +779,6 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('serializer.normalizer.dateinterval', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(ExecutionLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(AccessLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
@@ -781,17 +794,6 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
                 'class' => NotificationTaskBagNormalizer::class,
-            ])
-        ;
-
-        $container->register(ExecutionLockBagNormalizer::class, ExecutionLockBagNormalizer::class)
-            ->setArguments([
-                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-            ])
-            ->addTag('serializer.normalizer')
-            ->addTag('container.preload', [
-                'class' => ExecutionLockBagNormalizer::class,
             ])
         ;
 
@@ -944,7 +946,6 @@ final class SchedulerBundleExtension extends Extension
                 'class' => Worker::class,
             ])
         ;
-
         $container->setAlias(WorkerInterface::class, Worker::class);
     }
 
@@ -1087,6 +1088,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(TaskLockBagMiddleware::class, TaskLockBagMiddleware::class)
             ->setArguments([
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TaskLockRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)

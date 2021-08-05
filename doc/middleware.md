@@ -6,6 +6,7 @@ _Introduced in `0.3`_
 - [Execution](#Execution)
 - [Order](#Order)
 - [Required middleware](#required-middleware)
+- [Extending](#implementing-a-custom-middleware)
 
 This bundle defines middleware related to execution and scheduling phases.
 
@@ -19,6 +20,7 @@ There are two types of middleware:
 
 Both are called by [SchedulerMiddlewareStack](../src/Middleware/SchedulerMiddlewareStack.php) and/or
 [WorkerMiddlewareStack](../src/Middleware/WorkerMiddlewareStack.php).
+
 
 ## Scheduling
 
@@ -134,3 +136,16 @@ executed even if an error occurs.
 **Note**: The important thing to keep in mind is that a required middleware can be executed twice 
 depending on the priority defined (if defined), in the core, 
 the required middlewares use a lower priority to prevent this edge case.
+
+## Implementing a custom middleware
+
+This bundle allows you to interact with tasks, task list, scheduler and worker
+depending on your needs, to do so, your middleware must implement one or many of the following interfaces:
+
+| Event                                                                                            | Description                                                         |
+| -------------------------------------------------------------------------------------------------| --------------------------------------------------------------------|
+| [`PostExecutionMiddlewareInterface`](../src/Middleware/PostExecutionMiddlewareInterface.php)     | Allows you to interact with the lastly executed task and the worker |
+| [`PreExecutionMiddlewareInterface`](../src/Middleware/PreExecutionMiddlewareInterface.php)       | Allows you to interact with the task to execute                     |
+| [`PreSchedulingMiddlewareInterface`](../src/Middleware/PreSchedulingMiddlewareInterface.php)     | Allows you to interact with the task to schedule and the scheduler  |
+| [`PostSchedulingMiddlewareInterface`](../src/Middleware/PostSchedulingMiddlewareInterface.php)   | Allows you to interact with the scheduled task and the scheduler    |
+| [`PostWorkerStartMiddlewareInterface`](../src/Middleware/PostWorkerStartMiddlewareInterface.php) | Allows you to interact with the task list to execute and the worker |

@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -54,7 +55,10 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
         }
     }
 
-    public function postExecute(TaskInterface $task): void
+    /**
+     * {@inheritdoc}
+     */
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;

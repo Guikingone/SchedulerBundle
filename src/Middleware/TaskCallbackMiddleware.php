@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use function call_user_func;
 use function get_class;
 use function sprintf;
@@ -66,7 +67,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     /**
      * {@inheritdoc}
      */
-    public function postExecute(TaskInterface $task): void
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         $callback = $task->getAfterExecuting();
         if (null === $callback) {

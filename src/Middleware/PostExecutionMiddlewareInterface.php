@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
 /**
@@ -19,5 +20,5 @@ interface PostExecutionMiddlewareInterface
      *
      * @throws Throwable If an error|exception occurs, it must be thrown back.
      */
-    public function postExecute(TaskInterface $task): void;
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void;
 }

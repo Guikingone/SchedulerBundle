@@ -24,8 +24,9 @@ final class Worker extends AbstractWorker
         $this->run($options, function () use ($options, $tasks): void {
             while (!$this->getOptions()['shouldStop']) {
                 $toExecuteTasks = $this->getTasks($tasks);
+                $middlewareStack = $this->getMiddlewareStack();
 
-                $this->getMiddlewareStack()->runPostWorkerStartMiddleware($toExecuteTasks);
+                $middlewareStack->runPostWorkerStartMiddleware($toExecuteTasks, $this);
 
                 foreach ($toExecuteTasks as $task) {
                     if (($toExecuteTasks->last() === $task && !$this->checkTaskState($task)) && !$this->getOptions()['sleepUntilNextMinute']) {
@@ -46,13 +47,13 @@ final class Worker extends AbstractWorker
                         }
 
                         if (!$this->isRunning()) {
-                            $this->getMiddlewareStack()->runPreExecutionMiddleware($task);
+                            $middlewareStack->runPreExecutionMiddleware($task);
 
                             $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
 
-                            $this->getMiddlewareStack()->runPostExecutionMiddleware($task);
+                            $middlewareStack->runPostExecutionMiddleware($task, $this);
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());

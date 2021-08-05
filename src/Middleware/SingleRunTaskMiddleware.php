@@ -6,6 +6,7 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -22,7 +23,7 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
     /**
      * {@inheritdoc}
      */
-    public function postExecute(TaskInterface $task): void
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         if (!$task->isSingleRun()) {
             return;

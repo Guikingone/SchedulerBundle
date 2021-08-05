@@ -11,14 +11,14 @@ use Symfony\Component\Lock\LockInterface;
  */
 final class ExecutionLockBag implements TaskBagInterface
 {
-    private LockInterface $lock;
+    private ?LockInterface $lock;
 
-    public function __construct(LockInterface $lock)
+    public function __construct(?LockInterface $lock = null)
     {
         $this->lock = $lock;
     }
 
-    public function getLock(): LockInterface
+    public function getLock(): ?LockInterface
     {
         return $this->lock;
     }

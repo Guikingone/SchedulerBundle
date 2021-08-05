@@ -12,7 +12,6 @@ use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\ExecutionLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -56,7 +55,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private ObjectNormalizer $objectNormalizer;
     private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
     private NotificationTaskBagNormalizer $notificationTaskBagNormalizer;
-    private ExecutionLockBagNormalizer $lockTaskBagNormalizer;
     private AccessLockBagNormalizer $accessLockBagNormalizer;
 
     public function __construct(
@@ -65,7 +63,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         DateIntervalNormalizer        $dateIntervalNormalizer,
         ObjectNormalizer              $objectNormalizer,
         NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
-        ExecutionLockBagNormalizer    $lockTaskBagNormalizer,
         AccessLockBagNormalizer       $accessLockBagNormalizer
     ) {
         $this->dateTimeNormalizer = $dateTimeNormalizer;
@@ -73,7 +70,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         $this->dateIntervalNormalizer = $dateIntervalNormalizer;
         $this->objectNormalizer = $objectNormalizer;
         $this->notificationTaskBagNormalizer = $notificationTaskBagNormalizer;
-        $this->lockTaskBagNormalizer = $lockTaskBagNormalizer;
         $this->accessLockBagNormalizer = $accessLockBagNormalizer;
     }
 
@@ -141,7 +137,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'options' => [],
                     ],
                 ])), $innerObject->toArray(false)),
-                'executionLockBag' => fn (?ExecutionLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof ExecutionLockBag ? $this->lockTaskBagNormalizer->normalize($innerObject, $format, $context) : null,
                 'accessLockBag' => fn (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null,
             ],
         ];
