@@ -6,10 +6,9 @@ namespace SchedulerBundle\Middleware;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\Task\TaskLockRegistryInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Lock\Key;
@@ -19,21 +18,18 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostWorkerStartMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
+final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
-    private const TASK_LOCK_MASK = '_symfony_scheduler_';
+    private const TASK_LOCK_MASK = '_symfony_scheduler_foo_';
 
-    private LockFactory $lockFactory;
-    private TaskLockRegistryInterface $taskLockRegistry;
     private LoggerInterface $logger;
+    private LockFactory $lockFactory;
 
     public function __construct(
         LockFactory $lockFactory,
-        TaskLockRegistryInterface $taskLockRegistry,
         ?LoggerInterface $logger = null
     ) {
         $this->lockFactory = $lockFactory;
-        $this->taskLockRegistry = $taskLockRegistry;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -49,34 +45,7 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
             return;
         }
 
-        $task->setAccessLockBag(new AccessLockBag($this->createKey($task)));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function postWorkerStart(TaskListInterface $taskList, WorkerInterface $worker): void
-    {
-        $taskList->walk(function (TaskInterface $task) use (&$taskList, $worker): void {
-            if (!$task->getAccessLockBag() instanceof AccessLockBag) {
-                $this->logger->info(sprintf('The task "%s" does not have an access lock bag, consider calling %s::schedule() next time', $task->getName(), SchedulerInterface::class));
-
-                $task->setAccessLockBag(new AccessLockBag($this->createKey($task)));
-            }
-
-            $accessLockBag = $task->getAccessLockBag();
-
-            $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
-            if (!$lock->acquire()) {
-                $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired, it will be created before executing the task', $task->getName()));
-
-                $taskList->remove($task->getName());
-
-                return;
-            }
-
-            $this->taskLockRegistry->add($task, $lock);
-        });
+        $task->setAccessLockBag(new AccessLockBag(self::createKey($task)));
     }
 
     /**
@@ -84,12 +53,15 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
      */
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
-        $lock = $this->taskLockRegistry->find($task);
+        $accessLockBag = $task->getAccessLockBag();
+        if (!$accessLockBag instanceof AccessLockBag) {
+            throw new RuntimeException(sprintf('The task "%s" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', $task->getName(), WorkerInterface::class, SchedulerInterface::class));
+        }
+
+        $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey());
         $lock->release();
 
         $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
-
-        $this->taskLockRegistry->remove($task);
     }
 
     /**
@@ -100,7 +72,7 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
         return 5;
     }
 
-    private function createKey(TaskInterface $task): Key
+    public static function createKey(TaskInterface $task): Key
     {
         return new Key(sprintf('%s_%s', self::TASK_LOCK_MASK, $task->getName()));
     }

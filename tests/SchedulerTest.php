@@ -24,14 +24,14 @@ use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\TaskBag\ExecutionLockBag;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -1094,7 +1094,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                new ExecutionLockBagNormalizer($objectNormalizer)
+                new AccessLockBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
@@ -1117,7 +1117,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
+        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
     }
 
     /**
@@ -1139,7 +1139,7 @@ final class SchedulerTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 $notificationTaskBagNormalizer,
-                new ExecutionLockBagNormalizer($objectNormalizer)
+                new AccessLockBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateTimeZoneNormalizer(),
@@ -1165,7 +1165,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(ExecutionLockBag::class, $task->getExecutionLockBag());
+        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
     }
 
     /**

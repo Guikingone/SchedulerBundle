@@ -42,7 +42,6 @@ use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
-use SchedulerBundle\Middleware\PostWorkerStartMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\ProbeTaskMiddleware;
@@ -97,8 +96,6 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskLockRegistry;
-use SchedulerBundle\Task\TaskLockRegistryInterface;
 use SchedulerBundle\TaskBag\TaskBagInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Dsn;
@@ -211,7 +208,6 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
-        $container->registerForAutoconfiguration(PostWorkerStartMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
@@ -349,19 +345,6 @@ final class SchedulerBundleExtension extends Extension
                 'class' => LockFactory::class,
             ])
         ;
-
-        $container->register(TaskLockRegistry::class, TaskLockRegistry::class)
-            ->setArguments([
-                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-            ])
-            ->addTag('monolog.logger', [
-                'channel' => 'scheduler',
-            ])
-            ->addTag('container.preload', [
-                'class' => TaskLockRegistry::class,
-            ])
-        ;
-        $container->setAlias(TaskLockRegistryInterface::class, TaskLockRegistry::class);
     }
 
     private function registerScheduler(ContainerBuilder $container): void
@@ -936,6 +919,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('scheduler.worker')
@@ -1088,7 +1072,6 @@ final class SchedulerBundleExtension extends Extension
         $container->register(TaskLockBagMiddleware::class, TaskLockBagMiddleware::class)
             ->setArguments([
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(TaskLockRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)

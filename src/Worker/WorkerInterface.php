@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
+use Exception;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
@@ -66,6 +67,8 @@ interface WorkerInterface
 
     /**
      * Start a "sleeping" phase in the current worker.
+     *
+     * @throws Exception {@see DateTimeImmutable::__construct()}
      */
     public function sleep(): void;
 

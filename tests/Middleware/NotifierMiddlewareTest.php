@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -70,6 +71,7 @@ final class NotifierMiddlewareTest extends TestCase
 
     public function testMiddlewareCannotExecutePostExecutionNotificationsWithoutNotification(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
@@ -77,11 +79,12 @@ final class NotifierMiddlewareTest extends TestCase
         $task->expects(self::once())->method('getAfterExecutingNotificationBag')->willReturn(null);
 
         $notifierMiddleware = new NotifierMiddleware($notifier);
-        $notifierMiddleware->postExecute($task);
+        $notifierMiddleware->postExecute($task, $worker);
     }
 
     public function testMiddlewareCannotExecutePostExecutionNotificationsWithoutNotifier(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $notification = $this->createMock(Notification::class);
 
         $notifier = $this->createMock(NotifierInterface::class);
@@ -93,11 +96,12 @@ final class NotifierMiddlewareTest extends TestCase
         ;
 
         $notifierMiddleware = new NotifierMiddleware();
-        $notifierMiddleware->postExecute($task);
+        $notifierMiddleware->postExecute($task, $worker);
     }
 
     public function testMiddlewareCanExecutePostExecutionNotifications(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $notification = $this->createMock(Notification::class);
 
         $notifier = $this->createMock(NotifierInterface::class);
@@ -109,6 +113,6 @@ final class NotifierMiddlewareTest extends TestCase
         ;
 
         $notifierMiddleware = new NotifierMiddleware($notifier);
-        $notifierMiddleware->postExecute($task);
+        $notifierMiddleware->postExecute($task, $worker);
     }
 }

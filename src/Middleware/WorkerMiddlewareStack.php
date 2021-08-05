@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 use function array_merge;
@@ -15,16 +14,6 @@ use function array_merge;
  */
 final class WorkerMiddlewareStack extends AbstractMiddlewareStack
 {
-    /**
-     * @throws Throwable {@see PostWorkerStartMiddlewareInterface::postWorkerStart()}
-     */
-    public function runPostWorkerStartMiddleware(TaskListInterface $taskList, WorkerInterface $worker): void
-    {
-        $this->runMiddleware($this->getPostWorkerStartMiddleware(), function (PostWorkerStartMiddlewareInterface $middleware) use ($taskList, $worker): void {
-            $middleware->postWorkerStart($taskList, $worker);
-        });
-    }
-
     /**
      * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
      */
@@ -50,6 +39,6 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function getMiddlewareList(): array
     {
-        return array_merge($this->getPostWorkerStartMiddleware(), $this->getPreExecutionMiddleware(), $this->getPostExecutionMiddleware());
+        return array_merge($this->getPreExecutionMiddleware(), $this->getPostExecutionMiddleware());
     }
 }

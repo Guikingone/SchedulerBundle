@@ -24,19 +24,11 @@ final class Worker extends AbstractWorker
         $this->run($options, function () use ($options, $tasks): void {
             while (!$this->getOptions()['shouldStop']) {
                 $toExecuteTasks = $this->getTasks($tasks);
-                $middlewareStack = $this->getMiddlewareStack();
-
-                $middlewareStack->runPostWorkerStartMiddleware($toExecuteTasks, $this);
+                if (0 === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute']) {
+                    $this->stop();
+                }
 
                 foreach ($toExecuteTasks as $task) {
-                    if (($toExecuteTasks->last() === $task && !$this->checkTaskState($task)) && !$this->getOptions()['sleepUntilNextMinute']) {
-                        break 2;
-                    }
-
-                    if (!$this->checkTaskState($task)) {
-                        continue;
-                    }
-
                     $this->dispatch(new WorkerRunningEvent($this));
 
                     try {
@@ -47,13 +39,13 @@ final class Worker extends AbstractWorker
                         }
 
                         if (!$this->isRunning()) {
-                            $middlewareStack->runPreExecutionMiddleware($task);
+                            $this->getMiddlewareStack()->runPreExecutionMiddleware($task);
 
                             $this->options['isRunning'] = true;
                             $this->dispatch(new WorkerRunningEvent($this));
                             $this->handleTask($runner, $task);
 
-                            $middlewareStack->runPostExecutionMiddleware($task, $this);
+                            $this->getMiddlewareStack()->runPostExecutionMiddleware($task, $this);
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());

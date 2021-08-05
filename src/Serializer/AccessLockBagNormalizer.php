@@ -58,7 +58,6 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
         }
     }
 
-
     /**
      * {@inheritdoc}
      */

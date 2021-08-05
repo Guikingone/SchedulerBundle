@@ -6,8 +6,8 @@ namespace Tests\SchedulerBundle\Serializer;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Serializer\ExecutionLockBagNormalizer;
-use SchedulerBundle\TaskBag\ExecutionLockBag;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use stdClass;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
@@ -19,26 +19,26 @@ use Symfony\Component\Serializer\Serializer;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LockTaskBagNormaliserTest extends TestCase
+final class AccessLockBagNormalizerTest extends TestCase
 {
     public function testNormalizerCanSupportNormalization(): void
     {
         $objectNormalizer = $this->createMock(ObjectNormalizer::class);
 
-        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         self::assertFalse($lockTaskBagNormalizer->supportsNormalization(new stdClass()));
-        self::assertTrue($lockTaskBagNormalizer->supportsNormalization(new ExecutionLockBag()));
+        self::assertTrue($lockTaskBagNormalizer->supportsNormalization(new AccessLockBag()));
     }
 
     public function testNormalizerCanSupportDenormalization(): void
     {
         $objectNormalizer = $this->createMock(ObjectNormalizer::class);
 
-        $lockTaskBagNormalizer = new ExecutionLockBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         self::assertFalse($lockTaskBagNormalizer->supportsDenormalization(null, stdClass::class));
-        self::assertTrue($lockTaskBagNormalizer->supportsDenormalization(null, ExecutionLockBag::class));
+        self::assertTrue($lockTaskBagNormalizer->supportsDenormalization(null, AccessLockBag::class));
     }
 
     public function testNormalizerCanNormalizeBagWithUnserializableKey(): void
@@ -52,7 +52,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         ;
 
         $serializer = new Serializer([
-            new ExecutionLockBagNormalizer($objectNormalizer, $logger),
+            new AccessLockBagNormalizer($objectNormalizer, $logger),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -60,11 +60,11 @@ final class LockTaskBagNormaliserTest extends TestCase
         $key = new Key('foo');
         $key->markUnserializable();
 
-        $data = $serializer->normalize(new ExecutionLockBag($key));
+        $data = $serializer->normalize(new AccessLockBag($key));
 
         self::assertIsArray($data);
         self::assertArrayHasKey('bag', $data);
-        self::assertSame(ExecutionLockBag::class, $data['bag']);
+        self::assertSame(AccessLockBag::class, $data['bag']);
         self::assertArrayHasKey('body', $data);
         self::assertArrayNotHasKey('key', $data['body']);
     }
@@ -74,16 +74,16 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new ExecutionLockBagNormalizer($objectNormalizer),
+            new AccessLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $data = $serializer->normalize(new ExecutionLockBag(new Key('foo')));
+        $data = $serializer->normalize(new AccessLockBag(new Key('foo')));
 
         self::assertIsArray($data);
         self::assertArrayHasKey('bag', $data);
-        self::assertSame(ExecutionLockBag::class, $data['bag']);
+        self::assertSame(AccessLockBag::class, $data['bag']);
         self::assertArrayHasKey('body', $data);
         self::assertArrayHasKey('key', $data['body']);
     }
@@ -93,13 +93,13 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new ExecutionLockBagNormalizer($objectNormalizer),
+            new AccessLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $data = $serializer->normalize(new ExecutionLockBag());
-        $bag = $serializer->denormalize($data, ExecutionLockBag::class);
+        $data = $serializer->normalize(new AccessLockBag());
+        $bag = $serializer->denormalize($data, AccessLockBag::class);
 
         self::assertNull($bag->getKey());
     }
@@ -109,7 +109,7 @@ final class LockTaskBagNormaliserTest extends TestCase
         $objectNormalizer = new ObjectNormalizer();
 
         $serializer = new Serializer([
-            new ExecutionLockBagNormalizer($objectNormalizer),
+            new AccessLockBagNormalizer($objectNormalizer),
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -118,8 +118,8 @@ final class LockTaskBagNormaliserTest extends TestCase
         $factory = new LockFactory(new FlockStore());
         $factory->createLockFromKey($key, null, false);
 
-        $data = $serializer->normalize(new ExecutionLockBag($key));
-        $bag = $serializer->denormalize($data, ExecutionLockBag::class);
+        $data = $serializer->normalize(new AccessLockBag($key));
+        $bag = $serializer->denormalize($data, AccessLockBag::class);
 
         self::assertNotNull($bag->getKey());
         self::assertInstanceOf(Key::class, $bag->getKey());

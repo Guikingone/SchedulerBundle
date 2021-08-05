@@ -144,8 +144,7 @@ depending on your needs, to do so, your middleware must implement one or many of
 
 | Event                                                                                            | Description                                                         |
 | -------------------------------------------------------------------------------------------------| --------------------------------------------------------------------|
-| [`PostExecutionMiddlewareInterface`](../src/Middleware/PostExecutionMiddlewareInterface.php)     | Allows you to interact with the lastly executed task and the worker |
 | [`PreExecutionMiddlewareInterface`](../src/Middleware/PreExecutionMiddlewareInterface.php)       | Allows you to interact with the task to execute                     |
+| [`PostExecutionMiddlewareInterface`](../src/Middleware/PostExecutionMiddlewareInterface.php)     | Allows you to interact with the lastly executed task and the worker |
 | [`PreSchedulingMiddlewareInterface`](../src/Middleware/PreSchedulingMiddlewareInterface.php)     | Allows you to interact with the task to schedule and the scheduler  |
 | [`PostSchedulingMiddlewareInterface`](../src/Middleware/PostSchedulingMiddlewareInterface.php)   | Allows you to interact with the scheduled task and the scheduler    |
-| [`PostWorkerStartMiddlewareInterface`](../src/Middleware/PostWorkerStartMiddlewareInterface.php) | Allows you to interact with the task list to execute and the worker |

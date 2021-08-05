@@ -10,6 +10,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -134,15 +135,18 @@ final class TaskCallbackMiddlewareTest extends TestCase
 
     public function testMiddlewareCannotPostExecuteEmptyAfterExecutingCallback(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getAfterExecuting')->willReturn(null);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
-        $taskCallbackMiddleware->postExecute($task);
+        $taskCallbackMiddleware->postExecute($task, $worker);
     }
 
     public function testMiddlewareCannotPostExecuteErroredAfterExecutingCallback(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $nullTask = new NullTask('foo', [
             'after_executing' => fn (): bool => false,
         ]);
@@ -152,16 +156,17 @@ final class TaskCallbackMiddlewareTest extends TestCase
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage('The task "foo" has encountered an error when executing the SchedulerBundle\Task\NullTask::getAfterExecuting() callback.');
         self::expectExceptionCode(0);
-        $taskCallbackMiddleware->postExecute($nullTask);
+        $taskCallbackMiddleware->postExecute($nullTask, $worker);
     }
 
     public function testMiddlewareCanPostExecuteWithValidAfterExecutingCallback(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
         $task->expects(self::once())->method('getAfterExecuting')->willReturn(fn (): bool => true);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
-        $taskCallbackMiddleware->postExecute($task);
+        $taskCallbackMiddleware->postExecute($task, $worker);
     }
 }

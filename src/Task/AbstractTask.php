@@ -99,7 +99,7 @@ abstract class AbstractTask implements TaskInterface
         ]);
 
         $optionsResolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
-        $optionsResolver->setAllowedTypes('access_lock_bag', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('access_lock_bag', [AccessLockBag::class, 'null']);
         $optionsResolver->setAllowedTypes('background', 'bool');
         $optionsResolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
         $optionsResolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);

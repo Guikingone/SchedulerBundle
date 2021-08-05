@@ -30,7 +30,10 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
 use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -372,7 +375,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -398,7 +401,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $task = new NullTask('foo', [
+        $name = sprintf('bar_very_verbose_%s', uniqid('foo'));
+
+        $task = new NullTask($name, [
             'execution_memory_usage' => 9_507_552,
         ]);
 
@@ -411,7 +416,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -422,12 +427,12 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
         self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());
         self::assertStringNotContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
-        self::assertStringContainsString('Output for task "foo":', $commandTester->getDisplay());
+        self::assertStringContainsString(sprintf('Output for task "%s":', $name), $commandTester->getDisplay());
         self::assertStringContainsString('Success output', $commandTester->getDisplay());
-        self::assertStringContainsString('Task "foo" succeed', $commandTester->getDisplay());
+        self::assertStringContainsString(sprintf('Task "%s" succeed', $name), $commandTester->getDisplay());
         self::assertStringContainsString('Duration: < 1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $commandTester->getDisplay());
-        self::assertStringNotContainsString('Task failed: "foo"', $commandTester->getDisplay());
+        self::assertStringNotContainsString(sprintf('Task failed: "%s"', $name), $commandTester->getDisplay());
     }
 
     public function testCommandCannotExecuteExternalProbeTask(): void
