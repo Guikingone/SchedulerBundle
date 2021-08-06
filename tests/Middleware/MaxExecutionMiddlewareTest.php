@@ -8,8 +8,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
-use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
-use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -21,14 +19,6 @@ use Symfony\Component\RateLimiter\Storage\StorageInterface;
  */
 final class MaxExecutionMiddlewareTest extends TestCase
 {
-    public function testMiddlewareIsConfigured(): void
-    {
-        $maxExecutionMiddleware = new MaxExecutionMiddleware();
-
-        self::assertInstanceOf(PreExecutionMiddlewareInterface::class, $maxExecutionMiddleware);
-        self::assertInstanceOf(PostExecutionMiddlewareInterface::class, $maxExecutionMiddleware);
-    }
-
     public function testMiddlewareCannotPreExecuteWithoutRateLimiter(): void
     {
         $task = $this->createMock(TaskInterface::class);

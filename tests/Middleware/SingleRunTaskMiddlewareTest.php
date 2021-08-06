@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
-use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
-use SchedulerBundle\Middleware\RequiredMiddlewareInterface;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
@@ -24,9 +21,6 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
 
-        self::assertInstanceOf(PostExecutionMiddlewareInterface::class, $singleRunTaskMiddleware);
-        self::assertInstanceOf(RequiredMiddlewareInterface::class, $singleRunTaskMiddleware);
-        self::assertInstanceOf(OrderedMiddlewareInterface::class, $singleRunTaskMiddleware);
         self::assertSame(15, $singleRunTaskMiddleware->getPriority());
     }
 

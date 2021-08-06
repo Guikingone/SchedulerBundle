@@ -48,6 +48,7 @@ final class Worker extends AbstractWorker
                             $this->getMiddlewareStack()->runPostExecutionMiddleware($task, $this);
                         }
                     } catch (Throwable $throwable) {
+                        dump($throwable->getMessage());
                         $failedTask = new FailedTask($task, $throwable->getMessage());
                         $this->getFailedTasks()->add($failedTask);
                         $this->dispatch(new TaskFailedEvent($failedTask));

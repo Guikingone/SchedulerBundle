@@ -52,7 +52,7 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\Worker;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -78,7 +78,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
@@ -97,7 +97,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "executedTasksCount" with value "foo" is expected to be of type "int", but is of type "string"');
@@ -118,7 +118,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "forkedFrom" with value "foo" is expected to be of type "SchedulerBundle\Worker\WorkerInterface" or "null", but is of type "string"');
@@ -139,7 +139,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "isFork" with value "foo" is expected to be of type "bool", but is of type "string"');
@@ -160,7 +160,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "isRunning" with value "foo" is expected to be of type "bool", but is of type "string"');
@@ -181,7 +181,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "lastExecutedTask" with value "foo" is expected to be of type "SchedulerBundle\Task\TaskInterface" or "null", but is of type "string"');
@@ -202,7 +202,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "sleepDurationDelay" with value "foo" is expected to be of type "int", but is of type "string"');
@@ -223,7 +223,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "sleepUntilNextMinute" with value "foo" is expected to be of type "bool", but is of type "string"');
@@ -244,7 +244,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "shouldStop" with value "foo" is expected to be of type "bool", but is of type "string"');
@@ -265,7 +265,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(InvalidOptionsException::class);
         self::expectExceptionMessage('The option "shouldRetrieveTasksLazily" with value "foo" is expected to be of type "bool", but is of type "string"');
@@ -286,7 +286,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
@@ -331,7 +331,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(3))->method('dispatch');
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
@@ -382,7 +382,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(5))->method('dispatch');
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new CallbackTaskRunner(),
@@ -416,7 +416,7 @@ final class WorkerTest extends TestCase
         $scheduler->expects(self::never())->method('getDueTasks');
         $scheduler->expects(self::never())->method('update');
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -463,7 +463,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -504,7 +504,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -540,7 +540,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -583,7 +583,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -623,7 +623,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -665,7 +665,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -705,7 +705,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -734,14 +734,14 @@ final class WorkerTest extends TestCase
         $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
-            new TaskLockBagMiddleware(new LockFactory(new FlockStore())),
+            new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
         ]), $eventDispatcher);
         $scheduler->schedule(new NullTask('foo'));
 
         $task = $scheduler->getTasks()->get('foo');
         self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker(
             $scheduler,
@@ -793,7 +793,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -833,7 +833,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             $runner,
@@ -871,7 +871,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             $runner,
@@ -915,7 +915,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -960,7 +960,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1000,7 +1000,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1029,7 +1029,7 @@ final class WorkerTest extends TestCase
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('info');
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The lock for task "foo" has been released'));
 
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
@@ -1045,7 +1045,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1053,7 +1053,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
             new NotifierMiddleware($notifier),
-            new TaskLockBagMiddleware($lockFactory),
+            new TaskLockBagMiddleware($lockFactory, $logger),
         ]), $eventDispatcher, $lockFactory, $logger);
         $worker->execute();
 
@@ -1082,7 +1082,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1119,7 +1119,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1163,7 +1163,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1211,7 +1211,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1248,7 +1248,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
@@ -1302,7 +1302,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
@@ -1336,7 +1336,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(4));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker(
             $scheduler,
@@ -1402,7 +1402,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(4));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker(
             $scheduler,
@@ -1469,7 +1469,7 @@ final class WorkerTest extends TestCase
         $scheduler->expects(self::never())->method('getTimezone');
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
 
-        $lockFactory = new LockFactory(new FlockStore());
+        $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new CommandTaskRunner($application),
