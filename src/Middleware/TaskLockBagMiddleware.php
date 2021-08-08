@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
+final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
     private const TASK_LOCK_MASK = '_symfony_scheduler_foo_';
 
@@ -36,21 +36,6 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
     /**
      * {@inheritdoc}
      */
-    public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
-    {
-        $accessLockBag = $task->getAccessLockBag();
-        if ($accessLockBag instanceof AccessLockBag) {
-            $this->logger->info(sprintf('The task "%s" has already an access lock bag', $task->getName()));
-
-            return;
-        }
-
-        $task->setAccessLockBag(new AccessLockBag(self::createKey($task)));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         $accessLockBag = $task->getAccessLockBag();
@@ -62,6 +47,8 @@ final class TaskLockBagMiddleware implements PreSchedulingMiddlewareInterface, P
         $lock->release();
 
         $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
+
+        $task->setAccessLockBag();
     }
 
     /**

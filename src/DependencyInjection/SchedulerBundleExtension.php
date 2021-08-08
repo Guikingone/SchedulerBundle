@@ -1075,7 +1075,6 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
-            ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => TaskLockBagMiddleware::class,

@@ -738,9 +738,6 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher);
         $scheduler->schedule(new NullTask('foo'));
 
-        $task = $scheduler->getTasks()->get('foo');
-        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
-
         $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker(

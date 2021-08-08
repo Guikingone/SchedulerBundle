@@ -182,13 +182,10 @@ abstract class AbstractWorker implements WorkerInterface
         $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
 
         $lockedTasks = $tasks->filter(function (TaskInterface $task): bool {
-            if (!$task->getAccessLockBag() instanceof AccessLockBag) {
-                $task->setAccessLockBag(new AccessLockBag(TaskLockBagMiddleware::createKey($task)));
-            }
+            $key = TaskLockBagMiddleware::createKey($task);
+            $task->setAccessLockBag(new AccessLockBag($key));
 
-            $accessLockBag = $task->getAccessLockBag();
-
-            $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey(), null, false);
+            $lock = $this->lockFactory->createLockFromKey($key, null, false);
             if (!$lock->acquire()) {
                 $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
 

@@ -148,6 +148,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
 
         $optionsResolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
+        $optionsResolver->setInfo('access_lock_bag', '[INTERNAL] Used to store the key that hold the task lock state');
         $optionsResolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
         $optionsResolver->setInfo('execution_computation_time', '[Internal] Used to store the execution duration of a task');
         $optionsResolver->setInfo('execution_delay', 'The delay in microseconds applied before the task execution');

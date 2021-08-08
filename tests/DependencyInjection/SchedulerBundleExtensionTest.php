@@ -1293,7 +1293,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1));
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1)->getInvalidBehavior());
-        self::assertTrue($container->getDefinition(TaskLockBagMiddleware::class)->hasTag('scheduler.scheduler_middleware'));
         self::assertTrue($container->getDefinition(TaskLockBagMiddleware::class)->hasTag('container.preload'));
         self::assertSame(TaskLockBagMiddleware::class, $container->getDefinition(TaskLockBagMiddleware::class)->getTag('container.preload')[0]['class']);
 
