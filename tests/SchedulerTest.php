@@ -674,6 +674,20 @@ final class SchedulerTest extends TestCase
 
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testNextMinuteExecutedDueTasksCannotBeReturned(): void
+    {
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testNextMinuteExecutedDueTasksCannotBeReturnedLazily(): void
+    {
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */

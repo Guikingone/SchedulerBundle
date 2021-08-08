@@ -6,6 +6,7 @@ namespace SchedulerBundle;
 
 use Closure;
 use Cron\CronExpression;
+use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -180,7 +181,7 @@ final class Scheduler implements SchedulerInterface
             return $lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i');
         });
 
-        return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        $filteredTasks = $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
                 if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
                     return $task->getExecutionEndDate() > $synchronizedCurrentDate;
@@ -206,6 +207,17 @@ final class Scheduler implements SchedulerInterface
             }
 
             return true;
+        });
+
+        return $filteredTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+            $lastExecution = $task->getLastExecution();
+            $nextMinute = $synchronizedCurrentDate->add(DateInterval::createFromDateString('1 minute'));
+
+            if (null === $lastExecution) {
+                return true;
+            }
+
+            return $lastExecution->format('Y-m-d h:i') !== $nextMinute->format('Y-m-d h:i');
         });
     }
 
