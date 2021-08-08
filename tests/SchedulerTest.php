@@ -20,7 +20,6 @@ use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
-use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulerInterface;
@@ -31,15 +30,11 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\Store\FlockStore;
-use Symfony\Component\Lock\Store\PdoStore;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
@@ -1106,9 +1101,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack([
-            new TaskLockBagMiddleware(new LockFactory(new FlockStore())),
-        ]), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -1117,7 +1110,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
+        self::assertNull($task->getAccessLockBag());
     }
 
     /**
@@ -1154,9 +1147,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack([
-            new TaskLockBagMiddleware(new LockFactory(new PdoStore($pdoConnection)), $logger),
-        ]), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -1165,7 +1156,7 @@ final class SchedulerTest extends TestCase
 
         $task = $list->get('foo');
         self::assertInstanceOf(NullTask::class, $task);
-        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
+        self::assertNull($task->getAccessLockBag());
     }
 
     /**

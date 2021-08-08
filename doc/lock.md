@@ -3,6 +3,9 @@
 This bundle provides a deep integration of the [Lock component](https://symfony.com/doc/current/components/lock.html),
 by default, each task receive a key once scheduled.
 
+- [Usage](#usage)
+- [Executing tasks](#executing-tasks)
+
 ## Usage
 
 Given the following `framework.yaml` file:
@@ -44,8 +47,18 @@ Select one of the following services to display its information:
   # ...
 ```
 
-## Default behavior
+### Default behavior
 
 As explained in [the configuration](configuration.md), by default, this bundle creates a `FlockStore`,
 even if it's enough in `test` or `dev` environment, this store does not support serializing the key 
 (which occurs if you use external transport), consider using a persisting store in production.
+
+## Executing tasks
+
+By default, this bundle will lock tasks before executing them, as the default store is `FlockStore`,
+tasks can be locked between processes BUT you may want to use an external lock store, as explained earlier,
+you can easily define a store and set the `lock_store` to use it. 
+
+For more information, see the [Worker](../src/Worker/AbstractWorker.php).
+
+**Keep in mind that the store MUST support sharing the key to lock tasks between processes.**
