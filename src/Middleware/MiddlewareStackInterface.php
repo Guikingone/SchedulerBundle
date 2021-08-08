@@ -11,8 +11,6 @@ interface MiddlewareStackInterface
 {
     /**
      * Return the middleware used by a specific middleware stack.
-     *
-     * @return array
      */
     public function getMiddlewareList(): array;
 }

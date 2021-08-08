@@ -16,6 +16,7 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Throwable;
 
 /**
@@ -23,6 +24,13 @@ use Throwable;
  */
 final class TaskLockBagMiddlewareTest extends TestCase
 {
+    public function testMiddlewareIsConfigured(): void
+    {
+        $middleware = new TaskLockBagMiddleware(new LockFactory(new InMemoryStore()));
+
+        self::assertSame(5, $middleware->getPriority());
+    }
+
     /**
      * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
      */
@@ -63,8 +71,11 @@ final class TaskLockBagMiddlewareTest extends TestCase
 
         $task = new NullTask('foo');
         $task->setAccessLockBag(new AccessLockBag(new Key('foo')));
+        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
 
         $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
         $middleware->postExecute($task, $worker);
+
+        self::assertNull($task->getAccessLockBag());
     }
 }

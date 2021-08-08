@@ -146,7 +146,6 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_PROBE_TAG = 'scheduler.probe';
     private const SCHEDULER_SCHEDULER_MIDDLEWARE_TAG = 'scheduler.scheduler_middleware';
     private const SCHEDULER_WORKER_MIDDLEWARE_TAG = 'scheduler.worker_middleware';
-    private const SCHEDULER_MIDDLEWARE_TAG = 'scheduler.scheduler_middleware';
     private const SCHEDULER_TRANSPORT_FACTORY_TAG = 'scheduler.transport_factory';
     private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
 
