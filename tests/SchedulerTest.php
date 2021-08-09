@@ -675,15 +675,61 @@ final class SchedulerTest extends TestCase
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
      */
-    public function testNextMinuteExecutedDueTasksCannotBeReturned(): void
+    public function testDueTasksCanBeReturnedWithPastExecutionStartDate(): void
     {
+        $task = new NullTask('foo', [
+            'execution_start_date' => '- 1 minute',
+            'execution_end_date' => '+ 5 minute',
+        ]);
+
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new SchedulerMiddlewareStack(),
+            new EventDispatcher()
+        );
+
+        $scheduler->schedule($task);
+
+        $dueTasks = $scheduler->getDueTasks();
+        self::assertCount(1, $dueTasks);
+
+        $task = $dueTasks->get('foo');
+        self::assertInstanceOf(TaskInterface::class, $task);
     }
 
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
      */
-    public function testNextMinuteExecutedDueTasksCannotBeReturnedLazily(): void
+    public function testDueTasksCanBeReturnedWithPastExecutionStartDateLazily(): void
     {
+        $task = new NullTask('foo', [
+            'execution_start_date' => '- 1 minute',
+            'execution_end_date' => '+ 5 minute',
+        ]);
+
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new SchedulerMiddlewareStack(),
+            new EventDispatcher()
+        );
+
+        $scheduler->schedule($task);
+
+        $dueTasks = $scheduler->getDueTasks(true);
+        self::assertCount(1, $dueTasks);
+
+        $task = $dueTasks->get('foo');
+        self::assertInstanceOf(TaskInterface::class, $task);
     }
 
     /**

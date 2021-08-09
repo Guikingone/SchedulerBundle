@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
@@ -450,16 +449,6 @@ final class NullTaskTest extends TestCase
         self::expectExceptionMessage('The nice value is not valid');
         self::expectExceptionCode(0);
         $nullTask->setNice($nice);
-    }
-
-    public function testTaskCannotBeCreatedWithPreviousDate(): void
-    {
-        $nullTask = new NullTask('foo');
-
-        self::expectException(LogicException::class);
-        self::expectExceptionMessage('The date cannot be previous to the current date');
-        self::expectExceptionCode(0);
-        $nullTask->setExecutionStartDate('- 10 minutes');
     }
 
     public function testTaskCannotBeCreatedWithInvalidOutputToStoreOption(): void
