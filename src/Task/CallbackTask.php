@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use Closure;
 use function array_merge;
 use function is_array;
 
@@ -30,7 +31,7 @@ final class CallbackTask extends AbstractTask
         return $this->options['callback'];
     }
 
-    public function setCallback($callback): self
+    public function setCallback(Closure $callback): self
     {
         $this->options['callback'] = $callback;
 

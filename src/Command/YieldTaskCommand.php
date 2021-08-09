@@ -71,8 +71,9 @@ final class YieldTaskCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
+        $force = $input->getOption('force');
 
-        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to yield this task?', false)) {
+        if (true === $force || $symfonyStyle->confirm('Do you want to yield this task?', false)) {
             try {
                 $this->scheduler->yieldTask($name, $input->getOption('async'));
             } catch (Throwable $throwable) {

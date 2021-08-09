@@ -446,15 +446,11 @@ abstract class AbstractTask implements TaskInterface
      */
     public function getExecutionStartDate(): ?DateTimeImmutable
     {
-        if (null === $this->options['execution_start_date']) {
+        if (!$this->options['execution_start_date'] instanceof DateTimeImmutable) {
             return null;
         }
 
-        if ($this->options['execution_start_date'] instanceof DateTimeImmutable) {
-            return $this->options['execution_start_date'];
-        }
-
-        return new DateTimeImmutable($this->options['execution_start_date'], $this->getTimezone());
+        return $this->options['execution_start_date'];
     }
 
     /**
@@ -476,15 +472,11 @@ abstract class AbstractTask implements TaskInterface
      */
     public function getExecutionEndDate(): ?DateTimeImmutable
     {
-        if (null === $this->options['execution_end_date']) {
+        if (!$this->options['execution_end_date'] instanceof DateTimeImmutable) {
             return null;
         }
 
-        if ($this->options['execution_end_date'] instanceof DateTimeImmutable) {
-            return $this->options['execution_end_date'];
-        }
-
-        return new DateTimeImmutable($this->options['execution_end_date'], $this->getTimezone());
+        return $this->options['execution_end_date'];
     }
 
     public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -723,6 +715,10 @@ abstract class AbstractTask implements TaskInterface
 
     public function addTag(string $tag): TaskInterface
     {
+        if (null === $this->options['tags']) {
+            $this->options['tags'] = [];
+        }
+
         $this->options['tags'][] = $tag;
 
         return $this;
@@ -794,11 +790,7 @@ abstract class AbstractTask implements TaskInterface
             return true;
         }
 
-        if (false === strtotime($date)) {
-            return false;
-        }
-
-        return true;
+        return false !== strtotime($date);
     }
 
     /**

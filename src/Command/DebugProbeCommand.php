@@ -74,7 +74,7 @@ final class DebugProbeCommand extends Command
 
         $table->render();
 
-        if ($input->getOption('external')) {
+        if (true === $input->getOption('external')) {
             $externalProbeTasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => $task instanceof ProbeTask);
             if (0 === $externalProbeTasks->count()) {
                 $style->warning('No external probe found');

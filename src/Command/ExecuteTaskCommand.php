@@ -94,7 +94,9 @@ final class ExecuteTaskCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
 
-        $tasks = $input->getOption('due') ? $this->scheduler->getDueTasks() : $this->scheduler->getTasks();
+        $dueTasks = $input->getOption('due');
+
+        $tasks = true === $dueTasks ? $this->scheduler->getDueTasks() : $this->scheduler->getTasks();
         if (0 === count($tasks)) {
             $style->warning('No tasks to execute found');
 

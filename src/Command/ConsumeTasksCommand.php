@@ -106,14 +106,17 @@ final class ConsumeTasksCommand extends Command
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
 
+        $wait = $input->getOption('wait');
+        $force = $input->getOption('force');
+
         $dueTasks = $this->scheduler->getDueTasks()->filter(fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
-        if (0 === $dueTasks->count() && !$input->getOption('wait')) {
+        if (0 === $dueTasks->count() && false === $wait) {
             $symfonyStyle->warning('No due tasks found');
 
             return self::SUCCESS;
         }
 
-        if (!$input->getOption('force')) {
+        if (false === $force) {
             $nonPausedTasks = $dueTasks->filter(fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
             if (0 === $nonPausedTasks->count()) {
                 $symfonyStyle->warning([
@@ -151,7 +154,7 @@ final class ConsumeTasksCommand extends Command
             ]);
         }
 
-        if ($input->getOption('wait')) {
+        if (true === $wait) {
             $symfonyStyle->note('The worker will wait for tasks every minutes');
         }
 
@@ -170,7 +173,7 @@ final class ConsumeTasksCommand extends Command
 
         try {
             $this->worker->execute([
-                'sleepUntilNextMinute' => $input->getOption('wait'),
+                'sleepUntilNextMinute' => true === $wait,
             ]);
         } catch (Throwable $throwable) {
             $symfonyStyle->error([
@@ -188,7 +191,7 @@ final class ConsumeTasksCommand extends Command
     {
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
-            if (null === $output) {
+            if (!$output instanceof Output) {
                 return;
             }
 

@@ -51,7 +51,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new MiddlewareException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }
 
@@ -79,7 +79,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new MiddlewareException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }
 }

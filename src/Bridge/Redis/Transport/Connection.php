@@ -14,7 +14,6 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
-use function count;
 use function is_int;
 use function sprintf;
 use function strpos;
@@ -166,7 +165,7 @@ final class Connection implements ConnectionInterface
     public function empty(): void
     {
         $keys = $this->connection->hKeys($this->list);
-        if (0 === count($keys)) {
+        if ([] === $keys) {
             return;
         }
 

@@ -173,8 +173,6 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * @param array<int, TaskInterface> $tasks
      *
-     * @return TaskListInterface<string, TaskInterface>
-     *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function getTasks(array $tasks): TaskListInterface

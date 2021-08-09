@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\SchedulePolicy;
 
+use DateInterval;
 use DateTimeImmutable;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
@@ -23,12 +24,12 @@ final class DeadlinePolicy implements PolicyInterface
     {
         array_walk($tasks, function (TaskInterface $task): void {
             $arrivalTime = $task->getArrivalTime();
-            if (null === $arrivalTime) {
+            if (!$arrivalTime instanceof DateTimeImmutable) {
                 throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
             }
 
             $executionRelativeDeadline = $task->getExecutionRelativeDeadline();
-            if (null === $executionRelativeDeadline) {
+            if (!$executionRelativeDeadline instanceof DateInterval) {
                 throw new RuntimeException(sprintf('The execution relative deadline must be defined, consider using %s::setExecutionRelativeDeadline()', TaskInterface::class));
             }
 

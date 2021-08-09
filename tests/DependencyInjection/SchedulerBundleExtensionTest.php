@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\DebugMiddlewareCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
@@ -541,6 +542,18 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(YieldTaskCommand::class)->hasTag('container.preload'));
         self::assertSame(YieldTaskCommand::class, $container->getDefinition(YieldTaskCommand::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(DebugMiddlewareCommand::class));
+        self::assertCount(2, $container->getDefinition(DebugMiddlewareCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(0));
+        self::assertSame(SchedulerMiddlewareStack::class, (string) $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(1));
+        self::assertSame(WorkerMiddlewareStack::class, (string) $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(DebugMiddlewareCommand::class)->getArgument(1)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(DebugMiddlewareCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(DebugMiddlewareCommand::class)->hasTag('container.preload'));
+        self::assertSame(DebugMiddlewareCommand::class, $container->getDefinition(DebugMiddlewareCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void

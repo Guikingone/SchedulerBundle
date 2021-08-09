@@ -27,8 +27,6 @@ interface TransportInterface
     /**
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
-     * @return TaskListInterface<string, TaskInterface>
-     *
      * @throws Throwable
      */
     public function list(bool $lazy = false): TaskListInterface;

@@ -49,8 +49,6 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * Return the current list after applying the @param Closure $func to each tasks
-     *
-     * @return TaskListInterface<string, TaskInterface>
      */
     public function walk(Closure $func): self;
 

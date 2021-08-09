@@ -216,4 +216,28 @@ $ bin/console scheduler:debug:middleware
 
 #### Example
 
-// TODO
+```bash
+$ bin/console scheduler:debug:middleware
+                                                                                                                       
+ [INFO] Found 2 middleware for the scheduling phase                                                                                                                                                     
+
++------------------------+---------------+----------------+----------+----------+
+| Name                   | PreScheduling | PostScheduling | Priority | Required |
++------------------------+---------------+----------------+----------+----------+
+| TaskCallbackMiddleware | Yes           | Yes            | 1        | No       |
+| NotifierMiddleware     | Yes           | Yes            | 2        | No       |
++------------------------+---------------+----------------+----------+----------+
+                                                                                                                        
+ [INFO] Found 6 middleware for the execution phase                                                                      
+
++-------------------------+--------------+---------------+----------+----------+
+| Name                    | PreExecution | PostExecution | Priority | Required |
++-------------------------+--------------+---------------+----------+----------+
+| TaskCallbackMiddleware  | Yes          | Yes           | 1        | No       |
+| NotifierMiddleware      | Yes          | Yes           | 2        | No       |
+| ProbeTaskMiddleware     | Yes          | No            | No       | No       |
+| TaskLockBagMiddleware   | No           | Yes           | 5        | No       |
+| TaskUpdateMiddleware    | No           | Yes           | 10       | Yes      |
+| SingleRunTaskMiddleware | No           | Yes           | 15       | Yes      |
++-------------------------+--------------+---------------+----------+----------+
+```
