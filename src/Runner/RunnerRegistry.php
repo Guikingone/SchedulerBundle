@@ -11,7 +11,6 @@ use function array_filter;
 use function current;
 use function count;
 use function is_array;
-use function is_countable;
 use function iterator_to_array;
 
 /**
@@ -22,7 +21,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
     /**
      * @var RunnerInterface[]
      */
-    private iterable $runners;
+    private array $runners;
 
     /**
      * @param RunnerInterface[] $runners
@@ -70,6 +69,6 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function count(): int
     {
-        return is_countable($this->runners) ? count($this->runners) : 0;
+        return count($this->runners);
     }
 }

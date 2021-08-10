@@ -50,6 +50,7 @@ final class ChainedTaskRunnerTest extends TestCase
             ->with(self::equalTo([]), self::equalTo($shellTask))
             ->willThrowException(new RuntimeException('An error occurred'))
         ;
+        $worker->expects(self::once())->method('stop');
 
         $chainedTaskRunner = new ChainedTaskRunner();
 

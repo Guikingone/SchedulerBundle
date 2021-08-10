@@ -25,17 +25,17 @@ final class ChainedTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        try {
-            $forkedWorker = $worker->fork();
+        $forkedWorker = $worker->fork();
 
+        try {
             $task->getTasks()->walk(function (TaskInterface $task) use ($forkedWorker): void {
                 $forkedWorker->execute([], $task);
             });
-
-            $forkedWorker->stop();
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, $throwable->getMessage(), Output::ERROR);
+        } finally {
+            $forkedWorker->stop();
         }
 
         $task->setExecutionState(TaskInterface::SUCCEED);
