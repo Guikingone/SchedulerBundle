@@ -393,11 +393,16 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
         $worker->execute();
 
-        $lastExecutedTask = $worker->getLastExecutedTask();
-        self::assertInstanceOf(NullTask::class, $lastExecutedTask);
-        self::assertSame('foo', $lastExecutedTask->getName());
-        self::assertNull($lastExecutedTask->getExecutionState());
-        self::assertNull($lastExecutedTask->getLastExecution());
+        self::assertNull($worker->getLastExecutedTask());
+        self::assertCount(1, $worker->getFailedTasks());
+
+        $failedTask = $worker->getFailedTasks()->get('foo.failed');
+        self::assertInstanceOf(FailedTask::class, $failedTask);
+
+        $task = $failedTask->getTask();
+        self::assertSame('foo', $task->getName());
+        self::assertNull($task->getExecutionState());
+        self::assertNull($task->getLastExecution());
     }
 
     /**
@@ -551,8 +556,7 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
         $worker->execute();
 
-        self::assertNotNull($worker->getLastExecutedTask());
-        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
     }
 
@@ -884,10 +888,10 @@ final class WorkerTest extends TestCase
 
         $failedTask = $failedTasks->get('foo.failed');
         self::assertInstanceOf(FailedTask::class, $failedTask);
-        self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNotEmpty($worker->getFailedTasks());
         self::assertCount(1, $worker->getFailedTasks());
         self::assertSame('Random error occurred', $failedTask->getReason());
+        self::assertNull($worker->getLastExecutedTask());
     }
 
     /**
@@ -1181,12 +1185,11 @@ final class WorkerTest extends TestCase
 
         $worker->execute();
 
+        self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
 
-        /** @var FailedTask $failedTask */
         $failedTask = $worker->getFailedTasks()->get('foo.failed');
-
-        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertInstanceOf(FailedTask::class, $failedTask);
         self::assertSame($task, $failedTask->getTask());
         self::assertSame('Rate Limit Exceeded', $failedTask->getReason());
     }
@@ -1255,8 +1258,8 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
         $worker->execute([], $task);
 
-        self::assertNotEmpty($worker->getFailedTasks());
-        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertCount(1, $worker->getFailedTasks());
+        self::assertNull($worker->getLastExecutedTask());
     }
 
     /**
@@ -1481,6 +1484,7 @@ final class WorkerTest extends TestCase
         $worker->execute();
 
         self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertNull($task->getAccessLockBag());
     }
 
     /**
@@ -1520,5 +1524,35 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
+    }
+
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function testWorkerCanStopWithoutExecutedTasks(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new ShellTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute();
+
+        self::assertCount(1, $worker->getFailedTasks());
+        self::assertNull($worker->getLastExecutedTask());
     }
 }

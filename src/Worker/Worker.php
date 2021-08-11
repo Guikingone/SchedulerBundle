@@ -28,7 +28,7 @@ final class Worker extends AbstractWorker
                     $this->stop();
                 }
 
-                foreach ($toExecuteTasks as $task) {
+                $toExecuteTasks->walk(function (TaskInterface $task): void {
                     $this->dispatch(new WorkerRunningEvent($this));
 
                     try {
@@ -46,6 +46,9 @@ final class Worker extends AbstractWorker
                             $this->handleTask($runner, $task);
 
                             $this->getMiddlewareStack()->runPostExecutionMiddleware($task, $this);
+
+                            $this->options['lastExecutedTask'] = $task;
+                            ++$this->options['executedTasksCount'];
                         }
                     } catch (Throwable $throwable) {
                         $failedTask = new FailedTask($task, $throwable->getMessage());
@@ -53,15 +56,12 @@ final class Worker extends AbstractWorker
                         $this->dispatch(new TaskFailedEvent($failedTask));
                     } finally {
                         $this->options['isRunning'] = false;
-                        $this->options['lastExecutedTask'] = $task;
                         $this->dispatch(new WorkerRunningEvent($this, true));
-
-                        ++$this->options['executedTasksCount'];
                     }
+                });
 
-                    if ($this->getOptions()['shouldStop'] || ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute'])) {
-                        break 2;
-                    }
+                if ($this->shouldStop($toExecuteTasks)) {
+                    break;
                 }
 
                 if ($this->getOptions()['sleepUntilNextMinute']) {

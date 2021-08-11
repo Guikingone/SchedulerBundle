@@ -212,6 +212,15 @@ abstract class AbstractWorker implements WorkerInterface
         $this->dispatch(new TaskExecutedEvent($task, $output));
     }
 
+    protected function shouldStop(TaskListInterface $taskList): bool
+    {
+        if ($this->options['shouldStop']) {
+            return true;
+        }
+
+        return ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $taskList->count() && !$this->getOptions()['sleepUntilNextMinute']);
+    }
+
     private function checkTaskState(TaskInterface $task): bool
     {
         if (TaskInterface::UNDEFINED === $task->getState()) {

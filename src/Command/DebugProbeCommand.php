@@ -16,8 +16,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use function array_map;
-use function count;
 use function sprintf;
 
 /**
@@ -82,17 +80,20 @@ final class DebugProbeCommand extends Command
                 return self::SUCCESS;
             }
 
-            $style->info(sprintf('Found %s external probe%s', $externalProbeTasks->count(), 1 === count($externalProbeTasks) ? '' : 's'));
+            $style->info(sprintf('Found %s external probe%s', $externalProbeTasks->count(), 1 === $externalProbeTasks->count() ? '' : 's'));
 
             $secondTable = new Table($output);
             $secondTable->setHeaders(['Name', 'Path', 'State', 'Last execution', 'Execution state']);
-            $secondTable->addRows(array_map(fn (ProbeTask $task): array => [
-                $task->getName(),
-                $task->getExternalProbePath(),
-                $task->getState(),
-                null !== $task->getLastExecution() ? $task->getLastExecution()->format(DateTimeInterface::COOKIE) : 'Not executed',
-                $task->getExecutionState() ?? 'Not executed',
-            ], $externalProbeTasks->toArray()));
+
+            $externalProbeTasks->walk(function (ProbeTask $task) use ($secondTable): void {
+                $secondTable->addRow([
+                    $task->getName(),
+                    $task->getExternalProbePath(),
+                    $task->getState(),
+                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DateTimeInterface::COOKIE) : 'Not executed',
+                    $task->getExecutionState() ?? 'Not executed',
+                ]);
+            });
 
             $secondTable->render();
         }
