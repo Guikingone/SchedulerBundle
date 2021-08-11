@@ -1482,4 +1482,39 @@ final class WorkerTest extends TestCase
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
+
+    /**
+     * @group time-sensitive
+     *
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function testWorkerCanExecuteTaskWithExecutionDelay(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $task = new NullTask('foo', [
+            'execution_delay' => 5000,
+        ]);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute();
+
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
+    }
 }
