@@ -1529,6 +1529,34 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
+    public function testWorkerCanStopWithEmptyTaskList(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList());
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute();
+
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertNull($worker->getLastExecutedTask());
+        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+    }
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
     public function testWorkerCanStopWithoutExecutedTasks(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
@@ -1554,5 +1582,35 @@ final class WorkerTest extends TestCase
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
+    }
+
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function testWorkerCanStopWhenTaskAreExcutedAndWithoutSleepOption(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('getTimezone');
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute();
+
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
     }
 }
