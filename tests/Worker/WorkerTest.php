@@ -1493,9 +1493,14 @@ final class WorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = new NullTask('foo', [
-            'execution_delay' => 5000,
-        ]);
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getExecutionDelay')->willReturn(5000);
+        $task->expects(self::once())->method('getAccessLockBag')->willReturn(new AccessLockBag(new Key('foo')));
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(true);
+        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, Output::SUCCESS));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
@@ -1504,7 +1509,7 @@ final class WorkerTest extends TestCase
         $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
-            new NullTaskRunner(),
+            $runner,
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1515,6 +1520,5 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
-        self::assertSame(TaskInterface::SUCCEED, $task->getExecutionState());
     }
 }
