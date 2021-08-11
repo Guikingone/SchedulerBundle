@@ -71,11 +71,13 @@ final class MercureEventSubscriber implements EventSubscriberInterface
      */
     public function onTaskExecuted(TaskExecutedEvent $event): void
     {
+        $output = $event->getOutput();
+
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'task.executed',
             'body' => [
                 'task' => $this->serializer->serialize($event->getTask(), 'json'),
-                'output' => $event->getOutput(),
+                'output' => $output->getOutput(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }

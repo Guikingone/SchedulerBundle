@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskQueued;
 
@@ -31,7 +32,7 @@ final class TaskQueuedTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $taskEventList = new TaskEventList();
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
 
         $taskQueued = new TaskQueued(1);
 
@@ -52,8 +53,8 @@ final class TaskQueuedTest extends TestCase
         $secondTask->expects(self::never())->method('isQueued')->willReturn(false);
 
         $taskEventList = new TaskEventList();
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
-        $taskEventList->addEvent(new TaskExecutedEvent($secondTask));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
+        $taskEventList->addEvent(new TaskExecutedEvent($secondTask, new Output($task)));
         $taskEventList->addEvent(new TaskScheduledEvent($task));
 
         $taskQueued = new TaskQueued(1);

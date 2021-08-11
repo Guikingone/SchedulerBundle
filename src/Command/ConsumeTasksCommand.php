@@ -191,10 +191,6 @@ final class ConsumeTasksCommand extends Command
     {
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
-            if (!$output instanceof Output) {
-                return;
-            }
-
             if (null === $output->getOutput()) {
                 return;
             }
@@ -208,11 +204,11 @@ final class ConsumeTasksCommand extends Command
     {
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $task = $event->getTask();
-            $outputType = $event->getOutput() instanceof Output ? $event->getOutput()->getType() : null;
+            $output = $event->getOutput();
             $taskExecutionDuration = Helper::formatTime($task->getExecutionComputationTime() / 1000);
             $taskExecutionMemoryUsage = Helper::formatMemory($task->getExecutionMemoryUsage());
 
-            if (null !== $outputType && Output::ERROR === $outputType) {
+            if (Output::ERROR === $output->getType()) {
                 $symfonyStyle->error([
                     sprintf('Task "%s" failed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
                 ]);

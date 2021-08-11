@@ -11,6 +11,7 @@ use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskQueued;
 
@@ -63,7 +64,7 @@ final class TaskLoggerSubscriberTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $taskExecutedEvent = new TaskExecutedEvent($task);
+        $taskExecutedEvent = new TaskExecutedEvent($task, new Output($task));
 
         $taskLoggerSubscriber = new TaskLoggerSubscriber();
         $taskLoggerSubscriber->onTask($taskExecutedEvent);

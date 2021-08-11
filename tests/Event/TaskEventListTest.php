@@ -12,6 +12,7 @@ use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 
@@ -25,7 +26,7 @@ final class TaskEventListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $taskEventList = new TaskEventList();
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
 
         self::assertCount(1, $taskEventList->getEvents());
         self::assertSame(1, $taskEventList->count());
@@ -61,7 +62,7 @@ final class TaskEventListTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
 
         $taskEventList = new TaskEventList();
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
 
         self::assertCount(1, $taskEventList->getExecutedTaskEvents());
         self::assertSame($task, $taskEventList->getExecutedTaskEvents()[0]->getTask());
@@ -86,7 +87,7 @@ final class TaskEventListTest extends TestCase
         $task->expects(self::never())->method('isQueued')->willReturn(true);
 
         $taskEventList = new TaskEventList();
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
 
         self::assertCount(0, $taskEventList->getQueuedTaskEvents());
     }
@@ -110,7 +111,7 @@ final class TaskEventListTest extends TestCase
 
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
         $taskEventList->addEvent(new TaskScheduledEvent($nullTask));
 
         self::assertCount(1, $taskEventList->getProbeTaskEvents());
