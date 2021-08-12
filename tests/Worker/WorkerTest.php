@@ -1585,12 +1585,13 @@ final class WorkerTest extends TestCase
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
+        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
     }
 
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
-    public function testWorkerCanStopWhenTaskAreExecutedAndWithoutSleepOption(): void
+    public function testWorkerCanStopWhenTasksAreExecutedAndWithoutSleepOption(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
@@ -1615,5 +1616,6 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
+        self::assertSame(1, $worker->getOptions()['executedTasksCount']);
     }
 }

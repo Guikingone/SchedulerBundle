@@ -214,11 +214,15 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function shouldStop(TaskListInterface $taskList): bool
     {
+        if ($this->options['sleepUntilNextMinute']) {
+            return false;
+        }
+
         if ($this->options['shouldStop']) {
             return true;
         }
 
-        return ($this->getOptions()['executedTasksCount'] === 0 && !$this->getOptions()['sleepUntilNextMinute']) || ($this->getOptions()['executedTasksCount'] === $taskList->count() && !$this->getOptions()['sleepUntilNextMinute']);
+        return $this->options['executedTasksCount'] === 0 || $this->options['executedTasksCount'] === $taskList->count();
     }
 
     private function checkTaskState(TaskInterface $task): bool
