@@ -196,6 +196,8 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(CommandTask::class, $task);
         self::assertSame('cache:clear', $task->getCommand());
         self::assertSame('* * * * *', $task->getExpression());
+        self::assertNull($task->getScheduledAt());
+        self::assertNull($task->getLastExecution());
     }
 
     public function testCommandTaskCanBeSerializedAndUpdated(): void
