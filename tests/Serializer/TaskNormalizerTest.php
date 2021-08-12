@@ -198,6 +198,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
         self::assertNull($task->getScheduledAt());
         self::assertNull($task->getLastExecution());
+        self::assertNull($task->getDescription());
     }
 
     public function testCommandTaskCanBeSerializedAndUpdated(): void
@@ -224,7 +225,10 @@ final class TaskNormalizerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $data = $serializer->serialize(new CommandTask('foo', 'cache:clear', [], ['--env' => 'test']), 'json');
+        $task = new CommandTask('foo', 'cache:clear', [], ['--env' => 'test']);
+        $task->setDescription('foo');
+
+        $data = $serializer->serialize($task, 'json');
         $task = $serializer->deserialize($data, TaskInterface::class, 'json');
 
         self::assertInstanceOf(CommandTask::class, $task);
@@ -238,6 +242,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertInstanceOf(CommandTask::class, $updatedTask);
         self::assertSame('cache:clear', $updatedTask->getCommand());
         self::assertSame('0 * * * *', $updatedTask->getExpression());
+        self::assertSame('foo', $task->getDescription());
     }
 
     public function testNullTaskCanBeDenormalized(): void
