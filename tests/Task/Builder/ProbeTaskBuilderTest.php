@@ -73,6 +73,31 @@ final class ProbeTaskBuilderTest extends TestCase
         self::assertSame('/_probe', $task->getExternalProbePath());
         self::assertTrue($task->getErrorOnFailedTasks());
         self::assertSame(100, $task->getDelay());
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'random',
+            'type' => 'probe',
+            'externalProbePath' => '/_probe',
+            'delay' => 100,
+        ]);
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('random', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(100, $task->getDelay());
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'foo',
+            'type' => 'probe',
+            'externalProbePath' => '/_probe',
+        ]);
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('foo', $task->getName());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
     }
 
     /**

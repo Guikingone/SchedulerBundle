@@ -104,7 +104,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         $logger->expects(self::exactly(2))->method('info')
             ->withConsecutive(
                 [self::equalTo('Worker has stopped due to the failure limit of 1 exceeded')],
-                [self::equalTo('Current failed tasks limit: 0')]
+                [self::equalTo('Failure limit back to: 0')]
             )
         ;
 
@@ -125,7 +125,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         $logger->expects(self::exactly(2))->method('info')
             ->withConsecutive(
                 [self::equalTo('Worker has stopped due to the failure limit of 1 exceeded')],
-                [self::equalTo('Current failed tasks limit: 0')]
+                [self::equalTo('Failure limit back to: 0')]
             )
         ;
 
@@ -145,7 +145,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         $logger->expects(self::exactly(2))->method('info')
             ->withConsecutive(
                 [self::equalTo('Worker has stopped due to the failure limit of 1 exceeded')],
-                [self::equalTo('Current failed tasks limit: 0')]
+                [self::equalTo('Failure limit back to: 0')]
             );
 
         $worker = $this->createMock(WorkerInterface::class);
@@ -165,7 +165,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
         $logger->expects(self::exactly(2))->method('info')
             ->withConsecutive(
                 [self::equalTo('Worker has stopped due to the failure limit of 2 exceeded')],
-                [self::equalTo('Current failed tasks limit: 0')]
+                [self::equalTo('Failure limit back to: 0')]
             );
 
         $worker = $this->createMock(WorkerInterface::class);

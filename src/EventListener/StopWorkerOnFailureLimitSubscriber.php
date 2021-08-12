@@ -51,7 +51,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
                 $this->maximumFailedTasks
             ));
             $this->logger->info(sprintf(
-                'Current failed tasks limit: %d',
+                'Failure limit back to: %d',
                 $this->failedTasks
             ));
         }
