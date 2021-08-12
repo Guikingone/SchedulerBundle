@@ -342,6 +342,7 @@ final class WorkerTest extends TestCase
         ]);
         $forkedWorker = $worker->fork();
 
+        self::assertNotSame($forkedWorker, $worker);
         self::assertCount(9, $forkedWorker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
         self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
@@ -1552,6 +1553,7 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
+        self::assertTrue($worker->getOptions()['shouldStop']);
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
     }
     /**
@@ -1587,7 +1589,7 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
-    public function testWorkerCanStopWhenTaskAreExcutedAndWithoutSleepOption(): void
+    public function testWorkerCanStopWhenTaskAreExecutedAndWithoutSleepOption(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
