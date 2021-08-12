@@ -1556,6 +1556,7 @@ final class WorkerTest extends TestCase
         self::assertTrue($worker->getOptions()['shouldStop']);
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
     }
+
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */

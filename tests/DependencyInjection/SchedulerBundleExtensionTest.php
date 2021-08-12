@@ -1094,8 +1094,20 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.preload'));
         self::assertSame(Worker::class, $container->getDefinition(Worker::class)->getTag('container.preload')[0]['class']);
 
-        self::assertFalse($container->hasDefinition('scheduler.lock_store.store'));
         self::assertTrue($container->hasDefinition('scheduler.lock_store.factory'));
+        self::assertSame(LockFactory::class, $container->getDefinition('scheduler.lock_store.factory')->getClass());
+        self::assertFalse($container->getDefinition('scheduler.lock_store.factory')->isPublic());
+        self::assertCount(1, $container->getDefinition('scheduler.lock_store.factory')->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.lock_store.factory')->getArgument('$store'));
+        self::assertSame('lock.foo.factory', (string) $container->getDefinition('scheduler.lock_store.factory')->getArgument('$store'));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition('scheduler.lock_store.factory')->getArgument('$store')->getInvalidBehavior());
+        self::assertCount(1, $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls());
+        self::assertSame('setLogger', $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls()[0][0]);
+        self::assertInstanceOf(Reference::class, $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls()[0][1][0]);
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls()[0][1][0]);
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls()[0][1][0]->getInvalidBehavior());
+        self::assertTrue($container->getDefinition('scheduler.lock_store.factory')->hasTag('container.preload'));
+        self::assertSame(LockFactory::class, $container->getDefinition('scheduler.lock_store.factory')->getTag('container.preload')[0]['class']);
     }
 
     public function testTasksAreRegistered(): void

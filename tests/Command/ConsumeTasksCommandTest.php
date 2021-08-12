@@ -332,6 +332,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::exactly(2))->method('addListener');
         $eventDispatcher->expects(self::never())->method('addSubscriber');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
