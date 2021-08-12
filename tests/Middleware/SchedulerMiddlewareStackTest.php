@@ -232,7 +232,6 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $erroredMiddleware = new class() implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
-
             /**
              * {@inheritdoc}
              */
@@ -251,7 +250,6 @@ final class SchedulerMiddlewareStackTest extends TestCase
         };
 
         $requiredMiddleware = new class() implements PostSchedulingMiddlewareInterface, RequiredMiddlewareInterface {
-
             /**
              * {@inheritdoc}
              */
