@@ -20,6 +20,21 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class TaskMessageHandlerTest extends TestCase
 {
+    public function testHandlerCanRunDueTaskWithoutASpecificTimezone(): void
+    {
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
+        $shellTask->setScheduledAt(new DateTimeImmutable());
+        $shellTask->setExpression('* * * * *');
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('isRunning')->willReturn(false);
+        $worker->expects(self::once())->method('execute')->with([], $shellTask);
+
+        $taskMessageHandler = new TaskMessageHandler($worker);
+
+        ($taskMessageHandler)(new TaskMessage($shellTask));
+    }
+
     public function testHandlerCanRunDueTask(): void
     {
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
