@@ -1,3 +1,18 @@
+<!--- BEGIN HEADER -->
+# Changelog
+
+0.6.0
+-----
+### Code Refactoring
+
+### ⚠ BREAKING CHANGES
+
+##### Worker
+
+* Long running tasks + parallel process lock (#102) ([e54e8a](https://github.com/Guikingone/SchedulerBundle/commit/e54e8a20e07aba561a20e5d750ff9ac744c11095))
+
+---
+
 # Changelog
 
 0.5.5
