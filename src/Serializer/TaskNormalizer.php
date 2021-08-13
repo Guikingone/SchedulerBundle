@@ -78,7 +78,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        if ($object instanceof CallbackTask && $object->getCallback() instanceof Closure) {
+        if ($object instanceof CallbackTask) {
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
@@ -166,25 +166,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     {
         $objectType = $data[self::NORMALIZATION_DISCRIMINATOR];
         $body = $data['body'];
-
-        if (CallbackTask::class === $objectType) {
-            $callback = [
-                $this->objectNormalizer->denormalize($body['callback']['class'], $body['callback']['type']),
-                $body['callback']['method'],
-            ];
-
-            unset($body['callback']);
-
-            return $this->objectNormalizer->denormalize($body, $objectType, $format, [
-                AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
-                    CallbackTask::class => [
-                        'name' => $body['name'],
-                        'callback' => $callback,
-                        'arguments' => $body['arguments'],
-                    ],
-                ],
-            ]);
-        }
 
         if (CommandTask::class === $objectType) {
             return $this->objectNormalizer->denormalize($body, $objectType, $format, [

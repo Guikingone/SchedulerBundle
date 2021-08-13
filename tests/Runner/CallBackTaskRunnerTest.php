@@ -73,7 +73,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', [new FooCallable(), 'echo']);
+        $callbackTask = new CallbackTask('foo', fn(): string => (new FooCallable())->echo());
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 

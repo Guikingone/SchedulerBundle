@@ -133,7 +133,7 @@ final class TaskNormalizerTest extends TestCase
         }));
     }
 
-    public function testCallbackTaskCanBeDenormalizedWithCallable(): void
+    public function testCallbackTaskCannotBeDenormalized(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
         $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
@@ -157,13 +157,12 @@ final class TaskNormalizerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $callbackTask = new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']);
+        $callbackTask = new CallbackTask('foo', fn(): string => (new CallbackTaskCallable())->echo());
 
-        $body = $serializer->serialize(new CallbackTask('foo', [new CallbackTaskCallable(), 'echo']), 'json');
-        $deserializedTask = $serializer->deserialize($body, TaskInterface::class, 'json');
-
-        self::assertInstanceOf(CallbackTask::class, $deserializedTask);
-        self::assertEquals($callbackTask->getCallback(), $deserializedTask->getCallback());
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()');
+        self::expectExceptionCode(0);
+        $body = $serializer->serialize(new CallbackTask('foo', fn(): string => (new CallbackTaskCallable())->echo()), 'json');
     }
 
     public function testCommandTaskCanBeDenormalized(): void
@@ -342,7 +341,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeScheduling([new CallbackTaskCallable(), 'echo']);
+        $task->beforeScheduling(fn(): string => (new CallbackTaskCallable())->echo());
         $task->setScheduledAt(new DateTimeImmutable());
 
         $data = $serializer->serialize($task, 'json');
@@ -414,7 +413,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterScheduling([new CallbackTaskCallable(), 'echo']);
+        $task->afterScheduling(fn(): string => (new CallbackTaskCallable())->echo());
         $task->setScheduledAt(new DateTimeImmutable());
 
         $data = $serializer->serialize($task, 'json');
@@ -486,7 +485,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->beforeExecuting([new CallbackTaskCallable(), 'echo']);
+        $task->beforeExecuting(fn(): string => (new CallbackTaskCallable())->echo());
         $task->setScheduledAt(new DateTimeImmutable());
 
         $data = $serializer->serialize($task, 'json');
@@ -558,7 +557,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $task = new ShellTask('foo', ['echo', 'Symfony']);
-        $task->afterExecuting([new CallbackTaskCallable(), 'echo']);
+        $task->afterExecuting(fn(): string => (new CallbackTaskCallable())->echo());
         $task->setScheduledAt(new DateTimeImmutable());
 
         $data = $serializer->serialize($task, 'json');

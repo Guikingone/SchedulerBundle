@@ -326,7 +326,7 @@ final class SchedulerBundleExtension extends Extension
     {
         if (null === $configuration['lock_store']) {
             $container->register('scheduler.lock_store.store', PersistingStoreInterface::class)
-                ->setFactory([StoreFactory::class, 'createStore'])
+                ->setFactory([new Reference(StoreFactory::class), 'createStore'])
                 ->setArgument('$connection', 'flock')
                 ->setPublic(false)
                 ->addTag('container.preload', [

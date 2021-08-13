@@ -109,12 +109,12 @@ final class Dsn
 
     public function getOptionAsBool(string $key, ?bool $default = null): bool
     {
-        return !('false' === $this->getOption($key, $default)) && $this->getOption($key, $default);
+        if ('false' === $this->getOption($key, $default)) {
+            return false;
+        }
+        return (bool) $this->getOption($key, $default);
     }
 
-    /**
-     * @return array
-     */
     public function getOptions(): array
     {
         return $this->options;
