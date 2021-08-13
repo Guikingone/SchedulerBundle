@@ -164,7 +164,7 @@ final class SearchFilterTest extends TestCase
         $task->expects(self::never())->method('getExpression');
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::never())->method('getState');
-        $task->expects(self::exactly(2))->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
+        $task->expects(self::once())->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
 
         $filter = new SearchFilter();
         $list = $filter->filter(new TaskList([$task]), [

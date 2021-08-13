@@ -88,25 +88,6 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $workerLifecycleSubscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
     }
 
-    public function testSubscriberLogOnWorkerRestartedWithoutExecutedTask(): void
-    {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
-        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been restarted'), self::equalTo([
-            'failedTasks' => 0,
-            'lastExecutedTask' => null,
-        ]));
-
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRestarted(new WorkerRestartedEvent($worker));
-    }
-
     public function testSubscriberLogOnWorkerRestarted(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -141,26 +122,6 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
         $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
         $workerLifecycleSubscriber->onWorkerRunning(new WorkerRunningEvent($worker));
-    }
-
-    public function testSubscriberLogOnWorkerRunningWithoutExecutedTask(): void
-    {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
-        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker is currently running'), self::equalTo([
-            'failedTasks' => 0,
-            'lastExecutedTask' => null,
-            'idle' => false,
-        ]));
-
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerRunning(new WorkerRunningEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerRunning(): void
@@ -199,25 +160,6 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $workerLifecycleSubscriber->onWorkerStarted(new WorkerStartedEvent($worker));
     }
 
-    public function testSubscriberLogOnWorkerStartedWithoutExecutedTask(): void
-    {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
-        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been started'), self::equalTo([
-            'failedTasks' => 0,
-            'lastExecutedTask' => null,
-        ]));
-
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStarted(new WorkerStartedEvent($worker));
-    }
-
     public function testSubscriberLogOnWorkerStarted(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -251,25 +193,6 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
         $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
         $workerLifecycleSubscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
-    }
-
-    public function testSubscriberLogOnWorkerStoppedWithoutExecutedTask(): void
-    {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
-        $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been stopped'), self::equalTo([
-            'failedTasks' => 0,
-            'lastExecutedTask' => null,
-        ]));
-
-        $subscriber = new WorkerLifecycleSubscriber($logger);
-        $subscriber->onWorkerStopped(new WorkerStoppedEvent($worker));
     }
 
     public function testSubscriberLogOnWorkerStopped(): void

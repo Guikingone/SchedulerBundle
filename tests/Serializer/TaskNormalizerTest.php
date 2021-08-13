@@ -952,48 +952,6 @@ final class TaskNormalizerTest extends TestCase
         self::assertContains('-vvv', $fooThirdTask->getOptions());
     }
 
-    public function testChainedTaskWithCommandTaskCanBeDenormalized(): void
-    {
-        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
-        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
-
-        $serializer = new Serializer([
-            $notificationTaskBagNormalizer,
-            new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, $notificationTaskBagNormalizer),
-            new DateTimeNormalizer(),
-            new DateIntervalNormalizer(),
-            new JsonSerializableNormalizer(),
-            $objectNormalizer,
-        ], [new JsonEncoder()]);
-        $objectNormalizer->setSerializer($serializer);
-
-        $data = $serializer->serialize(new ChainedTask(
-            'foo',
-            new ShellTask('bar', ['echo', 'Symfony']),
-            new CommandTask('foo_second', 'cache:clear', [], ['--no-warmup']),
-            new CommandTask('foo_third', 'cache:clear', [], ['--no-warmup'])
-        ), 'json');
-        $task = $serializer->deserialize($data, TaskInterface::class, 'json');
-
-        self::assertInstanceOf(ChainedTask::class, $task);
-        self::assertNotEmpty($task->getTasks());
-        self::assertCount(3, $task->getTasks());
-        self::assertInstanceOf(ShellTask::class, $task->getTask(0));
-        self::assertSame('bar', $task->getTask(0)->getName());
-
-        self::assertInstanceOf(CommandTask::class, $task->getTask(1));
-        self::assertSame('foo_second', $task->getTask(1)->getName());
-        self::assertSame('cache:clear', $task->getTask(1)->getCommand());
-        self::assertEmpty($task->getTask(1)->getArguments());
-        self::assertNotEmpty($task->getTask(1)->getOptions());
-
-        self::assertInstanceOf(CommandTask::class, $task->getTask(2));
-        self::assertSame('foo_third', $task->getTask(2)->getName());
-        self::assertSame('cache:clear', $task->getTask(2)->getCommand());
-        self::assertEmpty($task->getTask(2)->getArguments());
-        self::assertNotEmpty($task->getTask(2)->getOptions());
-    }
-
     public function testShellTaskWithBeforeSchedulingNotificationTaskBagCanBeNormalized(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));

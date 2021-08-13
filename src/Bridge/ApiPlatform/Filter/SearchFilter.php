@@ -99,7 +99,11 @@ final class SearchFilter implements FilterInterface
                     $list = $list->filter(fn (TaskInterface $task): bool => $value === $task->getState());
                     break;
                 case 'timezone':
-                    $list = $list->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && $value === $task->getTimezone()->getName());
+                    $list = $list->filter(function (TaskInterface $task) use ($value): bool {
+                        $timezone = $task->getTimezone();
+
+                        return null !== $timezone && $value === $timezone->getName();
+                    });
                     break;
                 case 'type':
                     $list = $list->filter(fn (TaskInterface $task): bool => $value === get_class($task));
