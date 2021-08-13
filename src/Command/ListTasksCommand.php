@@ -127,7 +127,7 @@ final class ListTasksCommand extends Command
                     $task->getName(),
                     $task->getDescription() ?? 'No description set',
                     '-',
-                    null !== $lastExecutionDate ? $lastExecutionDate->format(DATE_ATOM) : 'Not executed',
+                    null !== $task->getLastExecution() ? $task->getLastExecution()->format(DATE_ATOM) : 'Not executed',
                     (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
                     null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
                     null !== $executionMemoryUsage ? Helper::formatMemory($executionMemoryUsage) : 'Not tracked',

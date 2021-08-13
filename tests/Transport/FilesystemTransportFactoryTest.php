@@ -66,13 +66,15 @@ final class FilesystemTransportFactoryTest extends TestCase
         $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
 
         $filesystemTransportFactory = new FilesystemTransportFactory();
-        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://first_in_first_out'), [
+            'path' => '/srv/foo',
+        ], $serializer, $schedulerPolicyOrchestrator);
 
         self::assertInstanceOf(FilesystemTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
         self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
         self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/app', $transport->getOptions()['path']);
+        self::assertSame('/srv/foo', $transport->getOptions()['path']);
     }
 
     public function testFactoryCanCreateTransportWithSpecificPathFromExtraOptions(): void
@@ -90,5 +92,20 @@ final class FilesystemTransportFactoryTest extends TestCase
         self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
         self::assertArrayHasKey('path', $transport->getOptions());
         self::assertSame(sys_get_temp_dir(), $transport->getOptions()['path']);
+    }
+
+    public function testFactoryCanCreateTransportWithSpecificExecutionMode(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $schedulerPolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
+
+        $filesystemTransportFactory = new FilesystemTransportFactory();
+        $transport = $filesystemTransportFactory->createTransport(Dsn::fromString('fs://batch?path=/srv/app'), [], $serializer, $schedulerPolicyOrchestrator);
+
+        self::assertInstanceOf(FilesystemTransport::class, $transport);
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertSame('batch', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('path', $transport->getOptions());
+        self::assertSame('/srv/app', $transport->getOptions()['path']);
     }
 }

@@ -66,4 +66,26 @@ final class ExpressionBuilderTest extends TestCase
 
         self::assertSame('* * * * *', $expression->getExpression());
     }
+
+    public function testBuilderCanBuildExpressionWithTimezone(): void
+    {
+        $builder = $this->createMock(ExpressionBuilderInterface::class);
+        $builder->expects(self::once())->method('support')->willReturn(true);
+        $builder->expects(self::once())->method('build')
+            ->with(self::equalTo('* * * * *'))
+            ->willReturn(Expression::createFromString('* * * * *'))
+        ;
+
+        $secondBuilder = $this->createMock(ExpressionBuilderInterface::class);
+        $secondBuilder->expects(self::once())->method('support')->willReturn(false);
+
+        $builder = new ExpressionBuilder([
+            $secondBuilder,
+            $builder,
+        ]);
+
+        $expression = $builder->build('* * * * *', 'Europe/Paris');
+
+        self::assertSame('* * * * *', $expression->getExpression());
+    }
 }

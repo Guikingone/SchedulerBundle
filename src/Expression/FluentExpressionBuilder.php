@@ -30,7 +30,7 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
         $expression = new Expression();
         $expression->setExpression(sprintf(
             '%d %s %s %s %s',
-            (int) $date->format('i'),
+            $date->format('i'),
             $date->format('G'),
             $date->format('j'),
             $date->format('n'),

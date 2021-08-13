@@ -75,7 +75,7 @@ final class FluentExpressionBuilderTest extends TestCase
             $datetime->format(DateTimeImmutable::RFC3339),
             sprintf(
                 '%d %s %s %s %s',
-                (int) $datetime->format('i'),
+                $datetime->format('i'),
                 $datetime->format('G'),
                 $datetime->format('j'),
                 $datetime->format('n'),

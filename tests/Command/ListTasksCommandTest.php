@@ -133,13 +133,16 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('app, slow', $commandTester->getDisplay());
     }
 
+    /**
+     * @group time-sensitive
+     */
     public function testCommandCanListTaskWithSubtasks(): void
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A foo task');
         $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('08/20/2020'));
         $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(5002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
@@ -148,16 +151,25 @@ final class ListTasksCommandTest extends TestCase
         $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
         $secondTask->expects(self::once())->method('getDescription')->willReturn('A bar task');
         $secondTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $secondTask->expects(self::exactly(2))->method('getLastExecution')->willReturn(new DateTimeImmutable('08/20/2020'));
         $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $secondTask->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
 
+        $thirdTask = $this->createMock(TaskInterface::class);
+        $thirdTask->expects(self::exactly(2))->method('getName')->willReturn('random');
+        $thirdTask->expects(self::once())->method('getDescription')->willReturn('A bar task');
+        $thirdTask->expects(self::once())->method('getExpression')->willReturn('* * * * *');
+        $thirdTask->expects(self::once())->method('getLastExecution')->willReturn(null);
+        $thirdTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1452.0);
+        $thirdTask->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
+        $thirdTask->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
+
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setDescription('A nested task');
-        $chainedTask->setLastExecution(new DateTimeImmutable());
+        $chainedTask->setLastExecution(new DateTimeImmutable('08/20/2020'));
         $chainedTask->setExecutionComputationTime(6002.0);
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks($secondTask, $task, $thirdTask);
 
         $taskList = new TaskList([$chainedTask]);
 
@@ -175,6 +187,7 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('nested', $commandTester->getDisplay());
         self::assertStringContainsString('foo', $commandTester->getDisplay());
         self::assertStringContainsString('bar', $commandTester->getDisplay());
+        self::assertStringContainsString('random', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
         self::assertStringContainsString('A nested task', $commandTester->getDisplay());
         self::assertStringContainsString('6 secs', $commandTester->getDisplay());
@@ -183,9 +196,12 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('5 secs', $commandTester->getDisplay());
         self::assertStringContainsString('A bar task', $commandTester->getDisplay());
         self::assertStringContainsString('1 sec', $commandTester->getDisplay());
+        self::assertStringContainsString('1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Expression', $commandTester->getDisplay());
         self::assertStringContainsString('* * * * *', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
+        self::assertStringContainsString('2020-08-20T00:00:00+00:00', $commandTester->getDisplay());
+        self::assertStringContainsString('Not executed', $commandTester->getDisplay());
         self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
         self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
@@ -193,6 +209,16 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString(TaskInterface::ENABLED, $commandTester->getDisplay());
         self::assertStringContainsString('Tags', $commandTester->getDisplay());
         self::assertStringContainsString('app, slow', $commandTester->getDisplay());
+        self::assertStringContainsString('| Type        | Name   | Description   | Expression | Last execution date      ', $commandTester->getDisplay());
+        self::assertStringContainsString('| ChainedTask | nested | A nested task | * * * * *  | 2020-08-20T00:00:00+00:00', $commandTester->getDisplay());
+        self::assertStringContainsString('|           > | bar    | A bar task    | -          | 2020-08-20T00:00:00+00:00', $commandTester->getDisplay());
+        self::assertStringContainsString('|           > | foo    | A foo task    | -          | 2020-08-20T00:00:00+00:00', $commandTester->getDisplay());
+        self::assertStringContainsString('|           > | random | A bar task    | -          | Not executed             ', $commandTester->getDisplay());
+        self::assertStringContainsString('| Last execution duration | Last execution memory usage | State   | Tags      |', $commandTester->getDisplay());
+        self::assertStringContainsString('| 6 secs                  | Not tracked                 | enabled |           |', $commandTester->getDisplay());
+        self::assertStringContainsString('| 1 sec                   | Not tracked                 | enabled | app, slow |', $commandTester->getDisplay());
+        self::assertStringContainsString('| 5 secs                  | Not tracked                 | enabled | app, slow |', $commandTester->getDisplay());
+        self::assertStringContainsString('| 1 sec                   | Not tracked                 | enabled | app, slow |', $commandTester->getDisplay());
     }
 
     public function testCommandCanListTaskWithSpecificExpression(): void
@@ -241,7 +267,7 @@ final class ListTasksCommandTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getDescription')->willReturn('A random task');
         $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
+        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable('08/20/2020'));
         $task->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(1002.0);
         $task->expects(self::once())->method('getState')->willReturn(TaskInterface::ENABLED);
         $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
@@ -263,6 +289,7 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
+        self::assertStringContainsString('2020-08-20T00:00:00+00:00', $commandTester->getDisplay());
         self::assertStringContainsString('State', $commandTester->getDisplay());
         self::assertStringContainsString('Tags', $commandTester->getDisplay());
         self::assertStringContainsString('app, slow', $commandTester->getDisplay());
@@ -314,8 +341,8 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('Last execution date', $commandTester->getDisplay());
         self::assertStringContainsString('Next execution date', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution duration', $commandTester->getDisplay());
-        self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
         self::assertStringContainsString('Last execution memory usage', $commandTester->getDisplay());
+        self::assertStringContainsString('Not tracked', $commandTester->getDisplay());
         self::assertStringContainsString('State', $commandTester->getDisplay());
         self::assertStringContainsString('Tags', $commandTester->getDisplay());
         self::assertStringContainsString('app', $commandTester->getDisplay());
