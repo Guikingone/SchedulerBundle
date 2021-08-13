@@ -50,4 +50,19 @@ final class IdlePolicyTest extends TestCase
         self::assertCount(2, $tasks);
         self::assertSame(['app' => $secondTask, 'foo' => $task], $tasks);
     }
+
+    public function testTasksCanBeSortedWithPolicyPriority(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getPriority')->willReturn(19);
+
+        $secondTask = $this->createMock(TaskInterface::class);
+        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(19);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
+
+        self::assertCount(2, $tasks);
+        self::assertSame(['app' => $secondTask, 'foo' => $task], $tasks);
+    }
 }
