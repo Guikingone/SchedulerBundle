@@ -159,7 +159,7 @@ This command allows using additional options to display information:
 ```bash
 $ bin/console scheduler:debug:probe
 
-[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+[INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00
 
 +----------------+--------------+-----------------+
 | Executed tasks | Failed tasks | Scheduled tasks |
@@ -173,7 +173,7 @@ $ bin/console scheduler:debug:probe
 ```bash
 $ bin/console scheduler:debug:probe --external
 
-  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00                                         \n
+  [INFO] The displayed probe state is the one found at 2021-05-17T17:24:56+00:00
 
 +----------------+--------------+-----------------+
 | Executed tasks | Failed tasks | Scheduled tasks |
@@ -201,3 +201,43 @@ $ bin/console scheduler:execute:external-probe
 ```
 
 #### Example
+
+// TODO
+
+### Debugging middleware list
+
+_Introduced in `0.6`_
+
+_Description: Display the middleware list (both scheduler and worker)_
+
+```bash
+$ bin/console scheduler:debug:middleware
+```
+
+#### Example
+
+```bash
+$ bin/console scheduler:debug:middleware
+                                                                                                                       
+ [INFO] Found 2 middleware for the scheduling phase                                                                                                                                                     
+
++------------------------+---------------+----------------+----------+----------+
+| Name                   | PreScheduling | PostScheduling | Priority | Required |
++------------------------+---------------+----------------+----------+----------+
+| TaskCallbackMiddleware | Yes           | Yes            | 1        | No       |
+| NotifierMiddleware     | Yes           | Yes            | 2        | No       |
++------------------------+---------------+----------------+----------+----------+
+                                                                                                                        
+ [INFO] Found 6 middleware for the execution phase                                                                      
+
++-------------------------+--------------+---------------+----------+----------+
+| Name                    | PreExecution | PostExecution | Priority | Required |
++-------------------------+--------------+---------------+----------+----------+
+| TaskCallbackMiddleware  | Yes          | Yes           | 1        | No       |
+| NotifierMiddleware      | Yes          | Yes           | 2        | No       |
+| ProbeTaskMiddleware     | Yes          | No            | No       | No       |
+| TaskLockBagMiddleware   | No           | Yes           | 5        | No       |
+| TaskUpdateMiddleware    | No           | Yes           | 10       | Yes      |
+| SingleRunTaskMiddleware | No           | Yes           | 15       | Yes      |
++-------------------------+--------------+---------------+----------+----------+
+```

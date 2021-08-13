@@ -11,6 +11,7 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSch
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\Command\ConsumeTasksCommand;
+use SchedulerBundle\Command\DebugMiddlewareCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
@@ -48,6 +49,7 @@ use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
@@ -80,6 +82,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\Builder\AbstractTaskBuilder;
@@ -94,6 +97,7 @@ use SchedulerBundle\Task\TaskBuilderInterface;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\TaskBag\TaskBagInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransportFactory;
@@ -117,6 +121,9 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mercure\Hub;
 use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\PersistingStoreInterface;
+use Symfony\Component\Lock\Store\StoreFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -140,6 +147,8 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_PROBE_TAG = 'scheduler.probe';
     private const SCHEDULER_SCHEDULER_MIDDLEWARE_TAG = 'scheduler.scheduler_middleware';
     private const SCHEDULER_WORKER_MIDDLEWARE_TAG = 'scheduler.worker_middleware';
+    private const SCHEDULER_TRANSPORT_FACTORY_TAG = 'scheduler.transport_factory';
+    private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -155,6 +164,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerAutoConfigure($container);
         $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
+        $this->registerLockStore($container, $config);
         $this->registerScheduler($container);
         $this->registerCommands($container);
         $this->registerExpressionFactoryAndPolicies($container);
@@ -164,7 +174,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerMessengerTools($container);
         $this->registerSubscribers($container);
         $this->registerTracker($container);
-        $this->registerWorker($container, $config);
+        $this->registerWorker($container);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
@@ -190,8 +200,8 @@ final class SchedulerBundleExtension extends Extension
     {
         $container->registerForAutoconfiguration(RunnerInterface::class)->addTag(self::SCHEDULER_RUNNER_TAG);
         $container->registerForAutoconfiguration(TransportInterface::class)->addTag('scheduler.transport');
-        $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag('scheduler.transport_factory');
-        $container->registerForAutoconfiguration(PolicyInterface::class)->addTag('scheduler.schedule_policy');
+        $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG);
+        $container->registerForAutoconfiguration(PolicyInterface::class)->addTag(self::SCHEDULER_SCHEDULE_POLICY);
         $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
         $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
         $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
@@ -201,13 +211,14 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
+        $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
     }
 
     private function registerTransportFactories(ContainerBuilder $container, array $configuration): void
     {
         $container->register(TransportFactory::class, TransportFactory::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.transport_factory'),
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
             ])
             ->addTag('container.preload', [
                 'class' => TransportFactory::class,
@@ -218,7 +229,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(InMemoryTransportFactory::class, InMemoryTransportFactory::class)
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => InMemoryTransportFactory::class,
             ])
@@ -226,7 +237,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(FilesystemTransportFactory::class, FilesystemTransportFactory::class)
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => FilesystemTransportFactory::class,
             ])
@@ -234,10 +245,10 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(FailOverTransportFactory::class, FailOverTransportFactory::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.transport_factory'),
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => FailOverTransportFactory::class,
             ])
@@ -245,10 +256,10 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(LongTailTransportFactory::class, LongTailTransportFactory::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.transport_factory'),
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => LongTailTransportFactory::class,
             ])
@@ -256,10 +267,10 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(RoundRobinTransportFactory::class, RoundRobinTransportFactory::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.transport_factory'),
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => RoundRobinTransportFactory::class,
             ])
@@ -277,7 +288,7 @@ final class SchedulerBundleExtension extends Extension
                 ),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => CacheTransportFactory::class,
             ])
@@ -308,6 +319,34 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(TransportInterface::class, 'scheduler.transport');
     }
 
+    /**
+     * @param array<string, mixed> $configuration
+     */
+    private function registerLockStore(ContainerBuilder $container, array $configuration): void
+    {
+        if (null === $configuration['lock_store']) {
+            $container->register('scheduler.lock_store.store', PersistingStoreInterface::class)
+                ->setFactory([StoreFactory::class, 'createStore'])
+                ->setArgument('$connection', 'flock')
+                ->setPublic(false)
+                ->addTag('container.preload', [
+                    'class' => PersistingStoreInterface::class,
+                ])
+            ;
+        }
+
+        $container->register('scheduler.lock_store.factory', LockFactory::class)
+            ->setArgument('$store', new Reference($configuration['lock_store'] ?? 'scheduler.lock_store.store', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE))
+            ->addMethodCall('setLogger', [
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => LockFactory::class,
+            ])
+        ;
+    }
+
     private function registerScheduler(ContainerBuilder $container): void
     {
         $container->register(Scheduler::class, Scheduler::class)
@@ -315,7 +354,7 @@ final class SchedulerBundleExtension extends Extension
                 $container->getParameter('scheduler.timezone'),
                 new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(EventDispatcherInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -448,6 +487,17 @@ final class SchedulerBundleExtension extends Extension
                 'class' => YieldTaskCommand::class,
             ])
         ;
+
+        $container->register(DebugMiddlewareCommand::class, DebugMiddlewareCommand::class)
+            ->setArguments([
+                new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => DebugMiddlewareCommand::class,
+            ])
+        ;
     }
 
     private function registerExpressionFactoryAndPolicies(ContainerBuilder $container): void
@@ -490,7 +540,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(SchedulePolicyOrchestrator::class, SchedulePolicyOrchestrator::class)
             ->setArguments([
-                new TaggedIteratorArgument('scheduler.schedule_policy'),
+                new TaggedIteratorArgument(self::SCHEDULER_SCHEDULE_POLICY),
             ])
             ->addTag('container.preload', [
                 'class' => SchedulePolicyOrchestrator::class,
@@ -499,63 +549,63 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(SchedulePolicyOrchestratorInterface::class, SchedulePolicyOrchestrator::class);
 
         $container->register(BatchPolicy::class, BatchPolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => BatchPolicy::class,
             ])
         ;
 
         $container->register(DeadlinePolicy::class, DeadlinePolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => DeadlinePolicy::class,
             ])
         ;
 
         $container->register(ExecutionDurationPolicy::class, ExecutionDurationPolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => ExecutionDurationPolicy::class,
             ])
         ;
 
         $container->register(FirstInFirstOutPolicy::class, FirstInFirstOutPolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => FirstInFirstOutPolicy::class,
             ])
         ;
 
         $container->register(FirstInLastOutPolicy::class, FirstInLastOutPolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => FirstInLastOutPolicy::class,
             ])
         ;
 
         $container->register(IdlePolicy::class, IdlePolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => IdlePolicy::class,
             ])
         ;
 
         $container->register(MemoryUsagePolicy::class, MemoryUsagePolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => MemoryUsagePolicy::class,
             ])
         ;
 
         $container->register(NicePolicy::class, NicePolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => NicePolicy::class,
             ])
         ;
 
         $container->register(RoundRobinPolicy::class, RoundRobinPolicy::class)
-            ->addTag('scheduler.schedule_policy')
+            ->addTag(self::SCHEDULER_SCHEDULE_POLICY)
             ->addTag('container.preload', [
                 'class' => RoundRobinPolicy::class,
             ])
@@ -723,6 +773,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('serializer.normalizer.dateinterval', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(NotificationTaskBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(AccessLockBagNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
@@ -737,6 +788,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('serializer.normalizer')
             ->addTag('container.preload', [
                 'class' => NotificationTaskBagNormalizer::class,
+            ])
+        ;
+
+        $container->register(AccessLockBagNormalizer::class, AccessLockBagNormalizer::class)
+            ->setArguments([
+                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('serializer.normalizer')
+            ->addTag('container.preload', [
+                'class' => AccessLockBagNormalizer::class,
             ])
         ;
     }
@@ -859,20 +921,17 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(TaskExecutionTrackerInterface::class, TaskExecutionTracker::class);
     }
 
-    /**
-     * @param array<string, mixed> $configuration
-     */
-    private function registerWorker(ContainerBuilder $container, array $configuration): void
+    private function registerWorker(ContainerBuilder $container): void
     {
         $container->register(Worker::class, Worker::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new TaggedIteratorArgument('scheduler.runner'),
+                new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                null !== $configuration['lock_store'] ? new Reference($configuration['lock_store']) : null,
             ])
             ->addTag('scheduler.worker')
             ->addTag('monolog.logger', [
@@ -929,7 +988,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => DoctrineTransportFactory::class,
             ])
@@ -944,7 +1003,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(RedisTransportFactory::class, RedisTransportFactory::class)
             ->setPublic(false)
-            ->addTag('scheduler.transport_factory')
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => RedisTransportFactory::class,
             ])
@@ -1018,6 +1077,18 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => TaskUpdateMiddleware::class,
+            ])
+        ;
+
+        $container->register(TaskLockBagMiddleware::class, TaskLockBagMiddleware::class)
+            ->setArguments([
+                new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.preload', [
+                'class' => TaskLockBagMiddleware::class,
             ])
         ;
 

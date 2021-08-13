@@ -72,6 +72,7 @@ final class RemoveFailedTaskCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
+        $force = $input->getOption('force');
 
         $toRemoveTask = $this->worker->getFailedTasks()->get($name);
         if (!$toRemoveTask instanceof TaskInterface) {
@@ -80,7 +81,7 @@ final class RemoveFailedTaskCommand extends Command
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to permanently remove this task?', false)) {
+        if (true === $force || $symfonyStyle->confirm('Do you want to permanently remove this task?', false)) {
             try {
                 $this->scheduler->unschedule($toRemoveTask->getName());
             } catch (Throwable $throwable) {

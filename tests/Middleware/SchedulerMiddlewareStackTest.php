@@ -9,16 +9,22 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\RequiredMiddlewareInterface;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use Tests\SchedulerBundle\Middleware\Assets\OrderedMiddleware;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class SchedulerMiddlewareStackTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
     public function testStackCanRunEmptyPreMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -40,6 +46,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
     public function testStackCanRunPreMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -59,6 +68,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
     public function testStackCannotRunPreMiddlewareListWithErroredOrderedMiddleware(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -98,6 +110,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
     public function testStackCanRunOrderedPreMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -137,6 +152,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
     public function testStackCanRunSingleOrderedPreMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -161,6 +179,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPostSchedulingMiddleware()}
+     */
     public function testStackCanRunEmptyPostMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -179,6 +200,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
     }
 
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPostSchedulingMiddleware()}
+     */
     public function testStackCanRunPostMiddlewareList(): void
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -196,5 +220,52 @@ final class SchedulerMiddlewareStackTest extends TestCase
         ]);
 
         $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPostSchedulingMiddleware()}
+     */
+    public function testStackCanRunPostMiddlewareListWithRequiredMiddleware(): void
+    {
+        $task = new NullTask('foo');
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $erroredMiddleware = new class() implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
+            /**
+             * {@inheritdoc}
+             */
+            public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
+            {
+                throw new RuntimeException('An error occurred');
+            }
+
+            /**
+             * {@inheritdoc}
+             */
+            public function getPriority(): int
+            {
+                return 1;
+            }
+        };
+
+        $requiredMiddleware = new class() implements PostSchedulingMiddlewareInterface, RequiredMiddlewareInterface {
+            /**
+             * {@inheritdoc}
+             */
+            public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
+            {
+                $task->setDescription('Description');
+            }
+        };
+
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+            $erroredMiddleware,
+            $requiredMiddleware,
+        ]);
+
+        $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
+
+        self::assertSame('Description', $task->getDescription());
     }
 }

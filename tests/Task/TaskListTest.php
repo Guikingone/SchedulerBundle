@@ -269,7 +269,10 @@ final class TaskListTest extends TestCase
             new NullTask('bar'),
         ]);
 
-        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+        self::assertSame([
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
     }
 
     public function testListCannotReturnLastTaskWhileEmpty(): void
@@ -291,26 +294,5 @@ final class TaskListTest extends TestCase
 
         $lastTask = $taskList->last();
         self::assertSame('bar', $lastTask->getName());
-    }
-
-    public function testListCannotMoveToLastTaskWhenEmpty(): void
-    {
-        $taskList = new TaskList();
-
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The latest task cannot be used as the current list is empty');
-        self::expectExceptionCode(0);
-        $taskList->end();
-    }
-
-    public function testListCannMoveToLast(): void
-    {
-        $taskList = new TaskList([
-            new NullTask('foo'),
-            new NullTask('bar'),
-        ]);
-
-        $endTask = $taskList->end();
-        self::assertSame('bar', $endTask->getName());
     }
 }

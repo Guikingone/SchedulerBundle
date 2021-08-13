@@ -204,8 +204,7 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($updatedTask, 'json'), ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
-                $statement = $connection->executeQuery(
+                $connection->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),
                     $queryBuilder->getParameterTypes()
@@ -228,6 +227,7 @@ final class Connection implements ConnectionInterface
             }
 
             $task->setState(AbstractTask::PAUSED);
+
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);

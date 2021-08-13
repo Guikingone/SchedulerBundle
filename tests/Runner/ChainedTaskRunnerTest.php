@@ -44,32 +44,13 @@ final class ChainedTaskRunnerTest extends TestCase
         $shellTask = new ShellTask('foo', ['ls', '-al']);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([
-            'executedTasksCount' => 10,
-            'forkedFrom' => $worker,
-            'isFork' => true,
-            'isRunning' => false,
-            'lastExecutedTask' => null,
-            'sleepDurationDelay' => 1,
-            'sleepUntilNextMinute' => true,
-            'shouldStop' => false,
-            'shouldRetrieveTasksLazily' => false,
-        ]);
+        $worker->expects(self::never())->method('getOptions');
         $worker->expects(self::once())->method('fork')->willReturnSelf();
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([
-                'executedTasksCount' => 0,
-                'forkedFrom' => $worker,
-                'isFork' => true,
-                'isRunning' => false,
-                'lastExecutedTask' => null,
-                'sleepDurationDelay' => 1,
-                'sleepUntilNextMinute' => false,
-                'shouldStop' => false,
-                'shouldRetrieveTasksLazily' => false,
-            ]), self::equalTo($shellTask))
+            ->with(self::equalTo([]), self::equalTo($shellTask))
             ->willThrowException(new RuntimeException('An error occurred'))
         ;
+        $worker->expects(self::once())->method('stop');
 
         $chainedTaskRunner = new ChainedTaskRunner();
 

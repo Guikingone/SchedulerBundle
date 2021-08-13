@@ -18,6 +18,7 @@ use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -123,7 +124,7 @@ final class MercureEventSubscriberTest extends TestCase
             'event' => 'task.executed',
             'body' => [
                 'task' => 'foo',
-                'output' => null,
+                'output' => 'undefined',
             ],
         ], JSON_THROW_ON_ERROR))));
 
@@ -134,7 +135,7 @@ final class MercureEventSubscriberTest extends TestCase
         ;
 
         $subscriber = new MercureEventSubscriber($hub, 'https://www.hub.com/', $serializer);
-        $subscriber->onTaskExecuted(new TaskExecutedEvent($task));
+        $subscriber->onTaskExecuted(new TaskExecutedEvent($task, new Output($task)));
     }
 
     /**

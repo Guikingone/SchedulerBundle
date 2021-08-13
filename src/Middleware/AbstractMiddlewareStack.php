@@ -9,6 +9,7 @@ use SplObjectStorage;
 use Throwable;
 use function array_filter;
 use function array_replace;
+use function array_values;
 use function is_array;
 use function iterator_to_array;
 use function uasort;
@@ -101,6 +102,6 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
         uasort($orderedMiddleware, fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() <=> $nextMiddleware->getPriority());
 
-        return array_replace($orderedMiddleware, $middlewareList);
+        return array_values(array_replace($orderedMiddleware, $middlewareList));
     }
 }

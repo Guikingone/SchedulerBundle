@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Test\Constraint\TaskExecuted;
 
@@ -45,7 +46,7 @@ final class TaskExecutedTest extends TestCase
 
         $taskEventList = new TaskEventList();
         $taskEventList->addEvent(new TaskScheduledEvent($task));
-        $taskEventList->addEvent(new TaskExecutedEvent($task));
+        $taskEventList->addEvent(new TaskExecutedEvent($task, new Output($task)));
 
         $taskExecuted = new TaskExecuted(1);
 

@@ -285,28 +285,4 @@ final class LazyTaskListTest extends TestCase
         self::assertTrue($taskList->isInitialized());
         self::assertSame('bar', $lastTask->getName());
     }
-
-    public function testListCannotMoveToLastTaskWhenEmpty(): void
-    {
-        $taskList = new LazyTaskList(new TaskList());
-        self::assertFalse($taskList->isInitialized());
-
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The latest task cannot be used as the current list is empty');
-        self::expectExceptionCode(0);
-        $taskList->end();
-    }
-
-    public function testListCannMoveToLast(): void
-    {
-        $taskList = new LazyTaskList(new TaskList([
-            new NullTask('foo'),
-            new NullTask('bar'),
-        ]));
-
-        self::assertFalse($taskList->isInitialized());
-
-        $endTask = $taskList->end();
-        self::assertSame('bar', $endTask->getName());
-    }
 }

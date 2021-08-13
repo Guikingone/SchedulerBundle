@@ -9,7 +9,6 @@ use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
-use function count;
 use function explode;
 use function sprintf;
 
@@ -23,8 +22,12 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
      */
     protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array
     {
+        if ('' === $delimiter) {
+            throw new InvalidArgumentException('The delimiter must not be an empty string, consider using " && " or & " || " or similar');
+        }
+
         $dsnList = $dsn->getOptions();
-        if (0 === count($dsnList)) {
+        if ([] === $dsnList) {
             throw new LogicException(sprintf('The %s transport factory cannot create a transport', static::class));
         }
 

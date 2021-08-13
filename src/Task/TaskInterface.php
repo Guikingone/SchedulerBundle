@@ -7,7 +7,9 @@ namespace SchedulerBundle\Task;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use Symfony\Component\Lock\Key;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -189,6 +191,17 @@ interface TaskInterface
     public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getExecutionEndTime(): ?DateTimeImmutable;
+
+    /**
+     * Allow to define an {@see AccessLockBag} which contains the {@see Key} used to create a lock linked to the current task.
+     */
+    public function setAccessLockBag(?AccessLockBag $bag = null): void;
+
+    /**
+     * Return the {@see AccessLockBag} set using {@see TaskInterface::setAccessLockBag()},
+     * can be null IF the task is sent to the worker without being scheduled.
+     */
+    public function getAccessLockBag(): ?AccessLockBag;
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): self;
 

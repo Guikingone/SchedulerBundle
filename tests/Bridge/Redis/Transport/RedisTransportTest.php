@@ -10,6 +10,7 @@ use SchedulerBundle\Bridge\Redis\Transport\RedisTransport;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
@@ -28,6 +29,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Throwable;
 use function getenv;
+use function is_bool;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -45,12 +47,14 @@ final class RedisTransportTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!getenv('SCHEDULER_REDIS_DSN')) {
+        $redisDsn = getenv('SCHEDULER_REDIS_DSN');
+        if (is_bool($redisDsn)) {
             self::markTestSkipped('The "SCHEDULER_REDIS_DSN" environment variable is required.');
         }
 
-        $dsn = Dsn::fromString(getenv('SCHEDULER_REDIS_DSN'));
+        $dsn = Dsn::fromString($redisDsn);
         $objectNormalizer = new ObjectNormalizer();
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -58,7 +62,8 @@ final class RedisTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ), $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -25,6 +26,8 @@ final class TaskUpdateMiddlewareTest extends TestCase
 
     public function testMiddlewareCanUpdate(): void
     {
+        $worker = $this->createMock(WorkerInterface::class);
+
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
@@ -34,6 +37,6 @@ final class TaskUpdateMiddlewareTest extends TestCase
         ;
 
         $taskUpdateMiddleware = new TaskUpdateMiddleware($scheduler);
-        $taskUpdateMiddleware->postExecute($task);
+        $taskUpdateMiddleware->postExecute($task, $worker);
     }
 }

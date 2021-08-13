@@ -12,6 +12,9 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class ProbeTaskMiddleware implements PreExecutionMiddlewareInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function preExecute(TaskInterface $task): void
     {
         if (!$task instanceof ProbeTask) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -72,9 +73,11 @@ final class CommandTaskRunner implements RunnerInterface
     private function buildInput(CommandTask $commandTask): StringInput
     {
         $command = $this->application->find($commandTask->getCommand());
-        $options = $this->buildOptions($commandTask);
+        if (null === $name = $command->getName()) {
+            throw new InvalidArgumentException('The command name must be set');
+        }
 
-        return new StringInput(sprintf('%s %s %s', $command->getName(), implode(' ', $commandTask->getArguments()), implode(' ', $options)));
+        return new StringInput(sprintf('%s %s %s', $name, implode(' ', $commandTask->getArguments()), implode(' ', $this->buildOptions($commandTask))));
     }
 
     private function buildOptions(CommandTask $commandTask): array

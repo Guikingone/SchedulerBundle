@@ -14,7 +14,10 @@ use function random_int;
  */
 final class ComputedExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression, ?string $timezone = null): Expression
+    /**
+     * {@inheritdoc}
+     */
+    public function build(string $expression, string $timezone = 'UTC'): Expression
     {
         $parts = explode(' ', $expression);
 
@@ -49,6 +52,9 @@ final class ComputedExpressionBuilder implements ExpressionBuilderInterface
         return Expression::createFromString(implode(' ', $parts));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function support(string $expression): bool
     {
         return in_array('#', explode(' ', $expression), true);

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -98,6 +99,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskListCanBeRetrieved(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -105,7 +107,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
@@ -153,6 +156,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskListCanBeRetrievedAndSorted(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -160,7 +164,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),
@@ -193,6 +198,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCannotBeRetrievedWithUndefinedTask(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -200,7 +206,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             $objectNormalizer,
         ], [new JsonEncoder()]);
@@ -218,8 +225,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeRetrieved(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -238,6 +256,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeRetrievedLazily(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -245,7 +264,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             $objectNormalizer,
         ], [new JsonEncoder()]);
@@ -272,6 +292,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeCreated(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -279,7 +300,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ), $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
@@ -295,6 +317,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCannotBeUpdatedWhenUndefinedButShouldBeCreated(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -302,7 +325,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             $objectNormalizer,
         ], [new JsonEncoder()]);
@@ -323,6 +347,7 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeUpdated(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -330,7 +355,8 @@ final class FilesystemTransportTest extends TestCase
                 new DateTimeZoneNormalizer(),
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
-                new NotificationTaskBagNormalizer($objectNormalizer)
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
             ),
             $objectNormalizer,
         ], [new JsonEncoder()]);
@@ -357,8 +383,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeDeleted(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -375,8 +412,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCannotBePausedTwice(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -399,8 +447,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBePaused(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -419,8 +478,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCannotBeResumedTwice(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -447,8 +517,17 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeResumed(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ), $objectNormalizer, ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([
@@ -472,8 +551,19 @@ final class FilesystemTransportTest extends TestCase
     public function testTaskCanBeCleared(): void
     {
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([new TaskNormalizer(new DateTimeNormalizer(), new DateTimeZoneNormalizer(), new DateIntervalNormalizer(), $objectNormalizer, new NotificationTaskBagNormalizer($objectNormalizer)), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [], $serializer, new SchedulePolicyOrchestrator([

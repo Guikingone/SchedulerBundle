@@ -26,7 +26,7 @@ final class Dsn
     private ?int $port;
 
     /**
-     * @var mixed[]
+     * @var array
      */
     private array $options;
 
@@ -99,18 +99,21 @@ final class Dsn
         return $this->port ?? $default;
     }
 
+    /**
+     * @param array|bool|int|null|string $default
+     */
     public function getOption(string $key, $default = null)
     {
         return $this->options[$key] ?? $default;
     }
 
-    public function getOptionAsBool(string $key, $default = null): bool
+    public function getOptionAsBool(string $key, ?bool $default = null): bool
     {
-        return 'false' === $this->getOption($key, $default) ? false : (bool) $this->getOption($key, $default);
+        return !('false' === $this->getOption($key, $default)) && $this->getOption($key, $default);
     }
 
     /**
-     * @return mixed[]
+     * @return array
      */
     public function getOptions(): array
     {

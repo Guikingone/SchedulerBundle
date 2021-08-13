@@ -12,6 +12,7 @@ use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 
 /**
@@ -67,7 +68,7 @@ final class TaskLifecycleSubscriberTest extends TestCase
         ]));
 
         $taskLifecycleSubscriber = new TaskLifecycleSubscriber($logger);
-        $taskLifecycleSubscriber->onTaskExecuted(new TaskExecutedEvent($task));
+        $taskLifecycleSubscriber->onTaskExecuted(new TaskExecutedEvent($task, new Output($task)));
     }
 
     public function testSubscriberCanLogWhenATaskHasFailed(): void

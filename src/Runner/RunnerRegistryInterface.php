@@ -19,7 +19,9 @@ interface RunnerRegistryInterface extends Countable
     public function find(TaskInterface $task): RunnerInterface;
 
     /**
-     * Filter the runners using @param Closure $func, a new {@see RunnerRegistryInterface} is returned with the filtered runners.
+     * Filter the runners using @param Closure $func.
+     *
+     * A new {@see RunnerRegistryInterface} is returned with the filtered runners.
      */
     public function filter(Closure $func): RunnerRegistryInterface;
 

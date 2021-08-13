@@ -11,6 +11,7 @@ use DateTimeZone;
 use Exception;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -55,6 +56,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
             'arrival_time' => null,
+            'access_lock_bag' => null,
             'background' => false,
             'before_scheduling' => null,
             'before_scheduling_notification' => null,
@@ -76,6 +78,7 @@ abstract class AbstractTask implements TaskInterface
             'execution_end_date' => null,
             'execution_start_time' => null,
             'execution_end_time' => null,
+            'execution_lock_bag' => null,
             'last_execution' => null,
             'max_duration' => null,
             'max_executions' => null,
@@ -96,6 +99,7 @@ abstract class AbstractTask implements TaskInterface
         ]);
 
         $optionsResolver->setAllowedTypes('arrival_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('access_lock_bag', [AccessLockBag::class, 'null']);
         $optionsResolver->setAllowedTypes('background', 'bool');
         $optionsResolver->setAllowedTypes('before_scheduling', ['callable', 'null']);
         $optionsResolver->setAllowedTypes('before_scheduling_notification', [NotificationTaskBag::class, 'null']);
@@ -134,8 +138,8 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('timezone', [DateTimeZone::class, 'null']);
 
         $optionsResolver->setAllowedValues('expression', fn (string $expression): bool => $this->validateExpression($expression));
-        $optionsResolver->setAllowedValues('execution_start_date', fn (string $executionStartDate = null): bool => $this->validateDate($executionStartDate));
-        $optionsResolver->setAllowedValues('execution_end_date', fn (string $executionEndDate = null): bool => $this->validateDate($executionEndDate));
+        $optionsResolver->setAllowedValues('execution_start_date', fn (string $executionStartDate = null): bool => $this->validateStartDate($executionStartDate));
+        $optionsResolver->setAllowedValues('execution_end_date', fn (string $executionEndDate = null): bool => $this->validateEndDate($executionEndDate));
         $optionsResolver->setAllowedValues('nice', fn (int $nice = null): bool => $this->validateNice($nice));
         $optionsResolver->setAllowedValues('priority', fn (int $priority): bool => $this->validatePriority($priority));
         $optionsResolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
@@ -144,16 +148,18 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
 
         $optionsResolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
+        $optionsResolver->setInfo('access_lock_bag', '[INTERNAL] Used to store the key that hold the task lock state');
         $optionsResolver->setInfo('execution_absolute_deadline', '[INTERNAL] An addition of the "execution_start_time" and "execution_relative_deadline" options');
         $optionsResolver->setInfo('execution_computation_time', '[Internal] Used to store the execution duration of a task');
         $optionsResolver->setInfo('execution_delay', 'The delay in microseconds applied before the task execution');
         $optionsResolver->setInfo('execution_memory_usage', '[INTERNAL] The amount of memory used described as an integer');
         $optionsResolver->setInfo('execution_period', '[Internal] Used to store the period during a task has been executed thanks to deadline sort');
         $optionsResolver->setInfo('execution_relative_deadline', 'The estimated ending date of the task execution, must be a \DateInterval');
-        $optionsResolver->setInfo('execution_start_time', 'The start date since the task can be executed');
-        $optionsResolver->setInfo('execution_end_time', 'The limit date since the task must not be executed');
+        $optionsResolver->setInfo('execution_start_date', 'The start date since the task can be executed, used with "execution_end_date", it allows to define execution period');
+        $optionsResolver->setInfo('execution_end_date', 'The limit date after which the task must not be executed');
         $optionsResolver->setInfo('execution_start_time', '[Internal] The start time of the task execution, mostly used by the internal sort process');
         $optionsResolver->setInfo('execution_end_time', '[Internal] The date where the execution is finished, mostly used by the internal sort process');
+        $optionsResolver->setInfo('execution_lock_bag', '[Internal] The lock bag used by the worker to lock and execute the task (and which contains the lock key)');
         $optionsResolver->setInfo('last_execution', 'Define the last execution date of the task');
         $optionsResolver->setInfo('max_duration', 'Define the maximum amount of time allowed to this task to be executed, mostly used for internal sort process');
         $optionsResolver->setInfo('max_executions', 'Define the maximum amount of execution of a task');
@@ -426,18 +432,25 @@ abstract class AbstractTask implements TaskInterface
      */
     public function setExecutionStartDate(string $executionStartDate = null): TaskInterface
     {
-        if (!$this->validateDate($executionStartDate)) {
+        if (!$this->validateStartDate($executionStartDate)) {
             throw new InvalidArgumentException('The date could not be created');
         }
 
-        $this->options['execution_start_date'] = null !== $executionStartDate ? new DateTimeImmutable($executionStartDate) : null;
+        $this->options['execution_start_date'] = null !== $executionStartDate ? new DateTimeImmutable($executionStartDate, $this->getTimezone()) : null;
 
         return $this;
     }
 
+    /**
+     * @throws Exception {@see DateTimeImmutable::__construct()}
+     */
     public function getExecutionStartDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_start_date'] ?? null;
+        if (!$this->options['execution_start_date'] instanceof DateTimeImmutable) {
+            return null;
+        }
+
+        return $this->options['execution_start_date'];
     }
 
     /**
@@ -445,7 +458,7 @@ abstract class AbstractTask implements TaskInterface
      */
     public function setExecutionEndDate(string $executionEndDate = null): TaskInterface
     {
-        if (!$this->validateDate($executionEndDate)) {
+        if (!$this->validateEndDate($executionEndDate)) {
             throw new InvalidArgumentException('The date could not be created');
         }
 
@@ -454,9 +467,16 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * @throws Exception {@see DateTimeImmutable::__construct()}
+     */
     public function getExecutionEndDate(): ?DateTimeImmutable
     {
-        return $this->options['execution_end_date'] ?? null;
+        if (!$this->options['execution_end_date'] instanceof DateTimeImmutable) {
+            return null;
+        }
+
+        return $this->options['execution_end_date'];
     }
 
     public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -481,6 +501,22 @@ abstract class AbstractTask implements TaskInterface
     public function getExecutionEndTime(): ?DateTimeImmutable
     {
         return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAccessLockBag(): ?AccessLockBag
+    {
+        return $this->options['access_lock_bag'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setAccessLockBag(?AccessLockBag $bag = null): void
+    {
+        $this->options['access_lock_bag'] = $bag;
     }
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
@@ -679,6 +715,10 @@ abstract class AbstractTask implements TaskInterface
 
     public function addTag(string $tag): TaskInterface
     {
+        if (null === $this->options['tags']) {
+            $this->options['tags'] = [];
+        }
+
         $this->options['tags'][] = $tag;
 
         return $this;
@@ -686,7 +726,7 @@ abstract class AbstractTask implements TaskInterface
 
     public function getTimezone(): ?DateTimeZone
     {
-        return $this->options['timezone'] instanceof DateTimeZone ? $this->options['timezone'] : null;
+        return (array_key_exists('timezone', $this->options) && $this->options['timezone'] instanceof DateTimeZone) ? $this->options['timezone'] : null;
     }
 
     public function setTimezone(DateTimeZone $dateTimeZone = null): TaskInterface
@@ -744,7 +784,19 @@ abstract class AbstractTask implements TaskInterface
     /**
      * @throws Exception
      */
-    private function validateDate(?string $date = null): bool
+    private function validateStartDate(?string $date = null): bool
+    {
+        if (null === $date) {
+            return true;
+        }
+
+        return false !== strtotime($date);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function validateEndDate(?string $date = null): bool
     {
         if (null === $date) {
             return true;
@@ -754,8 +806,8 @@ abstract class AbstractTask implements TaskInterface
             return false;
         }
 
-        if (new DateTimeImmutable('now', $this->getTimezone()) > new DateTimeImmutable($date)) {
-            throw new LogicException('The date cannot be previous to the current date');
+        if (new DateTimeImmutable('now', $this->getTimezone() ?? new DateTimeZone('UTC')) > new DateTimeImmutable($date)) {
+            throw new LogicException('The execution end date date cannot be previous to the current date as the task will be considered as non-due');
         }
 
         return true;

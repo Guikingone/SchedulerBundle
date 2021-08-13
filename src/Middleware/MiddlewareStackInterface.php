@@ -9,4 +9,8 @@ namespace SchedulerBundle\Middleware;
  */
 interface MiddlewareStackInterface
 {
+    /**
+     * Return the middleware used by a specific middleware stack.
+     */
+    public function getMiddlewareList(): array;
 }

@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
+use function array_merge;
+use const SORT_REGULAR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class WorkerMiddlewareStack extends AbstractMiddlewareStack
 {
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
     public function runPreExecutionMiddleware(TaskInterface $task): void
     {
         $this->runMiddleware($this->getPreExecutionMiddleware(), function (PreExecutionMiddlewareInterface $middleware) use ($task): void {
@@ -18,10 +25,21 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
         });
     }
 
-    public function runPostExecutionMiddleware(TaskInterface $task): void
+    /**
+     * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
+     */
+    public function runPostExecutionMiddleware(TaskInterface $task, WorkerInterface $worker): void
     {
-        $this->runMiddleware($this->getPostExecutionMiddleware(), function (PostExecutionMiddlewareInterface $middleware) use ($task): void {
-            $middleware->postExecute($task);
+        $this->runMiddleware($this->getPostExecutionMiddleware(), function (PostExecutionMiddlewareInterface $middleware) use ($task, $worker): void {
+            $middleware->postExecute($task, $worker);
         });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMiddlewareList(): array
+    {
+        return array_unique(array_merge($this->getPreExecutionMiddleware(), $this->getPostExecutionMiddleware()), SORT_REGULAR);
     }
 }

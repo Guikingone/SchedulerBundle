@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
+use Exception;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
@@ -11,7 +12,7 @@ use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\UndefinedRunnerException;
-use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
@@ -52,18 +53,28 @@ interface WorkerInterface
      */
     public function fork(): WorkerInterface;
 
+    /**
+     * Stop the worker and reset its internal state.
+     */
     public function stop(): void;
 
     /**
-     * Stop the worker, reinitialize the worker state|options and dispatch a {@see WorkerRestartedEvent}
+     * Restart the worker, the actual restart process is dependant on the current implementation and/or context.
+     *
+     * Once the worker has been restarted, the {@see WorkerRestartedEvent} must be dispatched.
      */
     public function restart(): void;
 
     /**
      * Start a "sleeping" phase in the current worker.
+     *
+     * @throws Exception {@see DateTimeImmutable::__construct()}
      */
     public function sleep(): void;
 
+    /**
+     * Determine if the worker is currently running
+     */
     public function isRunning(): bool;
 
     /**
@@ -72,14 +83,14 @@ interface WorkerInterface
     public function getFailedTasks(): TaskListInterface;
 
     /**
-     * @return TaskInterface|null The latest executed task or null if the worker is just getting started
+     * @return TaskInterface|null The latest executed task or null if none has been executed.
      */
     public function getLastExecutedTask(): ?TaskInterface;
 
     /**
-     * @return RunnerInterface[]
+     * Return the runners available in the worker.
      */
-    public function getRunners(): array;
+    public function getRunners(): RunnerRegistryInterface;
 
     /**
      * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>

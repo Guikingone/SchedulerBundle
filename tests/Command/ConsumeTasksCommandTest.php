@@ -13,6 +13,7 @@ use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
@@ -29,7 +30,10 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
 use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -328,6 +332,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::exactly(2))->method('addListener');
         $eventDispatcher->expects(self::never())->method('addSubscriber');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
@@ -358,11 +363,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
+        $task = new NullTask('foo', [
+            'execution_memory_usage' => 9_507_552,
+        ]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -373,7 +376,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -399,11 +402,11 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::exactly(5))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.05);
-        $task->expects(self::once())->method('getExecutionMemoryUsage')->willReturn(9_507_552);
+        $name = sprintf('bar_very_verbose_%s', uniqid('foo'));
+
+        $task = new NullTask($name, [
+            'execution_memory_usage' => 9_507_552,
+        ]);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -414,7 +417,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, [$runner], $tracker, new WorkerMiddlewareStack(), $eventDispatcher);
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -425,12 +428,12 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
         self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());
         self::assertStringNotContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
-        self::assertStringContainsString('Output for task "foo":', $commandTester->getDisplay());
+        self::assertStringContainsString(sprintf('Output for task "%s":', $name), $commandTester->getDisplay());
         self::assertStringContainsString('Success output', $commandTester->getDisplay());
-        self::assertStringContainsString('Task "foo" succeed', $commandTester->getDisplay());
+        self::assertStringContainsString(sprintf('Task "%s" succeed', $name), $commandTester->getDisplay());
         self::assertStringContainsString('Duration: < 1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $commandTester->getDisplay());
-        self::assertStringNotContainsString('Task failed: "foo"', $commandTester->getDisplay());
+        self::assertStringNotContainsString(sprintf('Task failed: "%s"', $name), $commandTester->getDisplay());
     }
 
     public function testCommandCannotExecuteExternalProbeTask(): void

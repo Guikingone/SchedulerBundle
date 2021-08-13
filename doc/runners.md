@@ -3,8 +3,15 @@
 Runners are the foundations of the [Worker](../src/Worker/Worker.php), 
 every task is executed via a runner.
 
+- [Retrieving the runners](#retrieving)
 - [Existing runners](#existing-runners)
 - [Defining a new runner](#defining-a-new-runner)
+
+## Retrieving
+
+Runners are stored in the [RunnerRegistry](../src/Runner/RunnerRegistry.php), you can easily find a runner regarding
+the task that you want to execute using `find()` or even filter the runners regarding a specific condition using
+`filter()`.
 
 ## Existing runners
 
@@ -21,6 +28,6 @@ every task is executed via a runner.
 
 ## Defining a new runner
 
-Defining a new runner is as simple as it sounds, 
+Defining a new runner is as simple as it sounds,
 just implement [RunnerInterface](../src/Runner/RunnerInterface.php) and define implementations for each method, 
-once this is done, the runner will be tagged and injected in the [Worker](../src/Worker/Worker.php).
+once this is done, the runner will be tagged and injected in the [RunnerRegistry](../src/Runner/RunnerRegistry.php).

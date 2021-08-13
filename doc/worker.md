@@ -32,6 +32,8 @@ some methods can be used to improve its usage:
 
 - `getLastExecutedTask`: Return the last executed task or null if none.
 
+- `getTaskLockRegistry`: Return the task lock registry which contains the lock for each task to execute.
+
 - `getRunners`: Return the injected runners.
 
 - `getOptions`: Return the current options of the worker (in the case of a forked one, the forked ones).

@@ -18,19 +18,21 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
+use SchedulerBundle\Middleware\TaskLockBagMiddleware;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerInterface;
+use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\TaskBag\AccessLockBag;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-use function is_array;
-use function iterator_to_array;
-use function sleep;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -39,37 +41,37 @@ abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
 
-    /**
-     * @var RunnerInterface[]
-     */
-    private iterable $runners;
+    private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
-    private ?EventDispatcherInterface $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
     private TaskExecutionTrackerInterface $tracker;
+    private WorkerMiddlewareStack $middlewareStack;
+    private LockFactory $lockFactory;
 
-    /**
-     * @param RunnerInterface[] $runners
-     */
     public function __construct(
         SchedulerInterface $scheduler,
-        iterable $runners,
+        RunnerRegistryInterface $runnerRegistry,
         TaskExecutionTrackerInterface $tracker,
-        ?EventDispatcherInterface $eventDispatcher = null,
+        WorkerMiddlewareStack $workerMiddlewareStack,
+        EventDispatcherInterface $eventDispatcher,
+        LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
         $this->scheduler = $scheduler;
-        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
+        $this->runnerRegistry = $runnerRegistry;
         $this->tracker = $tracker;
+        $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
+        $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
 
     protected function run(array $options, Closure $closure): void
     {
-        if ([] === $this->runners) {
+        if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException('No runner found');
         }
 
@@ -155,9 +157,9 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getRunners(): array
+    public function getRunners(): RunnerRegistryInterface
     {
-        return $this->runners;
+        return $this->runnerRegistry;
     }
 
     /**
@@ -169,11 +171,29 @@ abstract class AbstractWorker implements WorkerInterface
     }
 
     /**
+     * @param array<int, TaskInterface> $tasks
+     *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function getTasks(array $tasks): TaskListInterface
     {
-        return [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+        $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+
+        $lockedTasks = $tasks->filter(function (TaskInterface $task): bool {
+            $key = TaskLockBagMiddleware::createKey($task);
+            $task->setAccessLockBag(new AccessLockBag($key));
+
+            $lock = $this->lockFactory->createLockFromKey($key, null, false);
+            if (!$lock->acquire()) {
+                $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
+
+                return false;
+            }
+
+            return true;
+        });
+
+        return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
     }
 
     protected function handleTask(RunnerInterface $runner, TaskInterface $task): void
@@ -192,7 +212,20 @@ abstract class AbstractWorker implements WorkerInterface
         $this->dispatch(new TaskExecutedEvent($task, $output));
     }
 
-    protected function checkTaskState(TaskInterface $task): bool
+    protected function shouldStop(TaskListInterface $taskList): bool
+    {
+        if ($this->options['sleepUntilNextMinute']) {
+            return false;
+        }
+
+        if ($this->options['shouldStop']) {
+            return true;
+        }
+
+        return $this->options['executedTasksCount'] === 0 || $this->options['executedTasksCount'] === $taskList->count();
+    }
+
+    private function checkTaskState(TaskInterface $task): bool
     {
         if (TaskInterface::UNDEFINED === $task->getState()) {
             throw new LogicException('The task state must be defined in order to be executed!');
@@ -211,6 +244,11 @@ abstract class AbstractWorker implements WorkerInterface
         return true;
     }
 
+    protected function getMiddlewareStack(): WorkerMiddlewareStack
+    {
+        return $this->middlewareStack;
+    }
+
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
      */
@@ -224,10 +262,6 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function dispatch(Event $event): void
     {
-        if (!$this->eventDispatcher instanceof EventDispatcherInterface) {
-            return;
-        }
-
         $this->eventDispatcher->dispatch($event);
     }
 

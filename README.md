@@ -100,6 +100,7 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Best practices](doc/best_practices.md)
 * [Tasks](doc/tasks.md)
 * [Transports](doc/transport.md)
+* [Lock](doc/lock.md)
 * [Commands](doc/command.md)
 * [Events](doc/events.md)
 * [Lazy Loading](doc/lazy_loading.md)
@@ -113,3 +114,7 @@ When a task is configured, time to execute it, two approaches can be used:
 * [Probe](doc/probe.md)
 * [Tests](doc/test.md)
 * [Mercure](doc/mercure.md)
+
+# Contributing
+
+Want to [improve](.github/CONTRIBUTING.md) this bundle?

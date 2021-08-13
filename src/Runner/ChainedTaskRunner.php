@@ -9,7 +9,6 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -26,19 +25,17 @@ final class ChainedTaskRunner implements RunnerInterface
             return new Output($task, null, Output::ERROR);
         }
 
-        try {
-            $forkedWorker = $worker->fork();
+        $forkedWorker = $worker->fork();
 
+        try {
             $task->getTasks()->walk(function (TaskInterface $task) use ($forkedWorker): void {
-                $forkedWorker->execute(array_merge($forkedWorker->getOptions(), [
-                    'executedTasksCount' => 0,
-                    'lastExecutedTask' => null,
-                    'sleepUntilNextMinute' => false,
-                ]), $task);
+                $forkedWorker->execute([], $task);
             });
         } catch (Throwable $throwable) {
             $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, $throwable->getMessage(), Output::ERROR);
+        } finally {
+            $forkedWorker->stop();
         }
 
         $task->setExecutionState(TaskInterface::SUCCEED);

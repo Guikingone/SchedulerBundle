@@ -15,7 +15,10 @@ use function strtotime;
  */
 final class FluentExpressionBuilder implements ExpressionBuilderInterface
 {
-    public function build(string $expression, ?string $timezone = 'UTC'): Expression
+    /**
+     * {@inheritdoc}
+     */
+    public function build(string $expression, string $timezone = 'UTC'): Expression
     {
         $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression));
         if (!$date) {
@@ -27,7 +30,7 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
         $expression = new Expression();
         $expression->setExpression(sprintf(
             '%d %s %s %s %s',
-            (int) $date->format('i'),
+            $date->format('i'),
             $date->format('G'),
             $date->format('j'),
             $date->format('n'),
@@ -37,6 +40,9 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
         return $expression;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function support(string $expression): bool
     {
         return false !== strtotime($expression);

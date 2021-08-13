@@ -80,6 +80,7 @@ final class RetryFailedTaskCommand extends Command
         $symfonyStyle = new SymfonyStyle($input, $output);
 
         $name = $input->getArgument('name');
+        $force = $input->getOption('force');
 
         $task = $this->worker->getFailedTasks()->get($name);
         if (!$task instanceof TaskInterface) {
@@ -88,7 +89,7 @@ final class RetryFailedTaskCommand extends Command
             return self::FAILURE;
         }
 
-        if ($input->getOption('force') || $symfonyStyle->confirm('Do you want to retry this task?', false)) {
+        if (true === $force || $symfonyStyle->confirm('Do you want to retry this task?', false)) {
             $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(1, $this->logger));
 
             try {

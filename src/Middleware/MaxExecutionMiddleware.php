@@ -8,10 +8,10 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
-use function is_int;
 use function sprintf;
 
 /**
@@ -51,11 +51,14 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), is_int($exception->getCode()) ? $exception->getCode() : 0, $exception);
+            throw new MiddlewareException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }
 
-    public function postExecute(TaskInterface $task): void
+    /**
+     * {@inheritdoc}
+     */
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         if (!$this->rateLimiter instanceof RateLimiterFactory) {
             return;
@@ -76,7 +79,7 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), is_int($exception->getCode()) ? $exception->getCode() : 0, $exception);
+            throw new MiddlewareException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }
 }

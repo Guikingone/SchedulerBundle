@@ -9,7 +9,6 @@ use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function array_key_exists;
 use function array_walk;
-use function count;
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -89,7 +88,7 @@ final class HttpTask extends AbstractTask
      */
     private function validateClientOptions(array $clientOptions = []): void
     {
-        if (0 === count($clientOptions)) {
+        if ([] === $clientOptions) {
             return;
         }
 

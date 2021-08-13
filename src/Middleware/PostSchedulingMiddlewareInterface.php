@@ -14,9 +14,7 @@ use Throwable;
 interface PostSchedulingMiddlewareInterface
 {
     /**
-     * Allow to execute logic after scheduling the task
-     * (the @param TaskInterface $task is the one passed through {@see SchedulerInterface::schedule()} and AFTER the transport stores it).
-     *
+     * Allow executing logic after scheduling the task (the @param TaskInterface $task is the one returned via {@see SchedulerInterface::schedule()} and AFTER the transport stores it).
      *
      * @throws Throwable If an error|exception occurs, it must be thrown back.
      */

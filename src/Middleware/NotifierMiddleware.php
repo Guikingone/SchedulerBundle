@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -59,7 +60,10 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
         $this->notify($bag->getNotification(), $bag->getRecipients());
     }
 
-    public function postExecute(TaskInterface $task): void
+    /**
+     * {@inheritdoc}
+     */
+    public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         $bag = $task->getAfterExecutingNotificationBag();
         if (!$bag instanceof NotificationTaskBag) {

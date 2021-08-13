@@ -6,6 +6,7 @@ namespace SchedulerBundle\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
@@ -18,7 +19,7 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
 {
     private LoggerInterface $logger;
     private int $maximumFailedTasks;
-    private ?int $failedTasks = null;
+    private int $failedTasks = 0;
 
     public function __construct(
         int $maximumFailedTasks,
@@ -26,6 +27,10 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
     ) {
         $this->maximumFailedTasks = $maximumFailedTasks;
         $this->logger = $logger ?? new NullLogger();
+
+        if ($maximumFailedTasks <= 0) {
+            throw new InvalidArgumentException(sprintf('The failure limit must be greater than 0, given %d', $maximumFailedTasks));
+        }
     }
 
     public function onTaskFailedEvent(): void
@@ -40,9 +45,14 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         if ($workerRunningEvent->isIdle() && $this->failedTasks >= $this->maximumFailedTasks) {
             $this->failedTasks = 0;
             $worker->stop();
+
             $this->logger->info(sprintf(
                 'Worker has stopped due to the failure limit of %d exceeded',
                 $this->maximumFailedTasks
+            ));
+            $this->logger->info(sprintf(
+                'Failure limit back to: %d',
+                $this->failedTasks
             ));
         }
     }
