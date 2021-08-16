@@ -26,8 +26,11 @@ final class ProbeStateSubscriberTest extends TestCase
     public function testEventsAreCorrectlyListened(): void
     {
         self::assertArrayHasKey(KernelEvents::REQUEST, ProbeStateSubscriber::getSubscribedEvents());
-        self::assertContainsEquals('onKernelRequest', ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
-        self::assertContainsEquals(50, ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertIsArray(ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertArrayHasKey(0, ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertArrayHasKey(1, ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
+        self::assertSame('onKernelRequest', ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0][0]);
+        self::assertSame(50, ProbeStateSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0][1]);
     }
 
     /**

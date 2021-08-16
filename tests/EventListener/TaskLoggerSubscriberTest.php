@@ -23,22 +23,27 @@ final class TaskLoggerSubscriberTest extends TestCase
     public function testEventsAreSubscribed(): void
     {
         self::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskLoggerSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskExecutedEvent::class]);
 
         self::assertArrayHasKey(TaskFailedEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskFailedEvent::class]);
 
         self::assertArrayHasKey(TaskQueued::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskLoggerSubscriber::getSubscribedEvents()[TaskQueued::class]);
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskQueued::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskQueued::class]);
 
         self::assertArrayHasKey(TaskScheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskScheduledEvent::class]);
 
         self::assertArrayHasKey(TaskUnscheduledEvent::class, TaskLoggerSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskLoggerSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
         self::assertContains('onTask', TaskLoggerSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
         self::assertContains(-255, TaskLoggerSubscriber::getSubscribedEvents()[TaskUnscheduledEvent::class]);
     }
