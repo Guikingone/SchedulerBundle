@@ -40,6 +40,7 @@ use Throwable;
 abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
+    protected bool $shouldStop = false;
 
     private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
@@ -49,6 +50,7 @@ abstract class AbstractWorker implements WorkerInterface
     private TaskExecutionTrackerInterface $tracker;
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
+    private WorkerConfiguration $configuration;
 
     public function __construct(
         SchedulerInterface $scheduler,
@@ -65,6 +67,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->lockFactory = $lockFactory;
+        $this->configuration = WorkerConfiguration::create();
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
@@ -105,7 +108,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->stop();
         $this->options['isRunning'] = false;
         $this->failedTasks = new TaskList();
-        $this->options['shouldStop'] = false;
+        $this->configuration->stop();
 
         $this->dispatch(new WorkerRestartedEvent($this));
     }
@@ -127,7 +130,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function stop(): void
     {
-        $this->options['shouldStop'] = true;
+        $this->configuration->stop();
     }
 
     /**
@@ -168,6 +171,11 @@ abstract class AbstractWorker implements WorkerInterface
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    protected function getConfiguration(): WorkerConfiguration
+    {
+        return $this->configuration;
     }
 
     /**
@@ -218,7 +226,7 @@ abstract class AbstractWorker implements WorkerInterface
             return false;
         }
 
-        if ($this->options['shouldStop']) {
+        if ($this->configuration->shouldStop()) {
             return true;
         }
 
