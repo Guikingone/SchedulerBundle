@@ -967,7 +967,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerDoctrineBridge(ContainerBuilder $container, array $configuration): void
     {
-        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://')) {
+        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://') && 0 !== strpos($configuration['transport']['dsn'], 'dbal://')) {
             return;
         }
 

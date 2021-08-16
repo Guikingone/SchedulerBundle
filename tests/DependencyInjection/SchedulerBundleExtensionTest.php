@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
@@ -1213,13 +1214,16 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);
     }
 
-    public function testDoctrineBridgeIsConfigured(): void
+    /**
+     * @dataProvider provideDoctrineDsn
+     */
+    public function testDoctrineBridgeIsConfigured(string $dsn): void
     {
         $container = $this->getContainer([
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
             'transport' => [
-                'dsn' => 'doctrine://default',
+                'dsn' => $dsn,
             ],
             'tasks' => [],
             'lock_store' => null,
@@ -1588,6 +1592,15 @@ final class SchedulerBundleExtensionTest extends TestCase
         $extension = new SchedulerBundleExtension();
 
         self::assertInstanceOf(SchedulerBundleConfiguration::class, $extension->getConfiguration([], new ContainerBuilder()));
+    }
+
+    /**
+     * @return Generator<int, string>
+     */
+    public function provideDoctrineDsn(): Generator
+    {
+        yield 'Doctrine version' => ['doctrine://default'];
+        yield 'Dbal version' => ['dbal://default'];
     }
 
     /**
