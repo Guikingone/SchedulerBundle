@@ -1214,6 +1214,22 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Definition::class, $container->getDefinition(Scheduler::class)->getMethodCalls()[0][1][0]);
     }
 
+    public function testDoctrineBridgeCannotBeConfiguredWithInvalidDsn(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://batch',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertFalse($container->hasDefinition(SchedulerTransportDoctrineSchemaSubscriber::class));
+        self::assertFalse($container->hasDefinition(DoctrineTransportFactory::class));
+    }
+
     /**
      * @dataProvider provideDoctrineDsn
      */
@@ -1595,7 +1611,7 @@ final class SchedulerBundleExtensionTest extends TestCase
     }
 
     /**
-     * @return Generator<int, string>
+     * @return Generator<array<int, string>>
      */
     public function provideDoctrineDsn(): Generator
     {
