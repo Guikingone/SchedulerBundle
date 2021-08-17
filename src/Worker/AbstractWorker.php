@@ -40,7 +40,6 @@ use Throwable;
 abstract class AbstractWorker implements WorkerInterface
 {
     protected array $options = [];
-    protected bool $shouldStop = false;
 
     private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
@@ -94,6 +93,7 @@ abstract class AbstractWorker implements WorkerInterface
         $fork = clone $this;
         $fork->options['isFork'] = true;
         $fork->options['forkedFrom'] = $this;
+        $fork->configuration = WorkerConfiguration::create();
 
         $this->dispatch(new WorkerForkedEvent($this, $fork));
 
@@ -173,7 +173,10 @@ abstract class AbstractWorker implements WorkerInterface
         return $this->options;
     }
 
-    protected function getConfiguration(): WorkerConfiguration
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration(): WorkerConfiguration
     {
         return $this->configuration;
     }
@@ -284,7 +287,6 @@ abstract class AbstractWorker implements WorkerInterface
             'lastExecutedTask' => null,
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
-            'shouldStop' => false,
             'shouldRetrieveTasksLazily' => false,
         ]);
 
@@ -295,7 +297,6 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('lastExecutedTask', [TaskInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
-        $optionsResolver->setAllowedTypes('shouldStop', 'bool');
         $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');
 
         $this->options = $optionsResolver->resolve($options);

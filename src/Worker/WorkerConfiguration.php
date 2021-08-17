@@ -11,6 +11,10 @@ final class WorkerConfiguration
 {
     private bool $shouldStop;
 
+    private function __construct()
+    {
+    }
+
     public static function create(): self
     {
         $self = new self();

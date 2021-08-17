@@ -96,4 +96,9 @@ interface WorkerInterface
      * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>
      */
     public function getOptions(): array;
+
+    /**
+     * Return the configuration of the worker currently used.
+     */
+    public function getConfiguration(): WorkerConfiguration;
 }
