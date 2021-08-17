@@ -669,7 +669,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->setDefinition(ChainedBuilder::class, new ChildDefinition(AbstractTaskBuilder::class))
-            ->setArgument(1, new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG))
+            ->setArgument('$builders', new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG))
             ->setPublic(false)
             ->addTag(self::SCHEDULER_TASK_BUILDER_TAG)
             ->addTag('container.preload', [
