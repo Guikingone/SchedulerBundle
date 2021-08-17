@@ -710,7 +710,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getClass());
         self::assertCount(2, $container->getDefinition(ChainedBuilder::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ChainedBuilder::class)->getArgument(0));
+        self::assertSame(BuilderInterface::class, (string) $container->getDefinition(ChainedBuilder::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ChainedBuilder::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ChainedBuilder::class)->getArgument(1));
+        self::assertSame('scheduler.task_builder', $container->getDefinition(ChainedBuilder::class)->getArgument(1)->getTag());
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('scheduler.task_builder'));
         self::assertTrue($container->getDefinition(ChainedBuilder::class)->hasTag('container.preload'));
         self::assertSame(ChainedBuilder::class, $container->getDefinition(ChainedBuilder::class)->getTag('container.preload')[0]['class']);
