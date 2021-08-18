@@ -22,7 +22,9 @@ final class Worker extends AbstractWorker
     public function execute(array $options = [], TaskInterface ...$tasks): void
     {
         $this->run($options, function () use ($options, $tasks): void {
-            while (!$this->getOptions()['shouldStop']) {
+            $configuration = $this->getConfiguration();
+
+            while (!$configuration->shouldStop()) {
                 $toExecuteTasks = $this->getTasks($tasks);
                 if (0 === $toExecuteTasks->count() && !$this->getOptions()['sleepUntilNextMinute']) {
                     $this->stop();
@@ -67,8 +69,6 @@ final class Worker extends AbstractWorker
                 if ($this->getOptions()['sleepUntilNextMinute']) {
                     $this->sleep();
                     $this->execute($options);
-
-                    break;
                 }
             }
         });

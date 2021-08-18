@@ -18,6 +18,7 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
+        self::assertIsArray($inMemoryConfiguration->getOptions());
         self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
     }
@@ -28,11 +29,13 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
+        self::assertIsArray($inMemoryConfiguration->getOptions());
         self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
         $inMemoryConfiguration->update('foo', 'foo_new');
 
+        self::assertIsArray($inMemoryConfiguration->getOptions());
         self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
         self::assertSame('foo_new', $inMemoryConfiguration->get('foo'));
     }
@@ -43,11 +46,13 @@ final class InMemoryConfigurationTest extends TestCase
 
         $inMemoryConfiguration->set('foo', 'bar');
 
+        self::assertIsArray($inMemoryConfiguration->getOptions());
         self::assertArrayHasKey('foo', $inMemoryConfiguration->getOptions());
         self::assertSame('bar', $inMemoryConfiguration->get('foo'));
 
         $inMemoryConfiguration->remove('foo');
 
+        self::assertIsArray($inMemoryConfiguration->getOptions());
         self::assertArrayNotHasKey('foo', $inMemoryConfiguration->getOptions());
         self::assertNull($inMemoryConfiguration->get('foo'));
     }

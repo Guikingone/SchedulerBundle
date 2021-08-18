@@ -140,7 +140,10 @@ final class FailOverConfigurationTest extends TestCase
         ]);
 
         $failOverConfiguration->set('foo', 'bar');
-        self::assertArrayHasKey('foo', $failOverConfiguration->getOptions());
-        self::assertSame('bar', $failOverConfiguration->getOptions()['foo']);
+
+        $options = $failOverConfiguration->getOptions();
+        self::assertIsArray($options);
+        self::assertArrayHasKey('foo', $options);
+        self::assertSame('bar', $options['foo']);
     }
 }

@@ -20,12 +20,15 @@ final class StopWorkerOnSignalSubscriberTest extends TestCase
     public function testEventsAreSubscribed(): void
     {
         self::assertArrayHasKey(WorkerStartedEvent::class, StopWorkerOnSignalSubscriber::getSubscribedEvents());
+        self::assertIsArray(StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertContains(100, StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertContains('onWorkerStarted', StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnSignalSubscriber::getSubscribedEvents());
+        self::assertIsArray(StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
         self::assertContains(100, StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
         self::assertContains('onWorkerRunning', StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
         self::assertArrayHasKey(WorkerSleepingEvent::class, StopWorkerOnSignalSubscriber::getSubscribedEvents());
+        self::assertIsArray(StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerSleepingEvent::class]);
         self::assertContains(100, StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerSleepingEvent::class]);
         self::assertContains('onWorkerSleeping', StopWorkerOnSignalSubscriber::getSubscribedEvents()[WorkerSleepingEvent::class]);
     }

@@ -49,6 +49,7 @@ abstract class AbstractWorker implements WorkerInterface
     private TaskExecutionTrackerInterface $tracker;
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
+    private WorkerConfiguration $configuration;
 
     public function __construct(
         SchedulerInterface $scheduler,
@@ -65,6 +66,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->lockFactory = $lockFactory;
+        $this->configuration = WorkerConfiguration::create();
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();
     }
@@ -91,6 +93,7 @@ abstract class AbstractWorker implements WorkerInterface
         $fork = clone $this;
         $fork->options['isFork'] = true;
         $fork->options['forkedFrom'] = $this;
+        $fork->configuration = WorkerConfiguration::create();
 
         $this->dispatch(new WorkerForkedEvent($this, $fork));
 
@@ -105,7 +108,7 @@ abstract class AbstractWorker implements WorkerInterface
         $this->stop();
         $this->options['isRunning'] = false;
         $this->failedTasks = new TaskList();
-        $this->options['shouldStop'] = false;
+        $this->configuration->stop();
 
         $this->dispatch(new WorkerRestartedEvent($this));
     }
@@ -127,7 +130,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function stop(): void
     {
-        $this->options['shouldStop'] = true;
+        $this->configuration->stop();
     }
 
     /**
@@ -168,6 +171,14 @@ abstract class AbstractWorker implements WorkerInterface
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfiguration(): WorkerConfiguration
+    {
+        return $this->configuration;
     }
 
     /**
@@ -218,7 +229,7 @@ abstract class AbstractWorker implements WorkerInterface
             return false;
         }
 
-        if ($this->options['shouldStop']) {
+        if ($this->configuration->shouldStop()) {
             return true;
         }
 
@@ -276,7 +287,6 @@ abstract class AbstractWorker implements WorkerInterface
             'lastExecutedTask' => null,
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
-            'shouldStop' => false,
             'shouldRetrieveTasksLazily' => false,
         ]);
 
@@ -287,7 +297,6 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('lastExecutedTask', [TaskInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
-        $optionsResolver->setAllowedTypes('shouldStop', 'bool');
         $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');
 
         $this->options = $optionsResolver->resolve($options);

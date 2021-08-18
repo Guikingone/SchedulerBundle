@@ -669,7 +669,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->setDefinition(ChainedBuilder::class, new ChildDefinition(AbstractTaskBuilder::class))
-            ->setArgument(1, new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG))
+            ->setArgument('$builders', new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG))
             ->setPublic(false)
             ->addTag(self::SCHEDULER_TASK_BUILDER_TAG)
             ->addTag('container.preload', [
@@ -967,7 +967,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerDoctrineBridge(ContainerBuilder $container, array $configuration): void
     {
-        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://')) {
+        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://') && 0 !== strpos($configuration['transport']['dsn'], 'dbal://')) {
             return;
         }
 

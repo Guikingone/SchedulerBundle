@@ -33,6 +33,7 @@ final class TaskSubscriberTest extends TestCase
     public function testEventsAreCorrectlyListened(): void
     {
         self::assertArrayHasKey(KernelEvents::REQUEST, TaskSubscriber::getSubscribedEvents());
+        self::assertIsArray(TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
         self::assertContainsEquals('onKernelRequest', TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
         self::assertContainsEquals(50, TaskSubscriber::getSubscribedEvents()[KernelEvents::REQUEST][0]);
     }
