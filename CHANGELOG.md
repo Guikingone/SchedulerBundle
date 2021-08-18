@@ -1,6 +1,17 @@
 <!--- BEGIN HEADER -->
 # Changelog
 
+0.6.1
+-----
+### Code Refactoring
+
+##### Worker
+
+* Stop sleeping worker (#173) ([9bd97d](https://github.com/Guikingone/SchedulerBundle/commit/9bd97dd840a82997434ba87b7fa429998ede000c))
+* `dbal` dsn support added for `DoctrineTransportFactory` (#173) ([9bd97d](https://github.com/Guikingone/SchedulerBundle/commit/9bd97dd840a82997434ba87b7fa429998ede000c))
+
+---
+
 0.6.0
 -----
 ### Code Refactoring
