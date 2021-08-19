@@ -7,6 +7,7 @@ namespace SchedulerBundle\Task;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Lock\Key;
@@ -198,8 +199,9 @@ interface TaskInterface
     public function setAccessLockBag(?AccessLockBag $bag = null): void;
 
     /**
-     * Return the {@see AccessLockBag} set using {@see TaskInterface::setAccessLockBag()},
-     * can be null IF the task is sent to the worker without being scheduled.
+     * Return the {@see AccessLockBag} set using {@see TaskInterface::setAccessLockBag()}.
+     *
+     * It can be null IF the task is sent to the worker without being scheduled.
      */
     public function getAccessLockBag(): ?AccessLockBag;
 
@@ -233,8 +235,18 @@ interface TaskInterface
 
     public function setState(string $state): self;
 
+    /**
+     * Return the execution state of the task or null when the task has been scheduled.
+     */
     public function getExecutionState(): ?string;
 
+    /**
+     * Define an execution state to the task (or null when scheduled).
+     *
+     * The execution state SHOULD be allowed regarding {@see TaskInterface::EXECUTION_STATES}.
+     *
+     * @throws InvalidArgumentException If the state is not allowed.
+     */
     public function setExecutionState(string $executionState = null): self;
 
     public function isOutput(): bool;

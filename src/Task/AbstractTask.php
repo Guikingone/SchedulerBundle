@@ -611,11 +611,17 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getExecutionState(): ?string
     {
         return $this->options['execution_state'];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setExecutionState(string $executionState = null): TaskInterface
     {
         if (!$this->validateExecutionState($executionState)) {
