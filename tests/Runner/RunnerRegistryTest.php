@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
 use SchedulerBundle\Runner\RunnerInterface;
@@ -67,6 +68,16 @@ final class RunnerRegistryTest extends TestCase
 
         $runner = $registry->find(new NullTask('foo'));
         self::assertInstanceOf(NullTaskRunner::class, $runner);
+    }
+
+    public function testRegistryCannotReturnCurrentRunnerWhenEmpty(): void
+    {
+        $registry = new RunnerRegistry([]);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The current runner cannot be found');
+        self::expectExceptionCode(0);
+        $registry->current();
     }
 
     public function testRegistryCanReturnCurrentRunner(): void

@@ -76,7 +76,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): TaskList
+    public function findByName(array $names): TaskListInterface
     {
         $filteredTasks = $this->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
 
@@ -86,7 +86,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): TaskList
+    public function filter(Closure $filter): TaskListInterface
     {
         return new TaskList(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }
@@ -192,7 +192,7 @@ final class TaskList implements TaskListInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return ArrayIterator<int|string, TaskInterface>
      */
     public function getIterator(): ArrayIterator
     {
