@@ -75,6 +75,7 @@
             "Tests\\SchedulerBundle\\Serializer\\": "tests/Serializer/",
             "Tests\\SchedulerBundle\\Task\\": "tests/Task/",
             "Tests\\SchedulerBundle\\TaskBag\\": "tests/TaskBag/",
+            "Tests\\SchedulerBundle\\Task\\Assets\\": "tests/Task/Assets/",
             "Tests\\SchedulerBundle\\Task\\Builder\\": "tests/Task/Builder/",
             "Tests\\SchedulerBundle\\Test\\": "tests/Test/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\": "tests/Test/Constraint/",
