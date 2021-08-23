@@ -24,7 +24,9 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallable(): void
     {
-        $callbackTask = new CallbackTask('foo', [new FooService(), 'echo']);
+        $callbackTask = new CallbackTask('foo', function (): void {
+            (new FooService())->echo();
+        });
 
         self::assertNotEmpty($callbackTask->getCallback());
         self::assertEmpty($callbackTask->getArguments());

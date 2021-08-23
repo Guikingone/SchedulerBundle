@@ -11,8 +11,10 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
+use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -20,9 +22,9 @@ use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -30,7 +32,6 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
@@ -39,22 +40,21 @@ use Throwable;
  */
 abstract class AbstractWorker implements WorkerInterface
 {
-    protected array $options = [];
-
     private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
     private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
     private SchedulerInterface $scheduler;
-    private TaskExecutionTrackerInterface $tracker;
+    private TaskExecutionTrackerInterface $taskExecutionTracker;
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
     private WorkerConfiguration $configuration;
+    private array $options = [];
 
     public function __construct(
         SchedulerInterface $scheduler,
         RunnerRegistryInterface $runnerRegistry,
-        TaskExecutionTrackerInterface $tracker,
+        TaskExecutionTrackerInterface $taskExecutionTracker,
         WorkerMiddlewareStack $workerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher,
         LockFactory $lockFactory,
@@ -62,7 +62,7 @@ abstract class AbstractWorker implements WorkerInterface
     ) {
         $this->scheduler = $scheduler;
         $this->runnerRegistry = $runnerRegistry;
-        $this->tracker = $tracker;
+        $this->taskExecutionTracker = $taskExecutionTracker;
         $this->middlewareStack = $workerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->lockFactory = $lockFactory;
@@ -78,11 +78,11 @@ abstract class AbstractWorker implements WorkerInterface
         }
 
         $this->configure($options);
-        $this->dispatch(new WorkerStartedEvent($this));
+        $this->eventDispatcher->dispatch(new WorkerStartedEvent($this));
 
         $closure();
 
-        $this->dispatch(new WorkerStoppedEvent($this));
+        $this->eventDispatcher->dispatch(new WorkerStoppedEvent($this));
     }
 
     /**
@@ -95,7 +95,7 @@ abstract class AbstractWorker implements WorkerInterface
         $fork->options['forkedFrom'] = $this;
         $fork->configuration = WorkerConfiguration::create();
 
-        $this->dispatch(new WorkerForkedEvent($this, $fork));
+        $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
 
         return $fork;
     }
@@ -106,11 +106,11 @@ abstract class AbstractWorker implements WorkerInterface
     public function restart(): void
     {
         $this->stop();
-        $this->options['isRunning'] = false;
+        $this->configuration->run(false);
         $this->failedTasks = new TaskList();
         $this->configuration->stop();
 
-        $this->dispatch(new WorkerRestartedEvent($this));
+        $this->eventDispatcher->dispatch(new WorkerRestartedEvent($this));
     }
 
     /**
@@ -120,7 +120,7 @@ abstract class AbstractWorker implements WorkerInterface
     {
         $sleepDuration = $this->getSleepDuration();
 
-        $this->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
+        $this->eventDispatcher->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
 
         sleep($sleepDuration);
     }
@@ -138,7 +138,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function isRunning(): bool
     {
-        return $this->options['isRunning'];
+        return $this->configuration->isRunning();
     }
 
     /**
@@ -154,7 +154,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function getLastExecutedTask(): ?TaskInterface
     {
-        return $this->options['lastExecutedTask'];
+        return $this->configuration->getLastExecutedTask();
     }
 
     /**
@@ -184,6 +184,8 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * @param array<int, TaskInterface> $tasks
      *
+     * @return TaskListInterface<int, TaskInterface>
+     *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function getTasks(array $tasks): TaskListInterface
@@ -207,22 +209,48 @@ abstract class AbstractWorker implements WorkerInterface
         return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
     }
 
-    protected function handleTask(RunnerInterface $runner, TaskInterface $task): void
+    protected function handleTask(TaskInterface $task): void
     {
-        $this->dispatch(new TaskExecutingEvent($task));
+        $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
 
-        $task->setArrivalTime(new DateTimeImmutable());
-        $task->setExecutionStartTime(new DateTimeImmutable());
+        try {
+            $runner = $this->runnerRegistry->find($task);
 
-        $this->tracker->startTracking($task);
-        $output = $runner->run($task, $this);
-        $this->tracker->endTracking($task);
-        $task->setExecutionEndTime(new DateTimeImmutable());
-        $task->setLastExecution(new DateTimeImmutable());
+            if (!$this->configuration->isRunning()) {
+                $this->middlewareStack->runPreExecutionMiddleware($task);
 
-        $this->dispatch(new TaskExecutedEvent($task, $output));
+                $this->configuration->run(true);
+                $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
+                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task));
+                $task->setArrivalTime(new DateTimeImmutable());
+                $task->setExecutionStartTime(new DateTimeImmutable());
+                $this->taskExecutionTracker->startTracking($task);
+
+                $output = $runner->run($task, $this);
+
+                $this->taskExecutionTracker->endTracking($task);
+                $task->setExecutionEndTime(new DateTimeImmutable());
+                $task->setLastExecution(new DateTimeImmutable());
+                $this->eventDispatcher->dispatch(new TaskExecutedEvent($task, $output));
+
+                $this->middlewareStack->runPostExecutionMiddleware($task, $this);
+
+                $this->configuration->setLastExecutedTask($task);
+                ++$this->options['executedTasksCount'];
+            }
+        } catch (Throwable $throwable) {
+            $failedTask = new FailedTask($task, $throwable->getMessage());
+            $this->getFailedTasks()->add($failedTask);
+            $this->eventDispatcher->dispatch(new TaskFailedEvent($failedTask));
+        } finally {
+            $this->configuration->run(false);
+            $this->eventDispatcher->dispatch(new WorkerRunningEvent($this, true));
+        }
     }
 
+    /**
+     * @param TaskListInterface<int, TaskInterface> $taskList
+     */
     protected function shouldStop(TaskListInterface $taskList): bool
     {
         if ($this->options['sleepUntilNextMinute']) {
@@ -255,25 +283,15 @@ abstract class AbstractWorker implements WorkerInterface
         return true;
     }
 
-    protected function getMiddlewareStack(): WorkerMiddlewareStack
-    {
-        return $this->middlewareStack;
-    }
-
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
      */
-    protected function getSleepDuration(): int
+    private function getSleepDuration(): int
     {
         $dateTimeImmutable = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
         $updatedNextExecutionDate = $dateTimeImmutable->setTime((int) $dateTimeImmutable->format('H'), (int) $dateTimeImmutable->format('i'));
 
         return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
-    }
-
-    protected function dispatch(Event $event): void
-    {
-        $this->eventDispatcher->dispatch($event);
     }
 
     private function configure(array $options): void
@@ -283,8 +301,6 @@ abstract class AbstractWorker implements WorkerInterface
             'executedTasksCount' => 0,
             'forkedFrom' => null,
             'isFork' => false,
-            'isRunning' => false,
-            'lastExecutedTask' => null,
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
             'shouldRetrieveTasksLazily' => false,
@@ -293,8 +309,6 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
         $optionsResolver->setAllowedTypes('forkedFrom', [WorkerInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('isFork', 'bool');
-        $optionsResolver->setAllowedTypes('isRunning', 'bool');
-        $optionsResolver->setAllowedTypes('lastExecutedTask', [TaskInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
         $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');

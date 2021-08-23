@@ -14,6 +14,7 @@ use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -152,48 +153,6 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
-    public function testWorkerCannotBeConfiguredWithInvalidIsRunning(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "isRunning" with value "foo" is expected to be of type "bool", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'isRunning' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidLastExecutedTask(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "lastExecutedTask" with value "foo" is expected to be of type "SchedulerBundle\Task\TaskInterface" or "null", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'lastExecutedTask' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
     public function testWorkerCannotBeConfiguredWithInvalidSleepDurationDelay(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
@@ -274,17 +233,15 @@ final class WorkerTest extends TestCase
         $worker->stop();
         $worker->execute();
 
-        self::assertCount(8, $worker->getOptions());
+        self::assertCount(6, $worker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
         self::assertArrayHasKey('forkedFrom', $worker->getOptions());
         self::assertNull($worker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $worker->getOptions());
         self::assertFalse($worker->getOptions()['isFork']);
-        self::assertArrayHasKey('isRunning', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['isRunning']);
-        self::assertArrayHasKey('lastExecutedTask', $worker->getOptions());
-        self::assertNull($worker->getOptions()['lastExecutedTask']);
+        self::assertFalse($worker->getConfiguration()->isRunning());
+        self::assertNull($worker->getConfiguration()->getLastExecutedTask());
         self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
         self::assertSame(1, $worker->getOptions()['sleepDurationDelay']);
         self::assertArrayHasKey('sleepUntilNextMinute', $worker->getOptions());
@@ -319,7 +276,7 @@ final class WorkerTest extends TestCase
         $forkedWorker = $worker->fork();
 
         self::assertNotSame($forkedWorker, $worker);
-        self::assertCount(8, $forkedWorker->getOptions());
+        self::assertCount(6, $forkedWorker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
         self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
         self::assertArrayHasKey('forkedFrom', $forkedWorker->getOptions());
@@ -327,10 +284,8 @@ final class WorkerTest extends TestCase
         self::assertSame($worker, $forkedWorker->getOptions()['forkedFrom']);
         self::assertArrayHasKey('isFork', $forkedWorker->getOptions());
         self::assertTrue($forkedWorker->getOptions()['isFork']);
-        self::assertArrayHasKey('isRunning', $forkedWorker->getOptions());
-        self::assertFalse($forkedWorker->getOptions()['isRunning']);
-        self::assertArrayHasKey('lastExecutedTask', $forkedWorker->getOptions());
-        self::assertNull($forkedWorker->getOptions()['lastExecutedTask']);
+        self::assertFalse($forkedWorker->getConfiguration()->isRunning());
+        self::assertNull($forkedWorker->getConfiguration()->getLastExecutedTask());
         self::assertArrayHasKey('sleepDurationDelay', $forkedWorker->getOptions());
         self::assertSame(5, $forkedWorker->getOptions()['sleepDurationDelay']);
         self::assertArrayHasKey('sleepUntilNextMinute', $forkedWorker->getOptions());
@@ -1490,6 +1445,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
+            new TaskExecutionMiddleware(),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
         $worker->execute();

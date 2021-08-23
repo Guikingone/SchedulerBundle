@@ -11,6 +11,7 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Tests\SchedulerBundle\Runner\Assets\FooCallable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -73,7 +74,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', [new FooCallable(), 'echo']);
+        $callbackTask = new CallbackTask('foo', fn (): string => (new FooCallable())->echo());
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -136,13 +137,5 @@ final class CallBackTaskRunnerTest extends TestCase
         self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
         self::assertSame('1', $output->getOutput());
         self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
-    }
-}
-
-final class FooCallable
-{
-    public function echo(): string
-    {
-        return 'Symfony';
     }
 }

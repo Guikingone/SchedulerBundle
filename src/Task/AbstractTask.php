@@ -79,6 +79,7 @@ abstract class AbstractTask implements TaskInterface
             'execution_start_time' => null,
             'execution_end_time' => null,
             'execution_lock_bag' => null,
+            'encountered_error_during_execution' => false,
             'last_execution' => null,
             'max_duration' => null,
             'max_executions' => null,
@@ -120,6 +121,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('execution_end_date', ['string', 'null']);
         $optionsResolver->setAllowedTypes('execution_start_time', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('execution_end_time', [DateTimeImmutable::class, 'null']);
+        $optionsResolver->setAllowedTypes('encountered_error_during_execution', 'bool');
         $optionsResolver->setAllowedTypes('last_execution', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('max_duration', ['float', 'null']);
         $optionsResolver->setAllowedTypes('max_executions', ['int', 'null']);
@@ -517,6 +519,24 @@ abstract class AbstractTask implements TaskInterface
     public function setAccessLockBag(?AccessLockBag $bag = null): void
     {
         $this->options['access_lock_bag'] = $bag;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function encounteredErrorDuringExecution(bool $encounteredErrorDuringExecution): TaskInterface
+    {
+        $this->options['encountered_error_during_execution'] = $encounteredErrorDuringExecution;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasEncounteredErrorDuringExecution(): bool
+    {
+        return $this->options['encountered_error_during_execution'];
     }
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): TaskInterface

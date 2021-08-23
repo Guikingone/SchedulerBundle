@@ -17,6 +17,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
 {
     /**
      * @throws Throwable {@see PreSchedulingMiddlewareInterface::preScheduling()}
+     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
      */
     public function runPreSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
@@ -27,6 +28,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
 
     /**
      * @throws Throwable {@see PostSchedulingMiddlewareInterface::postScheduling()}
+     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
      */
     public function runPostSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
@@ -36,7 +38,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
     }
 
     /**
-     * {@inheritdoc}
+     * @return PreSchedulingMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]
      */
     public function getMiddlewareList(): array
     {

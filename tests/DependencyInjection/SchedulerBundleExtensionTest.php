@@ -54,6 +54,7 @@ use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -1353,6 +1354,13 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TaskLockBagMiddleware::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(TaskLockBagMiddleware::class)->hasTag('container.preload'));
         self::assertSame(TaskLockBagMiddleware::class, $container->getDefinition(TaskLockBagMiddleware::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TaskExecutionMiddleware::class));
+        self::assertFalse($container->getDefinition(TaskExecutionMiddleware::class)->isPublic());
+        self::assertCount(0, $container->getDefinition(TaskExecutionMiddleware::class)->getArguments());
+        self::assertTrue($container->getDefinition(TaskExecutionMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(TaskExecutionMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(TaskExecutionMiddleware::class, $container->getDefinition(TaskExecutionMiddleware::class)->getTag('container.preload')[0]['class']);
 
         self::assertFalse($container->hasDefinition(MaxExecutionMiddleware::class));
     }
