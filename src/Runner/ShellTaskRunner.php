@@ -22,8 +22,6 @@ final class ShellTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof ShellTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
 
@@ -47,12 +45,8 @@ final class ShellTaskRunner implements RunnerInterface
 
         $output = $task->isOutput() ? trim($process->getOutput()) : null;
         if (0 !== $exitCode) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $process->getErrorOutput(), Output::ERROR);
         }
-
-        $task->setExecutionState(TaskInterface::SUCCEED);
 
         return new Output($task, $output);
     }

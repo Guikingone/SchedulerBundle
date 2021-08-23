@@ -29,26 +29,18 @@ final class NotificationTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof NotificationTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
 
         try {
             if (!$this->notifier instanceof NotifierInterface) {
-                $task->setExecutionState(TaskInterface::ERRORED);
-
                 return new Output($task, 'The task cannot be handled as the notifier is not defined', Output::ERROR);
             }
 
             $this->notifier->send($task->getNotification(), ...$task->getRecipients());
 
-            $task->setExecutionState(TaskInterface::SUCCEED);
-
             return new Output($task, null);
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
     }

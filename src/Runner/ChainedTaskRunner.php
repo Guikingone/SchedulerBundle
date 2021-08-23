@@ -21,7 +21,6 @@ final class ChainedTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof ChainedTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, null, Output::ERROR);
         }
 
@@ -32,13 +31,11 @@ final class ChainedTaskRunner implements RunnerInterface
                 $forkedWorker->execute([], $task);
             });
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
             return new Output($task, $throwable->getMessage(), Output::ERROR);
         } finally {
             $forkedWorker->stop();
         }
 
-        $task->setExecutionState(TaskInterface::SUCCEED);
         return new Output($task, null, Output::SUCCESS);
     }
 

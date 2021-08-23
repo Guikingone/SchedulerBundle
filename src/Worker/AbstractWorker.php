@@ -25,6 +25,7 @@ use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
@@ -34,6 +35,7 @@ use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function in_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -221,7 +223,7 @@ abstract class AbstractWorker implements WorkerInterface
 
                 $this->configuration->run(true);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
-                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task));
+                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
                 $task->setArrivalTime(new DateTimeImmutable());
                 $task->setExecutionStartTime(new DateTimeImmutable());
                 $this->taskExecutionTracker->startTracking($task);
@@ -231,9 +233,11 @@ abstract class AbstractWorker implements WorkerInterface
                 $this->taskExecutionTracker->endTracking($task);
                 $task->setExecutionEndTime(new DateTimeImmutable());
                 $task->setLastExecution(new DateTimeImmutable());
-                $this->eventDispatcher->dispatch(new TaskExecutedEvent($task, $output));
+
+                $this->defineTaskExecutionState($task, $output);
 
                 $this->middlewareStack->runPostExecutionMiddleware($task, $this);
+                $this->eventDispatcher->dispatch(new TaskExecutedEvent($task, $output));
 
                 $this->configuration->setLastExecutedTask($task);
                 ++$this->options['executedTasksCount'];
@@ -314,5 +318,14 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');
 
         $this->options = $optionsResolver->resolve($options);
+    }
+
+    private function defineTaskExecutionState(TaskInterface $task, Output $output): void
+    {
+        if (in_array($task->getExecutionState(), [TaskInterface::INCOMPLETE, TaskInterface::TO_RETRY], true)) {
+            return;
+        }
+
+        $task->setExecutionState(Output::ERROR === $output->getType() ? TaskInterface::ERRORED : TaskInterface::SUCCEED);
     }
 }

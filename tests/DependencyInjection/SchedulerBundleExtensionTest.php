@@ -1327,9 +1327,13 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(SingleRunTaskMiddleware::class));
         self::assertFalse($container->getDefinition(SingleRunTaskMiddleware::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(SingleRunTaskMiddleware::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(SingleRunTaskMiddleware::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0));
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(SingleRunTaskMiddleware::class)->hasTag('scheduler.worker_middleware'));
         self::assertTrue($container->getDefinition(SingleRunTaskMiddleware::class)->hasTag('container.preload'));
         self::assertSame(SingleRunTaskMiddleware::class, $container->getDefinition(SingleRunTaskMiddleware::class)->getTag('container.preload')[0]['class']);

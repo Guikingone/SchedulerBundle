@@ -42,12 +42,8 @@ final class ProbeTaskRunner implements RunnerInterface
                 throw new RuntimeException('The probe state is invalid');
             }
 
-            $task->setExecutionState(TaskInterface::SUCCEED);
-
             return new Output($task, 'The probe succeed');
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
     }

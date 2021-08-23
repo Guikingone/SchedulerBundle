@@ -29,26 +29,18 @@ final class MessengerTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof MessengerTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
 
         try {
             if (!$this->bus instanceof MessageBusInterface) {
-                $task->setExecutionState(TaskInterface::ERRORED);
-
                 return new Output($task, 'The task cannot be handled as the bus is not defined', Output::ERROR);
             }
 
             $this->bus->dispatch($task->getMessage());
 
-            $task->setExecutionState(TaskInterface::SUCCEED);
-
             return new Output($task, null);
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
     }
