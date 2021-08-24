@@ -8,7 +8,6 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Lock\Key;
@@ -205,20 +204,6 @@ interface TaskInterface
      * It can be null IF the task is sent to the worker without being scheduled.
      */
     public function getAccessLockBag(): ?AccessLockBag;
-
-    /**
-     * Define if the task has encountered an error during execution.
-     *
-     * Mostly set by {@see RunnerInterface::run()}.
-     */
-    public function encounteredErrorDuringExecution(bool $encounteredErrorDuringExecution): TaskInterface;
-
-    /**
-     * Determine if an error has been encountered during the execution of the task.
-     *
-     * If so, the task SHOULD receive an {@see TaskInterface::ERRORED} OR {@see TaskInterface::TO_RETRY} execution state.
-     */
-    public function hasEncounteredErrorDuringExecution(): bool;
 
     public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): self;
 
