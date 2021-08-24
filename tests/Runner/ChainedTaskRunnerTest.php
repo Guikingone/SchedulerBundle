@@ -10,7 +10,6 @@ use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -34,7 +33,7 @@ final class ChainedTaskRunnerTest extends TestCase
 
         $output = $chainedTaskRunner->run(new ShellTask('foo', ['ls', '-al']), $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
     }
@@ -56,7 +55,7 @@ final class ChainedTaskRunnerTest extends TestCase
 
         $output = $chainedTaskRunner->run(new ChainedTask('bar', $shellTask), $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNotNull($output->getOutput());
         self::assertSame('An error occurred', $output->getOutput());

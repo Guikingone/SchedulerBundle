@@ -13,7 +13,6 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\NullTask;
-use SchedulerBundle\Task\TaskInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use function json_encode;
 
@@ -41,7 +40,7 @@ final class HttpTaskRunnerTest extends TestCase
         $httpTaskRunner = new HttpTaskRunner($httpClient);
         $output = $httpTaskRunner->run($shellTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
+        self::assertNull($shellTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
         self::assertSame($shellTask, $output->getTask());
@@ -62,7 +61,7 @@ final class HttpTaskRunnerTest extends TestCase
         $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'), $worker);
 
         self::assertSame('HTTP 404 returned for "https://symfony.com/".', $output->getOutput());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanGenerateSuccessOutput(): void
@@ -79,6 +78,6 @@ final class HttpTaskRunnerTest extends TestCase
         $output = $httpTaskRunner->run(new HttpTask('foo', 'https://symfony.com', 'GET'), $worker);
 
         self::assertSame('{"body":"test"}', $output->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 }

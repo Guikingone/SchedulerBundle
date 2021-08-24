@@ -9,7 +9,6 @@ use SchedulerBundle\Runner\ProbeTaskRunner;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -59,7 +58,7 @@ final class ProbeTaskRunnerTest extends TestCase
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame('The probe state is invalid', $output->getOutput());
         self::assertInstanceOf(ProbeTask::class, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanRunTaskWithInvalidProbeStateAndTaskFailureEnabled(): void
@@ -83,7 +82,7 @@ final class ProbeTaskRunnerTest extends TestCase
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame('The probe state is invalid', $output->getOutput());
         self::assertInstanceOf(ProbeTask::class, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanRunTaskWithInvalidProbeStateAndTaskFailureDisabled(): void
@@ -107,7 +106,7 @@ final class ProbeTaskRunnerTest extends TestCase
         self::assertSame(Output::SUCCESS, $output->getType());
         self::assertSame('The probe succeed', $output->getOutput());
         self::assertInstanceOf(ProbeTask::class, $output->getTask());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanRunTaskWithValidProbeStateAndErrorOnFailedTasksEnabled(): void
@@ -131,6 +130,6 @@ final class ProbeTaskRunnerTest extends TestCase
         self::assertSame(Output::SUCCESS, $output->getType());
         self::assertSame('The probe succeed', $output->getOutput());
         self::assertInstanceOf(ProbeTask::class, $output->getTask());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 }

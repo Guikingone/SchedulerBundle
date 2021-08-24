@@ -6,12 +6,12 @@ namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Runner\ShellTaskRunner;
-use SchedulerBundle\Task\AbstractTask;
 use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Tests\SchedulerBundle\Runner\Assets\FooTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,7 +37,7 @@ final class ShellTaskRunnerTest extends TestCase
         $shellTaskRunner = new ShellTaskRunner();
         $output = $shellTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame($callbackTask, $output->getTask());
     }
@@ -53,7 +53,7 @@ final class ShellTaskRunnerTest extends TestCase
         $shellTaskRunner = new ShellTaskRunner();
         self::assertTrue($shellTaskRunner->support($shellTask));
         self::assertNull($shellTaskRunner->run($shellTask, $worker)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
+        self::assertNull($shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanSupportValidTaskWithOutput(): void
@@ -67,7 +67,7 @@ final class ShellTaskRunnerTest extends TestCase
         $shellTaskRunner = new ShellTaskRunner();
         self::assertTrue($shellTaskRunner->support($shellTask));
         self::assertSame('Symfony', $shellTaskRunner->run($shellTask, $worker)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
+        self::assertNull($shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnEmptyOutputOnBackgroundTask(): void
@@ -84,8 +84,4 @@ final class ShellTaskRunnerTest extends TestCase
         self::assertSame('Task is running in background, output is not available', $shellTaskRunner->run($shellTask, $worker)->getOutput());
         self::assertSame(TaskInterface::INCOMPLETE, $shellTaskRunner->run($shellTask, $worker)->getTask()->getExecutionState());
     }
-}
-
-final class FooTask extends AbstractTask
-{
 }
