@@ -54,13 +54,11 @@ final class DoctrineTransportFactoryTest extends TestCase
 
     public function testFactoryCannotReturnTransportWithoutValidConnection(): void
     {
+        $serializer = $this->createMock(SerializerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $connection = $this->createMock(Connection::class);
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->expects(self::once())->method('getConnection')->with(self::equalTo('default'))->willReturn(null);
-
-        $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
 
