@@ -69,8 +69,9 @@
             "Tests\\SchedulerBundle\\Expression\\": "tests/Expression/",
             "Tests\\SchedulerBundle\\Messenger\\": "tests/Messenger/",
             "Tests\\SchedulerBundle\\Middleware\\": "tests/Middleware/",
+            "Tests\\SchedulerBundle\\Middleware\\Assets\\": "tests/Middleware/Assets/",
             "Tests\\SchedulerBundle\\Runner\\": "tests/Runner/",
-            "Tests\\SchedulerBundle\\Runner\\Runner\\": "tests/Runner/Assets/",
+            "Tests\\SchedulerBundle\\Runner\\Assets\\": "tests/Runner/Assets/",
             "Tests\\SchedulerBundle\\SchedulePolicy\\": "tests/SchedulePolicy/",
             "Tests\\SchedulerBundle\\Serializer\\": "tests/Serializer/",
             "Tests\\SchedulerBundle\\Task\\": "tests/Task/",
@@ -82,6 +83,7 @@
             "Tests\\SchedulerBundle\\Test\\Constraint\\Probe\\": "tests/Test/Constraint/Probe/",
             "Tests\\SchedulerBundle\\Test\\Constraint\\Scheduler\\": "tests/Test/Constraint/Scheduler/",
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
+            "Tests\\SchedulerBundle\\Transport\\Assets\\": "tests/Transport/Assets/",
             "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
             "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/",
             "Tests\\SchedulerBundle\\Worker\\Assets\\": "tests/Worker/Assets/"

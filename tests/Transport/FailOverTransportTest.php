@@ -105,6 +105,33 @@ final class FailOverTransportTest extends TestCase
         self::assertSame('foo', $storedTask->getName());
     }
 
+    public function testTransportCanRetrieveTaskTwice(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'), self::equalTo(false))
+            ->willThrowException(new RuntimeException('Task not found'))
+        ;
+
+        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $secondTransport->create(new NullTask('foo'));
+
+        $failOverTransport = new FailOverTransport([
+            $firstTransport,
+            $secondTransport,
+        ]);
+
+        $storedTask = $failOverTransport->get('foo');
+        self::assertInstanceOf(NullTask::class, $storedTask);
+        self::assertSame('foo', $storedTask->getName());
+
+        $storedTask = $failOverTransport->get('foo');
+        self::assertInstanceOf(NullTask::class, $storedTask);
+        self::assertSame('foo', $storedTask->getName());
+    }
+
     public function testTransportCanRetrieveTaskLazily(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);

@@ -285,7 +285,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             ]);
         }
 
-        return $this->objectNormalizer->denormalize($data, $objectType, $format, $context);
+        throw new InvalidArgumentException('The task cannot be denormalized as the type is not supported');
     }
 
     /**

@@ -107,7 +107,7 @@ final class Connection implements ConnectionInterface
 
         $body = $this->serializer->serialize($updatedTask, 'json');
         if (false === $this->connection->hSet($this->list, $taskName, $body)) {
-            throw new TransportException(sprintf('The task "%s" cannot be updated, error: %s', $taskName, $this->connection->getLastError()));
+            throw new TransportException(sprintf('The task "%s" cannot be updated, error: %s', $taskName, $this->connection->getLastError() ?? 'The last error cannot be found'));
         }
     }
 
