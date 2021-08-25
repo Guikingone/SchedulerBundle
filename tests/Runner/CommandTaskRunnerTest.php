@@ -72,13 +72,13 @@ final class CommandTaskRunnerTest extends TestCase
         $application->add(new FooCommand());
 
         $commandTask = new CommandTask('foo', 'app:foo', [], [
-            '--env' => '',
+            '--env' => 'foo',
         ]);
 
         $commandTaskRunner = new CommandTaskRunner($application);
         $output = $commandTaskRunner->run($commandTask, $worker);
 
-        self::assertSame('This command is executed in "" env', $output->getOutput());
+        self::assertSame('This command is executed in "foo" env', $output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
     }
 
