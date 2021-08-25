@@ -37,7 +37,7 @@ final class FooCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $env = $input->getOption('env');
-        if ('' !== $env) {
+        if ('' !== $env && null !== $env) {
             $output->write(sprintf('This command is executed in "%s" env', $env));
         }
 
