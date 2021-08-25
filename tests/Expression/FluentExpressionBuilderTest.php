@@ -8,7 +8,9 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +26,22 @@ final class FluentExpressionBuilderTest extends TestCase
     }
 
     /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
+    public function testBuilderCannotBuildWithInvalidDate(): void
+    {
+        $fluentExpressionBuilder = new FluentExpressionBuilder();
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The "foo" expression cannot be used to create a date');
+        self::expectExceptionCode(0);
+        $fluentExpressionBuilder->build('foo');
+    }
+
+    /**
      * @dataProvider provideExpression
+     *
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
      */
     public function testBuilderCanBuild(string $expression, string $endExpression): void
     {
@@ -36,6 +53,8 @@ final class FluentExpressionBuilderTest extends TestCase
 
     /**
      * @dataProvider provideExpressionWithTimezone
+     *
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
      */
     public function testBuilderCanBuildWithTimezone(string $expression, string $endExpression, string $timezone): void
     {

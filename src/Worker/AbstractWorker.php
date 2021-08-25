@@ -186,8 +186,6 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * @param array<int, TaskInterface> $tasks
      *
-     * @return TaskListInterface<int, TaskInterface>
-     *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function getTasks(array $tasks): TaskListInterface
@@ -252,9 +250,6 @@ abstract class AbstractWorker implements WorkerInterface
         }
     }
 
-    /**
-     * @param TaskListInterface<int, TaskInterface> $taskList
-     */
     protected function shouldStop(TaskListInterface $taskList): bool
     {
         if ($this->options['sleepUntilNextMinute']) {

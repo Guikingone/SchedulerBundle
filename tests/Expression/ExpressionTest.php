@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Expression;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidExpressionException;
 use SchedulerBundle\Expression\Expression;
 
 /**
@@ -138,6 +139,16 @@ final class ExpressionTest extends TestCase
 
         self::assertSame('*/45 * * * *', $expression->getExpression());
         self::assertSame('*/45 * * * *', (string) $expression);
+    }
+
+    public function testInvalidMacroCannotBePassed(): void
+    {
+        $expression = new Expression();
+
+        self::expectException(InvalidExpressionException::class);
+        self::expectExceptionMessage('The desired macro "@foo" is not supported!');
+        self::expectExceptionCode(0);
+        $expression->setExpression('@foo');
     }
 
     public function testMacroCanBePassed(): void

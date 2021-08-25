@@ -6,7 +6,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\IdlePolicy;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,11 +23,13 @@ final class IdlePolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getPriority')->willReturn(-10);
+        $task = new NullTask('foo', [
+            'priority' => -10,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(-20);
+        $secondTask = new NullTask('bar', [
+            'priority' => -20,
+        ]);
 
         $idlePolicy = new IdlePolicy();
         $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
@@ -38,11 +40,13 @@ final class IdlePolicyTest extends TestCase
 
     public function testTasksCanBeSortedWithSamePriority(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getPriority')->willReturn(10);
+        $task = new NullTask('foo', [
+            'priority' => 10,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(10);
+        $secondTask = new NullTask('bar', [
+            'priority' => 10,
+        ]);
 
         $idlePolicy = new IdlePolicy();
         $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
@@ -53,11 +57,13 @@ final class IdlePolicyTest extends TestCase
 
     public function testTasksCanBeSortedWithPolicyPriority(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getPriority')->willReturn(19);
+        $task = new NullTask('foo', [
+            'priority' => 19,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(19);
+        $secondTask = new NullTask('bar', [
+            'priority' => 19,
+        ]);
 
         $idlePolicy = new IdlePolicy();
         $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);

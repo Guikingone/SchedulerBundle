@@ -31,6 +31,10 @@ final class ComputedExpressionBuilderTest extends TestCase
 
         self::assertGreaterThanOrEqual(0, $explodedExpression[0]);
         self::assertLessThanOrEqual(59, $explodedExpression[0]);
+        self::assertSame('*', $explodedExpression[1]);
+        self::assertSame('*', $explodedExpression[2]);
+        self::assertSame('*', $explodedExpression[3]);
+        self::assertSame('*', $explodedExpression[4]);
     }
 
     public function testBuilderCanHandleHours(): void
@@ -40,8 +44,12 @@ final class ComputedExpressionBuilderTest extends TestCase
         $expression = $builder->build('* # * * *');
         $explodedExpression = explode(' ', $expression->getExpression());
 
+        self::assertSame('*', $explodedExpression[0]);
         self::assertGreaterThanOrEqual(0, $explodedExpression[1]);
         self::assertLessThanOrEqual(23, $explodedExpression[1]);
+        self::assertSame('*', $explodedExpression[2]);
+        self::assertSame('*', $explodedExpression[3]);
+        self::assertSame('*', $explodedExpression[4]);
     }
 
     public function testBuilderCanHandleDays(): void
@@ -51,8 +59,12 @@ final class ComputedExpressionBuilderTest extends TestCase
         $expression = $builder->build('* * # * *');
         $explodedExpression = explode(' ', $expression->getExpression());
 
+        self::assertSame('*', $explodedExpression[0]);
+        self::assertSame('*', $explodedExpression[1]);
         self::assertGreaterThanOrEqual(1, $explodedExpression[2]);
         self::assertLessThanOrEqual(31, $explodedExpression[2]);
+        self::assertSame('*', $explodedExpression[3]);
+        self::assertSame('*', $explodedExpression[4]);
     }
 
     public function testBuilderCanHandleMonths(): void
@@ -62,8 +74,12 @@ final class ComputedExpressionBuilderTest extends TestCase
         $expression = $builder->build('* * * # *');
         $explodedExpression = explode(' ', $expression->getExpression());
 
+        self::assertSame('*', $explodedExpression[0]);
+        self::assertSame('*', $explodedExpression[1]);
+        self::assertSame('*', $explodedExpression[2]);
         self::assertGreaterThanOrEqual(1, $explodedExpression[3]);
         self::assertLessThanOrEqual(12, $explodedExpression[3]);
+        self::assertSame('*', $explodedExpression[4]);
     }
 
     /**
