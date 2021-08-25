@@ -34,6 +34,6 @@ final class TaskUnscheduled extends Constraint
      */
     protected function matches($other): bool
     {
-        return $this->expectedCount === (is_countable($other->getUnscheduledTaskEvents()) ? count($other->getUnscheduledTaskEvents()) : 0);
+        return $this->expectedCount === count($other->getUnscheduledTaskEvents());
     }
 }
