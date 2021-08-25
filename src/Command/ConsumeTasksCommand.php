@@ -27,6 +27,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function array_pop;
 use function implode;
+use function in_array;
 use function sprintf;
 
 /**
@@ -207,6 +208,15 @@ final class ConsumeTasksCommand extends Command
             $output = $event->getOutput();
             $taskExecutionDuration = Helper::formatTime($task->getExecutionComputationTime() / 1000);
             $taskExecutionMemoryUsage = Helper::formatMemory($task->getExecutionMemoryUsage());
+
+            if (in_array($task->getExecutionState(), [TaskInterface::TO_RETRY, TaskInterface::INCOMPLETE], true)) {
+                $symfonyStyle->warning([
+                    sprintf('The task "%s" cannot be executed fully', $task->getName()),
+                    'The task will be retried next time',
+                ]);
+
+                return;
+            }
 
             if (Output::ERROR === $output->getType()) {
                 $symfonyStyle->error([

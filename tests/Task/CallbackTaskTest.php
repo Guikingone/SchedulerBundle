@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Task;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\CallbackTask;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Tests\SchedulerBundle\Task\Assets\FooService;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,7 +24,9 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallable(): void
     {
-        $callbackTask = new CallbackTask('foo', [new FooService(), 'echo']);
+        $callbackTask = new CallbackTask('foo', function (): void {
+            (new FooService())->echo();
+        });
 
         self::assertNotEmpty($callbackTask->getCallback());
         self::assertEmpty($callbackTask->getArguments());
@@ -68,13 +71,5 @@ final class CallbackTaskTest extends TestCase
         $callbackTask->setArguments(['value' => 'test']);
 
         self::assertNotEmpty($callbackTask->getArguments());
-    }
-}
-
-final class FooService
-{
-    public function echo(): void
-    {
-        echo 'Symfony';
     }
 }

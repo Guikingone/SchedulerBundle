@@ -6,6 +6,8 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\MessengerTask;
+use Tests\SchedulerBundle\Task\Assets\BarMessage;
+use Tests\SchedulerBundle\Task\Assets\FooMessage;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -27,12 +29,4 @@ final class MessengerTaskTest extends TestCase
         $messengerTask->setMessage(new BarMessage());
         self::assertInstanceOf(BarMessage::class, $messengerTask->getMessage());
     }
-}
-
-final class FooMessage
-{
-}
-
-final class BarMessage
-{
 }

@@ -23,8 +23,6 @@ final class CallbackTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof CallbackTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
 
@@ -32,17 +30,11 @@ final class CallbackTaskRunner implements RunnerInterface
             $output = call_user_func_array($task->getCallback(), $task->getArguments());
 
             if (false === $output) {
-                $task->setExecutionState(TaskInterface::ERRORED);
-
                 return new Output($task, null, Output::ERROR);
             }
 
-            $task->setExecutionState(TaskInterface::SUCCEED);
-
             return new Output($task, trim((string) $output));
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
     }

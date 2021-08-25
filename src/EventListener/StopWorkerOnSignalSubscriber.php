@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\WorkerEventInterface;
 use SchedulerBundle\Event\WorkerSleepingEvent;
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -21,6 +23,20 @@ use const SIGTERM;
  */
 final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
+    public function onTaskExecuting(TaskExecutingEvent $taskExecutingEvent): void
+    {
+        foreach ([SIGTERM, SIGINT] as $signal) {
+            pcntl_signal($signal, static function () use ($taskExecutingEvent): void {
+                $task = $taskExecutingEvent->getTask();
+                $worker = $taskExecutingEvent->getWorker();
+
+                $worker->stop();
+
+                $task->setExecutionState(TaskInterface::TO_RETRY);
+            });
+        }
+    }
+
     public function onWorkerStarted(WorkerStartedEvent $workerStartedEvent): void
     {
         $this->stopWorker($workerStartedEvent);
@@ -48,6 +64,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
         }
 
         return [
+            TaskExecutingEvent::class => ['onTaskExecuting', 100],
             WorkerStartedEvent::class => ['onWorkerStarted', 100],
             WorkerRunningEvent::class => ['onWorkerRunning', 100],
             WorkerSleepingEvent::class => ['onWorkerSleeping', 100],

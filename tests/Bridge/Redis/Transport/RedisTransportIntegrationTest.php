@@ -38,7 +38,7 @@ use function is_bool;
  *
  * @group time-sensitive
  */
-final class RedisTransportTest extends TestCase
+final class RedisTransportIntegrationTest extends TestCase
 {
     private RedisTransport $transport;
 

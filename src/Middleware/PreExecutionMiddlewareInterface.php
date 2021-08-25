@@ -14,9 +14,8 @@ use Throwable;
 interface PreExecutionMiddlewareInterface
 {
     /**
-     * Allow to execute logic BEFORE executing the task,
-     * the @param TaskInterface $task is the one passed through {@see SchedulerInterface::getDueTasks()} or
-     * {@see SchedulerInterface::getTasks()}.
+     * Allow executing logic BEFORE executing the task, the @param TaskInterface $task is the one passed through {@see SchedulerInterface::getDueTasks()}
+     * or {@see SchedulerInterface::getTasks()}.
      *
      * @throws Throwable If an error|exception occurs, it must be thrown back.
      */

@@ -49,6 +49,7 @@ use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
+use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -1061,6 +1062,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(SingleRunTaskMiddleware::class, SingleRunTaskMiddleware::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
@@ -1089,6 +1091,14 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
             ->addTag('container.preload', [
                 'class' => TaskLockBagMiddleware::class,
+            ])
+        ;
+
+        $container->register(TaskExecutionMiddleware::class, TaskExecutionMiddleware::class)
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.preload', [
+                'class' => TaskExecutionMiddleware::class,
             ])
         ;
 

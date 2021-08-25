@@ -14,7 +14,6 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Runner\MessengerTaskRunner;
 use SchedulerBundle\Task\MessengerTask;
-use SchedulerBundle\Task\TaskInterface;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**
@@ -38,7 +37,7 @@ final class MessengerTaskRunnerTest extends TestCase
         $messengerTaskRunner = new MessengerTaskRunner();
         $output = $messengerTaskRunner->run($shellTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
+        self::assertNull($shellTask->getExecutionState());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($output->getOutput());
         self::assertSame($shellTask, $output->getTask());
@@ -54,7 +53,7 @@ final class MessengerTaskRunnerTest extends TestCase
         $output = $messengerTaskRunner->run($messengerTask, $worker);
         self::assertSame('The task cannot be handled as the bus is not defined', $output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnOutputWithBusAndException(): void
@@ -70,7 +69,7 @@ final class MessengerTaskRunnerTest extends TestCase
 
         self::assertSame('An error occurred', $output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnOutputWithBus(): void
@@ -88,6 +87,6 @@ final class MessengerTaskRunnerTest extends TestCase
 
         self::assertNull($output->getOutput());
         self::assertSame($messengerTask, $output->getTask());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 }

@@ -6,7 +6,7 @@ global_exclude_dirs:
   - doc
 
 commit_failure_conditions:
-  - "project.grade < gold"
+  - "project.grade < platinum"
 
 rules:
   php.use_php_sleep_function:

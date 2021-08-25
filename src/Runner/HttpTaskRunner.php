@@ -30,19 +30,13 @@ final class HttpTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof HttpTask) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, null, Output::ERROR);
         }
 
         try {
             $response = $this->httpClient->request($task->getMethod(), $task->getUrl(), $task->getClientOptions());
-            $task->setExecutionState(TaskInterface::SUCCEED);
-
             return new Output($task, $response->getContent());
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $throwable->getMessage(), Output::ERROR);
         }
     }

@@ -52,12 +52,8 @@ final class CommandTaskRunner implements RunnerInterface
                 return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
             }
         } catch (Throwable $throwable) {
-            $task->setExecutionState(TaskInterface::ERRORED);
-
             return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
         }
-
-        $task->setExecutionState(TaskInterface::SUCCEED);
 
         return new Output($task, $bufferedOutput->fetch());
     }

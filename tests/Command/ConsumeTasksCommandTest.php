@@ -32,6 +32,7 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Throwable;
 use function sprintf;
 
@@ -393,6 +394,45 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringContainsString('Duration: < 1 sec', $commandTester->getDisplay());
         self::assertStringContainsString('Memory used: 9.1 MiB', $commandTester->getDisplay());
         self::assertStringNotContainsString('Task failed: "foo"', $commandTester->getDisplay());
+    }
+
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
+    public function testCommandCanDisplayTaskOutputWithVeryVerboseOutputAndIncompleteExecutionState(): void
+    {
+        $eventDispatcher = new EventDispatcher();
+
+        $task = new NullTask('random_incomplete', [
+            'execution_memory_usage' => 9_507_552,
+            'execution_state' => TaskInterface::INCOMPLETE,
+        ]);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([$task]));
+
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+
+        $runner = $this->createMock(RunnerInterface::class);
+        $runner->expects(self::once())->method('support')->willReturn(true);
+        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
+
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
+
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
+        $commandTester->execute([
+            '--limit' => 1,
+        ], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('The worker will automatically exit once:', $commandTester->getDisplay());
+        self::assertStringContainsString('- 1 tasks has been consumed', $commandTester->getDisplay());
+        self::assertStringNotContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
+        self::assertStringContainsString('[WARNING] The task "random_incomplete" cannot be executed fully', $commandTester->getDisplay());
+        self::assertStringContainsString('The task will be retried next time', $commandTester->getDisplay());
+        self::assertStringContainsString('Success output', $commandTester->getDisplay());
+        self::assertStringNotContainsString('Duration: < 1 sec', $commandTester->getDisplay());
+        self::assertStringNotContainsString('Memory used: 9.1 MiB', $commandTester->getDisplay());
     }
 
     /**

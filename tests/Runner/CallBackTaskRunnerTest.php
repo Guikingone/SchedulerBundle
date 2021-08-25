@@ -9,8 +9,8 @@ use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Tests\SchedulerBundle\Runner\Assets\FooCallable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -35,7 +35,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($shellTask, $worker);
         self::assertSame(Output::ERROR, $output->getType());
-        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
+        self::assertNull($shellTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame($shellTask, $output->getTask());
     }
@@ -49,9 +49,9 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame('hello', $output->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTask(): void
@@ -63,9 +63,9 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame('2', $output->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithCallable(): void
@@ -73,13 +73,13 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', [new FooCallable(), 'echo']);
+        $callbackTask = new CallbackTask('foo', fn (): string => (new FooCallable())->echo());
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame('Symfony', $callbackTaskRunner->run($callbackTask, $worker)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteValidTaskWithArguments(): void
@@ -91,9 +91,9 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame('2', $callbackTaskRunner->run($callbackTask, $worker)->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteInvalidTask(): void
@@ -105,9 +105,9 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteTaskWithFalseReturn(): void
@@ -119,9 +119,9 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanExecuteTaskWithTrueReturn(): void
@@ -133,16 +133,8 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
-        self::assertSame(TaskInterface::SUCCEED, $callbackTask->getExecutionState());
+        self::assertNull($callbackTask->getExecutionState());
         self::assertSame('1', $output->getOutput());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
-    }
-}
-
-final class FooCallable
-{
-    public function echo(): string
-    {
-        return 'Symfony';
+        self::assertNull($output->getTask()->getExecutionState());
     }
 }

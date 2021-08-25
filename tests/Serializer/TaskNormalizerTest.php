@@ -36,6 +36,8 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Tests\SchedulerBundle\Serializer\Assets\CallbackTaskCallable;
+use Tests\SchedulerBundle\Serializer\Assets\FooMessage;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -1192,33 +1194,5 @@ final class TaskNormalizerTest extends TestCase
         self::assertSame('/_probe', $task->getExternalProbePath());
         self::assertFalse($task->getErrorOnFailedTasks());
         self::assertSame(0, $task->getDelay());
-    }
-}
-
-final class FooMessage
-{
-    private int $id;
-
-    public function __construct(int $id = 1)
-    {
-        $this->id = $id;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function setId(int $id): void
-    {
-        $this->id = $id;
-    }
-}
-
-final class CallbackTaskCallable
-{
-    public function echo(): string
-    {
-        return 'Symfony';
     }
 }

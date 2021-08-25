@@ -34,6 +34,6 @@ final class TaskFailed extends Constraint
      */
     protected function matches($other): bool
     {
-        return $this->expectedCount === (is_countable($other->getFailedTaskEvents()) ? count($other->getFailedTaskEvents()) : 0);
+        return $this->expectedCount === count($other->getFailedTaskEvents());
     }
 }

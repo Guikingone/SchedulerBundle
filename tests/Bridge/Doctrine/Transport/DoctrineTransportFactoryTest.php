@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
@@ -49,6 +50,22 @@ final class DoctrineTransportFactoryTest extends TestCase
         self::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
         self::expectExceptionCode(0);
         $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://test'), [], $serializer, $schedulePolicyOrchestrator);
+    }
+
+    public function testFactoryCannotReturnTransportWithoutValidConnection(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
+
+        $registry = $this->createMock(ConnectionRegistry::class);
+        $registry->expects(self::once())->method('getConnection')->with(self::equalTo('default'))->willReturn(null);
+
+        $doctrineTransportFactory = new DoctrineTransportFactory($registry);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The connection is not a valid one');
+        self::expectExceptionCode(0);
+        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], $serializer, $schedulePolicyOrchestrator);
     }
 
     public function testFactoryReturnTransport(): void

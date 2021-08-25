@@ -6,6 +6,7 @@ namespace SchedulerBundle\Runner;
 
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
 use function array_filter;
 use function current;
@@ -61,7 +62,12 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function current(): RunnerInterface
     {
-        return current($this->runners);
+        $currentRunner = current($this->runners);
+        if (false === $currentRunner) {
+            throw new RuntimeException('The current runner cannot be found');
+        }
+
+        return $currentRunner;
     }
 
     /**

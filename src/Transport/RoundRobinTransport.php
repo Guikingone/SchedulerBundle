@@ -11,6 +11,8 @@ use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
 use Throwable;
 use function count;
+use function is_array;
+use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -20,7 +22,7 @@ final class RoundRobinTransport extends AbstractTransport
     /**
      * @var TransportInterface[]
      */
-    private iterable $transports;
+    private array $transports;
 
     /**
      * @var SplObjectStorage<object, mixed>
@@ -38,7 +40,7 @@ final class RoundRobinTransport extends AbstractTransport
             'quantum' => 'int',
         ]);
 
-        $this->transports = $transports;
+        $this->transports = is_array($transports) ? $transports : iterator_to_array($transports);
         $this->sleepingTransports = new SplObjectStorage();
     }
 
@@ -128,7 +130,7 @@ final class RoundRobinTransport extends AbstractTransport
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== (is_countable($this->transports) ? count($this->transports) : 0)) {
+        while ($this->sleepingTransports->count() !== count($this->transports)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;

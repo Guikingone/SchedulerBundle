@@ -8,6 +8,7 @@ and executed thanks to [runners](runners.md).
 - [Daemon](#daemon)
 - [Loop](#loop)
 - [Forking a worker](#forking-a-worker)
+- [Extending](#extending)
 
 ## API
 
@@ -75,3 +76,12 @@ a [WorkerForkedEvent](../src/Event/WorkerForkedEvent.php) is dispatched.
 **PS: The default worker can be retrieved via `$forkedWorker->getOptions()['forkedFrom']`.**
 
 **PS II: You can determine if the current worker is a fork via the option `isForked`.**
+
+## Extending
+
+The worker can easily be extended thanks to [WorkerInterface](../src/Worker/WorkerInterface.php) but
+it forces you to implement your own logic and respect the contract. 
+
+A better alternative could be to extend [AbstractWorker](../src/Worker/AbstractWorker.php)
+and use the `run` method inside the `execute` one, this way, you can easily define your own process
+and access the core logic of the worker (task handling, errors handling, etc). 

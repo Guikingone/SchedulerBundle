@@ -14,7 +14,6 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use SchedulerBundle\Runner\NotificationTaskRunner;
 use SchedulerBundle\Task\NotificationTask;
-use SchedulerBundle\Task\TaskInterface;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**
@@ -45,7 +44,7 @@ final class NotificationTaskRunnerTest extends TestCase
         $notificationTaskRunner = new NotificationTaskRunner();
         $output = $notificationTaskRunner->run($shellTask, $worker);
 
-        self::assertSame(TaskInterface::ERRORED, $shellTask->getExecutionState());
+        self::assertNull($shellTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertSame(Output::ERROR, $output->getType());
         self::assertSame($shellTask, $output->getTask());
@@ -64,7 +63,7 @@ final class NotificationTaskRunnerTest extends TestCase
         $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertSame('The task cannot be handled as the notifier is not defined', $output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnExceptionOutput(): void
@@ -84,7 +83,7 @@ final class NotificationTaskRunnerTest extends TestCase
         $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertSame('An error occurred', $output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
-        self::assertSame(TaskInterface::ERRORED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 
     public function testRunnerCanReturnSuccessOutput(): void
@@ -104,6 +103,6 @@ final class NotificationTaskRunnerTest extends TestCase
         $output = $notificationTaskRunner->run($notificationTask, $worker);
         self::assertNull($output->getOutput());
         self::assertSame($notificationTask, $output->getTask());
-        self::assertSame(TaskInterface::SUCCEED, $output->getTask()->getExecutionState());
+        self::assertNull($output->getTask()->getExecutionState());
     }
 }

@@ -21,7 +21,7 @@ final class FluentExpressionBuilder implements ExpressionBuilderInterface
     public function build(string $expression, string $timezone = 'UTC'): Expression
     {
         $date = DateTimeImmutable::createFromFormat('U', (string) strtotime($expression));
-        if (!$date) {
+        if (false === $date) {
             throw new InvalidArgumentException(sprintf('The "%s" expression cannot be used to create a date', $expression));
         }
 

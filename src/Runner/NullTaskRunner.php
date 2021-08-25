@@ -19,8 +19,6 @@ final class NullTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
-        $task->setExecutionState(TaskInterface::SUCCEED);
-
         return new Output($task, null);
     }
 

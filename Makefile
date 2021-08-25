@@ -19,6 +19,10 @@ vendor: ## Install the dependencies
 vendor: composer.json composer.lock
 	$(PHP) composer install
 
+autoload: ## Dump the autoload
+autoload: composer.json
+	$(COMPOSER) dump-autoload
+
 ##
 ## Tools
 ##---------------------------------------------------------------------------
@@ -61,11 +65,11 @@ rector-dry: rector.php
 .PHONY: tests infection
 
 tests: ## Launch the PHPUnit tests
-tests: phpunit.xml.dist
+tests: phpunit.xml.dist autoload
 	$(PHP) vendor/bin/phpunit tests
 
 infection: ## Launch Infection
-infection: infection.json.dist
+infection: infection.json.dist autoload
 	$(PHP) vendor/bin/infection
 
 ##
