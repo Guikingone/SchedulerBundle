@@ -65,9 +65,11 @@ interface SchedulerInterface
      *
      * Can lazy-load the task list if @param bool $lazy is used
      *
+     * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'
+     *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false): TaskListInterface;
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})
