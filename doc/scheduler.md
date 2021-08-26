@@ -30,12 +30,16 @@ The scheduler provides several methods to help interact with tasks during the wh
   if `true` is passed, a [LazyTaskList](../src/Task/LazyTaskList.php) is returned.
 
 - `getDueTasks`: Return the tasks that are dues regarding the current date (thanks to each task expression),
-                 a [TaskList](../src/Task/TaskList.php) is returned.
-                 If `true` is passed, the due tasks are returned using a [LazyTaskList](../src/Task/LazyTaskList.php).
-                 This method can lock each tasks before returning it (using the `$lock` argument), 
-                 the idea is to prevent a concurrent usage, keep in mind that the lock factory 
-                 [must be able to handle the serialization](https://symfony.com/doc/current/components/lock.html#serializing-locks) 
-                 of the key to use this feature.
+                 a [TaskList](../src/Task/TaskList.php) is returned:
+
+```text
+If "true" is passed as the first argument, the due tasks are returned using a LazyTaskList.
+
+If "true" is passed as the second argument, the tasks are retrieved only if the current scheduler date
+is equal to the machine / os date regarding the seconds precision. 
+
+Example: If the call is performed at 10:00:00 and the synchronized date does not match exactly, the tasks aren't retrieved.
+```
 
 - `next`: Return the next due task, if none, an exception is thrown.
           If `true` is used, the due tasks are retrieved using a [LazyTaskList](../src/Task/LazyTaskList.php).

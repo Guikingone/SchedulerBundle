@@ -63,9 +63,8 @@ interface SchedulerInterface
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
      *
-     * Can lazy-load the task list if @param bool $lazy is used
-     *
-     * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'
+     * If the @param bool $lazy is used, the tasks are lazy-loaded.
+     * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
@@ -81,7 +80,7 @@ interface SchedulerInterface
     public function next(bool $lazy = false): TaskInterface;
 
     /**
-     * Remove every tasks except the ones that use the '@reboot' expression.
+     * Remove every task except the ones that use the '@reboot' expression.
      *
      * The "reboot" tasks are re-scheduled and MUST be executed as soon as possible.
      *
