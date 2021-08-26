@@ -53,7 +53,7 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame('scheduler:consume', $consumeTasksCommand->getName());
         self::assertSame('Consumes due tasks', $consumeTasksCommand->getDescription());
         self::assertSame(0, $consumeTasksCommand->getDefinition()->getArgumentCount());
-        self::assertCount(5, $consumeTasksCommand->getDefinition()->getOptions());
+        self::assertCount(6, $consumeTasksCommand->getDefinition()->getOptions());
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('limit'));
         self::assertSame('Limit the number of tasks consumed', $consumeTasksCommand->getDefinition()->getOption('limit')->getDescription());
         self::assertSame('l', $consumeTasksCommand->getDefinition()->getOption('limit')->getShortcut());
@@ -71,6 +71,10 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertFalse($consumeTasksCommand->getDefinition()->getOption('force')->acceptValue());
         self::assertSame('Force the worker to wait for tasks even if no tasks are currently available', $consumeTasksCommand->getDefinition()->getOption('force')->getDescription());
         self::assertNull($consumeTasksCommand->getDefinition()->getOption('force')->getShortcut());
+        self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('strict'));
+        self::assertFalse($consumeTasksCommand->getDefinition()->getOption('strict')->acceptValue());
+        self::assertSame('Force the scheduler to check the date before retrieving the tasks', $consumeTasksCommand->getDefinition()->getOption('strict')->getDescription());
+        self::assertNull($consumeTasksCommand->getDefinition()->getOption('strict')->getShortcut());
         self::assertSame(
             $consumeTasksCommand->getHelp(),
             <<<'EOF'
@@ -92,6 +96,9 @@ final class ConsumeTasksCommandTest extends TestCase
 
                 Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
                     <info>php %command.full_name% --force</info>
+
+                Use the --strict option to force the scheduler to check the date before retrieving the tasks:
+                    <info>php %command.full_name% --strict</info>
                 EOF
         );
     }

@@ -14,6 +14,7 @@ final class WorkerConfiguration
     private bool $isRunning;
     private ?TaskInterface $lastExecutedTask = null;
     private bool $shouldStop;
+    private bool $mustStrictlyCheckDate;
 
     private function __construct()
     {
@@ -25,6 +26,7 @@ final class WorkerConfiguration
         $self->shouldStop = false;
         $self->isRunning = false;
         $self->lastExecutedTask = null;
+        $self->mustStrictlyCheckDate = false;
 
         return $self;
     }
@@ -57,5 +59,15 @@ final class WorkerConfiguration
     public function shouldStop(): bool
     {
         return $this->shouldStop;
+    }
+
+    public function mustStrictlyCheckDate(bool $mustStrictlyCheckDate): void
+    {
+        $this->mustStrictlyCheckDate = $mustStrictlyCheckDate;
+    }
+
+    public function isStrictlyCheckingDate(): bool
+    {
+        return $this->mustStrictlyCheckDate;
     }
 }

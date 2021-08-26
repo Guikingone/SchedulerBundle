@@ -72,6 +72,7 @@ final class ConsumeTasksCommand extends Command
                 new InputOption('failure-limit', 'f', InputOption::VALUE_REQUIRED, 'Limit the amount of task allowed to fail'),
                 new InputOption('wait', 'w', InputOption::VALUE_NONE, 'Set the worker to wait for tasks every minutes'),
                 new InputOption('force', null, InputOption::VALUE_NONE, 'Force the worker to wait for tasks even if no tasks are currently available'),
+                new InputOption('strict', null, InputOption::VALUE_NONE, 'Force the scheduler to check the date before retrieving the tasks'),
             ])
             ->setHelp(
                 <<<'EOF'
@@ -93,6 +94,9 @@ final class ConsumeTasksCommand extends Command
 
                     Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
                         <info>php %command.full_name% --force</info>
+
+                    Use the --strict option to force the scheduler to check the date before retrieving the tasks:
+                        <info>php %command.full_name% --strict</info>
                     EOF
             )
         ;

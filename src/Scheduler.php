@@ -186,28 +186,31 @@ final class Scheduler implements SchedulerInterface
         });
 
         return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
-            if ($task->getExecutionStartDate() instanceof DateTimeImmutable && $task->getExecutionEndDate() instanceof DateTimeImmutable) {
-                if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
-                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+            $executionStartDate = $task->getExecutionStartDate();
+            $executionEndDate = $task->getExecutionEndDate();
+
+            if ($executionStartDate instanceof DateTimeImmutable && $executionEndDate instanceof DateTimeImmutable) {
+                if ($executionStartDate === $synchronizedCurrentDate) {
+                    return $executionEndDate > $synchronizedCurrentDate;
                 }
 
-                if ($task->getExecutionStartDate() < $synchronizedCurrentDate) {
-                    return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+                if ($executionStartDate < $synchronizedCurrentDate) {
+                    return $executionEndDate > $synchronizedCurrentDate;
                 }
 
                 return false;
             }
 
-            if ($task->getExecutionStartDate() instanceof DateTimeImmutable) {
+            if ($executionStartDate instanceof DateTimeImmutable) {
                 if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
                     return true;
                 }
 
-                return $task->getExecutionStartDate() < $synchronizedCurrentDate;
+                return $executionStartDate < $synchronizedCurrentDate;
             }
 
-            if ($task->getExecutionEndDate() instanceof DateTimeImmutable) {
-                return $task->getExecutionEndDate() > $synchronizedCurrentDate;
+            if ($executionEndDate instanceof DateTimeImmutable) {
+                return $executionEndDate > $synchronizedCurrentDate;
             }
 
             return true;

@@ -146,6 +146,8 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
 
         $optionsResolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
+        $optionsResolver->setNormalizer('execution_end_date', fn (Options $options, ?string $value): ?DateTimeImmutable => null !== $value ? new DateTimeImmutable($value, $options['timezone'] ?? $this->getTimezone() ?? new DateTimeZone('UTC')) : null);
+        $optionsResolver->setNormalizer('execution_start_date', fn (Options $options, ?string $value): ?DateTimeImmutable => null !== $value ? new DateTimeImmutable($value, $options['timezone'] ?? $this->getTimezone() ?? new DateTimeZone('UTC')) : null);
 
         $optionsResolver->setInfo('arrival_time', '[INTERNAL] The time when the task is retrieved in order to execute it');
         $optionsResolver->setInfo('access_lock_bag', '[INTERNAL] Used to store the key that hold the task lock state');
@@ -188,6 +190,9 @@ abstract class AbstractTask implements TaskInterface
         $this->options = $optionsResolver->resolve($options);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setName(string $name): TaskInterface
     {
         $this->name = $name;
@@ -195,11 +200,17 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setArrivalTime(DateTimeImmutable $dateTimeImmutable = null): TaskInterface
     {
         $this->options['arrival_time'] = $dateTimeImmutable;
@@ -207,6 +218,9 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getArrivalTime(): ?DateTimeImmutable
     {
         return $this->options['arrival_time'] ?? null;
@@ -442,14 +456,10 @@ abstract class AbstractTask implements TaskInterface
     }
 
     /**
-     * @throws Exception {@see DateTimeImmutable::__construct()}
+     * {@inheritdoc}
      */
     public function getExecutionStartDate(): ?DateTimeImmutable
     {
-        if (!$this->options['execution_start_date'] instanceof DateTimeImmutable) {
-            return null;
-        }
-
         return $this->options['execution_start_date'];
     }
 
@@ -468,14 +478,10 @@ abstract class AbstractTask implements TaskInterface
     }
 
     /**
-     * @throws Exception {@see DateTimeImmutable::__construct()}
+     * {@inheritdoc}
      */
     public function getExecutionEndDate(): ?DateTimeImmutable
     {
-        if (!$this->options['execution_end_date'] instanceof DateTimeImmutable) {
-            return null;
-        }
-
         return $this->options['execution_end_date'];
     }
 
@@ -486,6 +492,9 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getExecutionStartTime(): ?DateTimeImmutable
     {
         return $this->options['execution_start_time'] instanceof DateTimeImmutable ? $this->options['execution_start_time'] : null;
@@ -498,6 +507,9 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getExecutionEndTime(): ?DateTimeImmutable
     {
         return $this->options['execution_end_time'] instanceof DateTimeImmutable ? $this->options['execution_end_time'] : null;
