@@ -12,11 +12,16 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerRegistry;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -53,28 +58,42 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertSame('scheduler:consume', $consumeTasksCommand->getName());
         self::assertSame('Consumes due tasks', $consumeTasksCommand->getDescription());
         self::assertSame(0, $consumeTasksCommand->getDefinition()->getArgumentCount());
-        self::assertCount(6, $consumeTasksCommand->getDefinition()->getOptions());
+        self::assertCount(7, $consumeTasksCommand->getDefinition()->getOptions());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('limit'));
+        self::assertTrue($consumeTasksCommand->getDefinition()->getOption('limit')->acceptValue());
         self::assertSame('Limit the number of tasks consumed', $consumeTasksCommand->getDefinition()->getOption('limit')->getDescription());
         self::assertSame('l', $consumeTasksCommand->getDefinition()->getOption('limit')->getShortcut());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('time-limit'));
         self::assertSame('Limit the time in seconds the worker can run', $consumeTasksCommand->getDefinition()->getOption('time-limit')->getDescription());
         self::assertSame('t', $consumeTasksCommand->getDefinition()->getOption('time-limit')->getShortcut());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('failure-limit'));
+        self::assertTrue($consumeTasksCommand->getDefinition()->getOption('failure-limit')->acceptValue());
         self::assertSame('Limit the amount of task allowed to fail', $consumeTasksCommand->getDefinition()->getOption('failure-limit')->getDescription());
         self::assertSame('f', $consumeTasksCommand->getDefinition()->getOption('failure-limit')->getShortcut());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('wait'));
         self::assertFalse($consumeTasksCommand->getDefinition()->getOption('wait')->acceptValue());
         self::assertSame('Set the worker to wait for tasks every minutes', $consumeTasksCommand->getDefinition()->getOption('wait')->getDescription());
         self::assertSame('w', $consumeTasksCommand->getDefinition()->getOption('wait')->getShortcut());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('force'));
         self::assertFalse($consumeTasksCommand->getDefinition()->getOption('force')->acceptValue());
         self::assertSame('Force the worker to wait for tasks even if no tasks are currently available', $consumeTasksCommand->getDefinition()->getOption('force')->getDescription());
         self::assertNull($consumeTasksCommand->getDefinition()->getOption('force')->getShortcut());
+
+        self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('lazy'));
+        self::assertFalse($consumeTasksCommand->getDefinition()->getOption('lazy')->acceptValue());
+        self::assertSame('Force the scheduler to retrieve the tasks using lazy-loading', $consumeTasksCommand->getDefinition()->getOption('lazy')->getDescription());
+        self::assertNull($consumeTasksCommand->getDefinition()->getOption('lazy')->getShortcut());
+
         self::assertTrue($consumeTasksCommand->getDefinition()->hasOption('strict'));
         self::assertFalse($consumeTasksCommand->getDefinition()->getOption('strict')->acceptValue());
         self::assertSame('Force the scheduler to check the date before retrieving the tasks', $consumeTasksCommand->getDefinition()->getOption('strict')->getDescription());
         self::assertNull($consumeTasksCommand->getDefinition()->getOption('strict')->getShortcut());
+
         self::assertSame(
             $consumeTasksCommand->getHelp(),
             <<<'EOF'
@@ -96,6 +115,9 @@ final class ConsumeTasksCommandTest extends TestCase
 
                 Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
                     <info>php %command.full_name% --force</info>
+
+                Use the --lazy option to force the scheduler to retrieve the tasks using lazy-loading:
+                    <info>php %command.full_name% --lazy</info>
 
                 Use the --strict option to force the scheduler to check the date before retrieving the tasks:
                     <info>php %command.full_name% --strict</info>
@@ -152,19 +174,50 @@ final class ConsumeTasksCommandTest extends TestCase
      */
     public function testCommandCanConsumeTasks(): void
     {
-        $eventDispatcher = new EventDispatcher();
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = new NullTask('foo');
+        $eventDispatcher = new EventDispatcher();
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+
+        $scheduler->schedule(new NullTask('foo'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $commandTester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('Quit the worker with CONTROL-C.', $commandTester->getDisplay());
+        self::assertStringContainsString('The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testCommandCanConsumeTasksUsingLazyLoading(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $eventDispatcher = new EventDispatcher();
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+
+        $scheduler->schedule(new NullTask('foo'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('execute');
+
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
+        $commandTester->execute([
+            '--lazy' => true,
+        ]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
         self::assertStringContainsString('Quit the worker with CONTROL-C.', $commandTester->getDisplay());
