@@ -136,7 +136,7 @@ final class ConsumeTasksCommand extends Command
         $stopOptions = [];
 
         if (null !== $limit = $input->getOption('limit')) {
-            $stopOptions[] = sprintf('%s tasks has been consumed', $limit);
+            $stopOptions[] = sprintf('%s task%s %s been consumed', $limit, $limit > 1 ? 's' : '', $limit > 1 ? 'have' : 'has');
             $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber((int) $limit, $this->logger));
         }
 
@@ -146,7 +146,7 @@ final class ConsumeTasksCommand extends Command
         }
 
         if (null !== $failureLimit = $input->getOption('failure-limit')) {
-            $stopOptions[] = sprintf('%d task%s have failed', $failureLimit, (int) $failureLimit > 1 ? 's' : '');
+            $stopOptions[] = sprintf('%d task%s %s failed', $failureLimit, $failureLimit > 1 ? 's' : '', $failureLimit > 1 ? 'have' : 'has');
             $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
         }
 
