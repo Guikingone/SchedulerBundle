@@ -77,7 +77,7 @@ final class TaskLifecycleSubscriberTest extends TestCase
         $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('A task execution has failed'), self::equalTo([
+        $logger->expects(self::once())->method('error')->with(self::equalTo('A task execution has failed'), self::equalTo([
             'task' => 'foo',
         ]));
 

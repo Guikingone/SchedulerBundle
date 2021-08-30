@@ -402,9 +402,10 @@ final class ConsumeTasksCommandTest extends TestCase
         ]));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with([
+        $worker->expects(self::once())->method('execute')->with(self::equalTo([
+            'mustStrictlyCheckDate' => false,
             'sleepUntilNextMinute' => true,
-        ]);
+        ]));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $commandTester->execute([
@@ -594,19 +595,25 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringContainsString('No due tasks found', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanWaitForTasksWithoutPauseFilter(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::exactly(1))->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $eventDispatcher = new EventDispatcher();
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+
+        $scheduler->schedule(new NullTask('foo'));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(
-            self::equalTo([
-                'sleepUntilNextMinute' => true,
-            ])
-        );
+        $worker->expects(self::once())->method('execute')->with(self::equalTo([
+            'mustStrictlyCheckDate' => false,
+            'sleepUntilNextMinute' => true,
+        ]));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, new EventDispatcher()));
         $commandTester->execute([
@@ -618,6 +625,34 @@ final class ConsumeTasksCommandTest extends TestCase
         self::assertStringContainsString('[NOTE] The worker will wait for tasks every minutes', $commandTester->getDisplay());
         self::assertStringContainsString('// Quit the worker with CONTROL-C.', $commandTester->getDisplay());
         self::assertStringContainsString('[NOTE] The task output can be displayed if the -vv option is used', $commandTester->getDisplay());
+    }
+
+    /**
+     * @group time-sensitive
+     *
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanAskForStrictDateCheckWithoutDueTasks(): void
+    {
+        $eventDispatcher = new EventDispatcher();
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+
+        $scheduler->schedule(new NullTask('foo'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('execute');
+
+        $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, new EventDispatcher()));
+        $commandTester->execute([
+            '--strict' => true,
+        ]);
+
+        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringContainsString('[WARNING] No due tasks found', $commandTester->getDisplay());
     }
 
     /**
