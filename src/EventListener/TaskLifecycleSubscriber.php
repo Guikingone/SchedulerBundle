@@ -47,7 +47,7 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
 
     public function onTaskFailed(TaskFailedEvent $taskFailedEvent): void
     {
-        $this->logger->info('A task execution has failed', [
+        $this->logger->error('A task execution has failed', [
             'task' => $taskFailedEvent->getTask()->getTask()->getName(),
         ]);
     }

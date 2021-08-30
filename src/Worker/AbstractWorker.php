@@ -190,7 +190,10 @@ abstract class AbstractWorker implements WorkerInterface
      */
     protected function getTasks(array $tasks): TaskListInterface
     {
-        $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks($this->options['shouldRetrieveTasksLazily']);
+        $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks(
+            $this->options['shouldRetrieveTasksLazily'],
+            $this->options['mustStrictlyCheckDate']
+        );
 
         $lockedTasks = $tasks->filter(function (TaskInterface $task): bool {
             $key = TaskLockBagMiddleware::createKey($task);
@@ -300,6 +303,7 @@ abstract class AbstractWorker implements WorkerInterface
             'executedTasksCount' => 0,
             'forkedFrom' => null,
             'isFork' => false,
+            'mustStrictlyCheckDate' => false,
             'sleepDurationDelay' => 1,
             'sleepUntilNextMinute' => false,
             'shouldRetrieveTasksLazily' => false,
@@ -308,6 +312,7 @@ abstract class AbstractWorker implements WorkerInterface
         $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
         $optionsResolver->setAllowedTypes('forkedFrom', [WorkerInterface::class, 'null']);
         $optionsResolver->setAllowedTypes('isFork', 'bool');
+        $optionsResolver->setAllowedTypes('mustStrictlyCheckDate', 'bool');
         $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
         $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
         $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');

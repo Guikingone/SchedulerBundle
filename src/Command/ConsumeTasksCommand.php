@@ -184,6 +184,7 @@ final class ConsumeTasksCommand extends Command
 
         try {
             $this->worker->execute([
+                'mustStrictlyCheckDate' => true === $strict,
                 'sleepUntilNextMinute' => true === $wait,
             ]);
         } catch (Throwable $throwable) {
