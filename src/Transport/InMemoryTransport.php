@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -45,7 +46,12 @@ final class InMemoryTransport extends AbstractTransport
             throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
         }
 
-        return $this->tasks->get($name);
+        $task = $this->tasks->get($name);
+        if (!$task instanceof TaskInterface) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be found', $name));
+        }
+
+        return $task;
     }
 
     /**
