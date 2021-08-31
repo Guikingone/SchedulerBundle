@@ -11,6 +11,11 @@ use SchedulerBundle\Task\TaskListInterface;
  */
 interface PolicyInterface
 {
+    /**
+     * Sort a @param TaskListInterface $tasks depending on the {@see PolicyInterface::support()} submitted policy.
+     *
+     * The current sort logic is up to the implementation, if needed, the {@see TaskListInterface::uasort()} method can be used.
+     */
     public function sort(TaskListInterface $tasks): TaskListInterface;
 
     /**

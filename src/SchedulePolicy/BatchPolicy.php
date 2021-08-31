@@ -12,6 +12,9 @@ use SchedulerBundle\Task\TaskListInterface;
  */
 final class BatchPolicy implements PolicyInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
         $tasks->walk(function (TaskInterface $task): void {

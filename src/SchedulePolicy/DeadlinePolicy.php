@@ -8,9 +8,8 @@ use DateInterval;
 use DateTimeImmutable;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
-use function array_walk;
+use SchedulerBundle\Task\TaskListInterface;
 use function sprintf;
-use function uasort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -18,11 +17,11 @@ use function uasort;
 final class DeadlinePolicy implements PolicyInterface
 {
     /**
-     * @return TaskInterface[]
+     * {@inheritdoc}
      */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        array_walk($tasks, function (TaskInterface $task): void {
+        $tasks->walk(function (TaskInterface $task): void {
             $arrivalTime = $task->getArrivalTime();
             if (!$arrivalTime instanceof DateTimeImmutable) {
                 throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
@@ -38,13 +37,11 @@ final class DeadlinePolicy implements PolicyInterface
             $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
         });
 
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
+        return $tasks->uasort(function (TaskInterface $task, TaskInterface $nextTask): int {
             $dateTimeImmutable = new DateTimeImmutable();
 
             return $dateTimeImmutable->add($nextTask->getExecutionAbsoluteDeadline()) <=> $dateTimeImmutable->add($task->getExecutionAbsoluteDeadline());
         });
-
-        return $tasks;
     }
 
     /**

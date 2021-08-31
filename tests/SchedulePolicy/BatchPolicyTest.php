@@ -6,7 +6,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 
 /**
@@ -24,41 +24,51 @@ final class BatchPolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
-        $task->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
+        $task = new NullTask('app', [
+            'priority' => 2,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
-        $secondTask->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
+        $secondTask = new NullTask('foo', [
+            'priority' => 2,
+        ]);
 
         $batchPolicy = new BatchPolicy();
-        $list = $batchPolicy->sort(new TaskList([
+        $sortedTasks = $batchPolicy->sort(new TaskList([
             $secondTask,
             $task,
         ]));
 
-        self::assertCount(2, $list);
-        self::assertEquals([$task, $secondTask], $list);
+        self::assertCount(2, $sortedTasks);
+        self::assertEquals([
+            'app' => $task,
+            'foo' => $secondTask,
+        ], $sortedTasks->toArray());
+        self::assertSame(1, $task->getPriority());
+        self::assertSame(1, $secondTask->getPriority());
     }
 
     public function testTasksCanBeSortedWithNegativePriority(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(-500, -501);
-        $task->expects(self::once())->method('setPriority')->withConsecutive([-501], [-502]);
+        $task = new NullTask('app', [
+            'priority' => -500,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(-200, -201);
-        $secondTask->expects(self::once())->method('setPriority')->withConsecutive([-201], [-202]);
+        $secondTask = new NullTask('foo', [
+            'priority' => -200,
+        ]);
 
         $batchPolicy = new BatchPolicy();
-        $list = $batchPolicy->sort(new TaskList([
-            $secondTask,
-            $task,
+        $sortedTasks = $batchPolicy->sort(new TaskList([
+            'foo' => $secondTask,
+            'app' => $task,
         ]));
 
-        self::assertCount(2, $list);
-        self::assertEquals([$task, $secondTask], $list);
+        self::assertCount(2, $sortedTasks);
+        self::assertEquals([
+            'app' => $task,
+            'foo' => $secondTask,
+        ], $sortedTasks->toArray());
+        self::assertSame(-501, $task->getPriority());
+        self::assertSame(-201, $secondTask->getPriority());
     }
 }

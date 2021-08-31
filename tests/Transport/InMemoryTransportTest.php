@@ -13,6 +13,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
@@ -159,20 +160,14 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotCreateATaskTwice(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getName')->willReturn('foo');
-
         $inMemoryTransport = new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $inMemoryTransport->create($task);
-        $inMemoryTransport->create($secondTask);
+        $inMemoryTransport->create(new NullTask('foo'));
+        $inMemoryTransport->create(new NullTask('foo'));
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
     }

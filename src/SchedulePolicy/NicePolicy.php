@@ -13,10 +13,8 @@ use SchedulerBundle\Task\TaskListInterface;
 final class NicePolicy implements PolicyInterface
 {
     /**
-     * @var string
+     * {@inheritdoc}
      */
-    private const POLICY = 'nice';
-
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
         return $tasks->uasort(function (TaskInterface $task, TaskInterface $nextTask): int {
@@ -37,6 +35,6 @@ final class NicePolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'nice' === $policy;
     }
 }

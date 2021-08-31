@@ -54,16 +54,16 @@ final class FilesystemTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
-        $tasks = [];
+        $tasks = new TaskList();
 
         $finder = new Finder();
 
         $finder->files()->in($this->options['path'])->name('*.json');
         foreach ($finder as $singleFinder) {
-            $tasks[] = $this->get(strtr($singleFinder->getFilename(), ['.json' => '']));
+            $tasks->add($this->get(strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
 
-        $list = new TaskList($this->orchestrator->sort($this->getExecutionMode(), $tasks));
+        $list = $this->orchestrator->sort($this->getExecutionMode(), $tasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

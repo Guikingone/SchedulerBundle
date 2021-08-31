@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use SchedulerBundle\Task\TaskInterface;
-use function uasort;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,18 +13,11 @@ use function uasort;
 final class RoundRobinPolicy implements PolicyInterface
 {
     /**
-     * @var string
+     * {@inheritdoc}
      */
-    private const POLICY = 'round_robin';
-
-    /**
-     * @return TaskInterface[]
-     */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() >= $task->getMaxDuration() && $task->getExecutionComputationTime() < $nextTask->getExecutionComputationTime() ? 1 : -1);
-
-        return $tasks;
+        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() >= $task->getMaxDuration() && $task->getExecutionComputationTime() < $nextTask->getExecutionComputationTime() ? 1 : -1);
     }
 
     /**
@@ -32,6 +25,6 @@ final class RoundRobinPolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'round_robin' === $policy;
     }
 }

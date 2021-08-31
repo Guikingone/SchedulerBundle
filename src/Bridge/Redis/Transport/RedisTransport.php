@@ -62,10 +62,9 @@ final class RedisTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
-        $list = new TaskList($this->schedulePolicyOrchestrator->sort(
-            $this->getExecutionMode(),
-            $this->connection->list()->toArray()
-        ));
+        $storedTasks = new TaskList($this->connection->list()->toArray());
+
+        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $storedTasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

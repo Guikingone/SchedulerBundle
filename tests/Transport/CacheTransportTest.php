@@ -526,13 +526,13 @@ final class CacheTransportTest extends TestCase
         self::assertNotEmpty($cacheTransport->list());
 
         $cacheTransport->delete('foo');
-        self::assertEmpty($cacheTransport->list());
+        self::assertCount(0, $cacheTransport->list());
 
         $cacheTransport->create(new NullTask('foo'));
         self::assertNotEmpty($cacheTransport->list(true));
 
         $cacheTransport->delete('foo');
-        self::assertEmpty($cacheTransport->list(true));
+        self::assertCount(0, $cacheTransport->list(true));
     }
 
     /**

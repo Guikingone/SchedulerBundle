@@ -84,10 +84,9 @@ final class Connection implements ConnectionInterface
                 $statement = $this->executeQuery($this->createQueryBuilder()->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
-                return new TaskList($this->schedulePolicyOrchestrator->sort(
-                    $this->configuration['execution_mode'],
-                    array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks)
-                ));
+                $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+
+                return $this->schedulePolicyOrchestrator->sort($this->configuration['execution_mode'], $taskList);
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);

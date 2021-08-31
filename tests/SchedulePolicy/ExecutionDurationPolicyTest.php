@@ -6,7 +6,8 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\ExecutionDurationPolicy;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,17 +24,20 @@ final class ExecutionDurationPolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->method('getExecutionComputationTime')->willReturn(10.0);
+        $task = new NullTask('app', [
+            'execution_computation_time' => 10.0,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getExecutionComputationTime')->willReturn(12.0);
+        $secondTask = new NullTask('foo', [
+            'execution_computation_time' => 12.0,
+        ]);
 
         $executionDurationPolicy = new ExecutionDurationPolicy();
+        $sortedTasks = $executionDurationPolicy->sort(new TaskList([$secondTask, $task]));
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $executionDurationPolicy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $sortedTasks->toArray());
     }
 }

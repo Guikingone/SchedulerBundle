@@ -6,7 +6,8 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,15 +24,21 @@ final class RoundRobinPolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(12.0);
+        $task = new NullTask('bar', [
+            'execution_computation_time' => 12.0,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getExecutionComputationTime')->willReturn(10.0);
-        $secondTask->expects(self::once())->method('getMaxDuration')->willReturn(10.0);
+        $secondTask = new NullTask('foo', [
+            'execution_computation_time' => 10.0,
+            'max_duration' => 10.0,
+        ]);
 
         $roundRobinPolicy = new RoundRobinPolicy();
+        $sortedTasks = $roundRobinPolicy->sort(new TaskList([$secondTask, $task]));
 
-        self::assertSame(['bar' => $task, 'foo' => $secondTask], $roundRobinPolicy->sort(['foo' => $secondTask, 'bar' => $task]));
+        self::assertSame([
+            'bar' => $task,
+            'foo' => $secondTask,
+        ], $sortedTasks->toArray());
     }
 }
