@@ -56,19 +56,13 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotGetWithFailingTransports(): void
     {
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task list not found'));
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task list not found'));
-
         $roundRobinTransport = new RoundRobinTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ]);
 
         self::expectException(TransportException::class);
@@ -79,24 +73,18 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task not found'));
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task not found'));
-
         $thirdTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $thirdTransport->create(new NullTask('foo'));
 
         $roundRobinTransport = new RoundRobinTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
             $thirdTransport,
         ]);
 
@@ -201,14 +189,12 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $roundRobinTransport->create($task);
+        $roundRobinTransport->create(new NullTask('foo'));
     }
 
     public function testTransportCannotCreateWithFailingTransports(): void
@@ -253,14 +239,12 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $roundRobinTransport = new RoundRobinTransport([]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $roundRobinTransport->update('foo', $task);
+        $roundRobinTransport->update('foo', new NullTask('foo'));
     }
 
     public function testTransportCannotUpdateWithFailingTransports(): void
