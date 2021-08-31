@@ -67,6 +67,13 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function last(): TaskInterface;
 
     /**
+     * Allow to sort the tasks using @param Closure $func.
+     *
+     * The current list is returned with the sorted tasks.
+     */
+    public function uasort(Closure $func): TaskListInterface;
+
+    /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>

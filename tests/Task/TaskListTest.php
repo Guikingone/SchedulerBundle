@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -11,7 +12,9 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
 use stdClass;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -60,6 +63,9 @@ final class TaskListTest extends TestCase
         self::assertSame(2, $taskList->count());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCannotBeHydratedUsingInvalidOffset(): void
     {
         $taskList = new TaskList();
@@ -70,6 +76,9 @@ final class TaskListTest extends TestCase
         $taskList->offsetSet('foo', new stdClass());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCanBeHydratedUsingEmptyOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -82,6 +91,9 @@ final class TaskListTest extends TestCase
         self::assertSame(1, $taskList->count());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCanBeHydratedUsingOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -292,7 +304,33 @@ final class TaskListTest extends TestCase
             new NullTask('bar'),
         ]);
 
+        self::assertCount(2, $taskList);
+
         $lastTask = $taskList->last();
         self::assertSame('bar', $lastTask->getName());
+    }
+
+    public function testListCanBeSorted(): void
+    {
+        $fooTask = new NullTask('foo');
+        $fooTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
+
+        $barTask = new NullTask('bar');
+        $barTask->setScheduledAt(new DateTimeImmutable('- 2 day'));
+
+        $taskList = new TaskList([
+            $fooTask,
+            $barTask,
+        ]);
+
+        self::assertCount(2, $taskList);
+
+        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+
+        self::assertCount(2, $taskList);
+        self::assertEquals([
+            'foo' => $fooTask,
+            'bar' => $barTask,
+        ], $taskList->toArray());
     }
 }

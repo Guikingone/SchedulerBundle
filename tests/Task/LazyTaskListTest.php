@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\LazyTask;
@@ -284,5 +285,31 @@ final class LazyTaskListTest extends TestCase
         $lastTask = $taskList->last();
         self::assertTrue($taskList->isInitialized());
         self::assertSame('bar', $lastTask->getName());
+    }
+
+    public function testListCanBeSorted(): void
+    {
+        $fooTask = new NullTask('foo');
+        $fooTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
+
+        $barTask = new NullTask('bar');
+        $barTask->setScheduledAt(new DateTimeImmutable('- 2 day'));
+
+        $taskList = new LazyTaskList(new TaskList([
+            $fooTask,
+            $barTask,
+        ]));
+
+        self::assertFalse($taskList->isInitialized());
+        self::assertCount(2, $taskList);
+
+        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+
+        self::assertTrue($taskList->isInitialized());
+        self::assertCount(2, $taskList);
+        self::assertEquals([
+            'foo' => $fooTask,
+            'bar' => $barTask,
+        ], $taskList->toArray());
     }
 }

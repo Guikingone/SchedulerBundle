@@ -125,6 +125,16 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
+    public function uasort(Closure $func): TaskListInterface
+    {
+        $this->initialize();
+
+        return $this->list->uasort($func);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function toArray(bool $keepKeys = true): array
     {
         $this->initialize();

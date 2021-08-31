@@ -15,6 +15,7 @@ use function array_key_last;
 use function array_values;
 use function array_walk;
 use function array_map;
+use function uasort;
 use function count;
 use function gettype;
 use function in_array;
@@ -132,6 +133,16 @@ final class TaskList implements TaskListInterface
         }
 
         return $this->tasks[$lastIndex];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function uasort(Closure $func): TaskListInterface
+    {
+        uasort($this->tasks, $func);
+
+        return $this;
     }
 
     /**
