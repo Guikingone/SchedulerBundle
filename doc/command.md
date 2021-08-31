@@ -35,14 +35,30 @@ This command allows using multiple options to filter consumed tasks (each one ca
 - `--limit`: Define the maximum amount of due tasks to consume.
 - `--time-limit`: Define the maximum amount in seconds before the worker stop.
 - `--failure-limit`: Define the maximum amount of tasks that can fails during consumation.
-- `--wait`: Set the worker to a "infinite" wait loop where tasks are consumed then the worker wait until next minute.
+- `--wait`: Set the worker to an "infinite" wait loop where tasks are consumed then the worker wait until next minute.
+- `--force`: Force the worker to wait for tasks even if no tasks are currently available.
+- `--lazy`: Force the scheduler to retrieve the tasks using lazy-loading.
+- `--strict`: Force the scheduler to check the date before retrieving the tasks.
 
 ### Extra informations
 
 - The scheduler will only return tasks that haven't been executed since the last minute.
+
 - The command filter tasks returned by the scheduler by checking if each task is not paused 
   (the worker will do this if the `--wait` option is set).
+
 - The output of each executed task can be displayed if the `-vv` option is used.
+
+- By default, when using `--wait`, the command will stop if no tasks can be found, thanks to `--force`,
+  you can ask the worker to wait without stopping the command for the next minute and check again the tasks.
+
+- When using `--lazy`, tasks are retrieve using a `LazyTaskList`, this can improve performances
+  BUT keep in mind that using this approach can trigger edge cases when checking due tasks.
+
+- When using `--strict`, keep in mind that `SchedulerInterface::getDueTasks()` is called twice,
+  first, the command will check if tasks can be found using a strict comparison on the current date
+  then the worker will retrieve the tasks using the same approach, if the worker didn't receive any tasks,
+  it will start the sleeping phase until next minute.
 
 ## Executing tasks
 
