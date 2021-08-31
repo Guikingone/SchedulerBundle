@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -32,7 +33,10 @@ final class BatchPolicyTest extends TestCase
         $secondTask->expects(self::once())->method('setPriority')->withConsecutive([1], [0]);
 
         $batchPolicy = new BatchPolicy();
-        $list = $batchPolicy->sort([$secondTask, $task]);
+        $list = $batchPolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+        ]));
 
         self::assertCount(2, $list);
         self::assertEquals([$task, $secondTask], $list);
@@ -49,7 +53,10 @@ final class BatchPolicyTest extends TestCase
         $secondTask->expects(self::once())->method('setPriority')->withConsecutive([-201], [-202]);
 
         $batchPolicy = new BatchPolicy();
-        $list = $batchPolicy->sort([$secondTask, $task]);
+        $list = $batchPolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+        ]));
 
         self::assertCount(2, $list);
         self::assertEquals([$task, $secondTask], $list);

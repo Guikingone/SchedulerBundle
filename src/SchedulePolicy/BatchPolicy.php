@@ -5,27 +5,21 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use SchedulerBundle\Task\TaskInterface;
-use function array_walk;
-use function uasort;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class BatchPolicy implements PolicyInterface
 {
-    /**
-     * @return TaskInterface[]
-     */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        array_walk($tasks, function (TaskInterface $task): void {
+        $tasks->walk(function (TaskInterface $task): void {
             $priority = $task->getPriority();
             $task->setPriority(--$priority);
         });
 
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <=> $nextTask->getPriority());
-
-        return $tasks;
+        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <=> $nextTask->getPriority());
     }
 
     /**

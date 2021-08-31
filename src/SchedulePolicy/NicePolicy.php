@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use SchedulerBundle\Task\TaskInterface;
-use function uasort;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -17,12 +17,9 @@ final class NicePolicy implements PolicyInterface
      */
     private const POLICY = 'nice';
 
-    /**
-     * @return TaskInterface[]
-     */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        uasort($tasks, function (TaskInterface $task, TaskInterface $nextTask): int {
+        return $tasks->uasort(function (TaskInterface $task, TaskInterface $nextTask): int {
             if ($task->getPriority() > 0) {
                 return 1;
             }
@@ -33,8 +30,6 @@ final class NicePolicy implements PolicyInterface
 
             return $task->getNice() <=> $nextTask->getNice();
         });
-
-        return $tasks;
     }
 
     /**

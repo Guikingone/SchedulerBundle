@@ -21,6 +21,7 @@ use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -34,7 +35,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The tasks cannot be sorted as no policies have been defined');
         self::expectExceptionCode(0);
-        $schedulePolicyOrchestrator->sort('deadline', []);
+        $schedulePolicyOrchestrator->sort('deadline', new TaskList([]));
     }
 
     public function testSchedulePolicyCannotSortEmptyTasks(): void
@@ -43,7 +44,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
             new BatchPolicy(),
         ]);
 
-        self::assertEmpty($schedulePolicyOrchestrator->sort('batch', []));
+        self::assertEmpty($schedulePolicyOrchestrator->sort('batch', new TaskList([])));
     }
 
     public function testSchedulePolicyCannotSortWithInvalidPolicy(): void
@@ -58,7 +59,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The policy "test" cannot be used');
         self::expectExceptionCode(0);
-        $schedulePolicyOrchestrator->sort('test', [$task]);
+        $schedulePolicyOrchestrator->sort('test', new TaskList([$task]));
     }
 
     public function testSchedulePolicyCanSortTasksUsingBatch(): void
@@ -74,7 +75,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::exactly(2))->method('getPriority')->willReturnOnConsecutiveCalls(2, 1);
 
-        self::assertCount(2, $schedulePolicyOrchestrator->sort('batch', [$secondTask, $task]));
+        self::assertCount(2, $schedulePolicyOrchestrator->sort('batch', new TaskList([$secondTask, $task])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingDeadline(): void
@@ -97,7 +98,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'bar' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('deadline', ['foo' => $secondTask, 'bar' => $task]));
+        ], $schedulePolicyOrchestrator->sort('deadline', new TaskList([$secondTask, $task])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingExecutionDuration(): void
@@ -116,7 +117,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('execution_duration', ['foo' => $secondTask, 'app' => $task]));
+        ], $schedulePolicyOrchestrator->sort('execution_duration', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingFirstInFirstOut(): void
@@ -135,7 +139,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('first_in_first_out', ['foo' => $secondTask, 'app' => $task]));
+        ], $schedulePolicyOrchestrator->sort('first_in_first_out', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingFirstInLastOut(): void
@@ -154,7 +161,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('first_in_last_out', ['foo' => $secondTask, 'app' => $task]));
+        ], $schedulePolicyOrchestrator->sort('first_in_last_out', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingIdle(): void
@@ -170,7 +180,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $secondTask = $this->createMock(TaskInterface::class);
         $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(-20);
 
-        $tasks = $schedulePolicyOrchestrator->sort('idle', ['app' => $secondTask, 'foo' => $task]);
+        $tasks = $schedulePolicyOrchestrator->sort('idle', new TaskList([
+            $secondTask,
+            $task,
+        ]));
 
         self::assertCount(2, $tasks);
         self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
@@ -192,7 +205,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('memory_usage', ['foo' => $secondTask, 'app' => $task]));
+        ], $schedulePolicyOrchestrator->sort('memory_usage', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingNice(): void
@@ -211,7 +227,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('nice', ['foo' => $secondTask, 'app' => $task]));
+        ], $schedulePolicyOrchestrator->sort('nice', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortTasksUsingRoundRobin(): void
@@ -231,7 +250,10 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         self::assertSame([
             'bar' => $task,
             'foo' => $secondTask,
-        ], $schedulePolicyOrchestrator->sort('round_robin', ['foo' => $secondTask, 'bar' => $task]));
+        ], $schedulePolicyOrchestrator->sort('round_robin', new TaskList([
+            $secondTask,
+            $task,
+        ])));
     }
 
     public function testSchedulePolicyCanSortNestedTasksUsingBatch(): void
@@ -251,7 +273,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('batch', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('batch', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -283,7 +305,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask->setExecutionRelativeDeadline(new DateInterval('P1D'));
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('deadline', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('deadline', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -308,7 +330,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('execution_duration', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('execution_duration', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -333,7 +355,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('first_in_first_out', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('first_in_first_out', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -358,7 +380,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('first_in_last_out', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('first_in_last_out', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -383,7 +405,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('idle', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('idle', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -408,7 +430,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('memory_usage', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('memory_usage', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -433,7 +455,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('nice', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('nice', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
@@ -459,7 +481,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask = new ChainedTask('nested');
         $chainedTask->setTasks($secondTask, $task);
 
-        $schedulePolicyOrchestrator->sort('round_robin', [$chainedTask]);
+        $schedulePolicyOrchestrator->sort('round_robin', new TaskList([$chainedTask]));
 
         self::assertSame([
             $task,
