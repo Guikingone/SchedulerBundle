@@ -1,6 +1,21 @@
 <!--- BEGIN HEADER -->
 # Changelog
 
+0.6.2
+-----
+
+### Code Refactoring
+
+##### Scheduler
+
+* Strict mode (#180) ([6ea8bb](https://github.com/Guikingone/SchedulerBundle/commit/6ea8bb5998897097e4ee603190a2f102dd4d7eea))
+
+##### Worker
+
+* Pause task execution using signal (#177) ([75558a](https://github.com/Guikingone/SchedulerBundle/commit/75558a7bf7d0781c5c74569de87849661cea6882))
+
+---
+
 0.6.1
 -----
 ### Code Refactoring
