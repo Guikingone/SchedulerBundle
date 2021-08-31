@@ -27,7 +27,6 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
-use function is_int;
 use function sprintf;
 
 /**
@@ -89,7 +88,7 @@ final class Connection implements ConnectionInterface
                 return $this->schedulePolicyOrchestrator->sort($this->configuration['execution_mode'], $taskList);
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -135,7 +134,7 @@ final class Connection implements ConnectionInterface
                 return $this->serializer->deserialize($data['body'], TaskInterface::class, 'json');
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -184,7 +183,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -210,7 +209,7 @@ final class Connection implements ConnectionInterface
                 );
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -229,7 +228,7 @@ final class Connection implements ConnectionInterface
 
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -247,7 +246,7 @@ final class Connection implements ConnectionInterface
             $task->setState(AbstractTask::ENABLED);
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -276,7 +275,7 @@ final class Connection implements ConnectionInterface
                 }
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 
@@ -292,7 +291,7 @@ final class Connection implements ConnectionInterface
                 $connection->executeQuery($queryBuilder->getSQL());
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
         }
     }
 

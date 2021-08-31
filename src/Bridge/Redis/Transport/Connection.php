@@ -14,7 +14,6 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
-use function is_int;
 use function sprintf;
 use function strpos;
 
@@ -126,7 +125,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), 0, $throwable);
         }
     }
 
@@ -145,7 +144,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), 0, $throwable);
         }
     }
 
