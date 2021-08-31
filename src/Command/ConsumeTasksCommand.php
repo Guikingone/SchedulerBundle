@@ -72,6 +72,8 @@ final class ConsumeTasksCommand extends Command
                 new InputOption('failure-limit', 'f', InputOption::VALUE_REQUIRED, 'Limit the amount of task allowed to fail'),
                 new InputOption('wait', 'w', InputOption::VALUE_NONE, 'Set the worker to wait for tasks every minutes'),
                 new InputOption('force', null, InputOption::VALUE_NONE, 'Force the worker to wait for tasks even if no tasks are currently available'),
+                new InputOption('lazy', null, InputOption::VALUE_NONE, 'Force the scheduler to retrieve the tasks using lazy-loading'),
+                new InputOption('strict', null, InputOption::VALUE_NONE, 'Force the scheduler to check the date before retrieving the tasks'),
             ])
             ->setHelp(
                 <<<'EOF'
@@ -93,6 +95,12 @@ final class ConsumeTasksCommand extends Command
 
                     Use the --force option to force the worker to wait for tasks every minutes even if no tasks are currently available:
                         <info>php %command.full_name% --force</info>
+
+                    Use the --lazy option to force the scheduler to retrieve the tasks using lazy-loading:
+                        <info>php %command.full_name% --lazy</info>
+
+                    Use the --strict option to force the scheduler to check the date before retrieving the tasks:
+                        <info>php %command.full_name% --strict</info>
                     EOF
             )
         ;
@@ -109,8 +117,10 @@ final class ConsumeTasksCommand extends Command
 
         $wait = $input->getOption('wait');
         $force = $input->getOption('force');
+        $lazy = $input->getOption('lazy');
+        $strict = $input->getOption('strict');
 
-        $dueTasks = $this->scheduler->getDueTasks()->filter(fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
+        $dueTasks = $this->scheduler->getDueTasks(true === $lazy, true === $strict)->filter(fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
         if (0 === $dueTasks->count() && false === $wait) {
             $symfonyStyle->warning('No due tasks found');
 
@@ -132,7 +142,7 @@ final class ConsumeTasksCommand extends Command
         $stopOptions = [];
 
         if (null !== $limit = $input->getOption('limit')) {
-            $stopOptions[] = sprintf('%s tasks has been consumed', $limit);
+            $stopOptions[] = sprintf('%s task%s %s been consumed', $limit, (int) $limit > 1 ? 's' : '', (int) $limit > 1 ? 'have' : 'has');
             $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber((int) $limit, $this->logger));
         }
 
@@ -142,7 +152,7 @@ final class ConsumeTasksCommand extends Command
         }
 
         if (null !== $failureLimit = $input->getOption('failure-limit')) {
-            $stopOptions[] = sprintf('%d task%s have failed', $failureLimit, (int) $failureLimit > 1 ? 's' : '');
+            $stopOptions[] = sprintf('%d task%s %s failed', $failureLimit, (int) $failureLimit > 1 ? 's' : '', (int) $failureLimit > 1 ? 'have' : 'has');
             $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
         }
 
@@ -174,6 +184,7 @@ final class ConsumeTasksCommand extends Command
 
         try {
             $this->worker->execute([
+                'mustStrictlyCheckDate' => true === $strict,
                 'sleepUntilNextMinute' => true === $wait,
             ]);
         } catch (Throwable $throwable) {

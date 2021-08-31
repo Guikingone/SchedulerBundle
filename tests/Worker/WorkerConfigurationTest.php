@@ -43,4 +43,13 @@ final class WorkerConfigurationTest extends TestCase
         $configuration->setLastExecutedTask($task);
         self::assertSame($task, $configuration->getLastExecutedTask());
     }
+
+    public function testConfigurationCanDefineToStrictlyCheckDate(): void
+    {
+        $configuration = WorkerConfiguration::create();
+        self::assertFalse($configuration->isStrictlyCheckingDate());
+
+        $configuration->mustStrictlyCheckDate(true);
+        self::assertTrue($configuration->isStrictlyCheckingDate());
+    }
 }

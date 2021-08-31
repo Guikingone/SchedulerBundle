@@ -233,7 +233,7 @@ final class WorkerTest extends TestCase
         $worker->stop();
         $worker->execute();
 
-        self::assertCount(6, $worker->getOptions());
+        self::assertCount(7, $worker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
         self::assertSame(0, $worker->getOptions()['executedTasksCount']);
         self::assertArrayHasKey('forkedFrom', $worker->getOptions());
@@ -249,6 +249,8 @@ final class WorkerTest extends TestCase
         self::assertTrue($worker->getConfiguration()->shouldStop());
         self::assertArrayHasKey('shouldRetrieveTasksLazily', $worker->getOptions());
         self::assertFalse($worker->getOptions()['shouldRetrieveTasksLazily']);
+        self::assertArrayHasKey('mustStrictlyCheckDate', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['mustStrictlyCheckDate']);
     }
 
     /**
@@ -276,7 +278,7 @@ final class WorkerTest extends TestCase
         $forkedWorker = $worker->fork();
 
         self::assertNotSame($forkedWorker, $worker);
-        self::assertCount(6, $forkedWorker->getOptions());
+        self::assertCount(7, $forkedWorker->getOptions());
         self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
         self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
         self::assertArrayHasKey('forkedFrom', $forkedWorker->getOptions());
@@ -293,6 +295,8 @@ final class WorkerTest extends TestCase
         self::assertFalse($forkedWorker->getConfiguration()->shouldStop());
         self::assertArrayHasKey('shouldRetrieveTasksLazily', $forkedWorker->getOptions());
         self::assertFalse($forkedWorker->getOptions()['shouldRetrieveTasksLazily']);
+        self::assertArrayHasKey('mustStrictlyCheckDate', $worker->getOptions());
+        self::assertFalse($worker->getOptions()['mustStrictlyCheckDate']);
     }
 
     /**

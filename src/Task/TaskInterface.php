@@ -89,12 +89,24 @@ interface TaskInterface
         self::TO_RETRY,
     ];
 
+    /**
+     * Return the name of the task.
+     */
     public function getName(): string;
 
+    /**
+     * Define the name of the task.
+     */
     public function setName(string $name): self;
 
+    /**
+     * Set the date from which the task has been retrieved by the worker and started its execution.
+     */
     public function setArrivalTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
+    /**
+     * Return the date from which the task has been retrieved by the worker and started its execution.
+     */
     public function getArrivalTime(): ?DateTimeImmutable;
 
     public function setBackground(bool $background): self;
@@ -179,18 +191,30 @@ interface TaskInterface
 
     public function setExecutionStartDate(string $executionStartDate = null): self;
 
+    /**
+     * Return the date from which the task is allowed to be executed / considered as "due".
+     */
     public function getExecutionStartDate(): ?DateTimeImmutable;
 
     public function setExecutionEndDate(string $executionEndDate = null): self;
 
+    /**
+     * Return the date until which the task is allowed to be executed / considered as "due".
+     */
     public function getExecutionEndDate(): ?DateTimeImmutable;
 
     public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
+    /**
+     * Return the date since the task started to being executed.
+     */
     public function getExecutionStartTime(): ?DateTimeImmutable;
 
     public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): self;
 
+    /**
+     * Return the date since the task stopped to being executed.
+     */
     public function getExecutionEndTime(): ?DateTimeImmutable;
 
     /**
