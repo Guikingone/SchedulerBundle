@@ -38,12 +38,13 @@ final class RedisTransportFactory implements TransportFactoryInterface
         $connectionOptions = [
             'host' => $dsn->getHost(),
             'password' => $dsn->getPassword(),
-            'port' => $dsn->getPort(),
+            'port' => $dsn->getPort() ?? 6379,
             'scheme' => $dsn->getScheme(),
-            'timeout' => $dsn->getOption('timeout'),
+            'timeout' => $dsn->getOption('timeout', 30),
             'auth' => $dsn->getOption('host'),
             'dbindex' => $dsn->getOption('dbindex'),
             'transaction_mode' => $dsn->getOption('transaction_mode'),
+            'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
         ];
 
         return new RedisTransport(array_merge($connectionOptions, $options), $serializer, $schedulePolicyOrchestrator);

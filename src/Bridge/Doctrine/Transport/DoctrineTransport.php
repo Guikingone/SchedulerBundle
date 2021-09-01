@@ -36,11 +36,9 @@ class DoctrineTransport extends AbstractTransport
     ) {
         $this->defineOptions(array_merge([
             'auto_setup' => $options['auto_setup'],
-            'connection' => $options['connection'] ?? null,
             'table_name' => $options['table_name'],
         ], $options), [
             'auto_setup' => 'bool',
-            'connection' => ['string', 'null'],
             'table_name' => 'string',
         ]);
 

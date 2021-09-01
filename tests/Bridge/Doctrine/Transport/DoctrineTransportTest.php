@@ -407,7 +407,6 @@ final class DoctrineTransportTest extends TestCase
         $connection->expects(self::never())->method('transactional');
 
         $transport = new DoctrineTransport([
-            'connection' => 'default',
             'execution_mode' => 'first_in_first_out',
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',

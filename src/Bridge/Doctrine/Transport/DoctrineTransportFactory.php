@@ -52,7 +52,6 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
 
         return new DoctrineTransport([
             'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
-            'connection' => $dsn->getHost(),
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
         ], $doctrineConnection, $serializer, $schedulePolicyOrchestrator, $this->logger);

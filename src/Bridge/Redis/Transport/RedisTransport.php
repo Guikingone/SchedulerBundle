@@ -32,15 +32,15 @@ final class RedisTransport extends AbstractTransport
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->defineOptions(array_merge([
-            'host' => '127.0.0.1',
-            'password' => null,
-            'port' => 6379,
+            'host' => $options['host'],
+            'password' => $options['password'] ?? null,
+            'port' => $options['port'],
             'scheme' => null,
-            'timeout' => 30,
-            'auth' => null,
+            'timeout' => $options['timeout'],
+            'auth' => $options['auth'] ?? null,
             'dbindex' => 0,
-            'transaction_mode' => null,
-            'list' => '_symfony_scheduler_tasks',
+            'transaction_mode' => $options['transaction_mode'] ?? null,
+            'list' => $options['list'],
         ], $options), [
             'host' => 'string',
             'password' => ['string', 'null'],
