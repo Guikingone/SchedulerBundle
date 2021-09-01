@@ -36,7 +36,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
     public function onTaskExecuting(TaskExecutingEvent $taskExecutingEvent): void
     {
         foreach ([SIGTERM, SIGINT] as $signal) {
-            pcntl_signal($signal, static function () use ($signal, $taskExecutingEvent): void {
+            pcntl_signal($signal, function () use ($signal, $taskExecutingEvent): void {
                 $task = $taskExecutingEvent->getTask();
                 $worker = $taskExecutingEvent->getWorker();
 
@@ -56,7 +56,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 
     public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
-        pcntl_signal(SIGHUP, static function () use ($workerRunningEvent): void {
+        pcntl_signal(SIGHUP, function () use ($workerRunningEvent): void {
             $workerRunningEvent->getWorker()->restart();
 
             $this->logger->warning('The currently running worker has been stopped due to the signal SIGHUP');
@@ -88,7 +88,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
     private function stopWorker(WorkerEventInterface $event): void
     {
         foreach ([SIGTERM, SIGINT, SIGQUIT, SIGHUP] as $signal) {
-            pcntl_signal($signal, static function () use ($event, $signal): void {
+            pcntl_signal($signal, function () use ($event, $signal): void {
                 $event->getWorker()->stop();
 
                 $this->logger->warning(sprintf('The worker has been stopped due to the signal "%d"', $signal));
