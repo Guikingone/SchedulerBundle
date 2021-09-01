@@ -44,6 +44,7 @@ final class DoctrineTransportTest extends TestCase
         self::expectExceptionCode(0);
         new DoctrineTransport([
             'auto_setup' => 'foo',
+            'table_name' => 'foo',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -58,6 +59,7 @@ final class DoctrineTransportTest extends TestCase
         self::expectExceptionMessage('The option "table_name" with value true is expected to be of type "string", but is of type "bool"');
         self::expectExceptionCode(0);
         new DoctrineTransport([
+            'auto_setup' => true,
             'table_name' => true,
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -69,7 +71,10 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $connection = $this->createMock(Connection::class);
 
-        $doctrineTransport = new DoctrineTransport([], $connection, $serializer, new SchedulePolicyOrchestrator([
+        $doctrineTransport = new DoctrineTransport([
+            'auto_setup' => true,
+            'table_name' => 'foo',
+        ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -78,7 +83,7 @@ final class DoctrineTransportTest extends TestCase
         self::assertArrayHasKey('auto_setup', $doctrineTransport->getOptions());
         self::assertTrue($doctrineTransport->getOptions()['auto_setup']);
         self::assertArrayHasKey('table_name', $doctrineTransport->getOptions());
-        self::assertSame('_symfony_scheduler_tasks', $doctrineTransport->getOptions()['table_name']);
+        self::assertSame('foo', $doctrineTransport->getOptions()['table_name']);
     }
 
     public function testTransportCanBeConfigured(): void

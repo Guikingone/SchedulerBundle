@@ -35,9 +35,9 @@ class DoctrineTransport extends AbstractTransport
         ?LoggerInterface $logger = null
     ) {
         $this->defineOptions(array_merge([
-            'auto_setup' => $options['auto_setup'] ?? true,
+            'auto_setup' => $options['auto_setup'],
             'connection' => $options['connection'] ?? null,
-            'table_name' => '_symfony_scheduler_tasks',
+            'table_name' => $options['table_name'],
         ], $options), [
             'auto_setup' => 'bool',
             'connection' => ['string', 'null'],
