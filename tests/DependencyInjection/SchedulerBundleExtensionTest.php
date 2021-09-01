@@ -953,6 +953,11 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(TaskLoggerSubscriber::class, $container->getDefinition(TaskLoggerSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(StopWorkerOnSignalSubscriber::class));
+        self::assertFalse($container->getDefinition(StopWorkerOnSignalSubscriber::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getArgument(0));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getArgument(0));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getArgument(0)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(StopWorkerOnSignalSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(StopWorkerOnSignalSubscriber::class)->hasTag('container.preload'));
         self::assertSame(StopWorkerOnSignalSubscriber::class, $container->getDefinition(StopWorkerOnSignalSubscriber::class)->getTag('container.preload')[0]['class']);

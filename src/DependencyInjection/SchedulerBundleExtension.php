@@ -878,6 +878,9 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(StopWorkerOnSignalSubscriber::class, StopWorkerOnSignalSubscriber::class)
+            ->setArguments([
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => StopWorkerOnSignalSubscriber::class,
