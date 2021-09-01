@@ -133,7 +133,6 @@ final class RedisTransportIntegrationTest extends TestCase
         self::assertCount(1, $list);
 
         $storedTask = $list->get($task->getName());
-        self::assertNotNull($storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
     }
 
@@ -152,7 +151,6 @@ final class RedisTransportIntegrationTest extends TestCase
         self::assertCount(1, $list);
 
         $storedTask = $list->get($task->getName());
-        self::assertNotNull($storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
     }
 

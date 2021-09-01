@@ -43,7 +43,7 @@ final class InMemoryTransportTest extends TestCase
         new InMemoryTransport(['path' => 350], new SchedulePolicyOrchestrator([]));
     }
 
-    public function testTransportCannotReturnInvalidTask(): void
+    public function testTransportCannotReturnUndefinedTask(): void
     {
         $inMemoryTransport = new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',

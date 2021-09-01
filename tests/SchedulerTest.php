@@ -771,7 +771,7 @@ final class SchedulerTest extends TestCase
         self::assertCount(1, $dueTasks);
 
         $task = $dueTasks->get('foo');
-        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     /**
@@ -801,7 +801,7 @@ final class SchedulerTest extends TestCase
         self::assertCount(1, $dueTasks);
 
         $task = $dueTasks->get('foo');
-        self::assertInstanceOf(TaskInterface::class, $task);
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     /**

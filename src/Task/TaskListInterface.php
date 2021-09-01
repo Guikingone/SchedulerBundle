@@ -8,6 +8,7 @@ use ArrayAccess;
 use Closure;
 use Countable;
 use IteratorAggregate;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 
 /**
@@ -26,11 +27,13 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function has(string $taskName): bool;
 
     /**
-     * Return the desired {@see TaskInterface} if found using its @param string $taskName, otherwise, null.
+     * Return the desired {@see TaskInterface} using @param string $taskName.
      *
      * Can return a {@see LazyTask} if @param bool $lazy is used and if the task can be found.
+     *
+     * @throws InvalidArgumentException If the task cannot be found or is not an instance of {@see TaskInterface}.
      */
-    public function get(string $taskName, bool $lazy = false): ?TaskInterface;
+    public function get(string $taskName, bool $lazy = false): TaskInterface;
 
     /**
      * @param array<int, string> $names
@@ -72,6 +75,15 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * The current list is returned with the sorted tasks.
      */
     public function uasort(Closure $func): TaskListInterface;
+
+    /**
+     * Allow to split the list into chunks of size @param int $size.
+     *
+     * If @param bool $preserveKeys is used, the task name as keys are preserved.
+     *
+     * For more information, see @link https://php.net/manual/en/function.array-chunk.php
+     */
+    public function chunk(int $size, bool $preserveKeys = false): array;
 
     /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.

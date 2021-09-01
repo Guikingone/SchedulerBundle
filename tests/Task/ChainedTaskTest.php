@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 
@@ -60,6 +61,9 @@ final class ChainedTaskTest extends TestCase
     {
         $chainedTask = new ChainedTask('foo');
 
-        self::assertNull($chainedTask->getTask('foo'));
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
+        self::expectExceptionCode(0);
+        $chainedTask->getTask('foo');
     }
 }

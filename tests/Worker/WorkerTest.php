@@ -702,7 +702,6 @@ final class WorkerTest extends TestCase
 
         $task = $scheduler->getTasks()->get('foo');
 
-        self::assertInstanceOf(TaskInterface::class, $task);
         self::assertFalse($task->isSingleRun());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getArrivalTime());
         self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionStartTime());

@@ -130,17 +130,20 @@ final class TaskListTest extends TestCase
     {
         $taskList = new TaskList([]);
 
-        self::assertNull($taskList->get('foo'));
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
+        self::expectExceptionCode(0);
+        $taskList->get('foo');
     }
 
     public function testListCanReturnTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $taskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
-        $taskList = new TaskList([$task]);
-
-        self::assertInstanceOf(TaskInterface::class, $taskList->get('foo'));
+        $task = $taskList->get('foo');
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testListCanReturnLazyTask(): void
@@ -332,5 +335,58 @@ final class TaskListTest extends TestCase
             'foo' => $fooTask,
             'bar' => $barTask,
         ], $taskList->toArray());
+    }
+
+    public function testListCannotBeChunkedWithInvalidSize(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The given size "0" cannot be used to split the list');
+        self::expectExceptionCode(0);
+        $taskList->chunk(0);
+    }
+
+    public function testListCanBeChunkedWithoutKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        $chunk = $taskList->chunk(1);
+
+        self::assertCount(2, $chunk);
+        self::assertArrayHasKey(0, $chunk);
+        self::assertIsArray($chunk[0]);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey(0, $chunk[0]);
+        self::assertArrayHasKey(1, $chunk);
+        self::assertIsArray($chunk[1]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey(0, $chunk[1]);
+    }
+
+    public function testListCanBeChunkedWithKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        $chunk = $taskList->chunk(1, true);
+
+        self::assertCount(2, $chunk);
+        self::assertArrayHasKey(0, $chunk);
+        self::assertIsArray($chunk[0]);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey('foo', $chunk[0]);
+        self::assertArrayHasKey(1, $chunk);
+        self::assertIsArray($chunk[1]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey('bar', $chunk[1]);
     }
 }

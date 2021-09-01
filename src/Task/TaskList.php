@@ -9,6 +9,7 @@ use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use Throwable;
+use function array_chunk;
 use function array_filter;
 use function array_key_exists;
 use function array_key_last;
@@ -51,7 +52,9 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        array_walk($task, fn (TaskInterface $task) => $this->tasks[$task->getName()] = $task);
+        array_walk($task, function (TaskInterface $task): void {
+            $this->tasks[$task->getName()] = $task;
+        });
     }
 
     /**
@@ -65,13 +68,18 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName, bool $lazy = false): ?TaskInterface
+    public function get(string $taskName, bool $lazy = false): TaskInterface
     {
         if ($lazy) {
-            return new LazyTask($taskName, Closure::bind(fn (): ?TaskInterface => $this->get($taskName), $this));
+            return new LazyTask($taskName, Closure::bind(fn (): TaskInterface => $this->get($taskName), $this));
         }
 
-        return $this->tasks[$taskName] ?? null;
+        $task = $this->tasks[$taskName] ?? null;
+        if (!$task instanceof TaskInterface) {
+            throw new InvalidArgumentException(sprintf('The task "%s" does not exist or is invalid', $taskName));
+        }
+
+        return $task;
     }
 
     /**
@@ -143,6 +151,20 @@ final class TaskList implements TaskListInterface
         uasort($this->tasks, $func);
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function chunk(int $size, bool $preserveKeys = false): array
+    {
+        try {
+            $chunks = array_chunk($this->tasks, $size, $preserveKeys);
+        } catch (Throwable $throwable) {
+            throw new InvalidArgumentException(sprintf('The given size "%d" cannot be used to split the list', $size));
+        }
+
+        return $chunks;
     }
 
     /**
