@@ -10,13 +10,13 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
-use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -157,7 +157,10 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $inMemoryTransport->create($task);
-        self::assertCount(1, $inMemoryTransport->list());
+
+        $list = $inMemoryTransport->list();
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(1, $list);
     }
 
     /**
