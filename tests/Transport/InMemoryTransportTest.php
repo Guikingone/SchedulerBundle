@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -98,6 +99,28 @@ final class InMemoryTransportTest extends TestCase
         self::assertTrue($lazyTask->isInitialized());
         self::assertSame($storedTask, $task);
         self::assertSame($storedTask->getName(), $task->getName());
+    }
+
+    public function testTransportCanStoreAndSortTasks(): void
+    {
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $task = new NullTask('foo');
+        $secondTask = new NullTask('bar');
+
+        $inMemoryTransport->create($task);
+        $inMemoryTransport->create($secondTask);
+
+        $list = $inMemoryTransport->list();
+        self::assertCount(2, $list);
+        self::assertSame([
+            'foo' => $task,
+            'bar' => $secondTask,
+        ], $list->toArray());
     }
 
     public function testTransportCannotReturnInvalidTaskLazily(): void

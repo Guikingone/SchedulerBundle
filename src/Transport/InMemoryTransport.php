@@ -64,8 +64,6 @@ final class InMemoryTransport extends AbstractTransport
         }
 
         $this->tasks->add($task);
-
-        $this->orchestrator->sort($this->getExecutionMode(), $this->tasks);
     }
 
     /**
