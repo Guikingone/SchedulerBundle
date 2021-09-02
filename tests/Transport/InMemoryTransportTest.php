@@ -52,7 +52,7 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
         self::expectExceptionCode(0);
         $inMemoryTransport->get('foo');
     }
@@ -115,7 +115,7 @@ final class InMemoryTransportTest extends TestCase
         self::assertFalse($lazyTask->isInitialized());
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
         self::expectExceptionCode(0);
         $lazyTask->getTask();
     }
@@ -245,6 +245,8 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->update($task->getName(), $task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
+
+        $task = $inMemoryTransport->get($task->getName());
         self::assertContains('test', $task->getTags());
     }
 
@@ -304,7 +306,7 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectExceptionMessage(sprintf('The task "%s" does not exist or is invalid', $task->getName()));
         self::expectExceptionCode(0);
         $inMemoryTransport->pause($task->getName());
     }

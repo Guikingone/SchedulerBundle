@@ -41,10 +41,6 @@ final class InMemoryTransport extends AbstractTransport
             return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
         }
 
-        if (!$this->tasks->has($name)) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
-        }
-
         return $this->tasks->get($name);
     }
 
