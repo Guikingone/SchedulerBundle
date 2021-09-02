@@ -47,11 +47,39 @@ final class RoundRobinTransportFactoryTest extends TestCase
     }
 
     /**
+     * @dataProvider provideDsnWithOptions
+     */
+    public function testFactoryCanCreateTransportWithOptions(string $dsn): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $roundRobinTransportFactory = new RoundRobinTransportFactory([
+            new InMemoryTransportFactory(),
+        ]);
+        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+
+        self::assertInstanceOf(RoundRobinTransport::class, $transport);
+        self::assertSame('first_in_first_out', $transport->getExecutionMode());
+        self::assertArrayHasKey('execution_mode', $transport->getOptions());
+        self::assertArrayHasKey('quantum', $transport->getOptions());
+        self::assertSame(10, $transport->getOptions()['quantum']);
+    }
+
+    /**
      * @return Generator<array<int, string>>
      */
     public function provideDsn(): Generator
     {
         yield ['roundrobin://(memory://first_in_first_out && memory://last_in_first_out)'];
         yield ['rr://(memory://first_in_first_out && memory://last_in_first_out)'];
+    }
+
+    /**
+     * @return Generator<array<int, string>>
+     */
+    public function provideDsnWithOptions(): Generator
+    {
+        yield ['roundrobin://(memory://first_in_first_out && memory://last_in_first_out)?quantum=10'];
+        yield ['rr://(memory://first_in_first_out && memory://last_in_first_out)?quantum=10'];
     }
 }

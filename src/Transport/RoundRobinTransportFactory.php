@@ -14,12 +14,12 @@ use function strpos;
 final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
+     * @var TransportFactoryInterface[]
      */
     private iterable $transportFactories;
 
     /**
-     * @param iterable|TransportFactoryInterface[] $transportFactories
+     * @param TransportFactoryInterface[] $transportFactories
      */
     public function __construct(iterable $transportFactories)
     {
@@ -31,7 +31,9 @@ final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new RoundRobinTransport($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
+        return new RoundRobinTransport($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator), [
+            'quantum' => $dsn->getOptionAsInt('quantum', 2),
+        ]);
     }
 
     /**
