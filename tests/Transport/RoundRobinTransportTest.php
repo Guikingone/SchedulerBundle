@@ -100,6 +100,31 @@ final class RoundRobinTransportTest extends TestCase
         self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
     }
 
+    public function testTransportCannotRetrieveTaskWithFailingTransports(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'))
+            ->willThrowException(new RuntimeException('Task not found'));
+
+        $secondTransport = $this->createMock(TransportInterface::class);
+        $secondTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'))
+            ->willThrowException(new RuntimeException('Task not found'));
+
+        $roundRobinTransport = new RoundRobinTransport([
+            $firstTransport,
+            $secondTransport,
+        ], [
+            'quantum' => 10,
+        ]);
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
+        $roundRobinTransport->get('foo', true);
+    }
+
     public function testTransportCanRetrieveTaskLazilyWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
