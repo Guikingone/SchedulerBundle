@@ -153,6 +153,27 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
+    public function testWorkerCannotBeConfiguredWithInvalidMustStrictlyCheckDate(): void
+    {
+        $runner = $this->createMock(RunnerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
+
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "mustStrictlyCheckDate" with value "foo" is expected to be of type "bool", but is of type "string"');
+        self::expectExceptionCode(0);
+        $worker->execute([
+            'mustStrictlyCheckDate' => 'foo',
+        ]);
+    }
+
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
     public function testWorkerCannotBeConfiguredWithInvalidSleepDurationDelay(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
