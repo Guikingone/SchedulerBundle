@@ -75,7 +75,7 @@ final class HttpBuilderTest extends TestCase
             'client_options' => [
                 'headers' => [
                     'Accept' => 'application/json',
-                ]
+                ],
             ],
             'expression' => '*/5 * * * *',
         ]);
@@ -85,7 +85,7 @@ final class HttpBuilderTest extends TestCase
         self::assertSame([
             'headers' => [
                 'Accept' => 'application/json',
-            ]
+            ],
         ], $task->getClientOptions());
     }
 
@@ -97,7 +97,7 @@ final class HttpBuilderTest extends TestCase
             new FluentExpressionBuilder(),
         ]));
 
-        $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(),  [
+        $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(), [
             'name' => 'bar',
             'type' => 'http',
             'url' => 'https://google.com',
