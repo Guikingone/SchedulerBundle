@@ -13,7 +13,6 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,7 +30,7 @@ final class RedisTransport extends AbstractTransport
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions(array_merge([
+        $this->defineOptions([
             'host' => $options['host'],
             'password' => $options['password'] ?? null,
             'port' => $options['port'],
@@ -41,7 +40,8 @@ final class RedisTransport extends AbstractTransport
             'dbindex' => 0,
             'transaction_mode' => $options['transaction_mode'] ?? null,
             'list' => $options['list'],
-        ], $options), [
+            'execution_mode' => $options['execution_mode'],
+        ], [
             'host' => 'string',
             'password' => ['string', 'null'],
             'port' => 'int',

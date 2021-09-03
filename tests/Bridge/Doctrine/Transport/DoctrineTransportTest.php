@@ -45,6 +45,7 @@ final class DoctrineTransportTest extends TestCase
         new DoctrineTransport([
             'auto_setup' => 'foo',
             'table_name' => 'foo',
+            'execution_mode' => 'first_in_first_out',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -61,6 +62,7 @@ final class DoctrineTransportTest extends TestCase
         new DoctrineTransport([
             'auto_setup' => true,
             'table_name' => true,
+            'execution_mode' => 'first_in_first_out',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
@@ -74,6 +76,7 @@ final class DoctrineTransportTest extends TestCase
         $doctrineTransport = new DoctrineTransport([
             'auto_setup' => true,
             'table_name' => 'foo',
+            'execution_mode' => 'first_in_first_out',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));

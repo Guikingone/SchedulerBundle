@@ -68,6 +68,7 @@ final class NotificationTaskBagNormalizerTest extends TestCase
         $data = $serializer->serialize(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')), 'json');
         $bag = $serializer->deserialize($data, NotificationTaskBag::class, 'json');
 
+        self::assertInstanceOf(NotificationTaskBag::class, $bag);
         self::assertCount(1, $bag->getRecipients());
     }
 }
