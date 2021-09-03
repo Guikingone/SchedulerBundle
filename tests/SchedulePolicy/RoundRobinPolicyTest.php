@@ -41,4 +41,42 @@ final class RoundRobinPolicyTest extends TestCase
             'foo' => $secondTask,
         ], $sortedTasks->toArray());
     }
+
+    public function testTasksCanBeSortedUsingSameComputationTime(): void
+    {
+        $task = new NullTask('bar', [
+            'execution_computation_time' => 12.0,
+        ]);
+
+        $secondTask = new NullTask('foo', [
+            'execution_computation_time' => 12.0,
+        ]);
+
+        $roundRobinPolicy = new RoundRobinPolicy();
+        $sortedTasks = $roundRobinPolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertSame([
+            'foo' => $secondTask,
+            'bar' => $task,
+        ], $sortedTasks->toArray());
+    }
+
+    public function testTasksCanBeSortedUsingHigherComputationTime(): void
+    {
+        $task = new NullTask('bar', [
+            'execution_computation_time' => 12.0,
+        ]);
+
+        $secondTask = new NullTask('foo', [
+            'execution_computation_time' => 15.0,
+        ]);
+
+        $roundRobinPolicy = new RoundRobinPolicy();
+        $sortedTasks = $roundRobinPolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertSame([
+            'foo' => $secondTask,
+            'bar' => $task,
+        ], $sortedTasks->toArray());
+    }
 }

@@ -82,6 +82,26 @@ final class IdlePolicyTest extends TestCase
         ], $tasks->toArray());
     }
 
+    public function testTasksCanBeSortedWithFirstTaskSetToLowerPolicyPriority(): void
+    {
+        $task = new NullTask('foo', [
+            'priority' => 18,
+        ]);
+
+        $secondTask = new NullTask('app', [
+            'priority' => 19,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertCount(2, $tasks);
+        self::assertSame([
+            'app' => $secondTask,
+            'foo' => $task,
+        ], $tasks->toArray());
+    }
+
     public function testTasksCanBeSortedWithLowerPolicyPriority(): void
     {
         $task = new NullTask('foo', [
@@ -90,6 +110,26 @@ final class IdlePolicyTest extends TestCase
 
         $secondTask = new NullTask('app', [
             'priority' => 18,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertCount(2, $tasks);
+        self::assertSame([
+            'foo' => $task,
+            'app' => $secondTask,
+        ], $tasks->toArray());
+    }
+
+    public function testTasksCanBeSortedWithTwiceLowerPolicyPriority(): void
+    {
+        $task = new NullTask('foo', [
+            'priority' => 18,
+        ]);
+
+        $secondTask = new NullTask('app', [
+            'priority' => 15,
         ]);
 
         $idlePolicy = new IdlePolicy();

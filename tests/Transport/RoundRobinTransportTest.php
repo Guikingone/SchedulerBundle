@@ -122,7 +122,7 @@ final class RoundRobinTransportTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('All the transports failed to execute the requested action');
         self::expectExceptionCode(0);
-        $roundRobinTransport->get('foo', true);
+        $roundRobinTransport->get('foo');
     }
 
     public function testTransportCanRetrieveTaskLazilyWithFailingTransports(): void
