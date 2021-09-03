@@ -476,6 +476,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         self::assertCount(1, $scheduler->getDueTasks());
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
     }
 
     /**
@@ -504,6 +505,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         self::assertCount(0, $scheduler->getDueTasks(false, true));
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
     }
 
     /**
@@ -529,7 +531,9 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertCount(1, $scheduler->getDueTasks(true));
+        $list = $scheduler->getDueTasks(true);
+        self::assertCount(1, $list);
+        self::assertInstanceOf(LazyTaskList::class, $list);
     }
 
     /**
@@ -557,7 +561,9 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule($task);
 
-        self::assertCount(0, $scheduler->getDueTasks(true, true));
+        $list = $scheduler->getDueTasks(true, true);
+        self::assertCount(0, $list);
+        self::assertInstanceOf(LazyTaskList::class, $list);
     }
 
     /**
@@ -631,6 +637,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($fourthTask);
 
         self::assertCount(3, $scheduler->getDueTasks());
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
         self::assertTrue($scheduler->getDueTasks()->has('foo'));
         self::assertTrue($scheduler->getDueTasks()->has('bar'));
         self::assertTrue($scheduler->getDueTasks()->has('random'));
@@ -666,6 +673,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($fourthTask);
 
         self::assertCount(3, $scheduler->getDueTasks(true));
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
         self::assertTrue($scheduler->getDueTasks(true)->has('foo'));
         self::assertTrue($scheduler->getDueTasks(true)->has('bar'));
         self::assertTrue($scheduler->getDueTasks(true)->has('random'));
@@ -703,6 +711,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($thirdTask);
 
         self::assertCount(1, $scheduler->getDueTasks());
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
         self::assertFalse($scheduler->getDueTasks()->has('foo'));
         self::assertTrue($scheduler->getDueTasks()->has('bar'));
         self::assertFalse($scheduler->getDueTasks()->has('random'));
@@ -739,6 +748,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($thirdTask);
 
         self::assertCount(1, $scheduler->getDueTasks(true));
+        self::assertInstanceOf(TaskList::class, $scheduler->getDueTasks());
         self::assertFalse($scheduler->getDueTasks(true)->has('foo'));
         self::assertTrue($scheduler->getDueTasks(true)->has('bar'));
         self::assertFalse($scheduler->getDueTasks(true)->has('random'));
@@ -768,6 +778,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         $dueTasks = $scheduler->getDueTasks();
+        self::assertInstanceOf(TaskList::class, $dueTasks);
         self::assertCount(1, $dueTasks);
 
         $task = $dueTasks->get('foo');
@@ -798,6 +809,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule($task);
 
         $dueTasks = $scheduler->getDueTasks(true);
+        self::assertInstanceOf(LazyTaskList::class, $dueTasks);
         self::assertCount(1, $dueTasks);
 
         $task = $dueTasks->get('foo');

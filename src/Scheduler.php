@@ -13,6 +13,7 @@ use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
@@ -167,7 +168,7 @@ final class Scheduler implements SchedulerInterface
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
         if ($synchronizedCurrentDate->format('s') !== '00' && $strict) {
-            return new TaskList();
+            return $lazy ? new LazyTaskList(new TaskList()) : new TaskList();
         }
 
         $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
