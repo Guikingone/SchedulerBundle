@@ -75,7 +75,6 @@ final class InMemoryTransport extends AbstractTransport
             throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
         }
 
-        $this->tasks->remove($name);
         $this->tasks->add($updatedTask);
     }
 
