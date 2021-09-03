@@ -100,6 +100,53 @@ final class ProbeTaskBuilderTest extends TestCase
         self::assertSame(0, $task->getDelay());
     }
 
+    public function testTaskCanBeBuiltWithNullErrorOnFailedTasks(): void
+    {
+        $builder = new ProbeTaskBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'bar',
+            'type' => 'probe',
+            'externalProbePath' => '/_probe',
+            'errorOnFailedTasks' => null,
+            'delay' => 100,
+        ]);
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('bar', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(100, $task->getDelay());
+    }
+
+    public function testTaskCanBeBuiltWithNullDelay(): void
+    {
+        $builder = new ProbeTaskBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $builder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'bar',
+            'type' => 'probe',
+            'externalProbePath' => '/_probe',
+            'delay' => null,
+        ]);
+
+        self::assertInstanceOf(ProbeTask::class, $task);
+        self::assertSame('bar', $task->getName());
+        self::assertSame('* * * * *', $task->getExpression());
+        self::assertSame('/_probe', $task->getExternalProbePath());
+        self::assertFalse($task->getErrorOnFailedTasks());
+        self::assertSame(0, $task->getDelay());
+    }
+
     /**
      * @return Generator<array<int, array<string, mixed>>>
      */
