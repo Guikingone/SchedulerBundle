@@ -20,6 +20,7 @@ final class ProbeScheduledTaskTest extends TestCase
         $probe->expects(self::once())->method('getScheduledTasks')->willReturn(10);
 
         $constraint = new ProbeScheduledTask(1);
+        self::assertSame('has found 1 scheduled task', $constraint->toString());
 
         self::assertFalse($constraint->evaluate($probe, '', true));
     }
@@ -30,6 +31,7 @@ final class ProbeScheduledTaskTest extends TestCase
         $probe->expects(self::once())->method('getScheduledTasks')->willReturn(10);
 
         $constraint = new ProbeScheduledTask(1);
+        self::assertSame('has found 1 scheduled task', $constraint->toString());
 
         self::expectException(ExpectationFailedException::class);
         self::expectExceptionMessage('has found 1 scheduled task');
@@ -43,6 +45,7 @@ final class ProbeScheduledTaskTest extends TestCase
         $probe->expects(self::once())->method('getScheduledTasks')->willReturn(1);
 
         $constraint = new ProbeScheduledTask(10);
+        self::assertSame('has found 10 scheduled tasks', $constraint->toString());
 
         self::expectException(ExpectationFailedException::class);
         self::expectExceptionMessage('has found 10 scheduled tasks');
