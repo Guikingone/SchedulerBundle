@@ -59,6 +59,58 @@ final class HttpBuilderTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
+    public function testTaskCanBeBuiltWithNullableMethod(): void
+    {
+        $httpBuilder = new HttpBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'bar',
+            'type' => 'http',
+            'url' => 'https://google.com',
+            'method' => null,
+            'client_options' => [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ]
+            ],
+            'expression' => '*/5 * * * *',
+        ]);
+
+        self::assertInstanceOf(HttpTask::class, $task);
+        self::assertSame('GET', $task->getMethod());
+        self::assertSame([
+            'headers' => [
+                'Accept' => 'application/json',
+            ]
+        ], $task->getClientOptions());
+    }
+
+    public function testTaskCanBeBuiltWithNullableClientOptions(): void
+    {
+        $httpBuilder = new HttpBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $httpBuilder->build(PropertyAccess::createPropertyAccessor(),  [
+            'name' => 'bar',
+            'type' => 'http',
+            'url' => 'https://google.com',
+            'method' => 'GET',
+            'client_options' => null,
+            'expression' => '*/5 * * * *',
+        ]);
+
+        self::assertInstanceOf(HttpTask::class, $task);
+        self::assertSame('GET', $task->getMethod());
+        self::assertSame([], $task->getClientOptions());
+    }
+
     /**
      * @return Generator<array<int, array<string, mixed>>>
      */
