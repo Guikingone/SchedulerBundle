@@ -38,22 +38,22 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
         try {
             return [
                 'bag' => AccessLockBag::class,
-                'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+                'body' => $this->objectNormalizer->normalize($object, $format, [
                     AbstractNormalizer::CALLBACKS => [
                         'key' => fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
                     ],
-                ])),
+                ]),
             ];
         } catch (Throwable $throwable) {
             $this->logger->warning('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
 
             return [
                 'bag' => AccessLockBag::class,
-                'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, [
+                'body' => $this->objectNormalizer->normalize($object, $format, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => [
                         'key',
                     ],
-                ])),
+                ]),
             ];
         }
     }
@@ -71,13 +71,13 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): AccessLockBag
     {
-        return $this->objectNormalizer->denormalize($data, $type, $format, array_merge($context, [
+        return $this->objectNormalizer->denormalize($data, $type, $format, [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 AccessLockBag::class => [
                     'key' => (array_key_exists('key', $data['body']) && null !== $data['body']['key']) ? unserialize($data['body']['key']) : null,
                 ],
             ],
-        ]));
+        ]);
     }
 
     /**
