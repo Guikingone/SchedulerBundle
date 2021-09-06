@@ -195,6 +195,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.scheduler_mode', $configuration['scheduler']['mode'] ?? 'default');
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
+        $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
