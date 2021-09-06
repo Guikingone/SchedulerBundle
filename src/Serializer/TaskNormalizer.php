@@ -215,7 +215,9 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         if (NullTask::class === $objectType) {
             return $this->objectNormalizer->denormalize($body, $objectType, $format, [
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
-                    NullTask::class => ['name' => $body['name']],
+                    NullTask::class => [
+                        'name' => $body['name'],
+                    ],
                 ],
             ]);
         }
@@ -280,8 +282,8 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     ProbeTask::class => [
                         'name' => $body['name'],
                         'externalProbePath' => $body['externalProbePath'],
-                        'errorOnFailedTasks' => $body['errorOnFailedTasks'] ?? false,
-                        'delay' => $body['delay'] ?? 0,
+                        'errorOnFailedTasks' => $body['errorOnFailedTasks'],
+                        'delay' => $body['delay'],
                     ],
                 ],
             ]);
