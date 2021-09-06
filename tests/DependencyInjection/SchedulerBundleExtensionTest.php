@@ -163,6 +163,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('default', $container->getParameter('scheduler.scheduler_mode'));
         self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
         self::assertFalse($container->getParameter('scheduler.probe_enabled'));
+        self::assertFalse($container->getParameter('scheduler.pool_support'));
     }
 
     public function testInterfacesForAutoconfigureAreRegistered(): void
@@ -1631,6 +1632,22 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(MercureEventSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(MercureEventSubscriber::class)->hasTag('container.preload'));
         self::assertSame(MercureEventSubscriber::class, $container->getDefinition(MercureEventSubscriber::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testPoolSupportCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'pool' => [
+                'enabled' => true,
+            ],
+        ]);
+
+        self::assertTrue($container->getParameter('scheduler.pool_support'));
     }
 
     public function testConfiguration(): void
