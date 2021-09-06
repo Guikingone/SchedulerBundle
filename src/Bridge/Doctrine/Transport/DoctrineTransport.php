@@ -15,7 +15,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -34,13 +33,12 @@ class DoctrineTransport extends AbstractTransport
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
         ?LoggerInterface $logger = null
     ) {
-        $this->defineOptions(array_merge([
-            'auto_setup' => $options['auto_setup'] ?? true,
-            'connection' => $options['connection'] ?? null,
-            'table_name' => '_symfony_scheduler_tasks',
-        ], $options), [
+        $this->defineOptions([
+            'auto_setup' => $options['auto_setup'],
+            'table_name' => $options['table_name'],
+            'execution_mode' => $options['execution_mode'],
+        ], [
             'auto_setup' => 'bool',
-            'connection' => ['string', 'null'],
             'table_name' => 'string',
         ]);
 

@@ -170,7 +170,7 @@ scheduler_bundle:
 
 ## RoundRobin
 
-The [RoundRobin](../src/Transport/RoundRobinTransport.php) allows to use multiple transports,
+The [RoundRobin](../src/Transport/RoundRobinTransport.php) allows using multiple transports,
 the main advantages of this transport is to distribute the work load around multiple transports, 
 think of it as a ["load-balancer"](https://en.wikipedia.org/wiki/Load_balancing_(computing)) transport.
 
@@ -182,7 +182,13 @@ scheduler_bundle:
         dsn: 'roundrobin://(memory://first_in_first_out && memory://last_in_first_out)' # Or 'rr://(memory://first_in_first_out && memory://last_in_first_out)'
 ```
 
-**configuration**: This transport requires at least 2 transports to be used (each one can be configured as usual).
+### Configuration:
+
+- This transport requires at least 2 transports to be used (each one can be configured as usual).
+- A `quantum` can be defined to determine the maximum duration (expressed in seconds) 
+  within a transport MUST perform the action, the default value is `2`.
+
+**Note**: By default, the execution duration limit is based around the formula: `count(transports) * quantum`.
 
 ## Redis
 

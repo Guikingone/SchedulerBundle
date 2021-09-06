@@ -116,6 +116,11 @@ final class Dsn
         return (bool) $this->getOption($key, $default);
     }
 
+    public function getOptionAsInt(string $key, int $default): int
+    {
+        return (int) $this->getOption($key, $default);
+    }
+
     public function getOptions(): array
     {
         return $this->options;

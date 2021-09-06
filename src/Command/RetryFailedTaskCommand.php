@@ -6,6 +6,7 @@ namespace SchedulerBundle\Command;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,7 +14,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
@@ -82,8 +82,9 @@ final class RetryFailedTaskCommand extends Command
         $name = $input->getArgument('name');
         $force = $input->getOption('force');
 
-        $task = $this->worker->getFailedTasks()->get($name);
-        if (!$task instanceof TaskInterface) {
+        try {
+            $task = $this->worker->getFailedTasks()->get($name);
+        } catch (InvalidArgumentException $invalidArgumentException) {
             $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;

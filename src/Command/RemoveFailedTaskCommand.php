@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use SchedulerBundle\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,7 +12,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 use function sprintf;
@@ -74,8 +74,9 @@ final class RemoveFailedTaskCommand extends Command
         $name = $input->getArgument('name');
         $force = $input->getOption('force');
 
-        $toRemoveTask = $this->worker->getFailedTasks()->get($name);
-        if (!$toRemoveTask instanceof TaskInterface) {
+        try {
+            $toRemoveTask = $this->worker->getFailedTasks()->get($name);
+        } catch (InvalidArgumentException $invalidArgumentException) {
             $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;

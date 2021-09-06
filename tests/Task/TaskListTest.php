@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -11,7 +12,9 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
 use stdClass;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -60,6 +63,9 @@ final class TaskListTest extends TestCase
         self::assertSame(2, $taskList->count());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCannotBeHydratedUsingInvalidOffset(): void
     {
         $taskList = new TaskList();
@@ -70,6 +76,9 @@ final class TaskListTest extends TestCase
         $taskList->offsetSet('foo', new stdClass());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCanBeHydratedUsingEmptyOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -82,6 +91,9 @@ final class TaskListTest extends TestCase
         self::assertSame(1, $taskList->count());
     }
 
+    /**
+     * @throws Throwable {@see TaskListInterface::offsetSet()}
+     */
     public function testListCanBeHydratedUsingOffset(): void
     {
         $task = $this->createMock(TaskInterface::class);
@@ -118,17 +130,20 @@ final class TaskListTest extends TestCase
     {
         $taskList = new TaskList([]);
 
-        self::assertNull($taskList->get('foo'));
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
+        self::expectExceptionCode(0);
+        $taskList->get('foo');
     }
 
     public function testListCanReturnTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $taskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
-        $taskList = new TaskList([$task]);
-
-        self::assertInstanceOf(TaskInterface::class, $taskList->get('foo'));
+        $task = $taskList->get('foo');
+        self::assertSame('* * * * *', $task->getExpression());
     }
 
     public function testListCanReturnLazyTask(): void
@@ -292,7 +307,86 @@ final class TaskListTest extends TestCase
             new NullTask('bar'),
         ]);
 
+        self::assertCount(2, $taskList);
+
         $lastTask = $taskList->last();
         self::assertSame('bar', $lastTask->getName());
+    }
+
+    public function testListCanBeSorted(): void
+    {
+        $fooTask = new NullTask('foo');
+        $fooTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
+
+        $barTask = new NullTask('bar');
+        $barTask->setScheduledAt(new DateTimeImmutable('- 2 day'));
+
+        $taskList = new TaskList([
+            $fooTask,
+            $barTask,
+        ]);
+
+        self::assertCount(2, $taskList);
+
+        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+
+        self::assertCount(2, $taskList);
+        self::assertEquals([
+            'foo' => $fooTask,
+            'bar' => $barTask,
+        ], $taskList->toArray());
+    }
+
+    public function testListCannotBeChunkedWithInvalidSize(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The given size "0" cannot be used to split the list');
+        self::expectExceptionCode(0);
+        $taskList->chunk(0);
+    }
+
+    public function testListCanBeChunkedWithoutKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        $chunk = $taskList->chunk(1);
+
+        self::assertCount(2, $chunk);
+        self::assertArrayHasKey(0, $chunk);
+        self::assertIsArray($chunk[0]);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey(0, $chunk[0]);
+        self::assertArrayHasKey(1, $chunk);
+        self::assertIsArray($chunk[1]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey(0, $chunk[1]);
+    }
+
+    public function testListCanBeChunkedWithKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        $chunk = $taskList->chunk(1, true);
+
+        self::assertCount(2, $chunk);
+        self::assertArrayHasKey(0, $chunk);
+        self::assertIsArray($chunk[0]);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey('foo', $chunk[0]);
+        self::assertArrayHasKey(1, $chunk);
+        self::assertIsArray($chunk[1]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey('bar', $chunk[1]);
     }
 }

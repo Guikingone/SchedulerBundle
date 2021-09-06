@@ -9,6 +9,7 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 use function count;
 use function is_array;
@@ -32,10 +33,12 @@ final class RoundRobinTransport extends AbstractTransport
     /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(iterable $transports, array $options = [])
-    {
+    public function __construct(
+        iterable $transports,
+        array $options = []
+    ) {
         $this->defineOptions([
-            'quantum' => $options['quantum'] ?? 2,
+            'quantum' => $options['quantum'],
         ], [
             'quantum' => 'int',
         ]);
@@ -121,7 +124,6 @@ final class RoundRobinTransport extends AbstractTransport
     }
 
     /**
-     *
      * @return mixed
      */
     private function execute(Closure $func)
@@ -136,16 +138,23 @@ final class RoundRobinTransport extends AbstractTransport
                     continue;
                 }
 
+                $stopWatch = new Stopwatch();
+
                 try {
-                    $res = $func($transport);
+                    $stopWatch->start('quantum');
 
-                    $this->sleepingTransports->attach($transport);
-
-                    return $res;
+                    return $func($transport);
                 } catch (Throwable $throwable) {
                     $this->sleepingTransports->attach($transport);
 
                     continue;
+                } finally {
+                    $event = $stopWatch->stop('quantum');
+
+                    $duration = $event->getDuration() / 1000;
+                    if ($duration > (count($this->transports) * $this->options['quantum'])) {
+                        $this->sleepingTransports->attach($transport);
+                    }
                 }
             }
         }

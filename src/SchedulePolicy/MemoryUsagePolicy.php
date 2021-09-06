@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use SchedulerBundle\Task\TaskInterface;
-use function uasort;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,13 +13,11 @@ use function uasort;
 final class MemoryUsagePolicy implements PolicyInterface
 {
     /**
-     * @return TaskInterface[]
+     * {@inheritdoc}
      */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionMemoryUsage() <=> $nextTask->getExecutionMemoryUsage());
-
-        return $tasks;
+        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionMemoryUsage() <=> $nextTask->getExecutionMemoryUsage());
     }
 
     /**

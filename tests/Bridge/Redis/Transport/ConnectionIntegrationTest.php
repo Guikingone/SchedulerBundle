@@ -104,8 +104,7 @@ final class ConnectionIntegrationTest extends TestCase
         $list = $this->connection->list();
 
         self::assertInstanceOf(TaskList::class, $list);
-        self::assertNotEmpty($list);
-        self::assertInstanceOf(TaskInterface::class, $list->get($task->getName()));
+        self::assertCount(1, $list);
     }
 
     public function testTaskCannotBeRetrievedWhenNotCreated(): void

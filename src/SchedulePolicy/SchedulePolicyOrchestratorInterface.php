@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\SchedulePolicy;
 
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -12,9 +12,9 @@ use SchedulerBundle\Task\TaskInterface;
 interface SchedulePolicyOrchestratorInterface
 {
     /**
-     * @param TaskInterface[] $tasks
+     * Sort tasks using @param string $policy to decide which policy must be applied.
      *
-     * @return TaskInterface[]
+     * The given @param TaskListInterface $tasks is returned once the sort policy has been applied.
      */
-    public function sort(string $policy, array $tasks): array;
+    public function sort(string $policy, TaskListInterface $tasks): TaskListInterface;
 }

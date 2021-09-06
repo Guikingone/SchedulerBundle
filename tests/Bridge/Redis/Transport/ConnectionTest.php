@@ -107,6 +107,52 @@ final class ConnectionTest extends TestCase
         $connection->list();
     }
 
+    public function testConnectionCanConnectWithoutSpecificPort(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('connect')->with(
+            self::equalTo('localhost'),
+            self::equalTo(6379),
+            self::equalTo(30)
+        )->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
+        $redis->expects(self::once())->method('auth')->willReturn(true);
+
+        new Connection([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 30,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], $serializer, $redis);
+    }
+
+    public function testConnectionCanConnectWithoutSpecificTimeout(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $redis = $this->createMock(Redis::class);
+        $redis->expects(self::once())->method('connect')->with(
+            self::equalTo('localhost'),
+            self::equalTo(6379),
+            self::equalTo(30)
+        )->willReturn(true);
+        $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
+        $redis->expects(self::once())->method('auth')->willReturn(true);
+
+        new Connection([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 30,
+            'auth' => 'root',
+            'dbindex' => 0,
+            'list' => '_symfony_scheduler_tasks',
+        ], $serializer, $redis);
+    }
+
     public function testConnectionCanListEmptyData(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);

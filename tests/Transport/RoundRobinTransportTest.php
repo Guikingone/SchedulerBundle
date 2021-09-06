@@ -37,7 +37,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportIsConfigured(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 2,
+        ]);
 
         self::assertCount(3, $roundRobinTransport->getOptions());
         self::assertArrayHasKey('quantum', $roundRobinTransport->getOptions());
@@ -46,7 +48,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -56,19 +60,15 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotGetWithFailingTransports(): void
     {
-        $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task list not found'));
-
-        $secondTransport = $this->createMock(TransportInterface::class);
-        $secondTransport->expects(self::once())->method('get')
-            ->with(self::equalTo('foo'))
-            ->willThrowException(new RuntimeException('Task list not found'));
-
         $roundRobinTransport = new RoundRobinTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ], [
+            'quantum' => 2,
         ]);
 
         self::expectException(TransportException::class);
@@ -79,6 +79,29 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
+        $thirdTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $thirdTransport->create(new NullTask('foo'));
+
+        $roundRobinTransport = new RoundRobinTransport([
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            $thirdTransport,
+        ], [
+            'quantum' => 2,
+        ]);
+
+        self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
+        self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
+    }
+
+    public function testTransportCannotRetrieveTaskWithFailingTransports(): void
+    {
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
@@ -89,18 +112,17 @@ final class RoundRobinTransportTest extends TestCase
             ->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task not found'));
 
-        $thirdTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ]));
-        $thirdTransport->create(new NullTask('foo'));
-
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
-            $thirdTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
-        self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('All the transports failed to execute the requested action');
+        self::expectExceptionCode(0);
+        $roundRobinTransport->get('foo');
     }
 
     public function testTransportCanRetrieveTaskLazilyWithFailingTransports(): void
@@ -124,6 +146,8 @@ final class RoundRobinTransportTest extends TestCase
             $firstTransport,
             $secondTransport,
             $thirdTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $lazyTask = $roundRobinTransport->get('foo', true);
@@ -142,7 +166,9 @@ final class RoundRobinTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -155,7 +181,9 @@ final class RoundRobinTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -175,6 +203,8 @@ final class RoundRobinTransportTest extends TestCase
             new InMemoryTransport([], new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
+        ], [
+            'quantum' => 10,
         ]);
 
         self::assertInstanceOf(TaskList::class, $roundRobinTransport->list());
@@ -193,6 +223,8 @@ final class RoundRobinTransportTest extends TestCase
             new InMemoryTransport([], new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
+        ], [
+            'quantum' => 10,
         ]);
 
         self::assertInstanceOf(LazyTaskList::class, $roundRobinTransport->list(true));
@@ -201,14 +233,14 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $roundRobinTransport->create($task);
+        $roundRobinTransport->create(new NullTask('foo'));
     }
 
     public function testTransportCannotCreateWithFailingTransports(): void
@@ -224,6 +256,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -246,6 +280,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->create($task);
@@ -253,14 +289,14 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
         self::expectExceptionCode(0);
-        $roundRobinTransport->update('foo', $task);
+        $roundRobinTransport->update('foo', new NullTask('foo'));
     }
 
     public function testTransportCannotUpdateWithFailingTransports(): void
@@ -280,6 +316,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -305,6 +343,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->update('foo', $task);
@@ -312,7 +352,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -335,6 +377,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -356,6 +400,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->delete('foo');
@@ -363,7 +409,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -388,6 +436,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -412,6 +462,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->pause('foo');
@@ -419,7 +471,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -444,6 +498,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -468,6 +524,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->resume('foo');
@@ -475,7 +533,9 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $roundRobinTransport = new RoundRobinTransport([]);
+        $roundRobinTransport = new RoundRobinTransport([], [
+            'quantum' => 10,
+        ]);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -498,6 +558,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         self::expectException(TransportException::class);
@@ -519,6 +581,8 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport = new RoundRobinTransport([
             $firstTransport,
             $secondTransport,
+        ], [
+            'quantum' => 10,
         ]);
 
         $roundRobinTransport->clear();

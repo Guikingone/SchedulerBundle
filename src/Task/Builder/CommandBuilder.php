@@ -18,9 +18,14 @@ final class CommandBuilder extends AbstractTaskBuilder implements BuilderInterfa
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $commandTask = new CommandTask($options['name'], $options['command'], $options['arguments'] ?? [], $options['options'] ?? []);
+        $options['arguments'] = $options['arguments'] ?? [];
+        $options['options'] = $options['options'] ?? [];
 
-        return $this->handleTaskAttributes($commandTask, $options, $propertyAccessor);
+        return $this->handleTaskAttributes(
+            new CommandTask($options['name'], $options['command'], $options['arguments'], $options['options']),
+            $options,
+            $propertyAccessor
+        );
     }
 
     /**

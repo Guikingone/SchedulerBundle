@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\Task\NullTask;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -25,22 +25,26 @@ final class FirstInFirstOutPolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+        $task = new NullTask('app', [
+            'scheduled_at' => new DateTimeImmutable('+ 1 minute'),
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
+        $secondTask = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable('+ 2 minute'),
+        ]);
 
-        $thirdTask = $this->createMock(TaskInterface::class);
-        $thirdTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+        $thirdTask = new NullTask('random', [
+            'scheduled_at' => new DateTimeImmutable('+ 1 minute'),
+        ]);
 
         $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
+        $sortedTasks = $firstInFirstOutPolicy->sort(new TaskList([$task, $secondTask, $thirdTask]));
 
         self::assertSame([
             'app' => $task,
             'random' => $thirdTask,
             'foo' => $secondTask,
-        ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'app' => $task, 'random' => $thirdTask]));
+        ], $sortedTasks->toArray());
     }
 
     public function testTasksCanBeSortedUsingNegativeDate(): void
@@ -58,12 +62,13 @@ final class FirstInFirstOutPolicyTest extends TestCase
         ]);
 
         $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
+        $sortedTasks = $firstInFirstOutPolicy->sort(new TaskList([$task, $secondTask, $thirdTask]));
 
         self::assertSame([
             'random' => $thirdTask,
             'bar' => $secondTask,
             'foo' => $task,
-        ], $firstInFirstOutPolicy->sort(['bar' => $secondTask, 'random' => $thirdTask, 'foo' => $task]));
+        ], $sortedTasks->toArray());
     }
 
     public function testTasksCanBeSortedUsingDefaultDate(): void
@@ -85,12 +90,13 @@ final class FirstInFirstOutPolicyTest extends TestCase
         ]);
 
         $firstInFirstOutPolicy = new FirstInFirstOutPolicy();
+        $sortedTasks = $firstInFirstOutPolicy->sort(new TaskList([$task, $secondTask, $thirdTask, $fourthTask]));
 
         self::assertSame([
             'qux' => $task,
             'foo' => $secondTask,
             'bar' => $thirdTask,
             'baz' => $fourthTask,
-        ], $firstInFirstOutPolicy->sort(['foo' => $secondTask, 'baz' => $fourthTask, 'bar' => $thirdTask, 'qux' => $task]));
+        ], $sortedTasks->toArray());
     }
 }

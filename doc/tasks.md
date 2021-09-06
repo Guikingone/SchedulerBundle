@@ -11,6 +11,11 @@ This bundle provides multiple type of tasks:
 - [NotificationTask](#NotificationTask)
 - [NullTask](#NullTask)
 
+## Storage
+
+- [TaskList](#tasklist)
+- [LazyTaskList](#lazytasklist)
+
 ## Lifecycle
 
 - [Scheduling](#scheduling-lifecycle)
@@ -288,6 +293,20 @@ scheduler_bundle:
             type: 'null'
             # ...
 ```
+
+## TaskList
+
+The [TaskList](../src/Task/TaskList.php) act as a wrapper around tasks when it comes to filtering,
+listing, retrieving and so on. 
+
+The task list is deeply integrated within this bundle as the worker, scheduler and even the commands
+use it to access and mutate the tasks, each transport also return a task list when retrieving tasks.
+
+## LazyTaskList
+
+The [LazyTaskList](../src/Task/LazyTaskList.php) is a wrapper around the default task list,
+the idea is to delay the interaction with the tasks to optimize memory usage and prevent edge cases
+when a task is accessed outside the list.
 
 ## Scheduling lifecycle
 

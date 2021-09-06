@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
 use function sprintf;
 
 /**
@@ -29,25 +30,25 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
     }
 
     /**
-     * @param TaskInterface[] $tasks
-     *
-     * @return TaskInterface[]
+     * {@inheritdoc}
      */
-    public function sort(string $policy, array $tasks): array
+    public function sort(string $policy, TaskListInterface $tasks): TaskListInterface
     {
         if ([] === $this->policies) {
             throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
         }
 
-        if ([] === $tasks) {
-            return [];
+        if (0 === $tasks->count()) {
+            return $tasks;
         }
 
-        foreach ($tasks as $task) {
+        $tasks->walk(function (TaskInterface $task) use ($policy): void {
             if ($task instanceof ChainedTask) {
-                $task->setTasks(...$this->sort($policy, $task->getTasks()->toArray(false)));
+                $sortedTasks = $this->sort($policy, $task->getTasks());
+
+                $task->setTasks(...$sortedTasks->toArray(false));
             }
-        }
+        });
 
         foreach ($this->policies as $schedulePolicy) {
             if (!$schedulePolicy->support($policy)) {

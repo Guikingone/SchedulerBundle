@@ -8,6 +8,7 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
@@ -56,11 +57,8 @@ final class RetryFailedTaskCommandTest extends TestCase
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn(null);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
 
         $retryFailedTaskCommand = new RetryFailedTaskCommand($worker, $eventDispatcher);
         $commandTester = new CommandTester($retryFailedTaskCommand);

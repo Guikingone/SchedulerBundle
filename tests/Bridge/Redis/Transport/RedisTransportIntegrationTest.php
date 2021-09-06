@@ -84,6 +84,12 @@ final class RedisTransportIntegrationTest extends TestCase
                 new FirstInFirstOutPolicy(),
             ]));
 
+            self::assertSame($dsn->getHost(), $this->transport->getOptions()['host']);
+            self::assertSame($dsn->getPassword(), $this->transport->getOptions()['password']);
+            self::assertSame($dsn->getPort(), $this->transport->getOptions()['port']);
+            self::assertSame($dsn->getScheme(), $this->transport->getOptions()['scheme']);
+            self::assertSame($dsn->getOption('timeout', 30), $this->transport->getOptions()['timeout']);
+
             $this->transport->clear();
         } catch (Throwable $throwable) {
             self::markTestSkipped($throwable->getMessage());
@@ -127,7 +133,6 @@ final class RedisTransportIntegrationTest extends TestCase
         self::assertCount(1, $list);
 
         $storedTask = $list->get($task->getName());
-        self::assertNotNull($storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
     }
 
@@ -146,7 +151,6 @@ final class RedisTransportIntegrationTest extends TestCase
         self::assertCount(1, $list);
 
         $storedTask = $list->get($task->getName());
-        self::assertNotNull($storedTask);
         self::assertSame($task->getName(), $storedTask->getName());
     }
 

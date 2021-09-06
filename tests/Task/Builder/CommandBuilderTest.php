@@ -59,6 +59,52 @@ final class CommandBuilderTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
+    public function testTaskCanBeBuiltWithNullArguments(): void
+    {
+        $commandBuilder = new CommandBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $commandBuilder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'foo',
+            'type' => 'command',
+            'command' => 'cache:clear',
+            'options' => [
+                '--env' => 'test',
+            ],
+            'arguments' => null,
+            'expression' => '*/5 * * * *',
+            'description' => 'A simple cache clear command',
+        ]);
+
+        self::assertInstanceOf(CommandTask::class, $task);
+        self::assertCount(0, $task->getArguments());
+    }
+
+    public function testTaskCanBeBuiltWithNullOptions(): void
+    {
+        $commandBuilder = new CommandBuilder(new ExpressionBuilder([
+            new CronExpressionBuilder(),
+            new ComputedExpressionBuilder(),
+            new FluentExpressionBuilder(),
+        ]));
+
+        $task = $commandBuilder->build(PropertyAccess::createPropertyAccessor(), [
+            'name' => 'foo',
+            'type' => 'command',
+            'command' => 'cache:clear',
+            'options' => null,
+            'arguments' => [],
+            'expression' => '*/5 * * * *',
+            'description' => 'A simple cache clear command',
+        ]);
+
+        self::assertInstanceOf(CommandTask::class, $task);
+        self::assertCount(0, $task->getOptions());
+    }
+
     /**
      * @return Generator<array<int, array<string, mixed>>>
      */

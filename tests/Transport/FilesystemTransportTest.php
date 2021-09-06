@@ -21,7 +21,6 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
-use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
@@ -176,12 +175,11 @@ final class FilesystemTransportTest extends TestCase
 
         $nullTask = new NullTask('bar');
 
-        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$nullTask]);
-
         $filesystemTransport = new FilesystemTransport(getcwd().'/assets', [
             'execution_mode' => 'first_in_first_out',
-        ], $serializer, $schedulePolicyOrchestrator);
+        ], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         $filesystemTransport->create($nullTask);
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));

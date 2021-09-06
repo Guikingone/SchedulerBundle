@@ -13,8 +13,10 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -42,7 +44,7 @@ final class InMemoryTransportTest extends TestCase
         new InMemoryTransport(['path' => 350], new SchedulePolicyOrchestrator([]));
     }
 
-    public function testTransportCannotReturnInvalidTask(): void
+    public function testTransportCannotReturnUndefinedTask(): void
     {
         $inMemoryTransport = new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
@@ -51,7 +53,7 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
         self::expectExceptionCode(0);
         $inMemoryTransport->get('foo');
     }
@@ -99,6 +101,28 @@ final class InMemoryTransportTest extends TestCase
         self::assertSame($storedTask->getName(), $task->getName());
     }
 
+    public function testTransportCanStoreAndSortTasks(): void
+    {
+        $inMemoryTransport = new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $task = new NullTask('foo');
+        $secondTask = new NullTask('bar');
+
+        $inMemoryTransport->create($task);
+        $inMemoryTransport->create($secondTask);
+
+        $list = $inMemoryTransport->list();
+        self::assertCount(2, $list);
+        self::assertSame([
+            'foo' => $task,
+            'bar' => $secondTask,
+        ], $list->toArray());
+    }
+
     public function testTransportCannotReturnInvalidTaskLazily(): void
     {
         $inMemoryTransport = new InMemoryTransport([
@@ -114,7 +138,7 @@ final class InMemoryTransportTest extends TestCase
         self::assertFalse($lazyTask->isInitialized());
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
         self::expectExceptionCode(0);
         $lazyTask->getTask();
     }
@@ -133,7 +157,10 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         $inMemoryTransport->create($task);
-        self::assertCount(1, $inMemoryTransport->list());
+
+        $list = $inMemoryTransport->list();
+        self::assertInstanceOf(TaskList::class, $list);
+        self::assertCount(1, $list);
     }
 
     /**
@@ -159,20 +186,14 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotCreateATaskTwice(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getName')->willReturn('foo');
-
         $inMemoryTransport = new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $inMemoryTransport->create($task);
-        $inMemoryTransport->create($secondTask);
+        $inMemoryTransport->create(new NullTask('foo'));
+        $inMemoryTransport->create(new NullTask('foo'));
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
     }
@@ -241,16 +262,22 @@ final class InMemoryTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
+        self::assertNull($task->getLastExecution());
+
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
 
         $task->setTags(['test']);
+        $task->setLastExecution(new DateTimeImmutable());
 
         $inMemoryTransport->update($task->getName(), $task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
-        self::assertContains('test', $task->getTags());
+
+        $storedTask = $inMemoryTransport->get($task->getName());
+        self::assertContains('test', $storedTask->getTags());
+        self::assertInstanceOf(DateTimeImmutable::class, $storedTask->getLastExecution());
     }
 
     /**
@@ -309,7 +336,7 @@ final class InMemoryTransportTest extends TestCase
         ]));
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage(sprintf('The task "%s" does not exist', $task->getName()));
+        self::expectExceptionMessage(sprintf('The task "%s" does not exist or is invalid', $task->getName()));
         self::expectExceptionCode(0);
         $inMemoryTransport->pause($task->getName());
     }

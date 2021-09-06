@@ -82,7 +82,9 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
-        $dateAttributesCallback = fn (?DatetimeInterface $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, array_merge([DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u"], $context)) : null;
+        $dateAttributesCallback = fn (?DatetimeInterface $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
+            DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u",
+        ]) : null;
         $dateIntervalAttributesCallback = fn (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
         $notificationTaskBagCallback = fn (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
         $taskCallbacksAttributesCallback = function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
@@ -132,11 +134,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'method' => $innerObject[1],
                     'type' => get_class($innerObject[0]),
                 ],
-                'tasks' => fn (TaskListInterface $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, array_merge($context, [
+                'tasks' => fn (TaskListInterface $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
                         'options' => [],
                     ],
-                ])), $innerObject->toArray(false)),
+                ]), $innerObject->toArray(false)),
                 'accessLockBag' => fn (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null,
             ],
         ];
@@ -213,7 +215,9 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         if (NullTask::class === $objectType) {
             return $this->objectNormalizer->denormalize($body, $objectType, $format, [
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
-                    NullTask::class => ['name' => $body['name']],
+                    NullTask::class => [
+                        'name' => $body['name'],
+                    ],
                 ],
             ]);
         }
@@ -278,8 +282,8 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     ProbeTask::class => [
                         'name' => $body['name'],
                         'externalProbePath' => $body['externalProbePath'],
-                        'errorOnFailedTasks' => $body['errorOnFailedTasks'] ?? false,
-                        'delay' => $body['delay'] ?? 0,
+                        'errorOnFailedTasks' => $body['errorOnFailedTasks'],
+                        'delay' => $body['delay'],
                     ],
                 ],
             ]);

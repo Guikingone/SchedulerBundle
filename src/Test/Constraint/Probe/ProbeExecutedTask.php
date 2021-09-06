@@ -25,7 +25,7 @@ final class ProbeExecutedTask extends Constraint
      */
     public function toString(): string
     {
-        return sprintf('has found %s executed task%s', $this->expectedCount, 0 === $this->expectedCount ? '' : 's');
+        return sprintf('has found %s executed task%s', $this->expectedCount, 1 < $this->expectedCount ? 's' : '');
     }
 
     /**

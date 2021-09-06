@@ -20,6 +20,7 @@ final class ProbeFailedTaskTest extends TestCase
         $probe->expects(self::once())->method('getFailedTasks')->willReturn(10);
 
         $constraint = new ProbeFailedTask(1);
+        self::assertSame('has found 1 failed task', $constraint->toString());
 
         self::assertFalse($constraint->evaluate($probe, '', true));
     }
@@ -30,6 +31,7 @@ final class ProbeFailedTaskTest extends TestCase
         $probe->expects(self::once())->method('getFailedTasks')->willReturn(10);
 
         $constraint = new ProbeFailedTask(1);
+        self::assertSame('has found 1 failed task', $constraint->toString());
 
         self::expectException(ExpectationFailedException::class);
         self::expectExceptionMessage('has found 1 failed task');
@@ -43,6 +45,7 @@ final class ProbeFailedTaskTest extends TestCase
         $probe->expects(self::once())->method('getFailedTasks')->willReturn(1);
 
         $constraint = new ProbeFailedTask(10);
+        self::assertSame('has found 10 failed tasks', $constraint->toString());
 
         self::expectException(ExpectationFailedException::class);
         self::expectExceptionMessage('has found 10 failed tasks');
@@ -56,6 +59,7 @@ final class ProbeFailedTaskTest extends TestCase
         $probe->expects(self::once())->method('getFailedTasks')->willReturn(1);
 
         $constraint = new ProbeFailedTask(1);
+        self::assertSame('has found 1 failed task', $constraint->toString());
 
         self::assertTrue($constraint->evaluate($probe, '', true));
     }

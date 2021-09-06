@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -20,6 +22,7 @@ final class LazyTaskListTest extends TestCase
     public function testListCanBeInitialized(): void
     {
         $list = new LazyTaskList(new TaskList());
+        self::assertFalse($list->isInitialized());
 
         self::assertCount(0, $list);
     }
@@ -27,8 +30,9 @@ final class LazyTaskListTest extends TestCase
     public function testListCanReceiveTask(): void
     {
         $list = new LazyTaskList(new TaskList());
-        $list->add(new NullTask('foo'));
+        self::assertFalse($list->isInitialized());
 
+        $list->add(new NullTask('foo'));
         self::assertCount(1, $list);
     }
 
@@ -36,6 +40,7 @@ final class LazyTaskListTest extends TestCase
     {
         $list = new LazyTaskList(new TaskList());
 
+        self::assertFalse($list->isInitialized());
         self::assertFalse($list->has('foo'));
 
         $list->add(new NullTask('foo'));
@@ -45,21 +50,22 @@ final class LazyTaskListTest extends TestCase
     public function testListCanReturnTask(): void
     {
         $list = new LazyTaskList(new TaskList());
-
-        self::assertNull($list->get('foo'));
+        self::assertFalse($list->isInitialized());
 
         $list->add(new NullTask('foo'));
+        self::assertTrue($list->isInitialized());
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
     public function testListCanReturnTaskLazily(): void
     {
         $list = new LazyTaskList(new TaskList());
-        self::assertNull($list->get('foo'));
 
+        self::assertFalse($list->isInitialized());
         $list->add(new NullTask('foo'));
 
         $lazyTask = $list->get('foo', true);
+        self::assertTrue($list->isInitialized());
         self::assertInstanceOf(LazyTask::class, $lazyTask);
         self::assertFalse($lazyTask->isInitialized());
 
@@ -132,7 +138,6 @@ final class LazyTaskListTest extends TestCase
         $list->add(new NullTask('foo'));
 
         $task = $list->get('foo');
-        self::assertInstanceOf(TaskInterface::class, $task);
         self::assertCount(0, $task->getTags());
 
         $list->walk(function (TaskInterface $task): void {
@@ -140,7 +145,6 @@ final class LazyTaskListTest extends TestCase
         });
 
         $task = $list->get('foo');
-        self::assertInstanceOf(TaskInterface::class, $task);
         self::assertCount(1, $task->getTags());
     }
 
@@ -205,9 +209,7 @@ final class LazyTaskListTest extends TestCase
     public function testListCanSetOffset(): void
     {
         $list = new LazyTaskList(new TaskList());
-
         self::assertCount(0, $list);
-        self::assertNull($list->get('foo'));
 
         $list->offsetSet('foo', new NullTask('foo'));
         self::assertCount(1, $list);
@@ -219,7 +221,11 @@ final class LazyTaskListTest extends TestCase
         $list = new LazyTaskList(new TaskList());
 
         self::assertCount(0, $list);
-        self::assertNull($list->offsetGet('foo'));
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
+        self::expectExceptionCode(0);
+        $list->offsetGet('foo');
     }
 
     public function testListCanGetOffset(): void
@@ -284,5 +290,81 @@ final class LazyTaskListTest extends TestCase
         $lastTask = $taskList->last();
         self::assertTrue($taskList->isInitialized());
         self::assertSame('bar', $lastTask->getName());
+    }
+
+    public function testListCanBeSorted(): void
+    {
+        $fooTask = new NullTask('foo');
+        $fooTask->setScheduledAt(new DateTimeImmutable('- 1 month'));
+
+        $barTask = new NullTask('bar');
+        $barTask->setScheduledAt(new DateTimeImmutable('- 2 day'));
+
+        $taskList = new LazyTaskList(new TaskList([
+            $fooTask,
+            $barTask,
+        ]));
+
+        self::assertFalse($taskList->isInitialized());
+        self::assertCount(2, $taskList);
+
+        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+
+        self::assertTrue($taskList->isInitialized());
+        self::assertCount(2, $taskList);
+        self::assertEquals([
+            'foo' => $fooTask,
+            'bar' => $barTask,
+        ], $taskList->toArray());
+    }
+
+    public function testListCannotBeChunkedWithInvalidSize(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+        self::assertFalse($list->isInitialized());
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The given size "0" cannot be used to split the list');
+        self::expectExceptionCode(0);
+        $list->chunk(0);
+    }
+
+    public function testListCanBeChunkedWithoutKeys(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+        self::assertFalse($list->isInitialized());
+
+        $chunk = $list->chunk(1);
+
+        self::assertTrue($list->isInitialized());
+        self::assertCount(2, $chunk);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey(0, $chunk[0]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey(0, $chunk[1]);
+    }
+
+    public function testListCanBeChunkedWithKeys(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+        self::assertFalse($list->isInitialized());
+
+        $chunk = $list->chunk(1, true);
+
+        self::assertTrue($list->isInitialized());
+        self::assertCount(2, $chunk);
+        self::assertCount(1, $chunk[0]);
+        self::assertArrayHasKey('foo', $chunk[0]);
+        self::assertCount(1, $chunk[1]);
+        self::assertArrayHasKey('bar', $chunk[1]);
     }
 }

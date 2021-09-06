@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\SchedulePolicy;
 
 use SchedulerBundle\Task\TaskInterface;
-use function uasort;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,18 +13,11 @@ use function uasort;
 final class ExecutionDurationPolicy implements PolicyInterface
 {
     /**
-     * @var string
+     * {@inheritdoc}
      */
-    private const POLICY = 'execution_duration';
-
-    /**
-     * @return TaskInterface[]
-     */
-    public function sort(array $tasks): array
+    public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        uasort($tasks, fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() <=> $nextTask->getExecutionComputationTime());
-
-        return $tasks;
+        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() <=> $nextTask->getExecutionComputationTime());
     }
 
     /**
@@ -32,6 +25,6 @@ final class ExecutionDurationPolicy implements PolicyInterface
      */
     public function support(string $policy): bool
     {
-        return self::POLICY === $policy;
+        return 'execution_duration' === $policy;
     }
 }

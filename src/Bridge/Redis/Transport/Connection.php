@@ -14,7 +14,6 @@ use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
-use function is_int;
 use function sprintf;
 use function strpos;
 
@@ -33,9 +32,9 @@ final class Connection implements ConnectionInterface
     public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
-        $this->connection->connect($options['host'] ?? '127.0.0.1', $options['port'] ?? 6379, $options['timeout'] ?? 30);
+        $this->connection->connect($options['host'], $options['port'], $options['timeout']);
 
-        if (0 !== strpos($this->list = $options['list'] ?? '_symfony_scheduler_tasks', '_')) {
+        if (0 !== strpos($this->list = $options['list'], '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 
@@ -126,7 +125,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be paused', $taskName), 0, $throwable);
         }
     }
 
@@ -145,7 +144,7 @@ final class Connection implements ConnectionInterface
         try {
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
-            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), is_int($throwable->getCode()) ? $throwable->getCode() : 0, $throwable);
+            throw new TransportException(sprintf('The task "%s" cannot be enabled', $taskName), 0, $throwable);
         }
     }
 

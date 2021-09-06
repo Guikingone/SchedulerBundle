@@ -6,7 +6,8 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,17 +24,20 @@ final class MemoryUsagePolicyTest extends TestCase
 
     public function testTasksCanBeSorted(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->method('getExecutionMemoryUsage')->willReturn(10);
+        $task = new NullTask('app', [
+            'execution_memory_usage' => 10,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->method('getExecutionMemoryUsage')->willReturn(15);
+        $secondTask = new NullTask('foo', [
+            'execution_memory_usage' => 15,
+        ]);
 
         $memoryUsagePolicy = new MemoryUsagePolicy();
+        $sortedTasks = $memoryUsagePolicy->sort(new TaskList([$task, $secondTask]));
 
         self::assertSame([
             'app' => $task,
             'foo' => $secondTask,
-        ], $memoryUsagePolicy->sort(['foo' => $secondTask, 'app' => $task]));
+        ], $sortedTasks->toArray());
     }
 }

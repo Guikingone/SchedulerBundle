@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
@@ -54,11 +55,8 @@ final class RemoveFailedTaskCommandTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn(null);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
         $commandTester = new CommandTester($removeFailedTaskCommand);

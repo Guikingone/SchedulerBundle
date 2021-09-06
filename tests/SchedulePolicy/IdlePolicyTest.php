@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\SchedulePolicy;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\IdlePolicy;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -27,15 +28,18 @@ final class IdlePolicyTest extends TestCase
             'priority' => -10,
         ]);
 
-        $secondTask = new NullTask('bar', [
+        $secondTask = new NullTask('app', [
             'priority' => -20,
         ]);
 
         $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
+        $sortedTasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
 
-        self::assertCount(2, $tasks);
-        self::assertSame(['foo' => $task, 'app' => $secondTask], $tasks);
+        self::assertCount(2, $sortedTasks);
+        self::assertSame([
+            'foo' => $task,
+            'app' => $secondTask,
+        ], $sortedTasks->toArray());
     }
 
     public function testTasksCanBeSortedWithSamePriority(): void
@@ -44,15 +48,18 @@ final class IdlePolicyTest extends TestCase
             'priority' => 10,
         ]);
 
-        $secondTask = new NullTask('bar', [
+        $secondTask = new NullTask('app', [
             'priority' => 10,
         ]);
 
         $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
 
         self::assertCount(2, $tasks);
-        self::assertSame(['app' => $secondTask, 'foo' => $task], $tasks);
+        self::assertSame([
+            'app' => $secondTask,
+            'foo' => $task,
+        ], $tasks->toArray());
     }
 
     public function testTasksCanBeSortedWithPolicyPriority(): void
@@ -61,14 +68,77 @@ final class IdlePolicyTest extends TestCase
             'priority' => 19,
         ]);
 
-        $secondTask = new NullTask('bar', [
+        $secondTask = new NullTask('app', [
             'priority' => 19,
         ]);
 
         $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(['app' => $secondTask, 'foo' => $task]);
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
 
         self::assertCount(2, $tasks);
-        self::assertSame(['app' => $secondTask, 'foo' => $task], $tasks);
+        self::assertSame([
+            'app' => $secondTask,
+            'foo' => $task,
+        ], $tasks->toArray());
+    }
+
+    public function testTasksCanBeSortedWithFirstTaskSetToLowerPolicyPriority(): void
+    {
+        $task = new NullTask('foo', [
+            'priority' => 18,
+        ]);
+
+        $secondTask = new NullTask('app', [
+            'priority' => 19,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertCount(2, $tasks);
+        self::assertSame([
+            'app' => $secondTask,
+            'foo' => $task,
+        ], $tasks->toArray());
+    }
+
+    public function testTasksCanBeSortedWithLowerPolicyPriority(): void
+    {
+        $task = new NullTask('foo', [
+            'priority' => 19,
+        ]);
+
+        $secondTask = new NullTask('app', [
+            'priority' => 18,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertCount(2, $tasks);
+        self::assertSame([
+            'foo' => $task,
+            'app' => $secondTask,
+        ], $tasks->toArray());
+    }
+
+    public function testTasksCanBeSortedWithTwiceLowerPolicyPriority(): void
+    {
+        $task = new NullTask('foo', [
+            'priority' => 18,
+        ]);
+
+        $secondTask = new NullTask('app', [
+            'priority' => 15,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+
+        self::assertCount(2, $tasks);
+        self::assertSame([
+            'foo' => $task,
+            'app' => $secondTask,
+        ], $tasks->toArray());
     }
 }
