@@ -22,6 +22,7 @@ final class LazyTaskListTest extends TestCase
     public function testListCanBeInitialized(): void
     {
         $list = new LazyTaskList(new TaskList());
+        self::assertFalse($list->isInitialized());
 
         self::assertCount(0, $list);
     }
@@ -29,8 +30,9 @@ final class LazyTaskListTest extends TestCase
     public function testListCanReceiveTask(): void
     {
         $list = new LazyTaskList(new TaskList());
-        $list->add(new NullTask('foo'));
+        self::assertFalse($list->isInitialized());
 
+        $list->add(new NullTask('foo'));
         self::assertCount(1, $list);
     }
 
@@ -38,6 +40,7 @@ final class LazyTaskListTest extends TestCase
     {
         $list = new LazyTaskList(new TaskList());
 
+        self::assertFalse($list->isInitialized());
         self::assertFalse($list->has('foo'));
 
         $list->add(new NullTask('foo'));
@@ -47,8 +50,9 @@ final class LazyTaskListTest extends TestCase
     public function testListCanReturnTask(): void
     {
         $list = new LazyTaskList(new TaskList());
-        $list->add(new NullTask('foo'));
+        self::assertFalse($list->isInitialized());
 
+        $list->add(new NullTask('foo'));
         self::assertTrue($list->isInitialized());
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
@@ -56,9 +60,12 @@ final class LazyTaskListTest extends TestCase
     public function testListCanReturnTaskLazily(): void
     {
         $list = new LazyTaskList(new TaskList());
+
+        self::assertFalse($list->isInitialized());
         $list->add(new NullTask('foo'));
 
         $lazyTask = $list->get('foo', true);
+        self::assertTrue($list->isInitialized());
         self::assertInstanceOf(LazyTask::class, $lazyTask);
         self::assertFalse($lazyTask->isInitialized());
 
@@ -313,27 +320,29 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCannotBeChunkedWithInvalidSize(): void
     {
-        $taskList = new LazyTaskList(new TaskList([
+        $list = new LazyTaskList(new TaskList([
             new NullTask('foo'),
             new NullTask('bar'),
         ]));
+        self::assertFalse($list->isInitialized());
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given size "0" cannot be used to split the list');
         self::expectExceptionCode(0);
-        $taskList->chunk(0);
+        $list->chunk(0);
     }
 
     public function testListCanBeChunkedWithoutKeys(): void
     {
-        $taskList = new LazyTaskList(new TaskList([
+        $list = new LazyTaskList(new TaskList([
             new NullTask('foo'),
             new NullTask('bar'),
         ]));
+        self::assertFalse($list->isInitialized());
 
-        $chunk = $taskList->chunk(1);
+        $chunk = $list->chunk(1);
 
-        self::assertTrue($taskList->isInitialized());
+        self::assertTrue($list->isInitialized());
         self::assertCount(2, $chunk);
         self::assertCount(1, $chunk[0]);
         self::assertArrayHasKey(0, $chunk[0]);
@@ -343,14 +352,15 @@ final class LazyTaskListTest extends TestCase
 
     public function testListCanBeChunkedWithKeys(): void
     {
-        $taskList = new LazyTaskList(new TaskList([
+        $list = new LazyTaskList(new TaskList([
             new NullTask('foo'),
             new NullTask('bar'),
         ]));
+        self::assertFalse($list->isInitialized());
 
-        $chunk = $taskList->chunk(1, true);
+        $chunk = $list->chunk(1, true);
 
-        self::assertTrue($taskList->isInitialized());
+        self::assertTrue($list->isInitialized());
         self::assertCount(2, $chunk);
         self::assertCount(1, $chunk[0]);
         self::assertArrayHasKey('foo', $chunk[0]);
