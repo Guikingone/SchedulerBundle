@@ -42,25 +42,6 @@ final class InMemoryTransportFactoryTest extends TestCase
     }
 
     /**
-     * @dataProvider provideAdvancedDsn
-     */
-    public function testFactoryReturnTransportWithAdvancedConfiguration(string $dsn): void
-    {
-        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $serializer = $this->createMock(SerializerInterface::class);
-
-        $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
-
-        self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('normal', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('path', $transport->getOptions());
-        self::assertSame('/srv/app', $transport->getOptions()['path']);
-        self::assertCount(2, $transport->getOptions());
-    }
-
-    /**
      * @return Generator<array<int, string>>
      */
     public function provideDsn(): Generator
@@ -70,16 +51,6 @@ final class InMemoryTransportFactoryTest extends TestCase
             'memory://deadline',
             'memory://first_in_first_out',
             'memory://normal',
-        ];
-    }
-
-    /**
-     * @return Generator<array<int, string>>
-     */
-    public function provideAdvancedDsn(): Generator
-    {
-        yield 'advanced configuration' => [
-            'memory://normal?path=/srv/app',
         ];
     }
 }

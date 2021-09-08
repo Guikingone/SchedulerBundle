@@ -36,14 +36,6 @@ final class InMemoryTransportTest extends TestCase
         new InMemoryTransport(['execution_mode' => 350], new SchedulePolicyOrchestrator([]));
     }
 
-    public function testTransportCannotBeConfiguredWithInvalidOptionTypeOnPath(): void
-    {
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "path" with value 350 is expected to be of type "string" or "null", but is of type "int"');
-        self::expectExceptionCode(0);
-        new InMemoryTransport(['path' => 350], new SchedulePolicyOrchestrator([]));
-    }
-
     public function testTransportCannotReturnUndefinedTask(): void
     {
         $inMemoryTransport = new InMemoryTransport([

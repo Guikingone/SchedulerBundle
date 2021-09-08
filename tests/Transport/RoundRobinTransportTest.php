@@ -41,7 +41,9 @@ final class RoundRobinTransportTest extends TestCase
             'quantum' => 2,
         ]);
 
-        self::assertCount(3, $roundRobinTransport->getOptions());
+        self::assertCount(2, $roundRobinTransport->getOptions());
+        self::assertArrayHasKey('execution_mode', $roundRobinTransport->getOptions());
+        self::assertSame('first_in_first_out', $roundRobinTransport->getOptions()['execution_mode']);
         self::assertArrayHasKey('quantum', $roundRobinTransport->getOptions());
         self::assertSame(2, $roundRobinTransport->getOptions()['quantum']);
     }

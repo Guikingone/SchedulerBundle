@@ -16,7 +16,6 @@ abstract class AbstractTransport implements TransportInterface
      */
     protected array $options = [
         'execution_mode' => 'first_in_first_out',
-        'path' => null,
     ];
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
@@ -24,14 +23,10 @@ abstract class AbstractTransport implements TransportInterface
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setDefaults([
             'execution_mode' => 'first_in_first_out',
-            'path' => null,
         ]);
 
         $optionsResolver->setAllowedTypes('execution_mode', ['string', 'null']);
-        $optionsResolver->setAllowedTypes('path', ['string', 'null']);
-
         $optionsResolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
-        $optionsResolver->setInfo('path', 'The path used to store the task (mainly used by FilesystemTransport)');
 
         if ($additionalOptions === []) {
             $this->options = $optionsResolver->resolve($options);
