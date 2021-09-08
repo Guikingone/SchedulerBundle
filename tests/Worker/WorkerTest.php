@@ -234,6 +234,7 @@ final class WorkerTest extends TestCase
         $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
+        self::assertTrue($worker->getConfiguration()->shouldStop());
     }
 
     /**
