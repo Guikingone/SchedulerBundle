@@ -106,10 +106,9 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function restart(): void
     {
-        $this->stop();
+        $this->configuration->stop();
         $this->configuration->run(false);
         $this->failedTasks = new TaskList();
-        $this->configuration->stop();
 
         $this->eventDispatcher->dispatch(new WorkerRestartedEvent($this));
     }
