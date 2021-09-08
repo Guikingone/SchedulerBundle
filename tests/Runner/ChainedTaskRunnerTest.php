@@ -10,6 +10,7 @@ use SchedulerBundle\Runner\ChainedTaskRunner;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -43,10 +44,10 @@ final class ChainedTaskRunnerTest extends TestCase
         $shellTask = new ShellTask('foo', ['ls', '-al']);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::never())->method('getOptions');
+        $worker->expects(self::never())->method('getConfiguration');
         $worker->expects(self::once())->method('fork')->willReturnSelf();
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([]), self::equalTo($shellTask))
+            ->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($shellTask))
             ->willThrowException(new RuntimeException('An error occurred'))
         ;
         $worker->expects(self::once())->method('stop');

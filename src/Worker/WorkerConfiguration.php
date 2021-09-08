@@ -142,4 +142,23 @@ final class WorkerConfiguration
     {
         return $this->mustStrictlyCheckDate;
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'executedTasksCount' => $this->executedTasksCount,
+            'forkedFrom' => $this->forkedFrom,
+            'isFork' => $this->isFork,
+            'isRunning' => $this->isRunning,
+            'lastExecutedTask' => $this->lastExecutedTask instanceof TaskInterface ? $this->lastExecutedTask->getName() : null,
+            'sleepDurationDelay' => $this->sleepDurationDelay,
+            'sleepUntilNextMinute' => $this->sleepUntilNextMinute,
+            'shouldStop' => $this->shouldStop,
+            'shouldRetrieveTasksLazily' => $this->shouldRetrieveTasksLazily,
+            'mustStrictlyCheckDate' => $this->mustStrictlyCheckDate,
+        ];
+    }
 }

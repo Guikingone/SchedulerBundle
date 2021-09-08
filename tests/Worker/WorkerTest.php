@@ -155,7 +155,7 @@ final class WorkerTest extends TestCase
         self::assertTrue($forkedWorker->getConfiguration()->isFork());
         self::assertFalse($forkedWorker->getConfiguration()->isRunning());
         self::assertNull($forkedWorker->getConfiguration()->getLastExecutedTask());
-        self::assertSame(5, $forkedWorker->getConfiguration()->getSleepDurationDelay());
+        self::assertSame(1, $forkedWorker->getConfiguration()->getSleepDurationDelay());
         self::assertFalse($forkedWorker->getConfiguration()->isSleepingUntilNextMinute());
         self::assertFalse($forkedWorker->getConfiguration()->shouldStop());
         self::assertFalse($forkedWorker->getConfiguration()->shouldRetrieveTasksLazily());

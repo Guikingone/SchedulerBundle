@@ -19,6 +19,7 @@ use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -33,6 +34,7 @@ final class MercureEventSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
+        self::assertCount(8, MercureEventSubscriber::getSubscribedEvents());
         self::assertArrayHasKey(TaskScheduledEvent::class, MercureEventSubscriber::getSubscribedEvents());
         self::assertSame([
             'onTaskScheduled', -255,
@@ -172,13 +174,24 @@ final class MercureEventSubscriberTest extends TestCase
     public function testHubCanPublishUpdateOnWorkerStarted(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $hub = $this->createMock(HubInterface::class);
         $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
             'event' => 'worker.started',
             'body' => [
-                'options' => [],
+                'options' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
             ],
         ], JSON_THROW_ON_ERROR))));
 
@@ -195,7 +208,7 @@ final class MercureEventSubscriberTest extends TestCase
     public function testHubCanPublishUpdateOnWorkerStopped(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $hub = $this->createMock(HubInterface::class);
@@ -203,7 +216,18 @@ final class MercureEventSubscriberTest extends TestCase
             'event' => 'worker.stopped',
             'body' => [
                 'lastExecutedTask' => 'foo',
-                'options' => [],
+                'options' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
             ],
         ], JSON_THROW_ON_ERROR))));
 
@@ -220,19 +244,41 @@ final class MercureEventSubscriberTest extends TestCase
     public function testHubCanPublishUpdateOnWorkerForked(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
         $worker->expects(self::never())->method('getLastExecutedTask');
 
         $secondWorker = $this->createMock(WorkerInterface::class);
-        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
+        $secondWorker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
         $secondWorker->expects(self::never())->method('getLastExecutedTask');
 
         $hub = $this->createMock(HubInterface::class);
         $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
             'event' => 'worker.forked',
             'body' => [
-                'oldWorkerOptions' => [],
-                'forkedWorkerOptions' => [],
+                'oldWorkerOptions' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
+                'forkedWorkerOptions' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
             ],
         ], JSON_THROW_ON_ERROR))));
 
@@ -249,7 +295,7 @@ final class MercureEventSubscriberTest extends TestCase
     public function testHubCanPublishUpdateOnWorkerRestarted(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $hub = $this->createMock(HubInterface::class);
@@ -257,7 +303,18 @@ final class MercureEventSubscriberTest extends TestCase
             'event' => 'worker.restarted',
             'body' => [
                 'lastExecutedTask' => 'foo',
-                'options' => [],
+                'options' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
             ],
         ], JSON_THROW_ON_ERROR))));
 

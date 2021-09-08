@@ -12,8 +12,10 @@ use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -23,6 +25,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
+        self::assertCount(5, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertArrayHasKey(WorkerRestartedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerRestarted', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerRestartedEvent::class]);
         self::assertArrayHasKey(WorkerRunningEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
@@ -204,15 +207,80 @@ final class WorkerLifecycleSubscriberTest extends TestCase
     public function testSubscriberLogOnWorkerForked(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $secondWorker = $this->createMock(WorkerInterface::class);
-        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
+        $secondWorker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been forked'), self::equalTo([
-            'forkedWorker' => [],
-            'newWorker' => [],
+            'forkedWorker' => [
+                'executedTasksCount' => 0,
+                'forkedFrom' => null,
+                'isFork' => false,
+                'isRunning' => false,
+                'lastExecutedTask' => null,
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+                'shouldStop' => false,
+                'shouldRetrieveTasksLazily' => false,
+                'mustStrictlyCheckDate' => false,
+            ],
+            'newWorker' => [
+                'executedTasksCount' => 0,
+                'forkedFrom' => null,
+                'isFork' => false,
+                'isRunning' => false,
+                'lastExecutedTask' => null,
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+                'shouldStop' => false,
+                'shouldRetrieveTasksLazily' => false,
+                'mustStrictlyCheckDate' => false,
+            ],
+        ]));
+
+        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
+        $workerLifecycleSubscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
+    }
+
+    public function testSubscriberLogOnWorkerForkedWithLastExecutedTask(): void
+    {
+        $configuration = WorkerConfiguration::create();
+        $configuration->setLastExecutedTask(new NullTask('foo'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn($configuration);
+
+        $secondWorker = $this->createMock(WorkerInterface::class);
+        $secondWorker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been forked'), self::equalTo([
+            'forkedWorker' => [
+                'executedTasksCount' => 0,
+                'forkedFrom' => null,
+                'isFork' => false,
+                'isRunning' => false,
+                'lastExecutedTask' => 'foo',
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+                'shouldStop' => false,
+                'shouldRetrieveTasksLazily' => false,
+                'mustStrictlyCheckDate' => false,
+            ],
+            'newWorker' => [
+                'executedTasksCount' => 0,
+                'forkedFrom' => null,
+                'isFork' => false,
+                'isRunning' => false,
+                'lastExecutedTask' => null,
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+                'shouldStop' => false,
+                'shouldRetrieveTasksLazily' => false,
+                'mustStrictlyCheckDate' => false,
+            ],
         ]));
 
         $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);

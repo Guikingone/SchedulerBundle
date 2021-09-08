@@ -7,6 +7,7 @@ namespace SchedulerBundle\Runner;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
@@ -28,7 +29,7 @@ final class ChainedTaskRunner implements RunnerInterface
 
         try {
             $task->getTasks()->walk(function (TaskInterface $task) use ($forkedWorker): void {
-                $forkedWorker->execute([], $task);
+                $forkedWorker->execute(WorkerConfiguration::create(), $task);
             });
         } catch (Throwable $throwable) {
             return new Output($task, $throwable->getMessage(), Output::ERROR);
