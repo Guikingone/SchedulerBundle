@@ -19,7 +19,7 @@ final class Worker extends AbstractWorker
         $this->run($configuration, function () use ($tasks): void {
             while (!$this->getConfiguration()->shouldStop()) {
                 $toExecuteTasks = $this->getTasks($tasks);
-                if (0 === $toExecuteTasks->count() && false === $this->getConfiguration()->isSleepingUntilNextMinute()) {
+                if (0 === $toExecuteTasks->count() && !$this->getConfiguration()->isSleepingUntilNextMinute()) {
                     $this->stop();
                 }
 
@@ -31,7 +31,7 @@ final class Worker extends AbstractWorker
                     break;
                 }
 
-                if (true === $this->getConfiguration()->isSleepingUntilNextMinute()) {
+                if ($this->getConfiguration()->isSleepingUntilNextMinute()) {
                     $this->sleep();
                     $this->execute($this->getConfiguration());
                 }

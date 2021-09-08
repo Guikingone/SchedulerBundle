@@ -1389,14 +1389,14 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see WorkerInterface::execute()}
      */
-    public function testWorkerCanStopWhenTasksAreExecutedAndWithoutSleepOption(): void
+    public function testWorkerCanStopWhenTasksAreExecutedAndWithoutSleepOptionTwice(): void
     {
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+        $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([
             new NullTask('foo'),
         ]));
 
@@ -1409,6 +1409,12 @@ final class WorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute(WorkerConfiguration::create());
+
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
 
         $worker->execute(WorkerConfiguration::create());
 
