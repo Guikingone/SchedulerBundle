@@ -7,6 +7,7 @@ namespace SchedulerBundle\EventListener;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -87,7 +88,7 @@ final class TaskSubscriber implements EventSubscriberInterface
         $tasks = $tasks->toArray(false);
 
         try {
-            $this->worker->execute([], ...$tasks);
+            $this->worker->execute(WorkerConfiguration::create(), ...$tasks);
         } catch (Throwable $throwable) {
             $requestEvent->setResponse(new JsonResponse([
                 'code' => JsonResponse::HTTP_INTERNAL_SERVER_ERROR,

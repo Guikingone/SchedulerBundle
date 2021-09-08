@@ -33,6 +33,7 @@ final class WorkerConfiguration
         $self->isFork = false;
         $self->forkedFrom = null;
         $self->sleepDurationDelay = 1;
+        $self->sleepUntilNextMinute = false;
         $self->shouldStop = false;
         $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;

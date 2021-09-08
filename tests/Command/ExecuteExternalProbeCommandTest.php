@@ -12,6 +12,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -59,7 +60,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([]), self::equalTo($probeTask))
+            ->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($probeTask))
             ->willThrowException(new RuntimeException('Tasks execution error message'))
         ;
 
@@ -83,7 +84,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([]), self::equalTo($probeTask))
+            ->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($probeTask))
         ;
 
         $command = new ExecuteExternalProbeCommand($scheduler, $worker);
@@ -117,7 +118,7 @@ final class ExecuteExternalProbeCommandTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')
-            ->with(self::equalTo([]), self::equalTo($probeTask))
+            ->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($probeTask))
         ;
 
         $command = new ExecuteExternalProbeCommand($scheduler, $worker);

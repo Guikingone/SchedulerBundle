@@ -71,13 +71,6 @@ abstract class AbstractWorker implements WorkerInterface
         $this->failedTasks = new TaskList();
     }
 
-    public function __clone()
-    {
-        $this->configuration = WorkerConfiguration::create();
-        $this->configuration->fork();
-        $this->configuration->setForkedFrom($this);
-    }
-
     protected function run(WorkerConfiguration $configuration, Closure $closure): void
     {
         if (0 === $this->runnerRegistry->count()) {
@@ -99,6 +92,9 @@ abstract class AbstractWorker implements WorkerInterface
     public function fork(): WorkerInterface
     {
         $fork = clone $this;
+        $fork->configuration = WorkerConfiguration::create();
+        $fork->configuration->fork();
+        $fork->configuration->setForkedFrom($this);
 
         $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
 

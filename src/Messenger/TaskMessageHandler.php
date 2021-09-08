@@ -10,6 +10,7 @@ use DateTimeZone;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use function sprintf;
@@ -46,6 +47,6 @@ final class TaskMessageHandler implements MessageHandlerInterface
             $this->logger->info(sprintf('The task "%s" cannot be executed for now as the worker is currently running', $task->getName()));
         }
 
-        $this->worker->execute([], $task);
+        $this->worker->execute(WorkerConfiguration::create(), $task);
     }
 }

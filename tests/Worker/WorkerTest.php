@@ -37,6 +37,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -57,7 +58,6 @@ use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
@@ -84,154 +84,7 @@ final class WorkerTest extends TestCase
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
         self::expectExceptionCode(0);
-        $worker->execute();
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidExecutedTasksCount(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "executedTasksCount" with value "foo" is expected to be of type "int", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'executedTasksCount' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidForkedFrom(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "forkedFrom" with value "foo" is expected to be of type "SchedulerBundle\Worker\WorkerInterface" or "null", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'forkedFrom' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidIsFork(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "isFork" with value "foo" is expected to be of type "bool", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'isFork' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidMustStrictlyCheckDate(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "mustStrictlyCheckDate" with value "foo" is expected to be of type "bool", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'mustStrictlyCheckDate' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidSleepDurationDelay(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "sleepDurationDelay" with value "foo" is expected to be of type "int", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'sleepDurationDelay' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidSleepUntilNextMinute(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "sleepUntilNextMinute" with value "foo" is expected to be of type "bool", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'sleepUntilNextMinute' => 'foo',
-        ]);
-    }
-
-    /**
-     * @throws Throwable {@see WorkerInterface::execute()}
-     */
-    public function testWorkerCannotBeConfiguredWithInvalidShouldRetrieveTasksLazily(): void
-    {
-        $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
-
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "shouldRetrieveTasksLazily" with value "foo" is expected to be of type "bool", but is of type "string"');
-        self::expectExceptionCode(0);
-        $worker->execute([
-            'shouldRetrieveTasksLazily' => 'foo',
-        ]);
+        $worker->execute(WorkerConfiguration::create());
     }
 
     /**
@@ -251,27 +104,21 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->stop();
-        $worker->execute();
+        $configuration = WorkerConfiguration::create();
+        $configuration->stop();
 
-        self::assertCount(7, $worker->getOptions());
-        self::assertArrayHasKey('executedTasksCount', $worker->getOptions());
-        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
-        self::assertArrayHasKey('forkedFrom', $worker->getOptions());
-        self::assertNull($worker->getOptions()['forkedFrom']);
-        self::assertArrayHasKey('isFork', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['isFork']);
+        $worker->execute($configuration);
+
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertNull($worker->getConfiguration()->getForkedFrom());
+        self::assertFalse($worker->getConfiguration()->isFork());
         self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertNull($worker->getConfiguration()->getLastExecutedTask());
-        self::assertArrayHasKey('sleepDurationDelay', $worker->getOptions());
-        self::assertSame(1, $worker->getOptions()['sleepDurationDelay']);
-        self::assertArrayHasKey('sleepUntilNextMinute', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['sleepUntilNextMinute']);
+        self::assertSame(1, $worker->getConfiguration()->getSleepDurationDelay());
+        self::assertFalse($worker->getConfiguration()->isSleepingUntilNextMinute());
         self::assertTrue($worker->getConfiguration()->shouldStop());
-        self::assertArrayHasKey('shouldRetrieveTasksLazily', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['shouldRetrieveTasksLazily']);
-        self::assertArrayHasKey('mustStrictlyCheckDate', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['mustStrictlyCheckDate']);
+        self::assertFalse($worker->getConfiguration()->shouldRetrieveTasksLazily());
+        self::assertFalse($worker->getConfiguration()->isStrictlyCheckingDate());
     }
 
     /**
@@ -289,35 +136,30 @@ final class WorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute([
-            'sleepDurationDelay' => 5,
-        ]);
+        $configuration = WorkerConfiguration::create();
+        $configuration->setSleepDurationDelay(5);
+
+        $worker->execute($configuration);
         $forkedWorker = $worker->fork();
 
         self::assertNotSame($forkedWorker, $worker);
-        self::assertCount(7, $forkedWorker->getOptions());
-        self::assertArrayHasKey('executedTasksCount', $forkedWorker->getOptions());
-        self::assertSame(0, $forkedWorker->getOptions()['executedTasksCount']);
-        self::assertArrayHasKey('forkedFrom', $forkedWorker->getOptions());
-        self::assertNotNull($forkedWorker->getOptions()['forkedFrom']);
-        self::assertSame($worker, $forkedWorker->getOptions()['forkedFrom']);
-        self::assertArrayHasKey('isFork', $forkedWorker->getOptions());
-        self::assertTrue($forkedWorker->getOptions()['isFork']);
+        self::assertSame(0, $forkedWorker->getConfiguration()->getExecutedTasksCount());
+        self::assertNotNull($forkedWorker->getConfiguration()->getForkedFrom());
+        self::assertSame($worker, $forkedWorker->getConfiguration()->getForkedFrom());
+        self::assertTrue($forkedWorker->getConfiguration()->isFork());
         self::assertFalse($forkedWorker->getConfiguration()->isRunning());
         self::assertNull($forkedWorker->getConfiguration()->getLastExecutedTask());
-        self::assertArrayHasKey('sleepDurationDelay', $forkedWorker->getOptions());
-        self::assertSame(5, $forkedWorker->getOptions()['sleepDurationDelay']);
-        self::assertArrayHasKey('sleepUntilNextMinute', $forkedWorker->getOptions());
-        self::assertFalse($forkedWorker->getOptions()['sleepUntilNextMinute']);
+        self::assertSame(5, $forkedWorker->getConfiguration()->getSleepDurationDelay());
+        self::assertFalse($forkedWorker->getConfiguration()->isSleepingUntilNextMinute());
         self::assertFalse($forkedWorker->getConfiguration()->shouldStop());
-        self::assertArrayHasKey('shouldRetrieveTasksLazily', $forkedWorker->getOptions());
-        self::assertFalse($forkedWorker->getOptions()['shouldRetrieveTasksLazily']);
-        self::assertArrayHasKey('mustStrictlyCheckDate', $worker->getOptions());
-        self::assertFalse($worker->getOptions()['mustStrictlyCheckDate']);
+        self::assertFalse($forkedWorker->getConfiguration()->shouldRetrieveTasksLazily());
+        self::assertFalse($worker->getConfiguration()->isStrictlyCheckingDate());
     }
 
     /**
@@ -347,7 +189,7 @@ final class WorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -386,8 +228,10 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->stop();
-        $worker->execute();
+        $configuration = WorkerConfiguration::create();
+        $configuration->stop();
+
+        $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -433,7 +277,7 @@ final class WorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertNull($task->getExecutionState());
         self::assertSame(TaskInterface::SUCCEED, $secondTask->getExecutionState());
@@ -473,7 +317,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -510,7 +354,7 @@ final class WorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -552,7 +396,7 @@ final class WorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertInstanceOf(FailedTask::class, $worker->getFailedTasks()->get('foo.failed'));
@@ -592,7 +436,7 @@ final class WorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -634,7 +478,7 @@ final class WorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertInstanceOf(FailedTask::class, $worker->getFailedTasks()->get('foo.failed'));
@@ -674,7 +518,7 @@ final class WorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -718,7 +562,7 @@ final class WorkerTest extends TestCase
             $logger
         );
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
 
         $task = $scheduler->getTasks()->get('foo');
@@ -759,7 +603,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -800,7 +644,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
@@ -836,7 +680,7 @@ final class WorkerTest extends TestCase
         ]), $tracker, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         $failedTasks = $worker->getFailedTasks();
         self::assertCount(1, $failedTasks);
@@ -883,7 +727,7 @@ final class WorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -928,7 +772,7 @@ final class WorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -968,7 +812,7 @@ final class WorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -1013,7 +857,7 @@ final class WorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory, $logger),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -1049,7 +893,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -1093,7 +937,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -1138,7 +982,7 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -1176,7 +1020,7 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute([], $task);
+        $worker->execute(WorkerConfiguration::create(), $task);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1211,7 +1055,8 @@ final class WorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute([], $task);
+
+        $worker->execute(WorkerConfiguration::create(), $task);
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
@@ -1268,7 +1113,7 @@ final class WorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -1309,7 +1154,7 @@ final class WorkerTest extends TestCase
             $lockFactory,
             $logger
         );
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
@@ -1373,9 +1218,11 @@ final class WorkerTest extends TestCase
             $lockFactory,
             $logger
         );
-        $worker->execute([
-            'shouldRetrieveTasksLazily' => true,
-        ]);
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->mustRetrieveTasksLazily(true);
+
+        $worker->execute($configuration);
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
@@ -1432,7 +1279,7 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNull($task->getAccessLockBag());
@@ -1472,7 +1319,7 @@ final class WorkerTest extends TestCase
             new TaskExecutionMiddleware(),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1500,12 +1347,12 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
         self::assertTrue($worker->getConfiguration()->shouldStop());
-        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
     /**
@@ -1532,11 +1379,11 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
-        self::assertSame(0, $worker->getOptions()['executedTasksCount']);
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
     /**
@@ -1563,10 +1410,10 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
-        self::assertSame(1, $worker->getOptions()['executedTasksCount']);
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
     }
 }

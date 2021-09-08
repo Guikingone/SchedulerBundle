@@ -12,6 +12,7 @@ use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -124,7 +125,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -158,7 +159,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(2, $logger));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task), self::equalTo($secondTask));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task), self::equalTo($secondTask));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task, $secondTask]));
@@ -191,7 +192,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getDueTasks');
@@ -225,7 +226,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(2, $logger));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task), self::equalTo($secondTask));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task), self::equalTo($secondTask));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getDueTasks');
@@ -258,7 +259,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher->expects(self::once())->method('dispatch')->with(new StopWorkerOnTaskLimitSubscriber(1, $logger));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -288,7 +289,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getDueTasks');
@@ -320,7 +321,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
@@ -352,7 +353,7 @@ final class ExecuteTaskCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([]), self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), self::equalTo($task));
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('getDueTasks');

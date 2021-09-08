@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -66,7 +67,10 @@ final class ExecuteExternalProbeCommand extends Command
         }
 
         try {
-            $this->worker->execute([], ...$probeTasks->toArray(false));
+            $this->worker->execute(
+                WorkerConfiguration::create(),
+                ...$probeTasks->toArray(false)
+            );
         } catch (Throwable $throwable) {
             $style->error([
                 'An error occurred during the external probe execution:',
