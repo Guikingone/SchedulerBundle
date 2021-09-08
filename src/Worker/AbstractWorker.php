@@ -32,7 +32,6 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function in_array;
@@ -51,7 +50,6 @@ abstract class AbstractWorker implements WorkerInterface
     private WorkerMiddlewareStack $middlewareStack;
     private LockFactory $lockFactory;
     private WorkerConfiguration $configuration;
-    private array $options = [];
 
     public function __construct(
         SchedulerInterface $scheduler,
@@ -73,13 +71,21 @@ abstract class AbstractWorker implements WorkerInterface
         $this->failedTasks = new TaskList();
     }
 
-    protected function run(array $options, Closure $closure): void
+    public function __clone()
+    {
+        $this->configuration = WorkerConfiguration::create();
+        $this->configuration->fork();
+        $this->configuration->setForkedFrom($this);
+    }
+
+    protected function run(WorkerConfiguration $configuration, Closure $closure): void
     {
         if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException('No runner found');
         }
 
-        $this->configure($options);
+        $this->configuration = $configuration;
+        $this->configuration->setExecutedTasksCount(0);
         $this->eventDispatcher->dispatch(new WorkerStartedEvent($this));
 
         $closure();
@@ -93,9 +99,6 @@ abstract class AbstractWorker implements WorkerInterface
     public function fork(): WorkerInterface
     {
         $fork = clone $this;
-        $fork->options['isFork'] = true;
-        $fork->options['forkedFrom'] = $this;
-        $fork->configuration = WorkerConfiguration::create();
 
         $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
 
@@ -170,14 +173,6 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
-    {
-        return $this->options;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getConfiguration(): WorkerConfiguration
     {
         return $this->configuration;
@@ -191,8 +186,8 @@ abstract class AbstractWorker implements WorkerInterface
     protected function getTasks(array $tasks): TaskListInterface
     {
         $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks(
-            $this->options['shouldRetrieveTasksLazily'],
-            $this->options['mustStrictlyCheckDate']
+            $this->configuration->shouldRetrieveTasksLazily(),
+            $this->configuration->isStrictlyCheckingDate()
         );
 
         $lockedTasks = $tasks->filter(function (TaskInterface $task): bool {
@@ -241,7 +236,9 @@ abstract class AbstractWorker implements WorkerInterface
                 $this->eventDispatcher->dispatch(new TaskExecutedEvent($task, $output));
 
                 $this->configuration->setLastExecutedTask($task);
-                ++$this->options['executedTasksCount'];
+
+                $executedTasksCount = $this->configuration->getExecutedTasksCount();
+                $this->configuration->setExecutedTasksCount(++$executedTasksCount);
             }
         } catch (Throwable $throwable) {
             $failedTask = new FailedTask($task, $throwable->getMessage());
@@ -255,7 +252,7 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function shouldStop(TaskListInterface $taskList): bool
     {
-        if ($this->options['sleepUntilNextMinute']) {
+        if ($this->configuration->isSleepingUntilNextMinute()) {
             return false;
         }
 
@@ -263,7 +260,7 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         }
 
-        return $this->options['executedTasksCount'] === 0 || $this->options['executedTasksCount'] === $taskList->count();
+        return $this->configuration->getExecutedTasksCount() === 0 || $this->configuration->getExecutedTasksCount() === $taskList->count();
     }
 
     private function checkTaskState(TaskInterface $task): bool
@@ -293,31 +290,7 @@ abstract class AbstractWorker implements WorkerInterface
         $dateTimeImmutable = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
         $updatedNextExecutionDate = $dateTimeImmutable->setTime((int) $dateTimeImmutable->format('H'), (int) $dateTimeImmutable->format('i'));
 
-        return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->options['sleepDurationDelay'];
-    }
-
-    private function configure(array $options): void
-    {
-        $optionsResolver = new OptionsResolver();
-        $optionsResolver->setDefaults([
-            'executedTasksCount' => 0,
-            'forkedFrom' => null,
-            'isFork' => false,
-            'mustStrictlyCheckDate' => false,
-            'sleepDurationDelay' => 1,
-            'sleepUntilNextMinute' => false,
-            'shouldRetrieveTasksLazily' => false,
-        ]);
-
-        $optionsResolver->setAllowedTypes('executedTasksCount', 'int');
-        $optionsResolver->setAllowedTypes('forkedFrom', [WorkerInterface::class, 'null']);
-        $optionsResolver->setAllowedTypes('isFork', 'bool');
-        $optionsResolver->setAllowedTypes('mustStrictlyCheckDate', 'bool');
-        $optionsResolver->setAllowedTypes('sleepDurationDelay', 'int');
-        $optionsResolver->setAllowedTypes('sleepUntilNextMinute', 'bool');
-        $optionsResolver->setAllowedTypes('shouldRetrieveTasksLazily', 'bool');
-
-        $this->options = $optionsResolver->resolve($options);
+        return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }
 
     private function defineTaskExecutionState(TaskInterface $task, Output $output): void

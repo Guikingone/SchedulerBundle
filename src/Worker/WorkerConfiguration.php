@@ -11,9 +11,15 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class WorkerConfiguration
 {
+    private int $executedTasksCount;
+    private ?WorkerInterface $forkedFrom = null;
+    private bool $isFork;
     private bool $isRunning;
     private ?TaskInterface $lastExecutedTask = null;
+    private int $sleepDurationDelay;
+    private bool $sleepUntilNextMinute;
     private bool $shouldStop;
+    private bool $shouldRetrieveTasksLazily;
     private bool $mustStrictlyCheckDate;
 
     private function __construct()
@@ -23,12 +29,47 @@ final class WorkerConfiguration
     public static function create(): self
     {
         $self = new self();
+        $self->executedTasksCount = 0;
+        $self->isFork = false;
+        $self->forkedFrom = null;
+        $self->sleepDurationDelay = 1;
         $self->shouldStop = false;
+        $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;
         $self->lastExecutedTask = null;
         $self->mustStrictlyCheckDate = false;
 
         return $self;
+    }
+
+    public function getExecutedTasksCount(): int
+    {
+        return $this->executedTasksCount;
+    }
+
+    public function setExecutedTasksCount(int $executedTasksCount): void
+    {
+        $this->executedTasksCount = $executedTasksCount;
+    }
+
+    public function getForkedFrom(): ?WorkerInterface
+    {
+        return $this->forkedFrom;
+    }
+
+    public function setForkedFrom(?WorkerInterface $forkedFrom): void
+    {
+        $this->forkedFrom = $forkedFrom;
+    }
+
+    public function isFork(): bool
+    {
+        return $this->isFork;
+    }
+
+    public function fork(): void
+    {
+        $this->isFork = true;
     }
 
     public function run(bool $isRunning): void
@@ -51,6 +92,26 @@ final class WorkerConfiguration
         return $this->lastExecutedTask;
     }
 
+    public function getSleepDurationDelay(): int
+    {
+        return $this->sleepDurationDelay;
+    }
+
+    public function setSleepDurationDelay(int $sleepDurationDelay): void
+    {
+        $this->sleepDurationDelay = $sleepDurationDelay;
+    }
+
+    public function isSleepingUntilNextMinute(): bool
+    {
+        return $this->sleepUntilNextMinute;
+    }
+
+    public function mustSleepUntilNextMinute(bool $sleepUntilNextMinute): void
+    {
+        $this->sleepUntilNextMinute = $sleepUntilNextMinute;
+    }
+
     public function stop(): void
     {
         $this->shouldStop = true;
@@ -59,6 +120,16 @@ final class WorkerConfiguration
     public function shouldStop(): bool
     {
         return $this->shouldStop;
+    }
+
+    public function shouldRetrieveTasksLazily(): bool
+    {
+        return $this->shouldRetrieveTasksLazily;
+    }
+
+    public function mustRetrieveTasksLazily(bool $mustRetrieveTasksLazily): void
+    {
+        $this->shouldRetrieveTasksLazily = $mustRetrieveTasksLazily;
     }
 
     public function mustStrictlyCheckDate(bool $mustStrictlyCheckDate): void

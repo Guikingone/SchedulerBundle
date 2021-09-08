@@ -10,6 +10,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -131,7 +132,7 @@ final class ExecuteTaskCommand extends Command
         $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(count($tasks), $this->logger));
 
         try {
-            $this->worker->execute([], ...$tasks->toArray(false));
+            $this->worker->execute(WorkerConfiguration::create(), ...$tasks->toArray(false));
         } catch (Throwable $throwable) {
             $style->error([
                 'An error occurred during the tasks execution:',

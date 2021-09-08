@@ -38,12 +38,10 @@ interface WorkerInterface
      *  - {@see WorkerOutputEvent}:  Contain the worker instance, the task and the {@see Output} after the execution.
      *  - {@see WorkerStoppedEvent}: Contain the worker instance AFTER executing the task.
      *
-     * @param array<string, array|string|bool|int|null|TaskInterface|WorkerInterface> $options
-     *
      * @throws UndefinedRunnerException if no runner capable of running the tasks is found
      * @throws Throwable                {@see SchedulerInterface::getDueTasks()}
      */
-    public function execute(array $options = [], TaskInterface ...$tasks): void;
+    public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void;
 
     /**
      * Allow to return a "fork" of the current worker,
@@ -91,11 +89,6 @@ interface WorkerInterface
      * Return the runners available in the worker.
      */
     public function getRunners(): RunnerRegistryInterface;
-
-    /**
-     * @return array<string, array|string|bool|int|null|TaskInterface|WorkerInterface>
-     */
-    public function getOptions(): array;
 
     /**
      * Return the configuration of the worker currently used.
