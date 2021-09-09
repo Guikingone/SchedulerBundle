@@ -75,7 +75,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
                 $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
 
-                return $this->schedulePolicyOrchestrator->sort($this->configuration['execution_mode'], $taskList);
+                return $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $taskList);
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);

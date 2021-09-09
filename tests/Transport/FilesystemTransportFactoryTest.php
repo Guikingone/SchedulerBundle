@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\FilesystemConfiguration;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FilesystemTransport;
@@ -20,12 +21,23 @@ final class FilesystemTransportFactoryTest extends TestCase
 {
     public function testFactoryCanSupportTransport(): void
     {
+        $serializer = $this->createMock(SerializerInterface::class);
+
         $filesystemTransportFactory = new FilesystemTransportFactory();
 
         self::assertFalse($filesystemTransportFactory->support('configuration://test', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('configuration://fs', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('configuration://file', new InMemoryConfiguration()));
-        self::assertTrue($filesystemTransportFactory->support('configuration://filesystem', new InMemoryConfiguration()));
+        self::assertTrue($filesystemTransportFactory->support('configuration://fs', new FilesystemConfiguration([
+            'filename_mask' => 'foo',
+            'file_extension' => 'json',
+        ], $serializer)));
+        self::assertTrue($filesystemTransportFactory->support('configuration://file', new FilesystemConfiguration([
+            'filename_mask' => 'foo',
+            'file_extension' => 'json',
+        ], $serializer)));
+        self::assertTrue($filesystemTransportFactory->support('configuration://filesystem', new FilesystemConfiguration([
+            'filename_mask' => 'foo',
+            'file_extension' => 'json',
+        ], $serializer)));
     }
 
     public function testFactoryCanCreateTransport(): void
@@ -74,10 +86,6 @@ final class FilesystemTransportFactoryTest extends TestCase
         self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
         self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
         self::assertSame('/srv/app', $transport->getConfiguration()->get('path'));
-        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
-        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
-        self::assertArrayHasKey('path', $transport->getConfiguration()->toArray());
-        self::assertSame('/srv/foo', $transport->getConfiguration()->get('path'));
     }
 
     public function testFactoryCanCreateTransportWithSpecificPathFromExtraOptions(): void

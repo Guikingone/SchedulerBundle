@@ -116,7 +116,7 @@ final class FailOverTransportTest extends TestCase
             ->willThrowException(new RuntimeException('Task not found'))
         ;
 
-        $secondTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $secondTransport->create(new NullTask('foo'));
@@ -124,7 +124,7 @@ final class FailOverTransportTest extends TestCase
         $failOverTransport = new FailOverTransport([
             $firstTransport,
             $secondTransport,
-        ]);
+        ], new InMemoryConfiguration());
 
         $storedTask = $failOverTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $storedTask);

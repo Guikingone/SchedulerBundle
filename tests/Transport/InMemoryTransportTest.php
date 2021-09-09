@@ -87,11 +87,14 @@ final class InMemoryTransportTest extends TestCase
         self::assertSame($storedTask->getName(), $task->getName());
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanStoreAndSortTasks(): void
     {
-        $inMemoryTransport = new InMemoryTransport([
+        $inMemoryTransport = new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -173,14 +176,10 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCannotCreateATaskTwice(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(5))->method('getName')->willReturn('foo');
-
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getName')->willReturn('foo');
-
         $configuration = new InMemoryConfiguration();
-        $configuration->init(['execution_mode' => 'first_in_first_out']);
+        $configuration->init([
+            'execution_mode' => 'first_in_first_out',
+        ]);
 
         $inMemoryTransport = new InMemoryTransport($configuration, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),

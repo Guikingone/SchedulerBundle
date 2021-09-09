@@ -10,7 +10,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Configuration\AbstractConfiguration;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use function count;
+use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
 use function array_walk;
 use function sprintf;
@@ -21,6 +21,11 @@ use function sprintf;
 final class RedisConfiguration extends AbstractConfiguration
 {
     private Redis $redis;
+
+    public function __construct(SerializerInterface $serializer, ?Redis $redis = null)
+    {
+        $this->redis ??= $redis;
+    }
 
     /**
      * {@inheritdoc}

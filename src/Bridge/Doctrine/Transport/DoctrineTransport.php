@@ -30,8 +30,7 @@ class DoctrineTransport extends AbstractExternalTransport
     ) {
         $this->defineOptions(array_merge([
             'auto_setup' => $configuration->get('auto_setup') ?? true,
-            'connection' => $configuration->get('connection') ?? null,
-            'table_name' => '_symfony_scheduler_tasks',
+            'table_name' => $configuration->get('table_name') ?? '_symfony_scheduler_tasks',
         ], $configuration->toArray()), [
             'auto_setup' => 'bool',
             'table_name' => 'string',

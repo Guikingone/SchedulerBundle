@@ -101,4 +101,11 @@ final class FilesystemConfiguration extends AbstractConfiguration
     public function count(): int
     {
     }
+
+    private function fileExist(string $taskName): bool
+    {
+        $configuration = $this->getConfiguration()->toArray();
+
+        return $this->filesystem->exists(sprintf($this->o['filename_mask'], $configuration['path'], $taskName));
+    }
 }

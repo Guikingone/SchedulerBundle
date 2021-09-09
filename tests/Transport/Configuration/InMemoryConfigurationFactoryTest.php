@@ -37,4 +37,19 @@ final class InMemoryConfigurationFactoryTest extends TestCase
         self::assertArrayHasKey('foo', $configuration->toArray());
         self::assertSame('bar', $configuration->get('foo'));
     }
+
+    public function testConfigurationIsReturnedWithAlias(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $factory = new InMemoryConfigurationFactory();
+        $configuration = $factory->create(Dsn::fromString('configuration://array'), $serializer);
+        $configuration->set('execution_mode', 'first_in_first_out');
+        $configuration->set('foo', 'bar');
+
+        self::assertCount(2, $configuration->toArray());
+        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
+        self::assertArrayHasKey('foo', $configuration->toArray());
+        self::assertSame('bar', $configuration->get('foo'));
+    }
 }

@@ -62,13 +62,15 @@ final class RoundRobinTransportFactoryTest extends TestCase
         $roundRobinTransportFactory = new RoundRobinTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
+        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
         self::assertInstanceOf(RoundRobinTransport::class, $transport);
-        self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertArrayHasKey('quantum', $transport->getOptions());
-        self::assertSame(10, $transport->getOptions()['quantum']);
+
+        $configuration = $transport->getConfiguration();
+        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
+        self::assertArrayHasKey('execution_mode', $configuration->toArray());
+        self::assertArrayHasKey('quantum', $configuration->toArray());
+        self::assertSame(10, $configuration->get('quantum'));
     }
 
     /**

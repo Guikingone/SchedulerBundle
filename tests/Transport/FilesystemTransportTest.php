@@ -189,11 +189,6 @@ final class FilesystemTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $nullTask = new NullTask('bar');
-
-        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
-        $schedulePolicyOrchestrator->expects(self::exactly(2))->method('sort')->willReturn([$nullTask]);
-
         $filesystemTransport = new FilesystemTransport(new InMemoryConfiguration([
             'path' => sys_get_temp_dir().'/assets',
             'execution_mode' => 'first_in_first_out',
@@ -201,9 +196,11 @@ final class FilesystemTransportTest extends TestCase
         ], [
             'path' => 'string',
             'filename_mask' => 'string',
-        ]), $serializer, $schedulePolicyOrchestrator);
+        ]), $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
-        $filesystemTransport->create($nullTask);
+        $filesystemTransport->create(new NullTask('bar'));
         self::assertTrue($this->filesystem->exists(sys_get_temp_dir().'/assets/_symfony_scheduler_/bar.json'));
 
         $list = $filesystemTransport->list();

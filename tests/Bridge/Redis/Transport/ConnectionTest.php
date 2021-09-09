@@ -149,14 +149,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
 
-        new Connection([
+        new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
-            'port' => 6379,
             'timeout' => 30,
+            'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
     }
 
     public function testConnectionCanConnectWithoutSpecificTimeout(): void
@@ -172,14 +179,21 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('select')->with(self::equalTo(0))->willReturn(true);
         $redis->expects(self::once())->method('auth')->willReturn(true);
 
-        new Connection([
+        new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
-            'port' => 6379,
             'timeout' => 30,
+            'port' => 6379,
             'auth' => 'root',
             'dbindex' => 0,
             'list' => '_symfony_scheduler_tasks',
-        ], $serializer, $redis);
+        ], [
+            'host' => 'string',
+            'port' => 'int',
+            'timeout' => 'int',
+            'dbindex' => 'int',
+            'auth' => 'string',
+            'list' => 'string',
+        ]), $serializer, $redis);
     }
 
     public function testConnectionCanListEmptyData(): void

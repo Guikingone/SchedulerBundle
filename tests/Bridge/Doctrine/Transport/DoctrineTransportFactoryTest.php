@@ -65,7 +65,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The connection is not a valid one');
         self::expectExceptionCode(0);
-        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], $serializer, $schedulePolicyOrchestrator);
+        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
     }
 
     public function testFactoryReturnTransport(): void

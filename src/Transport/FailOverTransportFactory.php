@@ -15,12 +15,12 @@ use function strpos;
 final class FailOverTransportFactory extends AbstractCompoundTransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
+     * @var TransportFactoryInterface[]
      */
     private iterable $transportFactories;
 
     /**
-     * @param iterable|TransportFactoryInterface[] $transportFactories
+     * @param TransportFactoryInterface[] $transportFactories
      */
     public function __construct(iterable $transportFactories)
     {

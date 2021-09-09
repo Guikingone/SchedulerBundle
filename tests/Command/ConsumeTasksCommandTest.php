@@ -21,6 +21,7 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -178,7 +179,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 
@@ -205,7 +206,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 
@@ -600,7 +601,7 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 
@@ -631,7 +632,7 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 

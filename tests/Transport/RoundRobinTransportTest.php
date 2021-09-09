@@ -61,8 +61,12 @@ final class RoundRobinTransportTest extends TestCase
     public function testTransportCannotGetWithFailingTransports(): void
     {
         $roundRobinTransport = new RoundRobinTransport([
-            $firstTransport,
-            $secondTransport,
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
@@ -73,22 +77,24 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
-        $thirdTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $thirdTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $thirdTransport->create(new NullTask('foo'));
 
         $roundRobinTransport = new RoundRobinTransport([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             $thirdTransport,
-        ], [
+        ], new InMemoryConfiguration([
             'quantum' => 2,
-        ]);
+        ], [
+            'quantum' => 'int',
+        ]));
 
         self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
         self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
@@ -221,8 +227,6 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotCreateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $roundRobinTransport = new RoundRobinTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
@@ -273,8 +277,6 @@ final class RoundRobinTransportTest extends TestCase
 
     public function testTransportCannotUpdateWithoutTransports(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-
         $roundRobinTransport = new RoundRobinTransport([], new InMemoryConfiguration());
 
         self::expectException(TransportException::class);

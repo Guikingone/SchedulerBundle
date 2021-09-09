@@ -22,6 +22,14 @@ final class DoctrineConfiguration extends AbstractDoctrineConnection implements 
     /**
      * {@inheritdoc}
      */
+    public function init(array $options, array $extraOptions = []): void
+    {
+        // TODO: Implement init() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function set(string $key, $value): void
     {
         // TODO: Implement set() method.

@@ -51,7 +51,6 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
         ], [
             'auto_setup' => 'bool',
-            'connection' => 'string',
             'execution_mode' => 'string',
             'table_name' => 'string',
         ]);

@@ -90,9 +90,10 @@ final class ConfigurationFactoryTest extends TestCase
     public function provideDsn(): Generator
     {
         yield 'InMemory' => ['configuration://memory', InMemoryConfiguration::class];
+        yield 'InMemory - Alias' => ['configuration://array', InMemoryConfiguration::class];
         yield 'Filesystem - Short' => ['configuration://fs', FilesystemConfiguration::class];
         yield 'Filesystem - Full' => ['configuration://filesystem', FilesystemConfiguration::class];
-        yield 'FailOver - Short' => ['configuration://failover', FailOverConfiguration::class];
-        yield 'FailOver - Full' => ['configuration://fo', FailOverConfiguration::class];
+        yield 'FailOver - Short' => ['configuration://failover(configuration://memory || configuration://fs)', FailOverConfiguration::class];
+        yield 'FailOver - Full' => ['configuration://fo(configuration://memory || configuration://fs)', FailOverConfiguration::class];
     }
 }

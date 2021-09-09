@@ -9,7 +9,6 @@ use SchedulerBundle\Transport\AbstractExternalTransport;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractTransport;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
