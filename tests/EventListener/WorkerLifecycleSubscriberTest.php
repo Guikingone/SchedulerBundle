@@ -50,16 +50,21 @@ final class WorkerLifecycleSubscriberTest extends TestCase
     public function testSubscriberLogOnWorkerPaused(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([
-            'foo' => 'foo',
-            'bar' => 'bar',
-        ]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been paused'), self::equalTo([
             'options' => [
-                'foo' => 'foo',
-                'bar' => 'bar',
+                'executedTasksCount' => 0,
+                'forkedFrom' => null,
+                'isFork' => false,
+                'isRunning' => false,
+                'lastExecutedTask' => null,
+                'sleepDurationDelay' => 1,
+                'sleepUntilNextMinute' => false,
+                'shouldStop' => false,
+                'shouldRetrieveTasksLazily' => false,
+                'mustStrictlyCheckDate' => false,
             ],
         ]));
 

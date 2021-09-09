@@ -188,13 +188,24 @@ final class MercureEventSubscriberTest extends TestCase
     public function testHubCanPublishUpdateOnWorkerPaused(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $hub = $this->createMock(HubInterface::class);
         $hub->expects(self::once())->method('publish')->with(self::equalTo(new Update('https://www.hub.com/', json_encode([
             'event' => 'worker.paused',
             'body' => [
-                'options' => [],
+                'options' => [
+                    'executedTasksCount' => 0,
+                    'forkedFrom' => null,
+                    'isFork' => false,
+                    'isRunning' => false,
+                    'lastExecutedTask' => null,
+                    'sleepDurationDelay' => 1,
+                    'sleepUntilNextMinute' => false,
+                    'shouldStop' => false,
+                    'shouldRetrieveTasksLazily' => false,
+                    'mustStrictlyCheckDate' => false,
+                ],
             ],
         ], JSON_THROW_ON_ERROR))));
 

@@ -1372,7 +1372,9 @@ final class SchedulerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
@@ -1418,7 +1420,7 @@ final class SchedulerTest extends TestCase
         $pdoConnection = new PDO(sprintf('sqlite://%s/tasks.db', sys_get_temp_dir()));
         $pdoConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $scheduler = new Scheduler('UTC', new FilesystemTransport(sys_get_temp_dir().'/_tasks', [], $serializer, new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
