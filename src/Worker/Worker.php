@@ -14,14 +14,12 @@ final class Worker extends AbstractWorker
     /**
      * {@inheritdoc}
      */
-    public function execute(array $options = [], TaskInterface ...$tasks): void
+    public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void
     {
-        $this->run($options, function () use ($options, $tasks): void {
-            $configuration = $this->getConfiguration();
-
-            while (!$configuration->shouldStop()) {
+        $this->run($configuration, function () use ($tasks): void {
+            while (!$this->getConfiguration()->shouldStop()) {
                 $toExecuteTasks = $this->getTasks($tasks);
-                if (0 === $toExecuteTasks->count() && false === $this->getOptions()['sleepUntilNextMinute']) {
+                if (0 === $toExecuteTasks->count() && !$this->getConfiguration()->isSleepingUntilNextMinute()) {
                     $this->stop();
                 }
 
@@ -33,9 +31,9 @@ final class Worker extends AbstractWorker
                     break;
                 }
 
-                if (true === $this->getOptions()['sleepUntilNextMinute']) {
+                if ($this->getConfiguration()->isSleepingUntilNextMinute()) {
                     $this->sleep();
-                    $this->execute($options);
+                    $this->execute($this->getConfiguration());
                 }
             }
         });

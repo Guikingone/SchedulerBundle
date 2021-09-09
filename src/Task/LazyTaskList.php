@@ -47,7 +47,9 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
      */
     public function get(string $taskName, bool $lazy = false): TaskInterface
     {
-        $this->initialize();
+        if ($this->initialized) {
+            return $this->list->get($taskName, $lazy);
+        }
 
         return $this->list->get($taskName, $lazy);
     }
@@ -127,7 +129,9 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
      */
     public function uasort(Closure $func): TaskListInterface
     {
-        $this->initialize();
+        if ($this->initialized) {
+            return $this->list->uasort($func);
+        }
 
         return $this->list->uasort($func);
     }

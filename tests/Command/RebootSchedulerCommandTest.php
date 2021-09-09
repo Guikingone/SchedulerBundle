@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -63,7 +64,7 @@ final class RebootSchedulerCommandTest extends TestCase
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::never())->method('execute')->with(self::equalTo([]), ...$taskList);
+        $worker->expects(self::never())->method('execute')->with(self::equalTo(WorkerConfiguration::create()), ...$taskList);
 
         $commandTester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([]);
@@ -129,7 +130,7 @@ final class RebootSchedulerCommandTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::exactly(2))->method('isRunning')->willReturnOnConsecutiveCalls(true, false);
-        $worker->expects(self::once())->method('execute')->with([], self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), self::equalTo($task));
 
         $commandTester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher, $logger));
         $commandTester->execute([]);
@@ -173,7 +174,7 @@ final class RebootSchedulerCommandTest extends TestCase
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with([], self::equalTo($task));
+        $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), self::equalTo($task));
 
         $commandTester = new CommandTester(new RebootSchedulerCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([]);

@@ -10,6 +10,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -182,11 +183,12 @@ final class ConsumeTasksCommand extends Command
         $this->registerWorkerSleepingListener($symfonyStyle);
         $this->registerTaskExecutedSubscriber($symfonyStyle);
 
+        $workerConfiguration = WorkerConfiguration::create();
+        $workerConfiguration->mustStrictlyCheckDate(true === $strict);
+        $workerConfiguration->mustSleepUntilNextMinute(true === $wait);
+
         try {
-            $this->worker->execute([
-                'mustStrictlyCheckDate' => true === $strict,
-                'sleepUntilNextMinute' => true === $wait,
-            ]);
+            $this->worker->execute($workerConfiguration);
         } catch (Throwable $throwable) {
             $symfonyStyle->error([
                 'An error occurred when executing the tasks',

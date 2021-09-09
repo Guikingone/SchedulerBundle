@@ -105,11 +105,12 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public function onWorkerStarted(WorkerStartedEvent $event): void
     {
         $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'worker.started',
             'body' => [
-                'options' => $worker->getOptions(),
+                'options' => $configuration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }
@@ -120,12 +121,13 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public function onWorkerStopped(WorkerStoppedEvent $event): void
     {
         $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'worker.stopped',
             'body' => [
                 'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
-                'options' => $worker->getOptions(),
+                'options' => $configuration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }
@@ -136,13 +138,16 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public function onWorkerForked(WorkerForkedEvent $event): void
     {
         $worker = $event->getForkedWorker();
-        $newForker = $event->getNewWorker();
+        $configuration = $worker->getConfiguration();
+
+        $forkedWorker = $event->getNewWorker();
+        $forkedConfiguration = $forkedWorker->getConfiguration();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'worker.forked',
             'body' => [
-                'oldWorkerOptions' => $worker->getOptions(),
-                'forkedWorkerOptions' => $newForker->getOptions(),
+                'oldWorkerOptions' => $configuration->toArray(),
+                'forkedWorkerOptions' => $forkedConfiguration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }
@@ -153,12 +158,13 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public function onWorkerRestarted(WorkerRestartedEvent $event): void
     {
         $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'worker.restarted',
             'body' => [
                 'lastExecutedTask' => $this->serializer->serialize($worker->getLastExecutedTask(), 'json'),
-                'options' => $worker->getOptions(),
+                'options' => $configuration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }

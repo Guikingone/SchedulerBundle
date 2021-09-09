@@ -402,10 +402,7 @@ final class ConsumeTasksCommandTest extends TestCase
         ]));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([
-            'mustStrictlyCheckDate' => false,
-            'sleepUntilNextMinute' => true,
-        ]));
+        $worker->expects(self::once())->method('execute');
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher, $logger));
         $commandTester->execute([
@@ -610,10 +607,7 @@ final class ConsumeTasksCommandTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('execute')->with(self::equalTo([
-            'mustStrictlyCheckDate' => false,
-            'sleepUntilNextMinute' => true,
-        ]));
+        $worker->expects(self::once())->method('execute');
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, new EventDispatcher()));
         $commandTester->execute([

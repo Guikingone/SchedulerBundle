@@ -48,7 +48,7 @@ final class TaskList implements TaskListInterface
      */
     public function add(TaskInterface ...$task): void
     {
-        if ($task === []) {
+        if ([] === $task) {
             return;
         }
 

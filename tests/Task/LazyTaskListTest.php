@@ -55,6 +55,9 @@ final class LazyTaskListTest extends TestCase
         $list->add(new NullTask('foo'));
         self::assertTrue($list->isInitialized());
         self::assertInstanceOf(NullTask::class, $list->get('foo'));
+
+        self::assertTrue($list->isInitialized());
+        self::assertInstanceOf(NullTask::class, $list->get('foo'));
     }
 
     public function testListCanReturnTaskLazily(): void
@@ -315,6 +318,15 @@ final class LazyTaskListTest extends TestCase
         self::assertEquals([
             'foo' => $fooTask,
             'bar' => $barTask,
+        ], $taskList->toArray());
+
+        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $nextTask->getScheduledAt() <=> $task->getScheduledAt());
+
+        self::assertTrue($taskList->isInitialized());
+        self::assertCount(2, $taskList);
+        self::assertEquals([
+            'bar' => $barTask,
+            'foo' => $fooTask,
         ], $taskList->toArray());
     }
 

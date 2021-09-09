@@ -36,14 +36,6 @@ final class InMemoryTransportTest extends TestCase
         new InMemoryTransport(['execution_mode' => 350], new SchedulePolicyOrchestrator([]));
     }
 
-    public function testTransportCannotBeConfiguredWithInvalidOptionTypeOnPath(): void
-    {
-        self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "path" with value 350 is expected to be of type "string" or "null", but is of type "int"');
-        self::expectExceptionCode(0);
-        new InMemoryTransport(['path' => 350], new SchedulePolicyOrchestrator([]));
-    }
-
     public function testTransportCannotReturnUndefinedTask(): void
     {
         $inMemoryTransport = new InMemoryTransport([
@@ -267,17 +259,16 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
+        self::assertInstanceOf(ShellTask::class, $inMemoryTransport->get($task->getName()));
 
-        $task->setTags(['test']);
-        $task->setLastExecution(new DateTimeImmutable());
-
-        $inMemoryTransport->update($task->getName(), $task);
+        $inMemoryTransport->update($task->getName(), new NullTask($task->getName()));
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
 
         $storedTask = $inMemoryTransport->get($task->getName());
-        self::assertContains('test', $storedTask->getTags());
-        self::assertInstanceOf(DateTimeImmutable::class, $storedTask->getLastExecution());
+        self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
+        self::assertInstanceOf(NullTask::class, $storedTask);
     }
 
     /**

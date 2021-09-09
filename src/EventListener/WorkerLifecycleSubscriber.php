@@ -74,11 +74,14 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
     public function onWorkerForked(WorkerForkedEvent $workerForkedEvent): void
     {
         $forkedWorker = $workerForkedEvent->getForkedWorker();
+        $forkedConfiguration = $forkedWorker->getConfiguration();
+
         $newWorker = $workerForkedEvent->getNewWorker();
+        $newWorkerConfiguration = $newWorker->getConfiguration();
 
         $this->logger->info('The worker has been forked', [
-            'forkedWorker' => $forkedWorker->getOptions(),
-            'newWorker' => $newWorker->getOptions(),
+            'forkedWorker' => $forkedConfiguration->toArray(),
+            'newWorker' => $newWorkerConfiguration->toArray(),
         ]);
     }
 

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -94,7 +95,7 @@ final class RetryFailedTaskCommand extends Command
             $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(1, $this->logger));
 
             try {
-                $this->worker->execute([], $task);
+                $this->worker->execute(WorkerConfiguration::create(), $task);
             } catch (Throwable $throwable) {
                 $symfonyStyle->error([
                     'An error occurred when trying to retry the task:',

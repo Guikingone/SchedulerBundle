@@ -12,6 +12,7 @@ use SchedulerBundle\Messenger\TaskMessage;
 use SchedulerBundle\Messenger\TaskMessageHandler;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -29,7 +30,7 @@ final class TaskMessageHandlerTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('isRunning')->willReturn(false);
-        $worker->expects(self::once())->method('execute')->with([], $task);
+        $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $task);
 
         $taskMessageHandler = new TaskMessageHandler($worker);
 
@@ -45,7 +46,7 @@ final class TaskMessageHandlerTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('isRunning')->willReturn(false);
-        $worker->expects(self::once())->method('execute')->with([], $shellTask);
+        $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $shellTask);
 
         $taskMessageHandler = new TaskMessageHandler($worker);
 
@@ -64,7 +65,7 @@ final class TaskMessageHandlerTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::exactly(3))->method('isRunning')->willReturnOnConsecutiveCalls(true, true, false);
-        $worker->expects(self::once())->method('execute')->with([], $shellTask);
+        $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $shellTask);
 
         $taskMessageHandler = new TaskMessageHandler($worker, $logger);
 
