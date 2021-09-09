@@ -259,17 +259,16 @@ final class InMemoryTransportTest extends TestCase
         $inMemoryTransport->create($task);
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
+        self::assertInstanceOf(ShellTask::class, $inMemoryTransport->get($task->getName()));
 
-        $task->setTags(['test']);
-        $task->setLastExecution(new DateTimeImmutable());
-
-        $inMemoryTransport->update($task->getName(), $task);
+        $inMemoryTransport->update($task->getName(), new NullTask($task->getName()));
         self::assertCount(1, $inMemoryTransport->list());
         self::assertCount(1, $inMemoryTransport->list(true));
 
         $storedTask = $inMemoryTransport->get($task->getName());
-        self::assertContains('test', $storedTask->getTags());
-        self::assertInstanceOf(DateTimeImmutable::class, $storedTask->getLastExecution());
+        self::assertCount(1, $inMemoryTransport->list());
+        self::assertCount(1, $inMemoryTransport->list(true));
+        self::assertInstanceOf(NullTask::class, $storedTask);
     }
 
     /**
