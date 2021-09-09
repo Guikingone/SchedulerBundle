@@ -43,7 +43,7 @@ final class TaskExecutionTrackerTest extends TestCase
         $taskExecutionTracker->endTracking($task);
 
         self::assertNotNull($task->getExecutionComputationTime());
-        self::assertNotNull($task->getExecutionMemoryUsage());
+        self::assertGreaterThan(1, $task->getExecutionMemoryUsage());
     }
 
     /**

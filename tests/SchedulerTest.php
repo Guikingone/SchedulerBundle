@@ -38,7 +38,6 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
-use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
