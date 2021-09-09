@@ -33,9 +33,9 @@ final class ShellTask extends AbstractTask
             'environment_variables' => $environmentVariables,
             'timeout' => $timeout,
         ], $options), [
-            'command' => ['string[]', 'array'],
+            'command' => 'string[]',
             'cwd' => ['string', 'null'],
-            'environment_variables' => ['string[]', 'array'],
+            'environment_variables' => 'string[]',
             'timeout' => 'float',
         ]);
 
