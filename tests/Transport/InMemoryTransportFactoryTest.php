@@ -6,7 +6,8 @@ namespace Tests\SchedulerBundle\Transport;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
@@ -30,15 +31,18 @@ final class InMemoryTransportFactoryTest extends TestCase
      */
     public function testFactoryReturnTransport(string $dsn): void
     {
-        $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $serializer = $this->createMock(SerializerInterface::class);
 
+        $finalDsn = Dsn::fromString($dsn);
+
         $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
 
         self::assertInstanceOf(InMemoryTransport::class, $transport);
         self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
+        self::assertSame($finalDsn->getHost(), $transport->getOptions()['execution_mode']);
     }
 
     /**
@@ -50,7 +54,11 @@ final class InMemoryTransportFactoryTest extends TestCase
             'memory://batch',
             'memory://deadline',
             'memory://first_in_first_out',
+            'memory://first_in_last_out',
+            'memory://idle',
+            'memory://memory_usage',
             'memory://normal',
+            'memory://round_robin',
         ];
     }
 }
