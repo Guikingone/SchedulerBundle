@@ -151,7 +151,7 @@ final class Scheduler implements SchedulerInterface
 
             $forkWorker = $worker->fork();
             try {
-                $forkWorker->execute($worker->getOptions(), ...$toPreemptTasks->toArray(false));
+                $forkWorker->execute($worker->getConfiguration(), ...$toPreemptTasks->toArray(false));
             } catch (Throwable $throwable) {
                 $this->logger->warning('An error occurred during the execution of the tasks used to preempt the currently executed task');
             } finally {
@@ -161,7 +161,7 @@ final class Scheduler implements SchedulerInterface
             $worker->restart();
 
             if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
-                $worker->execute($worker->getOptions(), ...$remainingTasks->toArray(false));
+                $worker->execute($worker->getConfiguration(), ...$remainingTasks->toArray(false));
             }
         });
     }

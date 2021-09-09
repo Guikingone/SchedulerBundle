@@ -32,6 +32,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\Worker;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
@@ -675,7 +676,7 @@ final class LazySchedulerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
         self::assertCount(0, $worker->getFailedTasks());
 
         $lastExecutedTask = $worker->getLastExecutedTask();

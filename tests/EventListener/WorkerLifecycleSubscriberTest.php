@@ -26,7 +26,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        self::assertCount(5, WorkerLifecycleSubscriber::getSubscribedEvents());
+        self::assertCount(6, WorkerLifecycleSubscriber::getSubscribedEvents());
+
         self::assertArrayHasKey(WorkerForkedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerForked', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerForkedEvent::class]);
 
@@ -44,24 +45,6 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
         self::assertArrayHasKey(WorkerStoppedEvent::class, WorkerLifecycleSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerStopped', WorkerLifecycleSubscriber::getSubscribedEvents()[WorkerStoppedEvent::class]);
-    }
-
-    public function testSubscriberLogOnWorkerForked(): void
-    {
-        $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getOptions')->willReturn([]);
-
-        $secondWorker = $this->createMock(WorkerInterface::class);
-        $secondWorker->expects(self::once())->method('getOptions')->willReturn([]);
-
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker has been forked'), self::equalTo([
-            'forkedWorker' => [],
-            'newWorker' => [],
-        ]));
-
-        $workerLifecycleSubscriber = new WorkerLifecycleSubscriber($logger);
-        $workerLifecycleSubscriber->onWorkerForked(new WorkerForkedEvent($worker, $secondWorker));
     }
 
     public function testSubscriberLogOnWorkerPaused(): void

@@ -41,6 +41,7 @@ use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
@@ -1581,7 +1582,7 @@ final class SchedulerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute();
+        $worker->execute(WorkerConfiguration::create());
         self::assertCount(0, $worker->getFailedTasks());
 
         $lastExecutedTask = $worker->getLastExecutedTask();

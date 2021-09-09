@@ -106,11 +106,12 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     public function onWorkerPaused(WorkerPausedEvent $event): void
     {
         $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
 
         $this->hub->publish(new Update($this->updateUrl, json_encode([
             'event' => 'worker.paused',
             'body' => [
-                'options' => $worker->getOptions(),
+                'options' => $configuration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
     }
