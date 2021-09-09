@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 use function strpos;
 
 /**
@@ -19,9 +18,9 @@ final class InMemoryTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new InMemoryTransport(array_merge([
+        return new InMemoryTransport([
             'execution_mode' => $dsn->getHost(),
-        ], $dsn->getOptions(), $options), $schedulePolicyOrchestrator);
+        ], $schedulePolicyOrchestrator);
     }
 
     /**
