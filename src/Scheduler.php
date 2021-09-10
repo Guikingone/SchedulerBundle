@@ -9,8 +9,6 @@ use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -54,7 +52,6 @@ final class Scheduler implements SchedulerInterface
     private TransportInterface $transport;
     private SchedulerMiddlewareStack $middlewareStack;
     private EventDispatcherInterface $eventDispatcher;
-    private LoggerInterface $logger;
     private ?MessageBusInterface $bus;
 
     /**
@@ -65,8 +62,7 @@ final class Scheduler implements SchedulerInterface
         TransportInterface $transport,
         SchedulerMiddlewareStack $schedulerMiddlewareStack,
         EventDispatcherInterface $eventDispatcher,
-        ?MessageBusInterface $messageBus = null,
-        ?LoggerInterface $logger = null
+        ?MessageBusInterface $messageBus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
@@ -74,7 +70,6 @@ final class Scheduler implements SchedulerInterface
         $this->middlewareStack = $schedulerMiddlewareStack;
         $this->eventDispatcher = $eventDispatcher;
         $this->bus = $messageBus;
-        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -153,7 +148,6 @@ final class Scheduler implements SchedulerInterface
             try {
                 $forkWorker->execute($worker->getConfiguration(), ...$toPreemptTasks->toArray(false));
             } catch (Throwable $throwable) {
-                $this->logger->warning('An error occurred during the execution of the tasks used to preempt the currently executed task');
             } finally {
                 $forkWorker->stop();
             }

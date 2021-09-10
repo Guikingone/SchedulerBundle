@@ -10,6 +10,7 @@ use Exception;
 use Generator;
 use PDO;
 use PHPUnit\Framework\TestCase;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
@@ -384,6 +385,7 @@ final class SchedulerTest extends TestCase
 
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
+     * @throws Throwable           {@see SchedulerInterface::schedule()}
      *
      * @dataProvider provideTasks
      */
@@ -391,15 +393,18 @@ final class SchedulerTest extends TestCase
     {
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')
-            ->with(new TaskMessage($task))
+            ->with(self::equalTo(new TaskMessage($task)))
             ->willReturn(new Envelope(new stdClass()))
         ;
+
+        $eventDispatcher = $this->createMock(EventDispatcher::class);
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new TaskScheduledEvent($task)));
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(), $eventDispatcher, $bus);
 
         $task->setQueued(true);
         $scheduler->schedule($task);
