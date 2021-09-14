@@ -91,6 +91,30 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
+    public function preempt(TaskListInterface $preemptTaskList): void
+    {
+        $this->pause();
+
+        $remainingTasks = $this->getCurrentTasks();
+
+        $forkWorker = $this->fork();
+        try {
+            $forkWorker->execute($forkWorker->getConfiguration(), ...$preemptTaskList->toArray(false));
+        } catch (Throwable $throwable) {
+        } finally {
+            $forkWorker->stop();
+        }
+
+        $this->restart();
+
+        if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
+            $this->execute($this->configuration, ...$remainingTasks->toArray(false));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function fork(): WorkerInterface
     {
         $fork = clone $this;

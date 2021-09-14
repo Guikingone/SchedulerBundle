@@ -44,6 +44,11 @@ interface WorkerInterface
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void;
 
     /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function preempt(TaskListInterface $preemptTaskList): void;
+
+    /**
      * Allow to return a "fork" of the current worker,
      * the final implementation is up to each worker that implement the interface.
      *

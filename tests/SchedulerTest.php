@@ -1528,7 +1528,7 @@ final class SchedulerTest extends TestCase
      * @throws Throwable {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::schedule()}
      */
-    public function testSchedulerCannotPreemptEmptyTasks(): void
+    public function testSchedulerCannotPreemptEmptyDueTasks(): void
     {
         $task = new NullTask('foo');
 
@@ -1560,6 +1560,8 @@ final class SchedulerTest extends TestCase
     /**
      * @throws Throwable {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     *
+     * @group foo
      */
     public function testSchedulerCanPreemptTasks(): void
     {

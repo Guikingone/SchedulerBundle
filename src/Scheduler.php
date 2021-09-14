@@ -128,35 +128,20 @@ final class Scheduler implements SchedulerInterface
      */
     public function preempt(Closure $func): void
     {
-        $tasks = $this->getTasks();
+        $tasks = $this->getDueTasks();
         if (0 === $tasks->count()) {
             return;
         }
 
-        $toPreemptTasks = $tasks->filter($func);
-        if (0 === $toPreemptTasks->count()) {
+        $preemptTasks = $tasks->filter($func);
+        if (0 === $preemptTasks->count()) {
             return;
         }
 
-        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($toPreemptTasks): void {
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($preemptTasks): void {
             $worker = $event->getWorker();
-            $worker->pause();
 
-            $remainingTasks = $worker->getCurrentTasks();
-
-            $forkWorker = $worker->fork();
-            try {
-                $forkWorker->execute($worker->getConfiguration(), ...$toPreemptTasks->toArray(false));
-            } catch (Throwable $throwable) {
-            } finally {
-                $forkWorker->stop();
-            }
-
-            $worker->restart();
-
-            if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
-                $worker->execute($worker->getConfiguration(), ...$remainingTasks->toArray(false));
-            }
+            $worker->preempt($preemptTasks);
         });
     }
 
