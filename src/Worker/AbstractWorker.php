@@ -204,6 +204,10 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function handleTask(TaskInterface $task): void
     {
+        if ($this->configuration->shouldStop()) {
+            return;
+        }
+
         $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
 
         try {
