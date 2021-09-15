@@ -97,7 +97,9 @@ abstract class AbstractWorker implements WorkerInterface
 
         $remainingTasks = $this->getCurrentTasks();
 
+        $this->pause();
         $forkWorker = $this->fork();
+
         try {
             $forkWorker->execute($forkWorker->getConfiguration(), ...$preemptTaskList->toArray(false));
         } catch (Throwable $throwable) {

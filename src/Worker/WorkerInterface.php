@@ -44,6 +44,15 @@ interface WorkerInterface
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void;
 
     /**
+     * Allows to preempt the currently executed task.
+     *
+     * The preemption is done in an atomic approach:
+     *
+     *  - The worker retrieves the current tasks
+     *  - The worker is paused then forked
+     *  - The new worker try to execute the given @param TaskListInterface $preemptTaskList then stop
+     *  - The primary worker restart then try to execute the remaining tasks
+     *
      * @throws Throwable {@see WorkerInterface::execute()}
      */
     public function preempt(TaskListInterface $preemptTaskList): void;

@@ -38,9 +38,9 @@ interface SchedulerInterface
     public function yieldTask(string $name, bool $async = false): void;
 
     /**
-     * Determine if a task|set of tasks that entered the runnable state should preempt the currently running task.
+     * Determine if a task|set of due tasks that entered the runnable state should preempt the currently running task.
      *
-     * The decision is based on @param Closure $func, if the closure returns true, the task(s) can preempt.
+     * The decision is based on @param Closure $filter, if the closure returns true, the task(s) can preempt.
      *
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      *
@@ -49,7 +49,7 @@ interface SchedulerInterface
      *            the new worker execute the preempting tasks then stop.
      *            Once the new worker stopped, the "old" worker is restarted then the remaining tasks are executed.}
      */
-    public function preempt(Closure $func): void;
+    public function preempt(Closure $filter): void;
 
     /**
      * Update a specific task, the name should NOT be changed, every metadata can.

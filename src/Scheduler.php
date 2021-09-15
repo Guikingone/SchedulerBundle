@@ -126,14 +126,14 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function preempt(Closure $func): void
+    public function preempt(Closure $filter): void
     {
         $tasks = $this->getDueTasks();
         if (0 === $tasks->count()) {
             return;
         }
 
-        $preemptTasks = $tasks->filter($func);
+        $preemptTasks = $tasks->filter($filter);
         if (0 === $preemptTasks->count()) {
             return;
         }
