@@ -31,6 +31,7 @@ interface WorkerInterface
      * An exception can be throw during the execution of the task, if so, it SHOULD be handled.
      *
      * A worker COULD dispatch the following events:
+     *
      *  - {@see WorkerStartedEvent}: Contain the worker instance BEFORE executing the task.
      *  - {@see TaskExecutingEvent}: Contain the task to executed BEFORE executing the task.
      *  - {@see TaskExecutedEvent}:  Contain the task to executed AFTER executing the task and its output (if defined).

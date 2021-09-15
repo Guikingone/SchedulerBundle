@@ -1575,9 +1575,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
-        $scheduler->schedule(new NullTask('reboot', [
-            'expression' => '* * 10 * *',
-        ]));
+        $scheduler->schedule(new NullTask('reboot'));
         $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'reboot');
 
         $lockFactory = new LockFactory(new InMemoryStore());

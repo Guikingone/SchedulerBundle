@@ -95,9 +95,7 @@ abstract class AbstractWorker implements WorkerInterface
     {
         $this->pause();
 
-        $remainingTasks = $this->getCurrentTasks();
-
-        $this->pause();
+        #$remainingTasks = $this->getCurrentTasks();
         $forkWorker = $this->fork();
 
         try {
@@ -109,9 +107,9 @@ abstract class AbstractWorker implements WorkerInterface
 
         $this->restart();
 
-        if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
-            $this->execute($this->configuration, ...$remainingTasks->toArray(false));
-        }
+        #if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
+        #    $this->execute($this->configuration, ...$remainingTasks->toArray(false));
+        #}
     }
 
     /**
