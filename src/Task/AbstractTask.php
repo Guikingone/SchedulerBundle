@@ -407,6 +407,10 @@ abstract class AbstractTask implements TaskInterface
 
     public function getExecutionMemoryUsage(): int
     {
+        if (!is_int($this->options['execution_memory_usage'])) {
+            throw new RuntimeException('The memory usage is not valid');
+        }
+
         return $this->options['execution_memory_usage'];
     }
 
