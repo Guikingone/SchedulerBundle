@@ -56,11 +56,11 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function preempt(Closure $func): void
+    public function preempt(Closure $filter): void
     {
         $this->initialize();
 
-        $this->scheduler->preempt($func);
+        $this->scheduler->preempt($filter);
     }
 
     /**
