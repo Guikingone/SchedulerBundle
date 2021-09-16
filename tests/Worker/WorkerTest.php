@@ -1284,6 +1284,8 @@ final class WorkerTest extends TestCase
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNull($task->getAccessLockBag());
+        self::assertFalse($worker->getConfiguration()->isRunning());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
     /**
@@ -1324,6 +1326,8 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
+        self::assertFalse($worker->getConfiguration()->isRunning());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
     /**
@@ -1353,6 +1357,7 @@ final class WorkerTest extends TestCase
         self::assertCount(0, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
         self::assertTrue($worker->getConfiguration()->shouldStop());
+        self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
@@ -1384,6 +1389,7 @@ final class WorkerTest extends TestCase
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
+        self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
@@ -1414,12 +1420,14 @@ final class WorkerTest extends TestCase
         $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
+        self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
 
         $worker->execute(WorkerConfiguration::create());
 
         self::assertCount(0, $worker->getFailedTasks());
+        self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
     }

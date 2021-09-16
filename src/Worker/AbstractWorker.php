@@ -216,7 +216,6 @@ abstract class AbstractWorker implements WorkerInterface
             if (!$this->configuration->isRunning()) {
                 $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                $this->configuration->run(true);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
                 $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
                 $task->setArrivalTime(new DateTimeImmutable());
