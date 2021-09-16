@@ -106,10 +106,9 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function restart(): void
     {
-        $this->stop();
+        $this->configuration->stop();
         $this->configuration->run(false);
         $this->failedTasks = new TaskList();
-        $this->configuration->stop();
 
         $this->eventDispatcher->dispatch(new WorkerRestartedEvent($this));
     }
@@ -205,6 +204,10 @@ abstract class AbstractWorker implements WorkerInterface
 
     protected function handleTask(TaskInterface $task): void
     {
+        if ($this->configuration->shouldStop()) {
+            return;
+        }
+
         $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
 
         try {
@@ -213,7 +216,6 @@ abstract class AbstractWorker implements WorkerInterface
             if (!$this->configuration->isRunning()) {
                 $this->middlewareStack->runPreExecutionMiddleware($task);
 
-                $this->configuration->run(true);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
                 $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
                 $task->setArrivalTime(new DateTimeImmutable());

@@ -38,6 +38,11 @@ interface TaskInterface
     public const UNDEFINED = 'undefined';
 
     /**
+     * @var string
+     */
+    public const CANCELLED = 'cancelled';
+
+    /**
      * @var string[]
      */
     public const ALLOWED_STATES = [
@@ -45,6 +50,7 @@ interface TaskInterface
         self::PAUSED,
         self::DISABLED,
         self::UNDEFINED,
+        self::CANCELLED,
     ];
 
     /**

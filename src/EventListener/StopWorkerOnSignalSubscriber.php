@@ -42,6 +42,7 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 
                 $worker->stop();
 
+                $task->setState(TaskInterface::CANCELLED);
                 $task->setExecutionState(TaskInterface::TO_RETRY);
 
                 $this->logger->warning(sprintf('The currently running worker has been stopped due to the signal "%d", the task has been marked as "TO_RETRY"', $signal));

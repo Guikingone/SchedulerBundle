@@ -12,6 +12,7 @@ use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
+use Symfony\Component\Console\Command\Command;
 use Tests\SchedulerBundle\Runner\Assets\BarCommand;
 use Tests\SchedulerBundle\Runner\Assets\FooCommand;
 
@@ -44,7 +45,7 @@ final class CommandTaskRunnerTest extends TestCase
         self::assertInstanceOf(ShellTask::class, $output->getTask());
     }
 
-    public function testApplicationIsUsed(): void
+    public function testApplicationCanReturnValidCode(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
 
@@ -62,6 +63,28 @@ final class CommandTaskRunnerTest extends TestCase
 
         self::assertSame($commandTask, $output->getTask());
         self::assertNull($commandTask->getExecutionState());
+        self::assertSame(Output::SUCCESS, $output->getType());
+    }
+
+    public function testApplicationCanReturnInvalidCode(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $commandTask = new CommandTask('foo', 'app:foo');
+
+        $application = $this->createMock(Application::class);
+        $application->expects(self::once())->method('setCatchExceptions')->with(self::equalTo(false));
+        $application->expects(self::once())->method('setAutoExit')->with(self::equalTo(false));
+        $application->expects(self::once())->method('find')->willReturn(new FooCommand());
+        $application->expects(self::once())->method('run')->willReturn(Command::FAILURE);
+
+        $commandTaskRunner = new CommandTaskRunner($application);
+
+        $output = $commandTaskRunner->run($commandTask, $worker);
+
+        self::assertSame($commandTask, $output->getTask());
+        self::assertNull($commandTask->getExecutionState());
+        self::assertSame(Output::ERROR, $output->getType());
     }
 
     public function testCommandCanBeCalledWhenRegistered(): void
