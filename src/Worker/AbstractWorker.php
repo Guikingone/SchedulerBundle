@@ -309,7 +309,11 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         }
 
-        return $this->configuration->getExecutedTasksCount() === 0 || $this->configuration->getExecutedTasksCount() === $taskList->count();
+        if ($this->configuration->getExecutedTasksCount() === 0) {
+            return true;
+        }
+
+        return $this->configuration->getExecutedTasksCount() === $taskList->count();
     }
 
     private function checkTaskState(TaskInterface $task): bool

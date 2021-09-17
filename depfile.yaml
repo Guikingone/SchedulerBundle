@@ -40,6 +40,11 @@ layers:
       - type: className
         regex: .*EventListener.*
 
+  - name: Middleware
+    collectors:
+      - type: className
+        regex: .*Middleware.*
+
   - name: Probe
     collectors:
       - type: className
@@ -49,6 +54,11 @@ layers:
     collectors:
       - type: className
         regex: .*Runner.*
+
+  - name: Serializer
+    collectors:
+      - type: className
+        regex: .*Serializer.*
 
   - name: Task
     collectors:
@@ -62,6 +72,7 @@ ruleset:
   Command:
     - Event
     - EventListener
+    - Middleware
     - Probe
     - Task
 
@@ -69,6 +80,7 @@ ruleset:
     - Event
     - EventListener
     - Probe
+    - Task
 
   Event:
     - Probe
@@ -78,7 +90,21 @@ ruleset:
     - Event
     - EventListener
     - Probe
+    - Serializer
+    - Task
+
+  Middleware:
+    - Middleware
+    - Probe
     - Task
 
   Runner:
+    - Task
+
+  Serializer:
+    - Probe
+    - Serializer
+    - Task
+
+  Task:
     - Task

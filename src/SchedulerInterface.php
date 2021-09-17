@@ -49,7 +49,7 @@ interface SchedulerInterface
      *            the new worker execute the preempting tasks then stop.
      *            Once the new worker stopped, the "old" worker is restarted then the remaining tasks are executed.}
      */
-    public function preempt(Closure $filter): void;
+    public function preempt(string $taskToPreempt, Closure $filter): void;
 
     /**
      * Update a specific task, the name should NOT be changed, every metadata can.

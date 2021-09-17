@@ -18,8 +18,8 @@ final class ProbeTaskBuilder extends AbstractTaskBuilder
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
-        $options['errorOnFailedTasks'] = $options['errorOnFailedTasks'] ?? false;
-        $options['delay'] = $options['delay'] ?? 0;
+        $options['errorOnFailedTasks'] ??= false;
+        $options['delay'] ??= 0;
 
         return $this->handleTaskAttributes(
             new ProbeTask(

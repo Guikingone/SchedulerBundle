@@ -126,7 +126,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function preempt(Closure $filter): void
+    public function preempt(string $taskToPreempt, Closure $filter): void
     {
         $tasks = $this->getDueTasks();
         if (0 === $tasks->count()) {
@@ -138,7 +138,12 @@ final class Scheduler implements SchedulerInterface
             return;
         }
 
-        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($preemptTasks): void {
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, function (TaskExecutingEvent $event) use ($taskToPreempt, $preemptTasks): void {
+            $task = $event->getTask();
+            if ($taskToPreempt !== $task->getName()) {
+                return;
+            }
+
             $worker = $event->getWorker();
 
             $worker->preempt($preemptTasks);
