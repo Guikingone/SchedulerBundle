@@ -18,6 +18,7 @@ This bundle defines a set of transports, each transport has its own configuratio
 - [Cache](#cache)
 - [FailOver](#failover)
 - [RoundRobin](#roundrobin)
+- [Lazy](#lazy)
 - [Redis](#redis)
 - [Doctrine](#doctrine)
 
@@ -189,6 +190,18 @@ scheduler_bundle:
   within a transport MUST perform the action, the default value is `2`.
 
 **Note**: By default, the execution duration limit is based around the formula: `count(transports) * quantum`.
+
+## Lazy
+
+The [Lazy](../src/Transport/LazyTransport.php) allows to perform actions using an asynchronous approach.
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    transport:
+        dsn: 'lazy://(memory://batch)'
+```
 
 ## Redis
 

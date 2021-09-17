@@ -37,7 +37,7 @@ final class TaskEventList implements Countable
      */
     public function getScheduledTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent);
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent);
     }
 
     /**
@@ -45,7 +45,7 @@ final class TaskEventList implements Countable
      */
     public function getUnscheduledTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskUnscheduledEvent);
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskUnscheduledEvent);
     }
 
     /**
@@ -53,7 +53,7 @@ final class TaskEventList implements Countable
      */
     public function getExecutedTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskExecutedEvent);
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskExecutedEvent);
     }
 
     /**
@@ -61,7 +61,7 @@ final class TaskEventList implements Countable
      */
     public function getFailedTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskFailedEvent);
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskFailedEvent);
     }
 
     /**
@@ -69,7 +69,7 @@ final class TaskEventList implements Countable
      */
     public function getQueuedTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask()->isQueued());
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask()->isQueued());
     }
 
     /**
@@ -77,7 +77,7 @@ final class TaskEventList implements Countable
      */
     public function getProbeTaskEvents(): array
     {
-        return array_filter($this->events, fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask() instanceof ProbeTask);
+        return array_filter($this->events, static fn (TaskEventInterface $event): bool => $event instanceof TaskScheduledEvent && $event->getTask() instanceof ProbeTask);
     }
 
     /**

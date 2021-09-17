@@ -82,6 +82,18 @@ final class CacheConfigurationTest extends TestCase
         $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
         $cacheConfiguration->set('foo', 'bar');
 
-        self::assertNotEmpty($cacheConfiguration->getOptions());
+        self::assertCount(2, $cacheConfiguration->toArray());
+        self::assertContains('execution_mode', $cacheConfiguration->toArray());
+        self::assertContains('foo', $cacheConfiguration->toArray());
+    }
+
+    public function testConfigurationCanReturnCount(): void
+    {
+        $cacheConfiguration = new CacheConfiguration(new ArrayAdapter());
+        $cacheConfiguration->set('foo', 'bar');
+
+        self::assertSame(2, $cacheConfiguration->count());
+        self::assertContains('execution_mode', $cacheConfiguration->toArray());
+        self::assertContains('foo', $cacheConfiguration->toArray());
     }
 }

@@ -117,12 +117,12 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'afterSchedulingNotificationBag' => $notificationTaskBagCallback,
                 'beforeExecutingNotificationBag' => $notificationTaskBagCallback,
                 'afterExecutingNotificationBag' => $notificationTaskBagCallback,
-                'recipients' => fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (Recipient $recipient): array => ['email' => $recipient->getEmail(), 'phone' => $recipient->getPhone()], $innerObject),
-                'notification' => fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
+                'recipients' => static fn (array $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(static fn (Recipient $recipient): array => ['email' => $recipient->getEmail(), 'phone' => $recipient->getPhone()], $innerObject),
+                'notification' => static fn (Notification $innerObject, NotificationTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                     'subject' => $innerObject->getSubject(),
                     'content' => $innerObject->getContent(),
                     'emoji' => $innerObject->getEmoji(),
-                    'channels' => array_merge(...array_map(fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
+                    'channels' => array_merge(...array_map(static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
                     'importance' => $innerObject->getImportance(),
                 ],
                 'message' => fn ($innerObject, MessengerTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [

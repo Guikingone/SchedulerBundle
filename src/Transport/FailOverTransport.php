@@ -6,8 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
 use Throwable;
 use function array_merge;
@@ -15,7 +13,7 @@ use function array_merge;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailOverTransport extends AbstractTransport
+final class FailOverTransport extends AbstractCompoundTransport
 {
     /**
      * @var SplObjectStorage<object, mixed>
@@ -23,106 +21,28 @@ final class FailOverTransport extends AbstractTransport
     private SplObjectStorage $failedTransports;
 
     /**
-     * @var iterable|TransportInterface[]
+     * @param TransportInterface[] $transports
+     * @param array<string, mixed> $options
      */
-    private iterable $transports;
-
-    /**
-     * @param iterable|TransportInterface[] $transports
-     * @param array<string, mixed>          $options
-     */
-    public function __construct(iterable $transports, array $options = [])
-    {
+    public function __construct(
+        iterable $transports,
+        array $options = []
+    ) {
         $this->defineOptions(array_merge([
             'mode' => 'normal',
         ], $options), [
             'mode' => 'string',
         ]);
 
-        $this->transports = $transports;
         $this->failedTransports = new SplObjectStorage();
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get(string $name, bool $lazy = false): TaskInterface
-    {
-        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name, $lazy));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function list(bool $lazy = false): TaskListInterface
-    {
-        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list($lazy));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function create(TaskInterface $task): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($task): void {
-            $transport->create($task);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function update(string $name, TaskInterface $updatedTask): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name, $updatedTask): void {
-            $transport->update($name, $updatedTask);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delete(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->delete($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function pause(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->pause($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function resume(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->resume($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clear(): void
-    {
-        $this->execute(function (TransportInterface $transport): void {
-            $transport->clear();
-        });
+        parent::__construct($transports);
     }
 
     /**
      * @return mixed
      */
-    private function execute(Closure $func)
+    protected function execute(Closure $func)
     {
         if ([] === $this->transports) {
             throw new TransportException('No transport found');

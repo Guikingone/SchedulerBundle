@@ -6,25 +6,16 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SplObjectStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 use function count;
-use function is_array;
-use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class RoundRobinTransport extends AbstractTransport
+final class RoundRobinTransport extends AbstractCompoundTransport
 {
-    /**
-     * @var TransportInterface[]
-     */
-    private array $transports;
-
     /**
      * @var SplObjectStorage<object, mixed>
      */
@@ -43,90 +34,15 @@ final class RoundRobinTransport extends AbstractTransport
             'quantum' => 'int',
         ]);
 
-        $this->transports = is_array($transports) ? $transports : iterator_to_array($transports);
         $this->sleepingTransports = new SplObjectStorage();
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get(string $name, bool $lazy = false): TaskInterface
-    {
-        return $this->execute(fn (TransportInterface $transport): TaskInterface => $transport->get($name, $lazy));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function list(bool $lazy = false): TaskListInterface
-    {
-        return $this->execute(fn (TransportInterface $transport): TaskListInterface => $transport->list($lazy));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function create(TaskInterface $task): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($task): void {
-            $transport->create($task);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function update(string $name, TaskInterface $updatedTask): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name, $updatedTask): void {
-            $transport->update($name, $updatedTask);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delete(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->delete($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function pause(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->pause($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function resume(string $name): void
-    {
-        $this->execute(function (TransportInterface $transport) use ($name): void {
-            $transport->resume($name);
-        });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clear(): void
-    {
-        $this->execute(function (TransportInterface $transport): void {
-            $transport->clear();
-        });
+        parent::__construct($transports);
     }
 
     /**
      * @return mixed
      */
-    private function execute(Closure $func)
+    protected function execute(Closure $func)
     {
         if ([] === $this->transports) {
             throw new TransportException('No transport found');

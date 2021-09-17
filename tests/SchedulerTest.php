@@ -14,8 +14,9 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Messenger\TaskMessage;
+use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -372,7 +373,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('isQueued')->willReturn(true);
 
         $bus = $this->createMock(MessageBusInterface::class);
-        $bus->expects(self::once())->method('dispatch')->with(new TaskMessage($task))->willReturn(new Envelope(new stdClass()));
+        $bus->expects(self::once())->method('dispatch')->with(new TaskToExecuteMessage($task))->willReturn(new Envelope(new stdClass()));
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
@@ -392,7 +393,7 @@ final class SchedulerTest extends TestCase
     {
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')
-            ->with(self::equalTo(new TaskMessage($task)))
+            ->with(self::equalTo(new TaskToExecuteMessage($task)))
             ->willReturn(new Envelope(new stdClass()))
         ;
 
@@ -862,6 +863,30 @@ final class SchedulerTest extends TestCase
 
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testTaskCanBeUpdatedAsynchronously(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
+        $transport->expects(self::never())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::once())->method('dispatch')
+            ->with(new TaskToUpdateMessage('foo', $task))
+            ->willReturn(new Envelope(new stdClass()))
+        ;
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), $bus);
+
+        $scheduler->schedule($task);
+        $scheduler->update($task->getName(), $task, true);
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
      *
      * @dataProvider provideTasks
      */
@@ -879,7 +904,7 @@ final class SchedulerTest extends TestCase
         $task->addTag('new_tag');
         $scheduler->update($task->getName(), $task);
 
-        $updatedTask = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
+        $updatedTask = $scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
         self::assertCount(1, $updatedTask);
     }
 
@@ -1535,7 +1560,7 @@ final class SchedulerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
     }
 
@@ -1553,14 +1578,12 @@ final class SchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
     }
 
     /**
      * @throws Throwable {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
-     *
-     * @group foo
      */
     public function testSchedulerCanPreemptTasks(): void
     {
@@ -1575,7 +1598,7 @@ final class SchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
         $scheduler->schedule(new NullTask('reboot'));
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'reboot');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 

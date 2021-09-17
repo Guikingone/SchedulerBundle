@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker;
 
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +22,6 @@ final class WorkerConfiguration
     private bool $shouldRetrieveTasksLazily;
     private bool $mustStrictlyCheckDate;
     private ?TaskInterface $currentlyExecutedTask = null;
-    private TaskListInterface $currentTasks;
 
     private function __construct()
     {
@@ -34,7 +31,6 @@ final class WorkerConfiguration
     {
         $self = new self();
         $self->currentlyExecutedTask = null;
-        $self->currentTasks = new TaskList();
         $self->executedTasksCount = 0;
         $self->isFork = false;
         $self->forkedFrom = null;
@@ -43,11 +39,8 @@ final class WorkerConfiguration
         $self->shouldStop = false;
         $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;
-        $self->isFork = false;
         $self->lastExecutedTask = null;
         $self->forkedFrom = null;
-        $self->sleepDurationDelay = 1;
-        $self->shouldStop = false;
         $self->mustStrictlyCheckDate = false;
 
         return $self;
@@ -61,16 +54,6 @@ final class WorkerConfiguration
     public function setCurrentlyExecutedTask(?TaskInterface $task): void
     {
         $this->currentlyExecutedTask = $task;
-    }
-
-    public function setCurrentTasks(TaskListInterface $currentTasks): void
-    {
-        $this->currentTasks = $currentTasks;
-    }
-
-    public function getCurrentTasks(): TaskListInterface
-    {
-        return $this->currentTasks;
     }
 
     public function getExecutedTasksCount(): int

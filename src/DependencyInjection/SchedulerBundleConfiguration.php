@@ -30,7 +30,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
         $treeBuilder
             ->getRootNode()
                 ->beforeNormalization()
-                    ->always(function (array $configuration): array {
+                    ->always(static function (array $configuration): array {
                         if ((array_key_exists('tasks', $configuration)) && 0 !== count($configuration['tasks']) && !array_key_exists('transport', $configuration)) {
                             throw new InvalidConfigurationException('The transport must be configured to schedule tasks');
                         }
@@ -47,12 +47,12 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             $configuration['tasks'] = [];
                         }
 
-                        $configuration['tasks'] = array_merge($configuration['tasks'], array_map(function (array $configuration): array {
+                        $configuration['tasks'] = array_merge($configuration['tasks'], array_map(static function (array $configuration): array {
                             $configuration['type'] = 'probe';
                             $configuration['expression'] = '* * * * *';
 
                             return $configuration;
-                        }, array_combine(array_map(fn ($key): string => sprintf('%s.probe', $key), array_keys($configuration['probe']['clients'])), $configuration['probe']['clients'])));
+                        }, array_combine(array_map(static fn ($key): string => sprintf('%s.probe', $key), array_keys($configuration['probe']['clients'])), $configuration['probe']['clients'])));
 
                         return $configuration;
                     })
@@ -72,6 +72,20 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                 ->info('Define the scheduler mode (lazy or default)')
                                 ->values(['default', 'lazy'])
                                 ->defaultValue('default')
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('configuration')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->enumNode('mode')
+                                ->info('Define the configuration mode (lazy or default)')
+                                ->values(['default', 'lazy'])
+                                ->defaultValue('default')
+                            ->end()
+                            ->scalarNode('dsn')
+                                ->info('The configuration dsn used to store the transport configuration')
+                                ->defaultValue('configuration://memory')
                             ->end()
                         ->end()
                     ->end()
@@ -108,7 +122,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                     ->end()
                     ->arrayNode('mercure')
                         ->beforeNormalization()
-                            ->always(function (array $configuration): array {
+                            ->always(static function (array $configuration): array {
                                 if (!array_key_exists('mercure', $configuration)) {
                                     return $configuration;
                                 }
@@ -167,14 +181,14 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                     ->end()
                     ->arrayNode('tasks')
                         ->beforeNormalization()
-                            ->always(function (array $taskConfiguration): array {
-                                $chainedTasks = array_filter($taskConfiguration, fn (array $configuration): bool => 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']));
+                            ->always(static function (array $taskConfiguration): array {
+                                $chainedTasks = array_filter($taskConfiguration, static fn (array $configuration): bool => 'chained' === $configuration['type'] && 0 !== count($configuration['tasks']));
 
                                 if (0 === count($chainedTasks)) {
                                     return $taskConfiguration;
                                 }
 
-                                $updatedChainedTasks = array_map(function (array $chainedTaskConfiguration): array {
+                                $updatedChainedTasks = array_map(static function (array $chainedTaskConfiguration): array {
                                     foreach ($chainedTaskConfiguration['tasks'] as $chainedTask => &$configuration) {
                                         $configuration['name'] = $chainedTask;
                                     }

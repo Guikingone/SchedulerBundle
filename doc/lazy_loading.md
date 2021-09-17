@@ -16,6 +16,7 @@ This bundle provides a small integration of this pattern via multiple usages:
 - [LazyTaskList](#lazytasklist)
 - [LazyTask](#lazytask)
 - [LazyScheduler](#lazyscheduler)
+- [LazyTransport](#lazytransport)
 
 ## LazyTaskList
 
@@ -118,4 +119,23 @@ final class FooController
         // ...
     }
 }
+```
+
+## LazyTransport
+
+The [LazyTransport](../src/Transport/LazyTransport.php) is used to handle the transport lifecycle
+using an "asynchronous" approach.
+
+**The API still exactly the same as the default transport.**
+
+The `LazyTransport` can be enabled via the configuration:
+
+```yaml
+# config/packages/scheduler_bundle.yaml
+
+scheduler_bundle:
+    transport:
+        dsn: 'lazy://(memory://batch)'
+
+# ...
 ```

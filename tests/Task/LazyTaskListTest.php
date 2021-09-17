@@ -379,4 +379,37 @@ final class LazyTaskListTest extends TestCase
         self::assertCount(1, $chunk[1]);
         self::assertArrayHasKey('bar', $chunk[1]);
     }
+
+    public function testListCannotSliceUndefinedKeys(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+        self::assertFalse($list->isInitialized());
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be found');
+        self::expectExceptionCode(0);
+        $list->slice('random');
+    }
+
+    public function testListCanSlice(): void
+    {
+        $list = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+
+        self::assertFalse($list->isInitialized());
+        self::assertCount(2, $list);
+
+        $tasks = $list->slice('bar');
+
+        self::assertTrue($list->isInitialized());
+        self::assertCount(1, $list);
+        self::assertCount(1, $tasks);
+        self::assertFalse($tasks->has('foo'));
+        self::assertTrue($list->has('foo'));
+    }
 }

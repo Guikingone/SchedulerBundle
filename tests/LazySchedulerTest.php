@@ -6,12 +6,14 @@ namespace Tests\SchedulerBundle;
 
 use DateTimeImmutable;
 use Exception;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
@@ -27,10 +29,12 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use stdClass;
@@ -41,6 +45,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
+use function in_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -622,7 +627,7 @@ final class LazySchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
         self::assertFalse($scheduler->isInitialized());
 
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
     }
 
@@ -641,7 +646,7 @@ final class LazySchedulerTest extends TestCase
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
     }
 
     /**
@@ -661,10 +666,8 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
-        $scheduler->schedule(new NullTask('reboot', [
-            'expression' => '* * 10 * *',
-        ]));
-        $scheduler->preempt(fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->schedule(new NullTask('reboot'));
+        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'reboot');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -700,5 +703,68 @@ final class LazySchedulerTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionEndTime());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     *
+     * @dataProvider provideTasks
+     */
+    public function testTaskCanBeUpdated(TaskInterface $task): void
+    {
+        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        self::assertFalse($scheduler->isInitialized());
+
+        $scheduler->schedule($task);
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertTrue($scheduler->isInitialized());
+
+        $task->addTag('new_tag');
+        $scheduler->update($task->getName(), $task);
+        self::assertTrue($scheduler->isInitialized());
+
+        $updatedTask = $scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
+        self::assertCount(1, $updatedTask);
+        self::assertTrue($scheduler->isInitialized());
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testTaskCanBeUpdatedAsynchronously(): void
+    {
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
+        $transport->expects(self::never())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::once())->method('dispatch')
+            ->with(new TaskToUpdateMessage('foo', $task))
+            ->willReturn(new Envelope(new stdClass()))
+        ;
+
+        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
+
+        $scheduler->schedule($task);
+        $scheduler->update($task->getName(), $task, true);
+    }
+
+    /**
+     * @return Generator<array<int, ShellTask>>
+     */
+    public function provideTasks(): Generator
+    {
+        yield 'Shell tasks' => [
+            new ShellTask('Bar', ['echo', 'Symfony']),
+            new ShellTask('Foo', ['echo', 'Symfony']),
+        ];
     }
 }

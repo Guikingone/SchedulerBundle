@@ -40,7 +40,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
                 'bag' => AccessLockBag::class,
                 'body' => $this->objectNormalizer->normalize($object, $format, [
                     AbstractNormalizer::CALLBACKS => [
-                        'key' => fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+                        'key' => static fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
                     ],
                 ]),
             ];

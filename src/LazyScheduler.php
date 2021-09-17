@@ -56,21 +56,27 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function preempt(Closure $filter): void
+    public function preempt(string $taskToPreempt, Closure $filter): void
     {
         $this->initialize();
 
-        $this->scheduler->preempt($filter);
+        $this->scheduler->preempt($taskToPreempt, $filter);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function update(string $taskName, TaskInterface $task): void
+    public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
-        $this->initialize();
+        if ($this->initialized) {
+            $this->scheduler->update($taskName, $task, $async);
 
-        $this->scheduler->update($taskName, $task);
+            return;
+        }
+
+        $this->sourceScheduler->update($taskName, $task, $async);
+
+        $this->initialize();
     }
 
     /**

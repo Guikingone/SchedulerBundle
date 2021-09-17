@@ -8,8 +8,8 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Messenger\TaskMessage;
-use SchedulerBundle\Messenger\TaskMessageHandler;
+use SchedulerBundle\Messenger\TaskToExecuteMessage;
+use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
@@ -20,7 +20,7 @@ use SchedulerBundle\Worker\WorkerInterface;
  *
  * @group time-sensitive
  */
-final class TaskMessageHandlerTest extends TestCase
+final class TaskToExecuteMessageHandlerTest extends TestCase
 {
     public function testHandlerCanRunDueTaskWithoutASpecificTimezone(): void
     {
@@ -32,9 +32,9 @@ final class TaskMessageHandlerTest extends TestCase
         $worker->expects(self::once())->method('isRunning')->willReturn(false);
         $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $task);
 
-        $taskMessageHandler = new TaskMessageHandler($worker);
+        $taskMessageHandler = new TaskToExecuteMessageHandler($worker);
 
-        ($taskMessageHandler)(new TaskMessage($task));
+        ($taskMessageHandler)(new TaskToExecuteMessage($task));
     }
 
     public function testHandlerCanRunDueTask(): void
@@ -48,9 +48,9 @@ final class TaskMessageHandlerTest extends TestCase
         $worker->expects(self::once())->method('isRunning')->willReturn(false);
         $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $shellTask);
 
-        $taskMessageHandler = new TaskMessageHandler($worker);
+        $taskMessageHandler = new TaskToExecuteMessageHandler($worker);
 
-        ($taskMessageHandler)(new TaskMessage($shellTask));
+        ($taskMessageHandler)(new TaskToExecuteMessage($shellTask));
     }
 
     public function testHandlerCanWaitForAvailableWorker(): void
@@ -67,8 +67,8 @@ final class TaskMessageHandlerTest extends TestCase
         $worker->expects(self::exactly(3))->method('isRunning')->willReturnOnConsecutiveCalls(true, true, false);
         $worker->expects(self::once())->method('execute')->with(WorkerConfiguration::create(), $shellTask);
 
-        $taskMessageHandler = new TaskMessageHandler($worker, $logger);
+        $taskMessageHandler = new TaskToExecuteMessageHandler($worker, $logger);
 
-        ($taskMessageHandler)(new TaskMessage($shellTask, 2));
+        ($taskMessageHandler)(new TaskToExecuteMessage($shellTask, 2));
     }
 }

@@ -87,7 +87,7 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface
     {
-        $filteredTasks = $this->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
+        $filteredTasks = $this->filter(static fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
 
         return new TaskList($filteredTasks->toArray());
     }
@@ -165,6 +165,21 @@ final class TaskList implements TaskListInterface
         }
 
         return $chunks;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function slice(string ...$tasks): TaskListInterface
+    {
+        $toRetrieveTasks = $this->findByName($tasks);
+        if (0 === $toRetrieveTasks->count()) {
+            throw new RuntimeException('The tasks cannot be found');
+        }
+
+        return $toRetrieveTasks->walk(function (TaskInterface $task): void {
+            $this->remove($task->getName());
+        });
     }
 
     /**

@@ -1452,6 +1452,8 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
+        self::assertFalse($worker->isRunning());
+
         $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerPausedEvent($worker)));
 
         $worker->pause();
@@ -1478,6 +1480,7 @@ final class WorkerTest extends TestCase
 
         $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerRestartedEvent($worker)));
 
+        self::assertFalse($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->isRunning());
 
         $worker->restart();

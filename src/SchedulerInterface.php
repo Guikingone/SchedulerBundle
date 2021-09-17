@@ -38,7 +38,7 @@ interface SchedulerInterface
     public function yieldTask(string $name, bool $async = false): void;
 
     /**
-     * Determine if a task|set of due tasks that entered the runnable state should preempt the currently running task.
+     * Determine if a task|set of due tasks that entered the runnable state should preempt the @param string $taskToPreempt.
      *
      * The decision is based on @param Closure $filter, if the closure returns true, the task(s) can preempt.
      *
@@ -53,8 +53,10 @@ interface SchedulerInterface
 
     /**
      * Update a specific task, the name should NOT be changed, every metadata can.
+     *
+     * If @param bool $async is used, the action is performed asynchronously.
      */
-    public function update(string $taskName, TaskInterface $task): void;
+    public function update(string $taskName, TaskInterface $task, bool $async = false): void;
 
     /**
      * Pause a specific task, when paused, a task cannot be executed by the worker (but it can be sent to it).

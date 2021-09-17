@@ -477,4 +477,41 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('name', $configuration['pool']);
         self::assertSame('foo', $configuration['pool']['name']);
     }
+
+    public function testConfigurationCanDefineConfigurationTransport(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'configuration' => [
+                    'dsn' => 'configuration://fs',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('configuration', $configuration);
+        self::assertNotNull($configuration['configuration']);
+        self::assertArrayHasKey('dsn', $configuration['configuration']);
+        self::assertSame('configuration://fs', $configuration['configuration']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['configuration']);
+        self::assertSame('default', $configuration['configuration']['mode']);
+    }
+
+    public function testConfigurationCanDefineConfigurationTransportWithLazyMode(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'configuration' => [
+                    'dsn' => 'configuration://fs',
+                    'mode' => 'lazy',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('configuration', $configuration);
+        self::assertNotNull($configuration['configuration']);
+        self::assertArrayHasKey('dsn', $configuration['configuration']);
+        self::assertSame('configuration://fs', $configuration['configuration']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['configuration']);
+        self::assertSame('lazy', $configuration['configuration']['mode']);
+    }
 }

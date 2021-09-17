@@ -37,7 +37,7 @@ use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\LazyScheduler;
-use SchedulerBundle\Messenger\TaskMessageHandler;
+use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -100,10 +100,16 @@ use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\TaskBagInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
+use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface as TransportConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
+use SchedulerBundle\Transport\LazyTransportFactory;
 use SchedulerBundle\Transport\LongTailTransportFactory;
 use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
@@ -150,6 +156,8 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_WORKER_MIDDLEWARE_TAG = 'scheduler.worker_middleware';
     private const SCHEDULER_TRANSPORT_FACTORY_TAG = 'scheduler.transport_factory';
     private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
+    private const TRANSPORT_CONFIGURATION_TAG = 'scheduler.configuration';
+    private const TRANSPORT_CONFIGURATION_FACTORY_TAG = 'scheduler.configuration_factory';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -163,6 +171,8 @@ final class SchedulerBundleExtension extends Extension
 
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
+        $this->registerConfigurationFactories($container);
+        $this->registerConfiguration($container, $config);
         $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
         $this->registerLockStore($container, $config);
@@ -203,6 +213,8 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(RunnerInterface::class)->addTag(self::SCHEDULER_RUNNER_TAG);
         $container->registerForAutoconfiguration(TransportInterface::class)->addTag('scheduler.transport');
         $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG);
+        $container->registerForAutoconfiguration(TransportConfigurationInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_TAG);
+        $container->registerForAutoconfiguration(ConfigurationFactoryInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG);
         $container->registerForAutoconfiguration(PolicyInterface::class)->addTag(self::SCHEDULER_SCHEDULE_POLICY);
         $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
         $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
@@ -214,6 +226,60 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
+    }
+
+    private function registerConfigurationFactories(ContainerBuilder $container): void
+    {
+        $container->register(ConfigurationFactory::class, ConfigurationFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::TRANSPORT_CONFIGURATION_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => ConfigurationFactory::class,
+            ])
+        ;
+
+        $container->register(InMemoryConfigurationFactory::class, InMemoryConfigurationFactory::class)
+            ->setPublic(false)
+            ->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => InMemoryConfigurationFactory::class,
+            ])
+        ;
+
+        $container->register(LazyConfigurationFactory::class, LazyConfigurationFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::TRANSPORT_CONFIGURATION_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => LazyConfigurationFactory::class,
+            ])
+        ;
+    }
+
+    /**
+     * @param ContainerBuilder     $container
+     * @param array<string, mixed> $configuration
+     */
+    private function registerConfiguration(ContainerBuilder $container, array $configuration): void
+    {
+        $container->register(self::TRANSPORT_CONFIGURATION_TAG, TransportConfigurationInterface::class)
+            ->setFactory([new Reference(ConfigurationFactory::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE), 'build'])
+            ->setArguments([
+                $configuration['configuration']['dsn'],
+                new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag(self::TRANSPORT_CONFIGURATION_TAG)
+            ->addTag('container.preload', [
+                'class' => TransportConfigurationInterface::class,
+            ])
+        ;
+
+        $container->setAlias(TransportConfigurationInterface::class, self::TRANSPORT_CONFIGURATION_TAG);
     }
 
     private function registerTransportFactories(ContainerBuilder $container, array $configuration): void
@@ -275,6 +341,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => RoundRobinTransportFactory::class,
+            ])
+        ;
+
+        $container->register(LazyTransportFactory::class, LazyTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => LazyTransportFactory::class,
             ])
         ;
 
@@ -807,14 +884,14 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerMessengerTools(ContainerBuilder $container): void
     {
-        $container->register(TaskMessageHandler::class, TaskMessageHandler::class)
+        $container->register(TaskToExecuteMessageHandler::class, TaskToExecuteMessageHandler::class)
             ->setArguments([
                 new Reference(WorkerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->addTag('messenger.message_handler')
             ->addTag('container.preload', [
-                'class' => TaskMessageHandler::class,
+                'class' => TaskToExecuteMessageHandler::class,
             ])
         ;
 

@@ -17,12 +17,12 @@ use function sprintf;
 final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInterface
 {
     /**
-     * @var iterable|PolicyInterface[]
+     * @var PolicyInterface[]
      */
     private iterable $policies;
 
     /**
-     * @param iterable|PolicyInterface[] $policies
+     * @param PolicyInterface[] $policies
      */
     public function __construct(iterable $policies)
     {
@@ -36,10 +36,6 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
     {
         if ([] === $this->policies) {
             throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
-        }
-
-        if (0 === $tasks->count()) {
-            return $tasks;
         }
 
         $tasks->walk(function (TaskInterface $task) use ($policy): void {

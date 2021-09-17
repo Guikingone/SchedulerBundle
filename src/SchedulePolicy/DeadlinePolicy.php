@@ -21,7 +21,7 @@ final class DeadlinePolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        $tasks->walk(function (TaskInterface $task): void {
+        $tasks->walk(static function (TaskInterface $task): void {
             $arrivalTime = $task->getArrivalTime();
             if (!$arrivalTime instanceof DateTimeImmutable) {
                 throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
@@ -37,7 +37,7 @@ final class DeadlinePolicy implements PolicyInterface
             $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
         });
 
-        return $tasks->uasort(function (TaskInterface $task, TaskInterface $nextTask): int {
+        return $tasks->uasort(static function (TaskInterface $task, TaskInterface $nextTask): int {
             $dateTimeImmutable = new DateTimeImmutable();
 
             return $dateTimeImmutable->add($nextTask->getExecutionAbsoluteDeadline()) <=> $dateTimeImmutable->add($task->getExecutionAbsoluteDeadline());

@@ -86,6 +86,15 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function chunk(int $size, bool $preserveKeys = false): array;
 
     /**
+     * Remove and return a list of tasks from the current one.
+     *
+     * For an equivalent, see @link https://php.net/manual/en/function.array-slice.php
+     *
+     * @throws RuntimeException If the tasks cannot be found.
+     */
+    public function slice(string ...$tasks): TaskListInterface;
+
+    /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.
      *
      * @return array<string|int, TaskInterface>

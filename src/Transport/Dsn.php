@@ -29,10 +29,10 @@ final class Dsn
      * @var array
      */
     private array $options;
-
     private ?string $path;
+    private ?string $root;
 
-    public function __construct(string $scheme, string $host, ?string $path = null, ?string $user = null, ?string $password = null, ?int $port = null, array $options = [])
+    public function __construct(string $scheme, string $host, ?string $path = null, ?string $user = null, ?string $password = null, ?int $port = null, array $options = [], ?string $root = null)
     {
         $this->scheme = $scheme;
         $this->host = $host;
@@ -41,6 +41,7 @@ final class Dsn
         $this->password = $password;
         $this->port = $port;
         $this->options = $options;
+        $this->root = $root;
     }
 
     public static function fromString(string $dsn): self
@@ -66,7 +67,10 @@ final class Dsn
 
         $embeddedDsn = self::handleEmbeddedDsn($dsn);
 
-        return new self($parsedDsn['scheme'], $parsedDsn['host'], $path, $user, $password, $port, array_merge($query, $embeddedDsn));
+        $self = new self($parsedDsn['scheme'], $parsedDsn['host'], $path, $user, $password, $port, array_merge($query, $embeddedDsn));
+        $self->root = $dsn;
+
+        return $self;
     }
 
     public function getScheme(): string
@@ -124,6 +128,11 @@ final class Dsn
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    public function getRoot(): ?string
+    {
+        return $this->root;
     }
 
     /**

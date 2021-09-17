@@ -56,7 +56,7 @@ interface WorkerInterface
      *
      * @throws Throwable {@see WorkerInterface::execute()}
      */
-    public function preempt(TaskListInterface $preemptTaskList): void;
+    public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void;
 
     /**
      * Allow to return a "fork" of the current worker,
@@ -99,13 +99,6 @@ interface WorkerInterface
      * Determine if the worker is currently running, the implementation is up to the final class.
      */
     public function isRunning(): bool;
-
-    /**
-     * Return the currently found tasks list as a {@see TaskListInterface} or null if not set.
-     *
-     * {@internal During the execution process, this method can be called at any time as the list is updated}
-     */
-    public function getCurrentTasks(): ?TaskListInterface;
 
     /**
      * Every task in this list can also be retrieved independently thanks to {@see TaskFailedEvent}.

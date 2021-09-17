@@ -87,11 +87,11 @@ final class ListTasksCommand extends Command
         }
 
         if (null !== $state = $input->getOption('state')) {
-            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $state === $task->getState());
+            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => $state === $task->getState());
         }
 
         if (null !== $expression = $input->getOption('expression')) {
-            $tasks = $tasks->filter(fn (TaskInterface $task): bool => $expression === $task->getExpression());
+            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         if (0 === $tasks->count()) {
@@ -104,7 +104,7 @@ final class ListTasksCommand extends Command
         $table = new Table($output);
         $table->setHeaders(['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
 
-        $tasks->walk(function (TaskInterface $task) use ($table): void {
+        $tasks->walk(static function (TaskInterface $task) use ($table): void {
             $lastExecutionDate = $task->getLastExecution();
 
             $table->addRow([
@@ -121,7 +121,7 @@ final class ListTasksCommand extends Command
             ]);
 
             if ($task instanceof ChainedTask) {
-                $table->addRows($task->getTasks()->map(fn (TaskInterface $subTask): array => [
+                $table->addRows($task->getTasks()->map(static fn (TaskInterface $subTask): array => [
                     '<info>          ></info>',
                     $subTask->getName(),
                     $subTask->getDescription() ?? 'No description set',

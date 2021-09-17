@@ -84,32 +84,29 @@ abstract class AbstractWorker implements WorkerInterface
 
         $closure();
 
-        $this->configuration->setCurrentTasks(new TaskList());
         $this->eventDispatcher->dispatch(new WorkerStoppedEvent($this));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function preempt(TaskListInterface $preemptTaskList): void
+    public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
     {
-        $this->pause();
+        $nonExecutedTasks = $toPreemptTasksList->slice(...array_values($preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName())));
+        $nonExecutedTasks->walk(function (TaskInterface $task): void {
+            $lock = $this->lockFactory->createLockFromKey($task->getAccessLockBag()->getKey());
 
-        #$remainingTasks = $this->getCurrentTasks();
+            $lock->release();
+        });
+
         $forkWorker = $this->fork();
 
         try {
-            $forkWorker->execute($forkWorker->getConfiguration(), ...$preemptTaskList->toArray(false));
+            $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
         } catch (Throwable $throwable) {
         } finally {
             $forkWorker->stop();
         }
-
-        $this->restart();
-
-        #if ($remainingTasks instanceof TaskListInterface && 0 !== $remainingTasks->count()) {
-        #    $this->execute($this->configuration, ...$remainingTasks->toArray(false));
-        #}
     }
 
     /**
@@ -181,14 +178,6 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
-    public function getCurrentTasks(): ?TaskListInterface
-    {
-        return $this->configuration->getCurrentTasks();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getFailedTasks(): TaskListInterface
     {
         return $this->failedTasks;
@@ -244,14 +233,10 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         });
 
-        $lockedTasks = $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
-
-        $this->configuration->setCurrentTasks($lockedTasks);
-
-        return $lockedTasks;
+        return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
     }
 
-    protected function handleTask(TaskInterface $task): void
+    protected function handleTask(TaskInterface $task, TaskListInterface $taskList): void
     {
         if ($this->configuration->shouldStop()) {
             return;
@@ -267,7 +252,7 @@ abstract class AbstractWorker implements WorkerInterface
 
                 $this->configuration->setCurrentlyExecutedTask($task);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
-                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
+                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this, $taskList));
                 $task->setArrivalTime(new DateTimeImmutable());
                 $task->setExecutionStartTime(new DateTimeImmutable());
                 $this->taskExecutionTracker->startTracking($task);
@@ -309,7 +294,7 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         }
 
-        if ($this->configuration->getExecutedTasksCount() === 0) {
+        if (0 === $this->configuration->getExecutedTasksCount()) {
             return true;
         }
 

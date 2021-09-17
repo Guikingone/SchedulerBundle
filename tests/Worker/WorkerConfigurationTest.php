@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle\Worker;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
@@ -19,23 +18,15 @@ final class WorkerConfigurationTest extends TestCase
     public function testConfigurationCanBeCreated(): void
     {
         $configuration = WorkerConfiguration::create();
+
         self::assertFalse($configuration->shouldStop());
         self::assertFalse($configuration->isRunning());
         self::assertNull($configuration->getLastExecutedTask());
+        self::assertFalse($configuration->isFork());
+        self::assertSame(1, $configuration->getSleepDurationDelay());
 
         $configuration->stop();
         self::assertTrue($configuration->shouldStop());
-    }
-
-    public function testConfigurationCanDefineTheCurrentTasks(): void
-    {
-        $configuration = WorkerConfiguration::create();
-        self::assertCount(0, $configuration->getCurrentTasks());
-
-        $configuration->setCurrentTasks(new TaskList([
-            new NullTask('foo'),
-        ]));
-        self::assertCount(1, $configuration->getCurrentTasks());
     }
 
     public function testConfigurationCanDefineTheCurrentlyExecutedTask(): void
