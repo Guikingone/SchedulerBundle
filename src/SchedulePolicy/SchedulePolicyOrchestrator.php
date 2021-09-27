@@ -40,9 +40,7 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
 
         $tasks->walk(function (TaskInterface $task) use ($policy): void {
             if ($task instanceof ChainedTask) {
-                $sortedTasks = $this->sort($policy, $task->getTasks());
-
-                $task->setTasks(...$sortedTasks->toArray(false));
+                $task->setTasks($this->sort($policy, $task->getTasks()));
             }
         });
 

@@ -319,7 +319,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new BatchPolicy(),
@@ -347,13 +347,13 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getArrivalTime')->willReturn(new DateTimeImmutable('+ 1 month'));
         $task->expects(self::once())->method('getExecutionRelativeDeadline')->willReturn(new DateInterval('P2D'));
         $task->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->expects(self::once())->method('getArrivalTime')->willReturn(new DateTimeImmutable('+ 1 month'));
         $secondTask->expects(self::once())->method('getExecutionRelativeDeadline')->willReturn(new DateInterval('P2D'));
         $secondTask->expects(self::once())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P2D'));
@@ -362,7 +362,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         $chainedTask->setArrivalTime(new DateTimeImmutable());
         $chainedTask->setExecutionStartTime(new DateTimeImmutable());
         $chainedTask->setExecutionRelativeDeadline(new DateInterval('P1D'));
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('deadline', new TaskList([$chainedTask]));
 
@@ -379,15 +379,15 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getExecutionComputationTime')->willReturn(10.0);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->expects(self::once())->method('getExecutionComputationTime')->willReturn(12.0);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('execution_duration', new TaskList([$chainedTask]));
 
@@ -404,15 +404,15 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('first_in_first_out', new TaskList([$chainedTask]));
 
@@ -429,15 +429,15 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 2 minute'));
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('first_in_last_out', new TaskList([$chainedTask]));
 
@@ -454,15 +454,15 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->expects(self::once())->method('getPriority')->willReturn(-10);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->expects(self::exactly(2))->method('getPriority')->willReturn(-20);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('idle', new TaskList([$chainedTask]));
 
@@ -479,15 +479,15 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('getName')->willReturn('foo');
         $task->method('getExecutionMemoryUsage')->willReturn(10);
 
         $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
+        $secondTask->expects(self::once())->method('getName')->willReturn('bar');
         $secondTask->method('getExecutionMemoryUsage')->willReturn(15);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator->sort('memory_usage', new TaskList([$chainedTask]));
 
@@ -499,16 +499,19 @@ final class SchedulePolicyOrchestratorTest extends TestCase
 
     public function testSchedulePolicyCanSortNestedTasksUsingNice(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('getNice')->willReturn(1);
+        $task = new NullTask('foo', [
+            'nice' => 1,
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('bar');
-        $secondTask->expects(self::once())->method('getNice')->willReturn(5);
+        $secondTask = new NullTask('bar', [
+            'nice' => 5,
+        ]);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([
+            $secondTask,
+            $task,
+        ]));
 
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new NicePolicy(),
@@ -533,7 +536,7 @@ final class SchedulePolicyOrchestratorTest extends TestCase
         ]);
 
         $chainedTask = new ChainedTask('nested');
-        $chainedTask->setTasks($secondTask, $task);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task]));
 
         $schedulePolicyOrchestrator = new SchedulePolicyOrchestrator([
             new RoundRobinPolicy(),

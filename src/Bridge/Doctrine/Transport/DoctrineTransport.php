@@ -7,7 +7,6 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Schema\Schema;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
-use Psr\Log\LoggerInterface;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\AbstractExternalTransport;
@@ -25,8 +24,7 @@ class DoctrineTransport extends AbstractExternalTransport
         array $options,
         DbalConnection $dbalConnection,
         SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
-        ?LoggerInterface $logger = null
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->defineOptions([
             'auto_setup' => $options['auto_setup'],
@@ -41,8 +39,7 @@ class DoctrineTransport extends AbstractExternalTransport
             $this->getOptions(),
             $dbalConnection,
             $serializer,
-            $schedulePolicyOrchestrator,
-            $logger
+            $schedulePolicyOrchestrator
         ), $schedulePolicyOrchestrator);
     }
 

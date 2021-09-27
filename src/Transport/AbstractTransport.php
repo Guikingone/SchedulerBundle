@@ -26,9 +26,8 @@ abstract class AbstractTransport implements TransportInterface
         ]);
 
         $optionsResolver->setAllowedTypes('execution_mode', ['string', 'null']);
-        $optionsResolver->setInfo('execution_mode', 'The execution mode used to sort the tasks');
 
-        if ($additionalOptions === []) {
+        if ([] === $additionalOptions) {
             $this->options = $optionsResolver->resolve($options);
         }
 

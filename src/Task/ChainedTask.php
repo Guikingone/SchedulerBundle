@@ -27,9 +27,9 @@ final class ChainedTask extends AbstractTask
         return $this;
     }
 
-    public function setTasks(TaskInterface ...$tasks): self
+    public function setTasks(TaskListInterface $list): self
     {
-        $this->tasks = new TaskList($tasks);
+        $this->tasks = $list;
 
         return $this;
     }

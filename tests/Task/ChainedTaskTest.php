@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -50,7 +51,7 @@ final class ChainedTaskTest extends TestCase
         $chainedTask = new ChainedTask('foo');
         self::assertCount(0, $chainedTask->getTasks());
 
-        $chainedTask->setTasks($task);
+        $chainedTask->setTasks(new TaskList([$task]));
 
         self::assertCount(1, $chainedTask->getTasks());
         self::assertSame($task, $chainedTask->getTasks()['foo']);
