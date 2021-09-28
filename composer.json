@@ -24,6 +24,8 @@
             "SchedulerBundle\\Bridge\\Doctrine\\": "src/Bridge/Doctrine/",
             "SchedulerBundle\\Bridge\\Doctrine\\SchemaListener\\": "src/Bridge/Doctrine/SchemaListener/",
             "SchedulerBundle\\Bridge\\Doctrine\\Transport\\": "src/Bridge/Doctrine/Transport/",
+            "SchedulerBundle\\Bridge\\Swoole\\": "src/Bridge/Swoole/",
+            "SchedulerBundle\\Bridge\\Swoole\\Worker\\": "src/Bridge/Swoole/Worker/",
             "SchedulerBundle\\Bridge\\Redis\\": "src/Bridge/Redis/",
             "SchedulerBundle\\Bridge\\Redis\\Transport\\": "src/Bridge/Redis/Transport/",
             "SchedulerBundle\\Command\\": "src/Command/",
@@ -114,6 +116,7 @@
     "require-dev": {
         "ext-pcntl": "*",
         "ext-pdo": "*",
+        "ext-swoole": "*",
         "ext-redis": "*",
         "api-platform/core": "^2.6",
         "doctrine/dbal": "^2.12 || ^3.0",
