@@ -4,7 +4,7 @@
     <img src="https://img.shields.io/packagist/v/guikingone/scheduler-bundle?style=flat" alt="Current bundle version" />
     <img src="https://img.shields.io/packagist/dt/guikingone/scheduler-bundle" alt="Packagist Downloads" />
     <img src="https://img.shields.io/packagist/php-v/guikingone/scheduler-bundle?style=flat" alt="PHP version requirement" />
-    <img src="https://img.shields.io/symfony/i/grade/825be328-29f8-44f7-a750-f82818ae9111?style=flat" alt="Symfony Insight" />
+    <a href="https://insight.symfony.com/projects/825be328-29f8-44f7-a750-f82818ae9111"><img src="https://img.shields.io/symfony/i/grade/825be328-29f8-44f7-a750-f82818ae9111?style=flat" alt="Symfony Insight" /></a>
     <img src="https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FGuikingone%2FSchedulerBundle%2Fmain" alt="Infection score" />
     <img src="https://img.shields.io/github/license/Guikingone/SchedulerBundle?style=flat" alt="License" />
     <br><br>Daily runs<br>
