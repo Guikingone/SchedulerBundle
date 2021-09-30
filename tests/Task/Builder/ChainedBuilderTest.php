@@ -82,11 +82,12 @@ final class ChainedBuilderTest extends TestCase
         $task = $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
 
         self::assertInstanceOf(ChainedTask::class, $task);
-        self::assertCount(2, $task->getTasks());
+        self::assertCount(3, $task->getTasks());
         self::assertInstanceOf(ShellTask::class, $task->getTask($configuration['tasks'][0]['name']));
         self::assertSame('foo', $task->getTask($configuration['tasks'][0]['name'])->getName());
         self::assertInstanceOf(NullTask::class, $task->getTask($configuration['tasks'][1]['name']));
         self::assertSame('bar', $task->getTask($configuration['tasks'][1]['name'])->getName());
+        self::assertNotSame('# * * * *', $task->getTask($configuration['tasks'][2]['name'])->getExpression());
     }
 
     /**
@@ -114,6 +115,11 @@ final class ChainedBuilderTest extends TestCase
                         'type' => 'null',
                         'expression' => '* * * * *',
                     ],
+                    [
+                        'name' => 'third',
+                        'type' => 'null',
+                        'expression' => '# * * * *',
+                    ],
                 ],
             ],
         ];
@@ -136,6 +142,11 @@ final class ChainedBuilderTest extends TestCase
                         'name' => 'bar',
                         'type' => 'null',
                         'expression' => '* * * * *',
+                    ],
+                    [
+                        'name' => 'third',
+                        'type' => 'null',
+                        'expression' => '# * * * *',
                     ],
                 ],
             ],
