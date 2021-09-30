@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Task\Builder;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
@@ -41,7 +42,7 @@ final class ChainedBuilderTest extends TestCase
      *
      * @param array<string, mixed> $configuration
      */
-    public function testBuilderCanBuildWithoutBuilders(array $configuration): void
+    public function testBuilderCantBuildWithoutBuilders(array $configuration): void
     {
         $chainedBuilder = new ChainedBuilder(new ExpressionBuilder([
             new CronExpressionBuilder(),
@@ -51,6 +52,32 @@ final class ChainedBuilderTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The given task cannot be created as no related builder can be found');
+        self::expectExceptionCode(0);
+        $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
+    }
+
+    /**
+     * @dataProvider provideTaskData
+     *
+     * @param array<string, mixed> $configuration
+     */
+    public function testBuilderCantBuildWithoutExpressionBuilders(array $configuration): void
+    {
+        $chainedBuilder = new ChainedBuilder(new ExpressionBuilder([]), [
+            new ShellBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
+            new NullBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
+        ]);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('No builder found');
         self::expectExceptionCode(0);
         $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
     }
@@ -121,6 +148,7 @@ final class ChainedBuilderTest extends TestCase
                         'expression' => '# * * * *',
                     ],
                 ],
+                'expression' => '* * * * *',
             ],
         ];
         yield [
@@ -149,6 +177,7 @@ final class ChainedBuilderTest extends TestCase
                         'expression' => '# * * * *',
                     ],
                 ],
+                'expression' => '* * * * *',
             ],
         ];
     }
