@@ -248,6 +248,7 @@ abstract class AbstractWorker implements WorkerInterface
             $runner = $this->runnerRegistry->find($task);
 
             if (!$this->configuration->isRunning()) {
+                $this->configuration->run(true);
                 $this->middlewareStack->runPreExecutionMiddleware($task);
 
                 $this->configuration->setCurrentlyExecutedTask($task);
