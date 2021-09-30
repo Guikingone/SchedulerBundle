@@ -12,8 +12,10 @@ use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Task\Builder\ChainedBuilder;
+use SchedulerBundle\Task\Builder\NullBuilder;
 use SchedulerBundle\Task\Builder\ShellBuilder;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -70,13 +72,21 @@ final class ChainedBuilderTest extends TestCase
                 new ComputedExpressionBuilder(),
                 new FluentExpressionBuilder(),
             ])),
+            new NullBuilder(new ExpressionBuilder([
+                new CronExpressionBuilder(),
+                new ComputedExpressionBuilder(),
+                new FluentExpressionBuilder(),
+            ])),
         ]);
 
         $task = $chainedBuilder->build(PropertyAccess::createPropertyAccessor(), $configuration);
 
         self::assertInstanceOf(ChainedTask::class, $task);
-        self::assertCount(1, $task->getTasks());
+        self::assertCount(2, $task->getTasks());
         self::assertInstanceOf(ShellTask::class, $task->getTask($configuration['tasks'][0]['name']));
+        self::assertSame('foo', $task->getTask($configuration['tasks'][0]['name'])->getName());
+        self::assertInstanceOf(NullTask::class, $task->getTask($configuration['tasks'][1]['name']));
+        self::assertSame('bar', $task->getTask($configuration['tasks'][1]['name'])->getName());
     }
 
     /**
@@ -99,6 +109,11 @@ final class ChainedBuilderTest extends TestCase
                         'expression' => '* * * * *',
                         'description' => 'A simple ls command',
                     ],
+                    [
+                        'name' => 'bar',
+                        'type' => 'null',
+                        'expression' => '* * * * *',
+                    ],
                 ],
             ],
         ];
@@ -107,7 +122,7 @@ final class ChainedBuilderTest extends TestCase
                 'name' => 'bar',
                 'tasks' => [
                     [
-                        'name' => 'bar',
+                        'name' => 'foo',
                         'type' => 'shell',
                         'command' => ['ls',  '-l'],
                         'environment_variables' => [
@@ -116,6 +131,11 @@ final class ChainedBuilderTest extends TestCase
                         'timeout' => 50,
                         'expression' => '* * * * *',
                         'description' => 'A second ls command',
+                    ],
+                    [
+                        'name' => 'bar',
+                        'type' => 'null',
+                        'expression' => '* * * * *',
                     ],
                 ],
             ],

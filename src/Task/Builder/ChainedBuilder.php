@@ -17,12 +17,12 @@ use function array_map;
 final class ChainedBuilder extends AbstractTaskBuilder implements BuilderInterface
 {
     /**
-     * @var iterable|BuilderInterface[]
+     * @var BuilderInterface[]
      */
     private iterable $builders;
 
     /**
-     * @param iterable|BuilderInterface[] $builders
+     * @param BuilderInterface[] $builders
      */
     public function __construct(ExpressionBuilderInterface $expressionBuilder, iterable $builders = [])
     {
