@@ -50,7 +50,7 @@ final class ExpressionBuilderTest extends TestCase
         $builder = $this->createMock(ExpressionBuilderInterface::class);
         $builder->expects(self::once())->method('support')->willReturn(true);
         $builder->expects(self::once())->method('build')
-            ->with(self::equalTo('* * * * *'))
+            ->with(self::equalTo('* * * * *'), self::equalTo('UTC'))
             ->willReturn(Expression::createFromString('* * * * *'))
         ;
 
@@ -72,7 +72,7 @@ final class ExpressionBuilderTest extends TestCase
         $builder = $this->createMock(ExpressionBuilderInterface::class);
         $builder->expects(self::once())->method('support')->willReturn(true);
         $builder->expects(self::once())->method('build')
-            ->with(self::equalTo('* * * * *'))
+            ->with(self::equalTo('* * * * *'), self::equalTo('Europe/Paris'))
             ->willReturn(Expression::createFromString('* * * * *'))
         ;
 
