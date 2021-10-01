@@ -1,5 +1,30 @@
-<!--- BEGIN HEADER -->
 # Changelog
+
+0.7.0
+-----
+
+### Features
+
+##### Core
+
+* Task sort improved (#183) ([92eb0e](https://github.com/Guikingone/SchedulerBundle/commit/92eb0e4269b3dc7292ade221f94f5e0bae69e1c7))
+
+##### DIC
+
+* Configuration improved (#184) ([2ac8b4](https://github.com/Guikingone/SchedulerBundle/commit/2ac8b4c9919aa0d26e916203999f70d314b7bad5))
+
+##### Scheduler
+
+* Task execution preemption (#145) ([61e887](https://github.com/Guikingone/SchedulerBundle/commit/61e887e43d6c20af1546caea9a29c3da2880fa33))
+
+### Code Refactoring
+
+##### Worker
+
+* Improvements on stop (#186) ([c751c8](https://github.com/Guikingone/SchedulerBundle/commit/c751c8613d61646b12f579c9c6c70c5a2acdbc7e))
+* WorkerConfiguration introduced (#187) ([a84878](https://github.com/Guikingone/SchedulerBundle/commit/a848788696330d670d35acc4bb6b9a7e4b485578))
+
+---
 
 0.6.2
 -----
