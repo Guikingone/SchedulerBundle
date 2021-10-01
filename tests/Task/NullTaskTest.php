@@ -11,7 +11,9 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use Symfony\Component\Lock\Key;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -241,7 +243,7 @@ final class NullTaskTest extends TestCase
     public function testTaskCannotBeCreatedWithInvalidExecutionMemoryUsage(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "execution_memory_usage" with value "foo" is expected to be of type "int" or "null", but is of type "string"');
+        self::expectExceptionMessage('The option "execution_memory_usage" with value "foo" is expected to be of type "int", but is of type "string"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'execution_memory_usage' => 'foo',
@@ -306,6 +308,34 @@ final class NullTaskTest extends TestCase
         new NullTask('foo', [
             'execution_end_date' => 135,
         ]);
+    }
+
+    public function testTaskCannotBeCreatedWithValidExecutionEndDate(): void
+    {
+        $task = new NullTask('foo', [
+            'execution_end_date' => '+ 1 month',
+        ]);
+
+        self::assertInstanceOf(DateTimeImmutable::class, $task->getExecutionEndDate());
+    }
+
+    public function testTaskCannotBeCreatedWithInvalidAccessLockBag(): void
+    {
+        self::expectException(InvalidOptionsException::class);
+        self::expectExceptionMessage('The option "access_lock_bag" with value 135 is expected to be of type "SchedulerBundle\TaskBag\AccessLockBag" or "null", but is of type "int"');
+        self::expectExceptionCode(0);
+        new NullTask('foo', [
+            'access_lock_bag' => 135,
+        ]);
+    }
+
+    public function testTaskCannotBeCreatedWithValidAccessLockBag(): void
+    {
+        $task = new NullTask('foo', [
+            'access_lock_bag' => new AccessLockBag(new Key('foo')),
+        ]);
+
+        self::assertInstanceOf(AccessLockBag::class, $task->getAccessLockBag());
     }
 
     public function testTaskCannotBeCreatedWithInvalidExecutionStartTime(): void

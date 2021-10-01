@@ -17,7 +17,7 @@ final class ExecutionDurationPolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() <=> $nextTask->getExecutionComputationTime());
+        return $tasks->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionComputationTime() <=> $nextTask->getExecutionComputationTime());
     }
 
     /**

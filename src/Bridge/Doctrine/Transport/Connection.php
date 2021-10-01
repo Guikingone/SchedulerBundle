@@ -13,8 +13,6 @@ use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
@@ -38,7 +36,6 @@ final class Connection implements ConnectionInterface
     private DbalConnection $driverConnection;
     private SerializerInterface $serializer;
     private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
-    private LoggerInterface $logger;
 
     /**
      * @param mixed[] $configuration
@@ -47,14 +44,12 @@ final class Connection implements ConnectionInterface
         array $configuration,
         DbalConnection $dbalConnection,
         SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator,
-        ?LoggerInterface $logger = null
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->configuration = $configuration;
         $this->driverConnection = $dbalConnection;
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
-        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -73,8 +68,6 @@ final class Connection implements ConnectionInterface
         )->fetchOne();
 
         if ('0' === $statement) {
-            $this->logger->warning('The current task list is empty');
-
             return new TaskList();
         }
 
@@ -127,7 +120,7 @@ final class Connection implements ConnectionInterface
                 );
 
                 $data = $statement->fetchAssociative();
-                if (false === $data || [] === $data) {
+                if (false === $data) {
                     throw new LogicException('The desired task cannot be found.');
                 }
 

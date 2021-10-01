@@ -121,7 +121,7 @@ final class ConsumeTasksCommand extends Command
         $lazy = $input->getOption('lazy');
         $strict = $input->getOption('strict');
 
-        $dueTasks = $this->scheduler->getDueTasks(true === $lazy, true === $strict)->filter(fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
+        $dueTasks = $this->scheduler->getDueTasks(true === $lazy, true === $strict)->filter(static fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
         if (0 === $dueTasks->count() && false === $wait) {
             $symfonyStyle->warning('No due tasks found');
 
@@ -129,7 +129,7 @@ final class ConsumeTasksCommand extends Command
         }
 
         if (false === $force) {
-            $nonPausedTasks = $dueTasks->filter(fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
+            $nonPausedTasks = $dueTasks->filter(static fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
             if (0 === $nonPausedTasks->count()) {
                 $symfonyStyle->warning([
                     'Each tasks has already been executed for the current minute',
@@ -203,7 +203,7 @@ final class ConsumeTasksCommand extends Command
 
     private function registerOutputSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(TaskExecutedEvent::class, static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
             if (null === $output->getOutput()) {
                 return;
@@ -216,7 +216,7 @@ final class ConsumeTasksCommand extends Command
 
     private function registerTaskExecutedSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, function (TaskExecutedEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(TaskExecutedEvent::class, static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $task = $event->getTask();
             $output = $event->getOutput();
             $taskExecutionDuration = Helper::formatTime($task->getExecutionComputationTime() / 1000);
@@ -247,7 +247,7 @@ final class ConsumeTasksCommand extends Command
 
     private function registerWorkerSleepingListener(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(WorkerSleepingEvent::class, function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(WorkerSleepingEvent::class, static function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
             $symfonyStyle->info(sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
         });
     }

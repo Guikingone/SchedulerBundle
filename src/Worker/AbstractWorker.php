@@ -13,6 +13,7 @@ use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerSleepingEvent;
@@ -89,6 +90,28 @@ abstract class AbstractWorker implements WorkerInterface
     /**
      * {@inheritdoc}
      */
+    public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
+    {
+        $nonExecutedTasks = $toPreemptTasksList->slice(...array_values($preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName())));
+        $nonExecutedTasks->walk(function (TaskInterface $task): void {
+            $lock = $this->lockFactory->createLockFromKey($task->getAccessLockBag()->getKey());
+
+            $lock->release();
+        });
+
+        $forkWorker = $this->fork();
+
+        try {
+            $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
+        } catch (Throwable $throwable) {
+        } finally {
+            $forkWorker->stop();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function fork(): WorkerInterface
     {
         $fork = clone $this;
@@ -99,6 +122,17 @@ abstract class AbstractWorker implements WorkerInterface
         $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
 
         return $fork;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function pause(): WorkerInterface
+    {
+        $this->configuration->run(false);
+        $this->eventDispatcher->dispatch(new WorkerPausedEvent($this));
+
+        return $this;
     }
 
     /**
@@ -202,7 +236,7 @@ abstract class AbstractWorker implements WorkerInterface
         return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
     }
 
-    protected function handleTask(TaskInterface $task): void
+    protected function handleTask(TaskInterface $task, TaskListInterface $taskList): void
     {
         if ($this->configuration->shouldStop()) {
             return;
@@ -214,10 +248,12 @@ abstract class AbstractWorker implements WorkerInterface
             $runner = $this->runnerRegistry->find($task);
 
             if (!$this->configuration->isRunning()) {
+                $this->configuration->run(true);
                 $this->middlewareStack->runPreExecutionMiddleware($task);
 
+                $this->configuration->setCurrentlyExecutedTask($task);
                 $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
-                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this));
+                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this, $taskList));
                 $task->setArrivalTime(new DateTimeImmutable());
                 $task->setExecutionStartTime(new DateTimeImmutable());
                 $this->taskExecutionTracker->startTracking($task);
@@ -243,6 +279,7 @@ abstract class AbstractWorker implements WorkerInterface
             $this->getFailedTasks()->add($failedTask);
             $this->eventDispatcher->dispatch(new TaskFailedEvent($failedTask));
         } finally {
+            $this->configuration->setCurrentlyExecutedTask(null);
             $this->configuration->run(false);
             $this->eventDispatcher->dispatch(new WorkerRunningEvent($this, true));
         }
@@ -258,7 +295,11 @@ abstract class AbstractWorker implements WorkerInterface
             return true;
         }
 
-        return $this->configuration->getExecutedTasksCount() === 0 || $this->configuration->getExecutedTasksCount() === $taskList->count();
+        if (0 === $this->configuration->getExecutedTasksCount()) {
+            return true;
+        }
+
+        return $this->configuration->getExecutedTasksCount() === $taskList->count();
     }
 
     private function checkTaskState(TaskInterface $task): bool

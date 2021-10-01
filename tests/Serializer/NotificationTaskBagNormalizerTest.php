@@ -54,7 +54,10 @@ final class NotificationTaskBagNormalizerTest extends TestCase
         self::assertArrayHasKey('importance', $data['body']['notification']);
         self::assertArrayHasKey('recipients', $data['body']);
         self::assertCount(1, $data['body']['recipients']);
+        self::assertArrayHasKey(0, $data['body']['recipients']);
+        self::assertArrayHasKey('email', $data['body']['recipients'][0]);
         self::assertSame('test@test.fr', $data['body']['recipients'][0]['email']);
+        self::assertArrayHasKey('phone', $data['body']['recipients'][0]);
         self::assertEmpty($data['body']['recipients'][0]['phone']);
     }
 

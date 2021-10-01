@@ -8,7 +8,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Exception\RuntimeException;
@@ -116,7 +115,6 @@ final class DoctrineTransportFactoryTest extends TestCase
 
     public function testFactoryReturnTransportWithExecutionMode(): void
     {
-        $logger = $this->createMock(LoggerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $connection = $this->createMock(Connection::class);
 
@@ -125,13 +123,12 @@ final class DoctrineTransportFactoryTest extends TestCase
 
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $doctrineTransportFactory = new DoctrineTransportFactory($registry, $logger);
+        $doctrineTransportFactory = new DoctrineTransportFactory($registry);
         self::assertInstanceOf(DoctrineTransport::class, $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], $serializer, $schedulePolicyOrchestrator));
     }
 
     public function testFactoryReturnTransportWithTableName(): void
     {
-        $logger = $this->createMock(LoggerInterface::class);
         $schedulePolicyOrchestrator = $this->createMock(SchedulePolicyOrchestratorInterface::class);
         $connection = $this->createMock(Connection::class);
 
@@ -140,7 +137,7 @@ final class DoctrineTransportFactoryTest extends TestCase
 
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $doctrineTransportFactory = new DoctrineTransportFactory($registry, $logger);
+        $doctrineTransportFactory = new DoctrineTransportFactory($registry);
         $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(DoctrineTransport::class, $transport);

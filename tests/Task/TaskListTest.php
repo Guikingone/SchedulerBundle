@@ -195,7 +195,7 @@ final class TaskListTest extends TestCase
         $task = new NullTask('foo');
         $taskList = new TaskList([$task]);
 
-        $tasks = $taskList->filter(fn (TaskInterface $task): bool => 'foo' === $task->getName());
+        $tasks = $taskList->filter(static fn (TaskInterface $task): bool => 'foo' === $task->getName());
 
         self::assertCount(1, $tasks);
     }
@@ -271,7 +271,7 @@ final class TaskListTest extends TestCase
         self::assertCount(0, $nullTask->getTags());
 
         $taskList = new TaskList([$nullTask]);
-        $taskList->walk(fn (TaskInterface $task) => $task->addTag('walk'));
+        $taskList->walk(static fn (TaskInterface $task) => $task->addTag('walk'));
 
         self::assertCount(1, $nullTask->getTags());
         self::assertContains('walk', $nullTask->getTags());
@@ -287,7 +287,7 @@ final class TaskListTest extends TestCase
         self::assertSame([
             'foo' => 'foo',
             'bar' => 'bar',
-        ], $taskList->map(fn (TaskInterface $task): string => $task->getName()));
+        ], $taskList->map(static fn (TaskInterface $task): string => $task->getName()));
     }
 
     public function testListCannotReturnLastTaskWhileEmpty(): void
@@ -328,7 +328,7 @@ final class TaskListTest extends TestCase
 
         self::assertCount(2, $taskList);
 
-        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+        $taskList->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
 
         self::assertCount(2, $taskList);
         self::assertEquals([
@@ -388,5 +388,35 @@ final class TaskListTest extends TestCase
         self::assertIsArray($chunk[1]);
         self::assertCount(1, $chunk[1]);
         self::assertArrayHasKey('bar', $chunk[1]);
+    }
+
+    public function testListCannotSliceUndefinedKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be found');
+        self::expectExceptionCode(0);
+        $taskList->slice('random');
+    }
+
+    public function testListCanSlice(): void
+    {
+        $list = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::assertCount(2, $list);
+
+        $tasks = $list->slice('bar');
+
+        self::assertCount(1, $list);
+        self::assertCount(1, $tasks);
+        self::assertFalse($tasks->has('foo'));
+        self::assertTrue($list->has('foo'));
     }
 }

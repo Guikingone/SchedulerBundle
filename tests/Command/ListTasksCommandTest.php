@@ -169,7 +169,7 @@ final class ListTasksCommandTest extends TestCase
         $chainedTask->setDescription('A nested task');
         $chainedTask->setLastExecution(new DateTimeImmutable('08/20/2020'));
         $chainedTask->setExecutionComputationTime(6002.0);
-        $chainedTask->setTasks($secondTask, $task, $thirdTask);
+        $chainedTask->setTasks(new TaskList([$secondTask, $task, $thirdTask]));
 
         $taskList = new TaskList([$chainedTask]);
 

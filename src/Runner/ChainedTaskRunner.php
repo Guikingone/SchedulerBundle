@@ -28,7 +28,7 @@ final class ChainedTaskRunner implements RunnerInterface
         $forkedWorker = $worker->fork();
 
         try {
-            $task->getTasks()->walk(function (TaskInterface $task) use ($forkedWorker): void {
+            $task->getTasks()->walk(static function (TaskInterface $task) use ($forkedWorker): void {
                 $forkedWorker->execute(WorkerConfiguration::create(), $task);
             });
         } catch (Throwable $throwable) {

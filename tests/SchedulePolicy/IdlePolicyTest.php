@@ -92,13 +92,23 @@ final class IdlePolicyTest extends TestCase
             'priority' => 19,
         ]);
 
-        $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+        $thirdTask = new NullTask('bar', [
+            'priority' => 15,
+        ]);
 
-        self::assertCount(2, $tasks);
+        $fourthTask = new NullTask('random', [
+            'priority' => 20,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([$fourthTask, $secondTask, $thirdTask, $task]));
+
+        self::assertCount(4, $tasks);
         self::assertSame([
+            'random' => $fourthTask,
             'app' => $secondTask,
             'foo' => $task,
+            'bar' => $thirdTask,
         ], $tasks->toArray());
     }
 

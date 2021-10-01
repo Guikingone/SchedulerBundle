@@ -22,7 +22,7 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function runPreExecutionMiddleware(TaskInterface $task): void
     {
-        $this->runMiddleware($this->getPreExecutionMiddleware(), function (PreExecutionMiddlewareInterface $middleware) use ($task): void {
+        $this->runMiddleware($this->getPreExecutionMiddleware(), static function (PreExecutionMiddlewareInterface $middleware) use ($task): void {
             $middleware->preExecute($task);
         });
     }
@@ -33,7 +33,7 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function runPostExecutionMiddleware(TaskInterface $task, WorkerInterface $worker): void
     {
-        $this->runMiddleware($this->getPostExecutionMiddleware(), function (PostExecutionMiddlewareInterface $middleware) use ($task, $worker): void {
+        $this->runMiddleware($this->getPostExecutionMiddleware(), static function (PostExecutionMiddlewareInterface $middleware) use ($task, $worker): void {
             $middleware->postExecute($task, $worker);
         });
     }

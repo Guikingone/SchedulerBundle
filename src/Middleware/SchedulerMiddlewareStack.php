@@ -21,7 +21,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function runPreSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->runMiddleware($this->getPreSchedulingMiddleware(), function (PreSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
+        $this->runMiddleware($this->getPreSchedulingMiddleware(), static function (PreSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
             $middleware->preScheduling($task, $scheduler);
         });
     }
@@ -32,7 +32,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function runPostSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->runMiddleware($this->getPostSchedulingMiddleware(), function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
+        $this->runMiddleware($this->getPostSchedulingMiddleware(), static function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
             $middleware->postScheduling($task, $scheduler);
         });
     }

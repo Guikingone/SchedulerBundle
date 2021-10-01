@@ -77,9 +77,6 @@ Each task is sorted depending on the `nice` value and the `priority` and in an a
 
 ## Creating custom policy
 
-Creating a new policy is as easy as it sounds, first, 
-you must implement the [PolicyInterface](../src/SchedulePolicy/PolicyInterface.php),
-once implemented, just sort the tasks using `sort(array $tasks): array`, a common way to do it is to use `uasort()`,
-this method allows to keep the name-tasks relation (which is the "default" format of tasks).
+Creating a new policy is as easy as it sounds, first, you must implement the [PolicyInterface](../src/SchedulePolicy/PolicyInterface.php).
 
 **Note**: Each policy is automatically injected in the [SchedulePolicyOrchestrator](../src/SchedulePolicy/SchedulePolicyOrchestrator.php).

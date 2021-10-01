@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskMessageHandler implements MessageHandlerInterface
+final class TaskToExecuteMessageHandler implements MessageHandlerInterface
 {
     private WorkerInterface $worker;
     private LoggerInterface $logger;
@@ -34,7 +34,7 @@ final class TaskMessageHandler implements MessageHandlerInterface
     /**
      * @throws Exception
      */
-    public function __invoke(TaskMessage $taskMessage): void
+    public function __invoke(TaskToExecuteMessage $taskMessage): void
     {
         $task = $taskMessage->getTask();
         $timezone = $task->getTimezone() ?? new DateTimeZone('UTC');

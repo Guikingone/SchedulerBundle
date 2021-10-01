@@ -12,12 +12,12 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FailOverConfiguration implements ConfigurationInterface
+final class FailOverConfiguration extends AbstractConfiguration
 {
     /**
-     * @var iterable|ConfigurationInterface[]
+     * @var ConfigurationInterface[]
      */
-    private iterable $configurationStorages;
+    private iterable $configurationStorageList;
 
     /**
      * @var SplObjectStorage<object, mixed>
@@ -25,11 +25,11 @@ final class FailOverConfiguration implements ConfigurationInterface
     private SplObjectStorage $failedConfigurations;
 
     /**
-     * @param iterable|ConfigurationInterface[] $configurationStorages
+     * @param ConfigurationInterface[] $configurationStorageList
      */
-    public function __construct(iterable $configurationStorages)
+    public function __construct(iterable $configurationStorageList)
     {
-        $this->configurationStorages = $configurationStorages;
+        $this->configurationStorageList = $configurationStorageList;
         $this->failedConfigurations = new SplObjectStorage();
     }
 
@@ -38,7 +38,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function set(string $key, $value): void
     {
-        $this->execute(function (ConfigurationInterface $configuration) use ($key, $value): void {
+        $this->execute(static function (ConfigurationInterface $configuration) use ($key, $value): void {
             $configuration->set($key, $value);
         });
     }
@@ -48,7 +48,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function update(string $key, $newValue): void
     {
-        $this->execute(function (ConfigurationInterface $configuration) use ($key, $newValue): void {
+        $this->execute(static function (ConfigurationInterface $configuration) use ($key, $newValue): void {
             $configuration->update($key, $newValue);
         });
     }
@@ -58,7 +58,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function get(string $key)
     {
-        return $this->execute(fn (ConfigurationInterface $configuration) => $configuration->get($key));
+        return $this->execute(static fn (ConfigurationInterface $configuration) => $configuration->get($key));
     }
 
     /**
@@ -66,7 +66,7 @@ final class FailOverConfiguration implements ConfigurationInterface
      */
     public function remove(string $key): void
     {
-        $this->execute(function (ConfigurationInterface $configuration) use ($key): void {
+        $this->execute(static function (ConfigurationInterface $configuration) use ($key): void {
             $configuration->remove($key);
         });
     }
@@ -74,18 +74,52 @@ final class FailOverConfiguration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): iterable
+    public function walk(Closure $func): ConfigurationInterface
     {
-        return $this->execute(fn (ConfigurationInterface $configuration): array => $configuration->getOptions());
+        return $this->execute(static fn (ConfigurationInterface $configuration): ConfigurationInterface => $configuration->walk($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function map(Closure $func): array
+    {
+        return $this->execute(static fn (ConfigurationInterface $configuration): array => $configuration->map($func));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
+    {
+        return $this->execute(static fn (ConfigurationInterface $configuration): array => $configuration->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear(): void
+    {
+        $this->execute(static function (ConfigurationInterface $configuration): void {
+            $configuration->clear();
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return $this->execute(static fn (ConfigurationInterface $configuration): int => $configuration->count());
     }
 
     private function execute(Closure $func)
     {
-        if ([] === $this->configurationStorages) {
+        if ([] === $this->configurationStorageList) {
             throw new ConfigurationException('No configuration found');
         }
 
-        foreach ($this->configurationStorages as $configurationStorage) {
+        foreach ($this->configurationStorageList as $configurationStorage) {
             if ($this->failedConfigurations->contains($configurationStorage)) {
                 continue;
             }

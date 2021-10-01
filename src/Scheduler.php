@@ -9,23 +9,25 @@ use Cron\CronExpression;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Expression\Expression;
-use SchedulerBundle\Messenger\TaskMessage;
+use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function is_bool;
 use function next;
@@ -84,7 +86,7 @@ final class Scheduler implements SchedulerInterface
         $task->setTimezone($task->getTimezone() ?? $this->timezone);
 
         if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
-            $this->bus->dispatch(new TaskMessage($task));
+            $this->bus->dispatch(new TaskToExecuteMessage($task));
             $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
 
             return;
@@ -125,8 +127,37 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function update(string $taskName, TaskInterface $task): void
+    public function preempt(string $taskToPreempt, Closure $filter): void
     {
+        $preemptTasks = $this->getDueTasks()->filter($filter);
+        if (0 === $preemptTasks->count()) {
+            return;
+        }
+
+        $this->eventDispatcher->addListener(TaskExecutingEvent::class, static function (TaskExecutingEvent $event) use ($taskToPreempt, $preemptTasks): void {
+            $task = $event->getTask();
+            if ($taskToPreempt !== $task->getName()) {
+                return;
+            }
+
+            $currentTasks = $event->getCurrentTasks();
+            $worker = $event->getWorker();
+
+            $worker->preempt($preemptTasks, $currentTasks);
+        });
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(string $taskName, TaskInterface $task, bool $async = false): void
+    {
+        if ($async) {
+            $this->bus->dispatch(new TaskToUpdateMessage($taskName, $task));
+
+            return;
+        }
+
         $this->transport->update($taskName, $task);
     }
 
@@ -186,7 +217,7 @@ final class Scheduler implements SchedulerInterface
             return $lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i');
         });
 
-        return $dueTasks->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        return $dueTasks->filter(static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $executionStartDate = $task->getExecutionStartDate();
             $executionEndDate = $task->getExecutionEndDate();
 
@@ -203,7 +234,7 @@ final class Scheduler implements SchedulerInterface
             }
 
             if ($executionStartDate instanceof DateTimeImmutable) {
-                if ($task->getExecutionStartDate() === $synchronizedCurrentDate) {
+                if ($executionStartDate === $synchronizedCurrentDate) {
                     return true;
                 }
 
@@ -246,7 +277,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $rebootTasks = $this->getTasks()->filter(static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 

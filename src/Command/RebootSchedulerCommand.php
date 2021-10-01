@@ -81,7 +81,7 @@ final class RebootSchedulerCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
-        $tasks = $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $tasks = $this->scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
@@ -98,7 +98,7 @@ final class RebootSchedulerCommand extends Command
                 return self::SUCCESS;
             }
 
-            $table->addRows(array_map(fn (TaskInterface $task): array => [
+            $table->addRows(array_map(static fn (TaskInterface $task): array => [
                 $task->getName(),
                 get_class($task),
                 $task->getState(),
@@ -135,7 +135,7 @@ final class RebootSchedulerCommand extends Command
 
         $symfonyStyle->success('The scheduler have been rebooted, the following tasks have been executed');
 
-        $table->addRows(array_map(fn (TaskInterface $task): array => [
+        $table->addRows(array_map(static fn (TaskInterface $task): array => [
             $task->getName(),
             get_class($task),
             $task->getState(),

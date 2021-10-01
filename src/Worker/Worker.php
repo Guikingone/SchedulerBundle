@@ -23,8 +23,8 @@ final class Worker extends AbstractWorker
                     $this->stop();
                 }
 
-                $toExecuteTasks->walk(function (TaskInterface $task): void {
-                    $this->handleTask($task);
+                $toExecuteTasks->walk(function (TaskInterface $task) use ($toExecuteTasks): void {
+                    $this->handleTask($task, $toExecuteTasks);
                 });
 
                 if ($this->shouldStop($toExecuteTasks)) {

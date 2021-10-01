@@ -16,7 +16,6 @@ use Doctrine\DBAL\Schema\SchemaConfig;
 use JsonException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
@@ -118,9 +117,6 @@ final class DoctrineTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('warning');
-
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::exactly(2))->method('select')
             ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
@@ -156,7 +152,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), $logger);
+        ]));
 
         $list = $transport->list();
 
@@ -171,9 +167,6 @@ final class DoctrineTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('warning');
-
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::exactly(2))->method('select')
             ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
@@ -209,7 +202,7 @@ final class DoctrineTransportTest extends TestCase
             'table_name' => '_symfony_scheduler_tasks',
         ], $connection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), $logger);
+        ]));
 
         $list = $transport->list(true);
 

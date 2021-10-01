@@ -11,6 +11,7 @@ use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
@@ -102,6 +103,22 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     /**
      * @throws JsonException {@see json_encode()}
      */
+    public function onWorkerPaused(WorkerPausedEvent $event): void
+    {
+        $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
+
+        $this->hub->publish(new Update($this->updateUrl, json_encode([
+            'event' => 'worker.paused',
+            'body' => [
+                'options' => $configuration->toArray(),
+            ],
+        ], JSON_THROW_ON_ERROR)));
+    }
+
+    /**
+     * @throws JsonException {@see json_encode()}
+     */
     public function onWorkerStarted(WorkerStartedEvent $event): void
     {
         $worker = $event->getWorker();
@@ -179,6 +196,7 @@ final class MercureEventSubscriber implements EventSubscriberInterface
             TaskUnscheduledEvent::class => ['onTaskUnscheduled', -255],
             TaskExecutedEvent::class => ['onTaskExecuted', -255],
             TaskFailedEvent::class => ['onTaskFailed', -255],
+            WorkerPausedEvent::class => ['onWorkerPaused', -255],
             WorkerStartedEvent::class => ['onWorkerStarted', -255],
             WorkerStoppedEvent::class => ['onWorkerStopped', -255],
             WorkerForkedEvent::class => ['onWorkerForked', -255],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle;
 
+use Closure;
 use DateTimeZone;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
@@ -37,9 +38,25 @@ interface SchedulerInterface
     public function yieldTask(string $name, bool $async = false): void;
 
     /**
-     * Update a specific task, the name should NOT be changed, every metadata can.
+     * Determine if a task|set of due tasks that entered the runnable state should preempt the @param string $taskToPreempt.
+     *
+     * The decision is based on @param Closure $filter, if the closure returns true, the task(s) can preempt.
+     *
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     *
+     * {@internal The preemption is done in an "atomic approach", the currently running worker is paused,
+     *            the remaining tasks are retrieved then the worker is forked, once forked,
+     *            the new worker execute the preempting tasks then stop.
+     *            Once the new worker stopped, the "old" worker is restarted then the remaining tasks are executed.}
      */
-    public function update(string $taskName, TaskInterface $task): void;
+    public function preempt(string $taskToPreempt, Closure $filter): void;
+
+    /**
+     * Update a specific task, the name should NOT be changed, every metadata can.
+     *
+     * If @param bool $async is used, the action is performed asynchronously.
+     */
+    public function update(string $taskName, TaskInterface $task, bool $async = false): void;
 
     /**
      * Pause a specific task, when paused, a task cannot be executed by the worker (but it can be sent to it).

@@ -31,7 +31,7 @@ final class Probe implements ProbeInterface
      */
     public function getExecutedTasks(): int
     {
-        return $this->scheduler->getTasks()->filter(function (TaskInterface $task): bool {
+        return $this->scheduler->getTasks()->filter(static function (TaskInterface $task): bool {
             $lastExecutionDate = $task->getLastExecution();
             if (!$lastExecutionDate instanceof DateTimeImmutable) {
                 return false;
@@ -54,6 +54,6 @@ final class Probe implements ProbeInterface
      */
     public function getScheduledTasks(): int
     {
-        return $this->scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getScheduledAt())->count();
+        return $this->scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => null !== $task->getScheduledAt())->count();
     }
 }

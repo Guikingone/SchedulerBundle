@@ -6,7 +6,8 @@ namespace Tests\SchedulerBundle\Event;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskExecutingEvent;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -16,12 +17,14 @@ final class TaskExecutingEventTest extends TestCase
 {
     public function testEventIsConfigured(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $list = new TaskList();
+        $task = new NullTask('foo');
         $worker = $this->createMock(WorkerInterface::class);
 
-        $event = new TaskExecutingEvent($task, $worker);
+        $event = new TaskExecutingEvent($task, $worker, $list);
 
         self::assertSame($task, $event->getTask());
         self::assertSame($worker, $event->getWorker());
+        self::assertSame($list, $event->getCurrentTasks());
     }
 }

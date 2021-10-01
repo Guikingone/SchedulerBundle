@@ -31,6 +31,7 @@ interface WorkerInterface
      * An exception can be throw during the execution of the task, if so, it SHOULD be handled.
      *
      * A worker COULD dispatch the following events:
+     *
      *  - {@see WorkerStartedEvent}: Contain the worker instance BEFORE executing the task.
      *  - {@see TaskExecutingEvent}: Contain the task to executed BEFORE executing the task.
      *  - {@see TaskExecutedEvent}:  Contain the task to executed AFTER executing the task and its output (if defined).
@@ -44,6 +45,20 @@ interface WorkerInterface
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void;
 
     /**
+     * Allows to preempt the currently executed task.
+     *
+     * The preemption is done in an atomic approach:
+     *
+     *  - The worker retrieves the current tasks
+     *  - The worker is paused then forked
+     *  - The new worker try to execute the given @param TaskListInterface $preemptTaskList then stop
+     *  - The primary worker restart then try to execute the remaining tasks
+     *
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void;
+
+    /**
      * Allow to return a "fork" of the current worker,
      * the final implementation is up to each worker that implement the interface.
      *
@@ -53,6 +68,16 @@ interface WorkerInterface
 
     /**
      * Stop the worker and reset its internal state.
+     */
+    /**
+     * Pause the worker and store the currently executing task to resume it later when {@see WorkerInterface::restart()} is called.
+     *
+     * {@internal Be aware that the task can be stored even if the execution has succeed}
+     */
+    public function pause(): WorkerInterface;
+
+    /**
+     * Stop the worker, the internal state can be reset if required, the final implementation is up to the worker.
      */
     public function stop(): void;
 
@@ -71,7 +96,7 @@ interface WorkerInterface
     public function sleep(): void;
 
     /**
-     * Determine if the worker is currently running
+     * Determine if the worker is currently running, the implementation is up to the final class.
      */
     public function isRunning(): bool;
 

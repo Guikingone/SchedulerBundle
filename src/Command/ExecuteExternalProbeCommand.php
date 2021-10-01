@@ -59,7 +59,7 @@ final class ExecuteExternalProbeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new SymfonyStyle($input, $output);
-        $probeTasks = $this->scheduler->getDueTasks()->filter(fn (TaskInterface $task): bool => $task instanceof ProbeTask);
+        $probeTasks = $this->scheduler->getDueTasks()->filter(static fn (TaskInterface $task): bool => $task instanceof ProbeTask);
         if (0 === $probeTasks->count()) {
             $style->warning('No external probe found');
 
@@ -84,7 +84,7 @@ final class ExecuteExternalProbeCommand extends Command
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Path', 'Delay', 'Execution state']);
-        $table->addRows(array_map(fn (ProbeTask $task): array => [
+        $table->addRows(array_map(static fn (ProbeTask $task): array => [
             $task->getName(),
             $task->getExternalProbePath(),
             $task->getDelay(),

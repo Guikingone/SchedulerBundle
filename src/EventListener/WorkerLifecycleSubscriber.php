@@ -7,6 +7,7 @@ namespace SchedulerBundle\EventListener;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\WorkerForkedEvent;
+use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
@@ -24,6 +25,30 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
     public function __construct(LoggerInterface $logger = null)
     {
         $this->logger = $logger ?? new NullLogger();
+    }
+
+    public function onWorkerForked(WorkerForkedEvent $workerForkedEvent): void
+    {
+        $forkedWorker = $workerForkedEvent->getForkedWorker();
+        $forkedConfiguration = $forkedWorker->getConfiguration();
+
+        $newWorker = $workerForkedEvent->getNewWorker();
+        $configuration = $newWorker->getConfiguration();
+
+        $this->logger->info('The worker has been forked', [
+            'forkedWorker' => $forkedConfiguration->toArray(),
+            'newWorker' => $configuration->toArray(),
+        ]);
+    }
+
+    public function onWorkerPaused(WorkerPausedEvent $workerPausedEvent): void
+    {
+        $worker = $workerPausedEvent->getWorker();
+        $configuration = $worker->getConfiguration();
+
+        $this->logger->info('The worker has been paused', [
+            'options' => $configuration->toArray(),
+        ]);
     }
 
     public function onWorkerRestarted(WorkerRestartedEvent $workerRestartedEvent): void
@@ -71,31 +96,18 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         ]);
     }
 
-    public function onWorkerForked(WorkerForkedEvent $workerForkedEvent): void
-    {
-        $forkedWorker = $workerForkedEvent->getForkedWorker();
-        $forkedConfiguration = $forkedWorker->getConfiguration();
-
-        $newWorker = $workerForkedEvent->getNewWorker();
-        $newWorkerConfiguration = $newWorker->getConfiguration();
-
-        $this->logger->info('The worker has been forked', [
-            'forkedWorker' => $forkedConfiguration->toArray(),
-            'newWorker' => $newWorkerConfiguration->toArray(),
-        ]);
-    }
-
     /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {
         return [
+            WorkerForkedEvent::class => 'onWorkerForked',
+            WorkerPausedEvent::class => 'onWorkerPaused',
             WorkerRestartedEvent::class => 'onWorkerRestarted',
             WorkerRunningEvent::class => 'onWorkerRunning',
             WorkerStartedEvent::class => 'onWorkerStarted',
             WorkerStoppedEvent::class => 'onWorkerStopped',
-            WorkerForkedEvent::class => 'onWorkerForked',
         ];
     }
 }

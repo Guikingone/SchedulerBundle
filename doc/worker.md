@@ -37,7 +37,7 @@ some methods can be used to improve its usage:
 
 - `getRunners`: Return the injected runners.
 
-- `getOptions`: Return the current options of the worker (in the case of a forked one, the forked ones).
+- `getConfiguration`: Return the current configuration of the worker (in the case of a forked one, the forked one).
 
 ## Concepts
 

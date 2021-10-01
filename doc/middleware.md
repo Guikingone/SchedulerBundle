@@ -142,9 +142,13 @@ the required middlewares use a lower priority to prevent this edge case.
 This bundle allows you to interact with tasks, task list, scheduler and worker
 depending on your needs, to do so, your middleware must implement one or many of the following interfaces:
 
-| Event                                                                                            | Description                                                         |
-| -------------------------------------------------------------------------------------------------| --------------------------------------------------------------------|
-| [`PreExecutionMiddlewareInterface`](../src/Middleware/PreExecutionMiddlewareInterface.php)       | Allows you to interact with the task to execute                     |
-| [`PostExecutionMiddlewareInterface`](../src/Middleware/PostExecutionMiddlewareInterface.php)     | Allows you to interact with the lastly executed task and the worker |
-| [`PreSchedulingMiddlewareInterface`](../src/Middleware/PreSchedulingMiddlewareInterface.php)     | Allows you to interact with the task to schedule and the scheduler  |
-| [`PostSchedulingMiddlewareInterface`](../src/Middleware/PostSchedulingMiddlewareInterface.php)   | Allows you to interact with the scheduled task and the scheduler    |
+| Event                                                                                          | Description                                                                 |
+| -----------------------------------------------------------------------------------------------| ----------------------------------------------------------------------------|
+| [`PreExecutionMiddlewareInterface`](../src/Middleware/PreExecutionMiddlewareInterface.php)     | Allows you to interact with the task to execute                             |
+| [`PostExecutionMiddlewareInterface`](../src/Middleware/PostExecutionMiddlewareInterface.php)   | Allows you to interact with the lastly executed task and the worker         |
+| [`PreSchedulingMiddlewareInterface`](../src/Middleware/PreSchedulingMiddlewareInterface.php)   | Allows you to interact with the task to schedule and the scheduler          |
+| [`PostSchedulingMiddlewareInterface`](../src/Middleware/PostSchedulingMiddlewareInterface.php) | Allows you to interact with the scheduled task and the scheduler            |
+| [`RequiredMiddlewareInterface`](../src/Middleware/RequiredMiddlewareInterface.php)             | Allows you to force the middleware to be executed even when an error occurs |
+| [`OrderedMiddlewareInterface`](../src/Middleware/OrderedMiddlewareInterface.php)               | Allows you to define an order for the middleware execution                  |
+
+**Note**: Interfaces can be combined to handle specific use-cases.

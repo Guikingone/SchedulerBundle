@@ -28,6 +28,7 @@ The following events are dispatched
 | [`WorkerStoppedEvent`](../src/Event/WorkerStoppedEvent.php)                   | Runs when the worker has been stopped                                           |
 | [`WorkerForkedEvent`](../src/Event/WorkerForkedEvent.php)                     | Runs when the worker has been forked                                            |
 | [`WorkerSleepingEvent`](../src/Event/WorkerSleepingEvent.php)                 | Runs when the worker is currently sleeping                                      |
+| [`WorkerPausedEvent`](../src/Event/WorkerPausedEvent.php)                     | Runs when the worker has been paused                                            |
 
 Some events are stored in [TaskEventList](../src/Event/TaskEventList.php) (mainly for data collector usage), 
 the full list is available [here](../src/EventListener/TaskLoggerSubscriber.php).

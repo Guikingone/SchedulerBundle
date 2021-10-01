@@ -18,6 +18,10 @@ The scheduler provides several methods to help interact with tasks during the wh
 - `yieldTask`: Accept as task name as the only argument, the transport is used to dequeue and requeue the task,
                a transport call is performed to retrieve the task before removing it.
 
+- `preempt`: Accept a task name and a closure, the task allows to specify a due tasks that SHOULD be preempted
+             using the tasks filtered via the closure.
+             Once the tasks have been executed, they're removed from the current worker list.
+
 - `update`: Accept the task name to update with the new "task payload" as the second argument, 
             the transport is used to update the task.
 
@@ -52,6 +56,8 @@ Example: If the call is performed at 10:00:00 and the synchronized date does not
 
 The scheduler allows interacting with tasks using an asynchronous approach, internally, 
 the [Symfony/Messenger component](https://symfony.com/doc/current/messenger.html) is used.
+
+**More information in the [related documentation](messenger.md).**
 
 ### Scheduling task
 
@@ -119,6 +125,28 @@ final class Foo
     public function __invoke(SchedulerInterface $scheduler): void
     {
         $scheduler->pause('foo', true);
+    }
+}
+```
+
+### Updating
+
+_Introduced in `0.7`_
+
+Updating a task using the asynchronous approach requires to use the method third argument:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use SchedulerBundle\SchedulerInterface;
+
+final class Foo
+{
+    public function __invoke(SchedulerInterface $scheduler): void
+    {
+        $scheduler->pause('foo', new NullTask('foo'), true);
     }
 }
 ```

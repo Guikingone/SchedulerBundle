@@ -37,7 +37,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function find(TaskInterface $task): RunnerInterface
     {
-        $list = $this->filter(fn (RunnerInterface $runner): bool => $runner->support($task));
+        $list = $this->filter(static fn (RunnerInterface $runner): bool => $runner->support($task));
         if (0 === $list->count()) {
             throw new InvalidArgumentException('No runner found for this task');
         }

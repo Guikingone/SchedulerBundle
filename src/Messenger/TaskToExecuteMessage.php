@@ -9,7 +9,7 @@ use SchedulerBundle\Task\TaskInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskMessage
+final class TaskToExecuteMessage
 {
     private TaskInterface $task;
     private int $workerTimeout;

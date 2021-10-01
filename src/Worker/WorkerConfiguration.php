@@ -21,6 +21,7 @@ final class WorkerConfiguration
     private bool $shouldStop;
     private bool $shouldRetrieveTasksLazily;
     private bool $mustStrictlyCheckDate;
+    private ?TaskInterface $currentlyExecutedTask = null;
 
     private function __construct()
     {
@@ -29,6 +30,7 @@ final class WorkerConfiguration
     public static function create(): self
     {
         $self = new self();
+        $self->currentlyExecutedTask = null;
         $self->executedTasksCount = 0;
         $self->isFork = false;
         $self->forkedFrom = null;
@@ -38,9 +40,20 @@ final class WorkerConfiguration
         $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;
         $self->lastExecutedTask = null;
+        $self->forkedFrom = null;
         $self->mustStrictlyCheckDate = false;
 
         return $self;
+    }
+
+    public function getCurrentlyExecutedTask(): ?TaskInterface
+    {
+        return $this->currentlyExecutedTask;
+    }
+
+    public function setCurrentlyExecutedTask(?TaskInterface $task): void
+    {
+        $this->currentlyExecutedTask = $task;
     }
 
     public function getExecutedTasksCount(): int

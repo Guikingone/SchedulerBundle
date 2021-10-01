@@ -8,7 +8,10 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use RuntimeException;
+use SchedulerBundle\Event\WorkerPausedEvent;
+use SchedulerBundle\Event\WorkerRestartedEvent;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -126,10 +129,8 @@ final class WorkerTest extends TestCase
      */
     public function testWorkerCanBeForked(): void
     {
-        $runner = $this->createMock(RunnerInterface::class);
         $scheduler = $this->createMock(SchedulerInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(3))->method('dispatch');
@@ -137,10 +138,10 @@ final class WorkerTest extends TestCase
         $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker($scheduler, new RunnerRegistry([
-            $runner,
+            new NullTaskRunner(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
-        ]), $eventDispatcher, $lockFactory, $logger);
+        ]), $eventDispatcher, $lockFactory, new NullLogger());
 
         $configuration = WorkerConfiguration::create();
         $configuration->setSleepDurationDelay(5);
@@ -1351,6 +1352,7 @@ final class WorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
         $worker->execute(WorkerConfiguration::create());
 
@@ -1430,5 +1432,61 @@ final class WorkerTest extends TestCase
         self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
+    }
+
+    public function testWorkerCanBePaused(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
+
+        self::assertFalse($worker->isRunning());
+
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerPausedEvent($worker)));
+
+        $worker->pause();
+        self::assertFalse($worker->isRunning());
+    }
+
+    public function testWorkerCanBeRestarted(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
+
+        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerRestartedEvent($worker)));
+
+        self::assertFalse($worker->getConfiguration()->shouldStop());
+        self::assertFalse($worker->isRunning());
+
+        $worker->restart();
+
+        self::assertFalse($worker->isRunning());
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertTrue($worker->getConfiguration()->shouldStop());
     }
 }

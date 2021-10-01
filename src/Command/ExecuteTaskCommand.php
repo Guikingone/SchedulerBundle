@@ -110,17 +110,17 @@ final class ExecuteTaskCommand extends Command
 
         if ([] !== $names = $input->getOption('name')) {
             $executionOptions[] = sprintf('- Task(s) with the following name(s): %s', implode(', ', $names));
-            $tasks = $tasks->filter(fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
+            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
         }
 
         if ([] !== $expressions = $input->getOption('expression')) {
             $executionOptions[] = sprintf('- Task(s) with the following expression(s): %s', implode(', ', $expressions));
-            $tasks = $tasks->filter(fn (TaskInterface $task): bool => in_array($task->getExpression(), $expressions, true));
+            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => in_array($task->getExpression(), $expressions, true));
         }
 
         if ([] !== $tags = $input->getOption('tags')) {
             $executionOptions[] = sprintf('- Task(s) with the following tags(s): %s', implode(', ', $tags));
-            $tasks = $tasks->filter(fn (TaskInterface $task): bool => array_walk($tags, fn (string $tag): bool => in_array($tag, $task->getTags(), true)));
+            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => array_walk($tags, static fn (string $tag): bool => in_array($tag, $task->getTags(), true)));
         }
 
         $style->info([

@@ -17,7 +17,7 @@ final class MemoryUsagePolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        return $tasks->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionMemoryUsage() <=> $nextTask->getExecutionMemoryUsage());
+        return $tasks->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getExecutionMemoryUsage() <=> $nextTask->getExecutionMemoryUsage());
     }
 
     /**
