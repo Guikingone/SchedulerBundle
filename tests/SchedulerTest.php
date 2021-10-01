@@ -741,13 +741,8 @@ final class SchedulerTest extends TestCase
     /**
      * @throws Exception|Throwable {@see Scheduler::__construct()}
      */
-    public function testDueTasksCanBeReturnedWithPastExecutionStartDate(): void
+    public function testDueTasksCanBeReturnedWithCurrentExecutionStartDate(): void
     {
-        $task = new NullTask('foo', [
-            'execution_start_date' => '- 1 minute',
-            'execution_end_date' => '+ 5 minute',
-        ]);
-
         $scheduler = new Scheduler(
             'UTC',
             new InMemoryTransport([
@@ -759,7 +754,39 @@ final class SchedulerTest extends TestCase
             new EventDispatcher()
         );
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'execution_start_date' => 'now',
+            'execution_end_date' => '+ 5 minute',
+        ]));
+
+        $dueTasks = $scheduler->getDueTasks();
+        self::assertInstanceOf(TaskList::class, $dueTasks);
+        self::assertCount(1, $dueTasks);
+
+        $task = $dueTasks->get('foo');
+        self::assertSame('* * * * *', $task->getExpression());
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     */
+    public function testDueTasksCanBeReturnedWithPastExecutionStartDate(): void
+    {
+        $scheduler = new Scheduler(
+            'UTC',
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new SchedulerMiddlewareStack(),
+            new EventDispatcher()
+        );
+
+        $scheduler->schedule(new NullTask('foo', [
+            'execution_start_date' => '- 1 minute',
+            'execution_end_date' => '+ 5 minute',
+        ]));
 
         $dueTasks = $scheduler->getDueTasks();
         self::assertInstanceOf(TaskList::class, $dueTasks);
@@ -774,11 +801,6 @@ final class SchedulerTest extends TestCase
      */
     public function testDueTasksCanBeReturnedWithPastExecutionStartDateLazily(): void
     {
-        $task = new NullTask('foo', [
-            'execution_start_date' => '- 1 minute',
-            'execution_end_date' => '+ 5 minute',
-        ]);
-
         $scheduler = new Scheduler(
             'UTC',
             new InMemoryTransport([
@@ -790,7 +812,10 @@ final class SchedulerTest extends TestCase
             new EventDispatcher()
         );
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'execution_start_date' => '- 1 minute',
+            'execution_end_date' => '+ 5 minute',
+        ]));
 
         $dueTasks = $scheduler->getDueTasks(true);
         self::assertInstanceOf(LazyTaskList::class, $dueTasks);
@@ -1042,6 +1067,28 @@ final class SchedulerTest extends TestCase
         $dueTasks = $scheduler->getDueTasks(true);
         self::assertInstanceOf(LazyTaskList::class, $dueTasks);
         self::assertCount(1, $dueTasks);
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function testDueTasksCanBeReturnedWithCurrentStartDate(): void
+    {
+        $task = new NullTask('foo', [
+            'expression' => '* * * * *',
+            'execution_start_date' => 'now',
+            'last_execution' => new DateTimeImmutable('- 2 minutes'),
+        ]);
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+            'execution_mode' => 'first_in_first_out',
+        ], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+
+        $scheduler->schedule($task);
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
     /**
