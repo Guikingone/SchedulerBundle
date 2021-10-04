@@ -107,8 +107,6 @@ use SchedulerBundle\Transport\Configuration\ConfigurationInterface as TransportC
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
-use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
-use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;

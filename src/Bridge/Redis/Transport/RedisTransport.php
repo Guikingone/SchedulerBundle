@@ -6,11 +6,6 @@ namespace SchedulerBundle\Bridge\Redis\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\AbstractExternalTransport;
-use SchedulerBundle\Task\LazyTask;
-use SchedulerBundle\Task\LazyTaskList;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\Transport\AbstractTransport;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
