@@ -15,12 +15,12 @@ use function strpos;
 final class LongTailTransportFactory extends AbstractCompoundTransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
+     * @var TransportFactoryInterface[]
      */
     private iterable $transportFactories;
 
     /**
-     * @param iterable|TransportFactoryInterface[] $transportFactories
+     * @param TransportFactoryInterface[] $transportFactories
      */
     public function __construct(iterable $transportFactories)
     {
@@ -36,7 +36,7 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ): LongTailTransport {
-        return new LongTailTransport($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator));
+        return new LongTailTransport($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $configuration, $serializer, $schedulePolicyOrchestrator), $configuration);
     }
 
     /**

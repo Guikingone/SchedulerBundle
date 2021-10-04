@@ -44,10 +44,10 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     ) {
         $this->configuration = $configuration;
         $this->driverConnection = $dbalConnection;
-        parent::__construct($configuration, $dbalConnection);
-
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($configuration, $dbalConnection);
     }
 
     /**

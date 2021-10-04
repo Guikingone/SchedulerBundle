@@ -56,7 +56,7 @@ abstract class AbstractDoctrineConnection
 
     protected function getSchema(): Schema
     {
-        $schema = new Schema([], [], $this->driverConnection->getSchemaManager()->createSchemaConfig());
+        $schema = new Schema([], [], $this->driverConnection->createSchemaManager()->createSchemaConfig());
         $this->addTableToSchema($schema);
 
         return $schema;

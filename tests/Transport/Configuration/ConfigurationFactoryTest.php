@@ -10,10 +10,15 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FailOverConfiguration;
 use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\FilesystemConfiguration;
 use SchedulerBundle\Transport\Configuration\FilesystemConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\LazyConfiguration;
+use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -79,6 +84,14 @@ final class ConfigurationFactoryTest extends TestCase
                 new InMemoryConfigurationFactory(),
                 new FilesystemConfigurationFactory(),
             ]),
+            new LazyConfigurationFactory([
+                new InMemoryConfigurationFactory(),
+                new FilesystemConfigurationFactory(),
+                new FailOverConfigurationFactory([
+                    new InMemoryConfigurationFactory(),
+                    new FilesystemConfigurationFactory(),
+                ]),
+            ]),
         ]);
 
         self::assertInstanceOf($expectedConfiguration, $factory->build($dsn, $serializer));
@@ -95,5 +108,6 @@ final class ConfigurationFactoryTest extends TestCase
         yield 'Filesystem - Full' => ['configuration://filesystem', FilesystemConfiguration::class];
         yield 'FailOver - Short' => ['configuration://failover(configuration://memory || configuration://fs)', FailOverConfiguration::class];
         yield 'FailOver - Full' => ['configuration://fo(configuration://memory || configuration://fs)', FailOverConfiguration::class];
+        yield 'Lazy' => ['configuration://lazy(configuration://memory)', LazyConfiguration::class];
     }
 }

@@ -35,7 +35,7 @@ final class LazyTransportFactory implements TransportFactoryInterface
     public function createTransport(Dsn $dsn, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): LazyTransport
     {
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getRoot(), $configuration)) {
+            if (!$factory->support($dsn->getOptions()[0], $configuration)) {
                 continue;
             }
 

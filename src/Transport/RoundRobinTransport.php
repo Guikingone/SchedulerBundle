@@ -35,7 +35,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
         $this->sleepingTransports = new SplObjectStorage();
 
-        parent::__construct($transports);
+        parent::__construct($transports, $configuration);
     }
 
     /**

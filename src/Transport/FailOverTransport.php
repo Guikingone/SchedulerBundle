@@ -35,7 +35,7 @@ final class FailOverTransport extends AbstractCompoundTransport
 
         $this->failedTransports = new SplObjectStorage();
 
-        parent::__construct($transports);
+        parent::__construct($transports, $configuration);
     }
 
     /**

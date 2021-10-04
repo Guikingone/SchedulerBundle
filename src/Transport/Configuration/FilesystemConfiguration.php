@@ -102,7 +102,7 @@ final class FilesystemConfiguration extends AbstractConfiguration
     {
     }
 
-    private function fileExist(string $taskName): bool
+    private function fileExist(string $key): bool
     {
         $configuration = $this->getConfiguration()->toArray();
 

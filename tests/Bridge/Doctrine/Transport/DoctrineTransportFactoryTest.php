@@ -129,7 +129,9 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        self::assertInstanceOf(DoctrineTransport::class, $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], $serializer, $schedulePolicyOrchestrator));
+        self::assertInstanceOf(DoctrineTransport::class, $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), $serializer, $schedulePolicyOrchestrator));
     }
 
     public function testFactoryReturnTransportWithTableName(): void
@@ -143,7 +145,9 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), $serializer, $schedulePolicyOrchestrator);
 
         self::assertInstanceOf(DoctrineTransport::class, $transport);
         self::assertSame('test', $transport->getConfiguration()->get('table_name'));

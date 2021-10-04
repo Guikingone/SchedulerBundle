@@ -30,18 +30,18 @@ final class FailOverConfigurationFactory implements ConfigurationFactoryInterfac
     /**
      * {@inheritdoc}
      */
-    public function create(Dsn $dsn, SerializerInterface $serializer): ConfigurationInterface
+    public function create(Dsn $dsn, SerializerInterface $serializer): FailOverConfiguration
     {
         if ([] === $this->factories) {
             throw new RuntimeException('No factory found');
         }
 
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getRoot())) {
+            if (!$factory->support($dsn->getOptions()[0])) {
                 continue;
             }
 
-            return $factory->create($dsn, $serializer);
+            return new FailOverConfiguration();
         }
 
         throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));

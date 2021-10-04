@@ -126,7 +126,10 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 
-    public function testConnectionCanListHydratedTasks(): void
+    /**
+     * @group foo
+     */
+    public function testConnectionCanListTasks(): void
     {
         $this->connection->setup();
         $this->connection->create(new NullTask('foo'));

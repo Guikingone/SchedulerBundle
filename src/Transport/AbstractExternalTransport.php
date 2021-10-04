@@ -35,7 +35,7 @@ abstract class AbstractExternalTransport extends AbstractTransport
     {
         $storedTasks = new TaskList($this->connection->list()->toArray());
 
-        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $storedTasks);
+        $list = $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $storedTasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

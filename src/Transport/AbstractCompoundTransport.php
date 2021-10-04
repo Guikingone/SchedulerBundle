@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use Closure;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -22,9 +23,13 @@ abstract class AbstractCompoundTransport extends AbstractTransport
     /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(iterable $transports)
-    {
+    public function __construct(
+        iterable $transports,
+        ConfigurationInterface $configuration
+    ) {
         $this->transports = $transports;
+
+        parent::__construct($configuration);
     }
 
     /**
