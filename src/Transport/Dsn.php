@@ -19,7 +19,6 @@ use function urldecode;
  */
 final class Dsn
 {
-    private string $root;
     private string $scheme;
     private string $host;
     private ?string $user;

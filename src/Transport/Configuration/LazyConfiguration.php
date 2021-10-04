@@ -166,7 +166,7 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    private function initialize(): void
+    public function initialize(): void
     {
         if ($this->initialized) {
             return;

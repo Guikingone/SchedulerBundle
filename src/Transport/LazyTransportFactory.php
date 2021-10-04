@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
 use function strpos;
@@ -31,14 +32,14 @@ final class LazyTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): LazyTransport
+    public function createTransport(Dsn $dsn, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): LazyTransport
     {
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getOptions()[0])) {
+            if (!$factory->support($dsn->getRoot(), $configuration)) {
                 continue;
             }
 
-            return new LazyTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
+            return new LazyTransport($factory->createTransport($dsn, $configuration, $serializer, $schedulePolicyOrchestrator));
         }
 
         throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));
@@ -47,7 +48,7 @@ final class LazyTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function support(string $dsn, array $options = []): bool
+    public function support(string $dsn, ConfigurationInterface $configuration): bool
     {
         return 0 === strpos($dsn, 'lazy://');
     }

@@ -39,7 +39,6 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
-use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
@@ -89,7 +88,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('setTimezone');
         $task->expects(self::never())->method('isQueued');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -110,7 +109,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getTimezone')->willReturn(new DateTimeZone('Europe/Paris'));
         $task->expects(self::never())->method('isQueued');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -131,7 +130,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): bool => false);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -157,7 +156,7 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('isQueued');
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): int => 1 + 1);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -190,9 +189,9 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -224,9 +223,9 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -258,9 +257,9 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -292,9 +291,9 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
         $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -324,9 +323,9 @@ final class SchedulerTest extends TestCase
             [new TaskUnscheduledEvent('foo')]
         );
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -352,9 +351,9 @@ final class SchedulerTest extends TestCase
         $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
         $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => true);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -377,9 +376,9 @@ final class SchedulerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->with(new TaskToExecuteMessage($task))->willReturn(new Envelope(new stdClass()));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus);
         $scheduler->schedule($task);
@@ -402,9 +401,9 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new TaskScheduledEvent($task)));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher, $bus);
 
@@ -748,9 +747,9 @@ final class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -835,9 +834,9 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCanBeUnScheduled(TaskInterface $task): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1085,9 +1084,9 @@ final class SchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 2 minutes'),
         ]);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1451,9 +1450,9 @@ final class SchedulerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
@@ -1499,7 +1498,9 @@ final class SchedulerTest extends TestCase
         $pdoConnection = new PDO(sprintf('sqlite://%s/tasks.db', sys_get_temp_dir()));
         $pdoConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
@@ -1607,7 +1608,9 @@ final class SchedulerTest extends TestCase
     {
         $task = new NullTask('foo');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1624,7 +1627,9 @@ final class SchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::never())->method('addListener');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 
@@ -1642,7 +1647,9 @@ final class SchedulerTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher);
 

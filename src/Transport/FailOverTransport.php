@@ -6,8 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SplObjectStorage;
 use Throwable;
@@ -23,15 +21,12 @@ final class FailOverTransport extends AbstractCompoundTransport
     private SplObjectStorage $failedTransports;
 
     /**
-     * @var TransportInterface[]
-     */
-    private iterable $transports;
-
-    /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(iterable $transports, ConfigurationInterface $configuration)
-    {
+    public function __construct(
+        iterable $transports,
+        ConfigurationInterface $configuration
+    ) {
         $configuration->init([
             'mode' => 'normal',
         ], [
