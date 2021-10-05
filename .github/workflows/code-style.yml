@@ -18,7 +18,7 @@ jobs:
       matrix:
         php-versions: ['7.4', '8.0']
         composer-dependencies: ['highest', 'lowest']
-        os: ['ubuntu-latest', 'macOS-latest']
+        os: ['ubuntu-latest']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
