@@ -42,7 +42,7 @@ final class ConnectionTest extends TestCase
 
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -54,7 +54,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -88,7 +88,7 @@ final class ConnectionTest extends TestCase
 
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -100,7 +100,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -131,7 +131,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -154,7 +154,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -188,7 +188,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -215,7 +215,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -254,7 +254,7 @@ final class ConnectionTest extends TestCase
 
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
@@ -275,7 +275,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -307,7 +307,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -330,7 +330,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -369,7 +369,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -392,7 +392,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -437,7 +437,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -474,7 +474,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -494,7 +494,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -539,7 +539,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -576,7 +576,7 @@ final class ConnectionTest extends TestCase
         $queryBuilder = $this->getQueryBuilderMock();
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('where')
@@ -596,7 +596,7 @@ final class ConnectionTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);

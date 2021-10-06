@@ -58,16 +58,16 @@ final class Connection implements ConnectionInterface
     public function list(): TaskListInterface
     {
         $existingTasksCount = $this->createQueryBuilder()
-            ->select((new Expr())->countDistinct('t.id'))
+            ->select(sprintf('%s AS count', (new Expr())->countDistinct('t.id')))
         ;
 
         $statement = $this->executeQuery(
             $existingTasksCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTasksCount->getParameters(),
             $existingTasksCount->getParameterTypes()
-        )->fetchColumn();
+        )->fetch();
 
-        if ('0' === $statement) {
+        if ('0' === $statement['count']) {
             return new TaskList();
         }
 
@@ -91,7 +91,7 @@ final class Connection implements ConnectionInterface
     public function get(string $taskName): TaskInterface
     {
         $qb = $this->createQueryBuilder();
-        $existingTaskCount = $qb->select((new Expr())->countDistinct('t.id'))
+        $existingTaskCount = $qb->select(sprintf('%s AS count', (new Expr())->countDistinct('t.id')))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter(':name', $taskName, ParameterType::STRING)
         ;
@@ -100,9 +100,9 @@ final class Connection implements ConnectionInterface
             $existingTaskCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskCount->getParameters(),
             $existingTaskCount->getParameterTypes()
-        )->fetchColumn();
+        )->fetch();
 
-        if ('0' === $statement) {
+        if ('0' === $statement['count']) {
             throw new TransportException(sprintf('The task "%s" cannot be found', $taskName));
         }
 
@@ -137,7 +137,7 @@ final class Connection implements ConnectionInterface
     public function create(TaskInterface $task): void
     {
         $qb = $this->createQueryBuilder();
-        $existingTaskQuery = $qb->select((new Expr())->countDistinct('t.id'))
+        $existingTaskQuery = $qb->select(sprintf('%s AS count', (new Expr())->countDistinct('t.id')))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter(':name', $task->getName(), ParameterType::STRING)
         ;
@@ -146,9 +146,9 @@ final class Connection implements ConnectionInterface
             $existingTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
-        )->fetchColumn();
+        )->fetch();
 
-        if ('0' !== $existingTask) {
+        if ('0' !== $existingTask['count']) {
             return;
         }
 

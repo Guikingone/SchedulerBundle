@@ -119,7 +119,7 @@ final class DoctrineTransportTest extends TestCase
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -128,19 +128,19 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id)');
+        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id) as count');
 
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
         $connection->expects(self::once())->method('executeQuery')->with(
-            self::equalTo('COUNT(DISTINCT t.id) FOR UPDATE'),
+            self::equalTo('COUNT(DISTINCT t.id) as count FOR UPDATE'),
             self::equalTo([]),
             self::equalTo([])
         )->willReturn($statement);
@@ -169,7 +169,7 @@ final class DoctrineTransportTest extends TestCase
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -178,19 +178,19 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
-        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id)');
+        $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id) as count');
 
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
         $connection->expects(self::once())->method('executeQuery')->with(
-            self::equalTo('COUNT(DISTINCT t.id) FOR UPDATE'),
+            self::equalTo('COUNT(DISTINCT t.id) as count FOR UPDATE'),
             self::equalTo([]),
             self::equalTo([])
         )->willReturn($statement);
@@ -224,7 +224,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -255,7 +255,7 @@ final class DoctrineTransportTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('transactional')->willReturn($task);
@@ -288,7 +288,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -319,7 +319,7 @@ final class DoctrineTransportTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('transactional')->willReturn($task);
@@ -361,7 +361,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expression);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -377,7 +377,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT COUNT(DISTINCT t.id) FROM _symfony_scheduler_tasks t WHERE t.task_name = :name')
+            ->willReturn('SELECT COUNT(DISTINCT t.id) as count FROM _symfony_scheduler_tasks t WHERE t.task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([
@@ -394,7 +394,7 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -429,7 +429,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expression);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -445,7 +445,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
-            ->willReturn('SELECT COUNT(DISTINCT t.id) FROM _symfony_scheduler_tasks t WHERE t.task_name = :name')
+            ->willReturn('SELECT COUNT(DISTINCT t.id) as count FROM _symfony_scheduler_tasks t WHERE t.task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([
@@ -462,7 +462,7 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '0']);
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -519,7 +519,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -550,7 +550,7 @@ final class DoctrineTransportTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -591,7 +591,7 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $queryBuilder->expects(self::once())->method('expr')->willReturn($expressionBuilder);
         $queryBuilder->expects(self::exactly(2))->method('select')
-            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id)')])
+            ->withConsecutive([self::equalTo('t.*')], [self::equalTo('COUNT(DISTINCT t.id) AS count')])
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('from')
@@ -622,7 +622,7 @@ final class DoctrineTransportTest extends TestCase
         ;
 
         $statement = $this->createMock(ResultStatement::class);
-        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
+        $statement->expects(self::once())->method('fetch')->willReturn(['count' => '1']);
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
