@@ -66,7 +66,7 @@ rector-dry: rector.php
 
 tests: ## Launch the PHPUnit tests
 tests: phpunit.xml.dist autoload
-	$(PHP) vendor/bin/phpunit tests
+	$(PHP) vendor/bin/phpunit tests -v
 
 infection: ## Launch Infection
 infection: infection.json.dist autoload

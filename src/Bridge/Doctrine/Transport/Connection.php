@@ -93,7 +93,7 @@ final class Connection implements ConnectionInterface
         $qb = $this->createQueryBuilder();
         $existingTaskCount = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
-            ->setParameter(':name', $taskName, ParameterType::STRING)
+            ->setParameter('name', $taskName, ParameterType::STRING)
         ;
 
         $statement = $this->executeQuery(
@@ -110,7 +110,7 @@ final class Connection implements ConnectionInterface
             return $this->driverConnection->transactional(function () use ($taskName): TaskInterface {
                 $queryBuilder = $this->createQueryBuilder();
                 $queryBuilder->where($queryBuilder->expr()->eq('t.task_name', ':name'))
-                    ->setParameter(':name', $taskName, ParameterType::STRING)
+                    ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
 
                 $statement = $this->executeQuery(
@@ -139,7 +139,7 @@ final class Connection implements ConnectionInterface
         $qb = $this->createQueryBuilder();
         $existingTaskQuery = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
-            ->setParameter(':name', $task->getName(), ParameterType::STRING)
+            ->setParameter('name', $task->getName(), ParameterType::STRING)
         ;
 
         $existingTask = $this->executeQuery(
@@ -160,8 +160,8 @@ final class Connection implements ConnectionInterface
                         'task_name' => ':name',
                         'body' => ':body',
                     ])
-                    ->setParameter(':name', $task->getName(), ParameterType::STRING)
-                    ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
+                    ->setParameter('name', $task->getName(), ParameterType::STRING)
+                    ->setParameter('body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
                 /** @var Statement $statement */
@@ -191,8 +191,8 @@ final class Connection implements ConnectionInterface
                 $queryBuilder->update($this->configuration['table_name'])
                     ->set('body', ':body')
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
-                    ->setParameter(':name', $taskName, ParameterType::STRING)
-                    ->setParameter(':body', $this->serializer->serialize($updatedTask, 'json'), ParameterType::STRING)
+                    ->setParameter('name', $taskName, ParameterType::STRING)
+                    ->setParameter('body', $this->serializer->serialize($updatedTask, 'json'), ParameterType::STRING)
                 ;
 
                 $connection->executeQuery(
@@ -253,7 +253,7 @@ final class Connection implements ConnectionInterface
                 $queryBuilder = $this->createQueryBuilder();
                 $queryBuilder->delete($this->configuration['table_name'])
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
-                    ->setParameter(':name', $taskName, ParameterType::STRING)
+                    ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
 
                 /** @var Statement $statement */
