@@ -6,8 +6,7 @@ namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Result;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
@@ -19,6 +18,7 @@ use Doctrine\DBAL\Schema\SchemaConfig;
 use Doctrine\DBAL\Schema\Sequence;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection as DoctrineConnection;
@@ -53,8 +53,8 @@ final class ConnectionTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -99,8 +99,8 @@ final class ConnectionTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameters')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -153,8 +153,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -214,8 +214,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -274,8 +274,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -329,8 +329,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -391,8 +391,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -436,8 +436,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -493,8 +493,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -538,8 +538,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
@@ -595,8 +595,8 @@ final class ConnectionTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);

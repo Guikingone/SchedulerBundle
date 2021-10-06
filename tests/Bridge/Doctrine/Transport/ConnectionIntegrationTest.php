@@ -55,7 +55,6 @@ final class ConnectionIntegrationTest extends TestCase
             new PhpDocExtractor(),
             new ReflectionExtractor(),
         ]));
-        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
         $serializer = new Serializer([
             new TaskNormalizer(
@@ -64,7 +63,7 @@ final class ConnectionIntegrationTest extends TestCase
                 new DateIntervalNormalizer(),
                 $objectNormalizer,
                 new NotificationTaskBagNormalizer($objectNormalizer),
-                $lockTaskBagNormalizer
+                new AccessLockBagNormalizer($objectNormalizer)
             ),
             new DateTimeNormalizer(),
             new DateIntervalNormalizer(),

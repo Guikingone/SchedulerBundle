@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
+use Exception;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
@@ -64,7 +65,7 @@ final class Connection implements ConnectionInterface
             $existingTasksCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTasksCount->getParameters(),
             $existingTasksCount->getParameterTypes()
-        )->fetchOne();
+        )->fetchColumn();
 
         if ('0' === $statement) {
             return new TaskList();
@@ -73,7 +74,7 @@ final class Connection implements ConnectionInterface
         try {
             return $this->driverConnection->transactional(function (): TaskListInterface {
                 $statement = $this->executeQuery($this->createQueryBuilder()->getSQL());
-                $tasks = $statement->fetchAllAssociative();
+                $tasks = $statement->fetchAll();
 
                 $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
 
@@ -99,7 +100,7 @@ final class Connection implements ConnectionInterface
             $existingTaskCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskCount->getParameters(),
             $existingTaskCount->getParameterTypes()
-        )->fetchOne();
+        )->fetchColumn();
 
         if ('0' === $statement) {
             throw new TransportException(sprintf('The task "%s" cannot be found', $taskName));
@@ -118,7 +119,7 @@ final class Connection implements ConnectionInterface
                     $queryBuilder->getParameterTypes()
                 );
 
-                $data = $statement->fetchAssociative();
+                $data = $statement->fetch();
                 if (false === $data) {
                     throw new LogicException('The desired task cannot be found.');
                 }
@@ -145,7 +146,7 @@ final class Connection implements ConnectionInterface
             $existingTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
-        )->fetchOne();
+        )->fetchColumn();
 
         if ('0' !== $existingTask) {
             return;
@@ -321,7 +322,7 @@ final class Connection implements ConnectionInterface
         $schemaDiff = $comparator->compare($this->driverConnection->getSchemaManager()->createSchema(), $this->getSchema());
 
         foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
-            $this->driverConnection->executeStatement($sql);
+            $this->driverConnection->executeQuery($sql);
         }
     }
 
@@ -337,7 +338,7 @@ final class Connection implements ConnectionInterface
      * @throws Exception
      * @throws Throwable
      */
-    private function executeQuery(string $sql, array $parameters = [], array $types = [])
+    private function executeQuery(string $sql, array $parameters = [], array $types = []): ResultStatement
     {
         try {
             return $this->driverConnection->executeQuery($sql, $parameters, $types);

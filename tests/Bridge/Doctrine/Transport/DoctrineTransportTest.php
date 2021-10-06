@@ -6,7 +6,7 @@ namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Result;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
@@ -133,8 +133,8 @@ final class DoctrineTransportTest extends TestCase
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -183,8 +183,8 @@ final class DoctrineTransportTest extends TestCase
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -254,8 +254,8 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('transactional')->willReturn($task);
@@ -318,8 +318,8 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('transactional')->willReturn($task);
@@ -393,8 +393,8 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform = $this->createMock(AbstractPlatform::class);
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -461,8 +461,8 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform = $this->createMock(AbstractPlatform::class);
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('0');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -549,8 +549,8 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
@@ -621,8 +621,8 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn([':name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
-        $statement->expects(self::once())->method('fetchOne')->willReturn('1');
+        $statement = $this->createMock(ResultStatement::class);
+        $statement->expects(self::once())->method('fetchColumn')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
