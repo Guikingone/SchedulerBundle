@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -164,7 +163,6 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(),
                     $query->getParameters(),
@@ -256,7 +254,6 @@ final class Connection implements ConnectionInterface
                     ->setParameter(':name', $taskName, ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),
@@ -343,7 +340,7 @@ final class Connection implements ConnectionInterface
     private function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
         try {
-            $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->driverConnection->executeQuery($sql, $parameters, $types);
         } catch (Throwable $throwable) {
             if ($this->driverConnection->isTransactionActive()) {
                 throw $throwable;
@@ -353,10 +350,8 @@ final class Connection implements ConnectionInterface
                 $this->setup();
             }
 
-            $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->driverConnection->executeQuery($sql, $parameters, $types);
         }
-
-        return $stmt;
     }
 
     private function getSchema(): Schema
