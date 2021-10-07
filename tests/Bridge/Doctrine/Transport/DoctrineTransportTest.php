@@ -240,7 +240,7 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
             ->with(
-                self::equalTo(':name'),
+                self::equalTo('name'),
                 self::equalTo('foo'),
                 self::equalTo(ParameterType::STRING)
             )
@@ -249,9 +249,9 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn(['name' => 'foo']);
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -304,7 +304,7 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
             ->with(
-                self::equalTo(':name'),
+                self::equalTo('name'),
                 self::equalTo('foo'),
                 self::equalTo(ParameterType::STRING)
             )
@@ -313,9 +313,9 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn(['name' => 'foo']);
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -373,7 +373,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'), self::equalTo(ParameterType::STRING))
+            ->with(self::equalTo('name'), self::equalTo('foo'), self::equalTo(ParameterType::STRING))
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
@@ -381,12 +381,12 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([
-                ':name' => 'foo',
+                'name' => 'foo',
             ])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
             ->willReturn([
-                ':name' => ParameterType::STRING,
+                'name' => ParameterType::STRING,
             ])
         ;
 
@@ -441,7 +441,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'), self::equalTo(ParameterType::STRING))
+            ->with(self::equalTo('name'), self::equalTo('foo'), self::equalTo(ParameterType::STRING))
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
@@ -449,12 +449,12 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
             ->willReturn([
-                ':name' => 'foo',
+                'name' => 'foo',
             ])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
             ->willReturn([
-                ':name' => ParameterType::STRING,
+                'name' => ParameterType::STRING,
             ])
         ;
 
@@ -535,7 +535,7 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
             ->with(
-                self::equalTo(':name'),
+                self::equalTo('name'),
                 self::equalTo('foo'),
                 self::equalTo(ParameterType::STRING)
             )
@@ -544,9 +544,9 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn(['name' => 'foo']);
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -607,7 +607,7 @@ final class DoctrineTransportTest extends TestCase
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
             ->with(
-                self::equalTo(':name'),
+                self::equalTo('name'),
                 self::equalTo('foo'),
                 self::equalTo(ParameterType::STRING)
             )
@@ -616,9 +616,9 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
-        $queryBuilder->expects(self::once())->method('getParameters')->willReturn([':name' => 'foo']);
+        $queryBuilder->expects(self::once())->method('getParameters')->willReturn(['name' => 'foo']);
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
