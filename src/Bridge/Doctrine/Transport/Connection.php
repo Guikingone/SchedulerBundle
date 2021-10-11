@@ -8,8 +8,6 @@ use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
@@ -17,7 +15,6 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
-use SchedulerBundle\Task\AbstractTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -30,7 +27,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Connection implements ConnectionInterface
+final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
     private array $configuration;
     private DbalConnection $driverConnection;
@@ -50,6 +47,8 @@ final class Connection implements ConnectionInterface
         $this->driverConnection = $dbalConnection;
         $this->serializer = $serializer;
         $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($dbalConnection);
     }
 
     /**
@@ -57,7 +56,7 @@ final class Connection implements ConnectionInterface
      */
     public function list(): TaskListInterface
     {
-        $existingTasksCount = $this->createQueryBuilder()
+        $existingTasksCount = $this->createQueryBuilder($this->configuration['table_name'], 't')
             ->select((new Expr())->countDistinct('t.id'))
         ;
 
@@ -73,7 +72,7 @@ final class Connection implements ConnectionInterface
 
         try {
             return $this->driverConnection->transactional(function (): TaskListInterface {
-                $statement = $this->executeQuery($this->createQueryBuilder()->getSQL());
+                $statement = $this->executeQuery($this->createQueryBuilder($this->configuration['table_name'], 't')->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
                 $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
@@ -90,7 +89,7 @@ final class Connection implements ConnectionInterface
      */
     public function get(string $taskName): TaskInterface
     {
-        $qb = $this->createQueryBuilder();
+        $qb = $this->createQueryBuilder($this->configuration['table_name'], 't');
         $existingTaskCount = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter('name', $taskName, ParameterType::STRING)
@@ -108,7 +107,7 @@ final class Connection implements ConnectionInterface
 
         try {
             return $this->driverConnection->transactional(function () use ($taskName): TaskInterface {
-                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
                 $queryBuilder->where($queryBuilder->expr()->eq('t.task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
@@ -136,7 +135,7 @@ final class Connection implements ConnectionInterface
      */
     public function create(TaskInterface $task): void
     {
-        $qb = $this->createQueryBuilder();
+        $qb = $this->createQueryBuilder($this->configuration['table_name'], 't');
         $existingTaskQuery = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter('name', $task->getName(), ParameterType::STRING)
@@ -154,7 +153,7 @@ final class Connection implements ConnectionInterface
 
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($task): void {
-                $query = $this->createQueryBuilder()
+                $query = $this->createQueryBuilder($this->configuration['table_name'], 't')
                     ->insert($this->configuration['table_name'])
                     ->values([
                         'task_name' => ':name',
@@ -187,7 +186,7 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName, $updatedTask): void {
-                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
                 $queryBuilder->update($this->configuration['table_name'])
                     ->set('body', ':body')
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
@@ -217,7 +216,7 @@ final class Connection implements ConnectionInterface
                 throw new LogicException(sprintf('The task "%s" is already paused', $taskName));
             }
 
-            $task->setState(AbstractTask::PAUSED);
+            $task->setState(TaskInterface::PAUSED);
 
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
@@ -236,7 +235,7 @@ final class Connection implements ConnectionInterface
                 throw new LogicException(sprintf('The task "%s" is already enabled', $taskName));
             }
 
-            $task->setState(AbstractTask::ENABLED);
+            $task->setState(TaskInterface::ENABLED);
             $this->update($taskName, $task);
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);
@@ -250,7 +249,7 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
-                $queryBuilder = $this->createQueryBuilder();
+                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
                 $queryBuilder->delete($this->configuration['table_name'])
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
@@ -279,7 +278,9 @@ final class Connection implements ConnectionInterface
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection): void {
-                $queryBuilder = $this->createQueryBuilder()->delete($this->configuration['table_name']);
+                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't')
+                    ->delete($this->configuration['table_name'])
+                ;
 
                 $connection->executeQuery($queryBuilder->getSQL());
             });
@@ -315,59 +316,7 @@ final class Connection implements ConnectionInterface
         $this->addTableToSchema($schema);
     }
 
-    /**
-     * @throws Exception
-     */
-    private function updateSchema(): void
-    {
-        $comparator = new Comparator();
-        $schemaDiff = $comparator->compare($this->driverConnection->getSchemaManager()->createSchema(), $this->getSchema());
-
-        foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
-            $this->driverConnection->executeStatement($sql);
-        }
-    }
-
-    private function createQueryBuilder(): QueryBuilder
-    {
-        return $this->driverConnection->createQueryBuilder()
-            ->select('t.*')
-            ->from($this->configuration['table_name'], 't')
-        ;
-    }
-
-    /**
-     * @throws Exception
-     * @throws Throwable
-     */
-    private function executeQuery(string $sql, array $parameters = [], array $types = [])
-    {
-        try {
-            $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
-        } catch (Throwable $throwable) {
-            if ($this->driverConnection->isTransactionActive()) {
-                throw $throwable;
-            }
-
-            if ($this->configuration['auto_setup']) {
-                $this->setup();
-            }
-
-            $stmt = $this->driverConnection->executeQuery($sql, $parameters, $types);
-        }
-
-        return $stmt;
-    }
-
-    private function getSchema(): Schema
-    {
-        $schema = new Schema([], [], $this->driverConnection->getSchemaManager()->createSchemaConfig());
-        $this->addTableToSchema($schema);
-
-        return $schema;
-    }
-
-    private function addTableToSchema(Schema $schema): void
+    protected function addTableToSchema(Schema $schema): void
     {
         $table = $schema->createTable($this->configuration['table_name']);
         $table->addColumn('id', Types::BIGINT)
@@ -383,5 +332,25 @@ final class Connection implements ConnectionInterface
 
         $table->setPrimaryKey(['id']);
         $table->addIndex(['task_name'], '_symfony_scheduler_tasks_name');
+    }
+
+    /**
+     * @throws Throwable
+     */
+    protected function executeQuery(string $sql, array $parameters = [], array $types = [])
+    {
+        try {
+            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+        } catch (Throwable $throwable) {
+            if ($this->driverConnection->isTransactionActive()) {
+                throw $throwable;
+            }
+
+            if ($this->configuration['auto_setup']) {
+                $this->setup();
+            }
+
+            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+        }
     }
 }
