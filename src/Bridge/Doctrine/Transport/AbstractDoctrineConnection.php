@@ -7,7 +7,6 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 
@@ -33,7 +32,7 @@ abstract class AbstractDoctrineConnection
     protected function updateSchema(): void
     {
         $comparator = new Comparator();
-        $schemaDiff = $comparator->compare($this->getSchemaManager()->createSchema(), $this->getSchema());
+        $schemaDiff = $comparator->compare($this->driverConnection->getSchemaManager()->createSchema(), $this->getSchema());
 
         foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
             $this->driverConnection->executeStatement($sql);
@@ -50,17 +49,9 @@ abstract class AbstractDoctrineConnection
 
     private function getSchema(): Schema
     {
-        $schema = new Schema([], [], $this->getSchemaManager()->createSchemaConfig());
+        $schema = new Schema([], [], $this->driverConnection->getSchemaManager()->createSchemaConfig());
         $this->addTableToSchema($schema);
 
         return $schema;
-    }
-
-    private function getSchemaManager(): AbstractSchemaManager
-    {
-        return method_exists($this->driverConnection, 'getSchemaManager')
-            ? $this->driverConnection->getSchemaManager()
-            : $this->driverConnection->createSchemaManager()
-        ;
     }
 }
