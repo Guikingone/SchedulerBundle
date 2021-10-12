@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
