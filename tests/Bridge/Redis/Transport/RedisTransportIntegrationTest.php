@@ -89,6 +89,10 @@ final class RedisTransportIntegrationTest extends TestCase
             self::assertSame($dsn->getPort(), $this->transport->getOptions()['port']);
             self::assertSame($dsn->getScheme(), $this->transport->getOptions()['scheme']);
             self::assertSame($dsn->getOption('timeout', 30), $this->transport->getOptions()['timeout']);
+            self::assertArrayHasKey('execution_mode', $this->transport->getOptions());
+            self::assertSame('first_in_first_out', $this->transport->getOptions()['execution_mode']);
+            self::assertArrayHasKey('list', $this->transport->getOptions());
+            self::assertSame('_symfony_scheduler_tasks', $this->transport->getOptions()['list']);
 
             $this->transport->clear();
         } catch (Throwable $throwable) {

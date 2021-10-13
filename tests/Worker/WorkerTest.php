@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use SchedulerBundle\Event\WorkerPausedEvent;
-use SchedulerBundle\Event\WorkerRestartedEvent;
+use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -1438,9 +1438,30 @@ final class WorkerTest extends TestCase
     public function testWorkerCanBePaused(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+            $worker = $event->getWorker();
+            $configuration = $worker->getConfiguration();
+
+            if (!$configuration->isRunning()) {
+                return;
+            }
+
+            $worker->pause();
+        });
+
+        $eventDispatcher->addListener(WorkerPausedEvent::class, function (WorkerPausedEvent $event): void {
+            $worker = $event->getWorker();
+
+            self::assertFalse($worker->isRunning());
+        });
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -1454,19 +1475,33 @@ final class WorkerTest extends TestCase
 
         self::assertFalse($worker->isRunning());
 
-        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerPausedEvent($worker)));
-
-        $worker->pause();
+        $worker->execute(WorkerConfiguration::create());
+        self::assertCount(0, $worker->getFailedTasks());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
         self::assertFalse($worker->isRunning());
     }
 
     public function testWorkerCanBeRestarted(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+            $worker = $event->getWorker();
+            $configuration = $worker->getConfiguration();
+
+            if (!$configuration->isRunning()) {
+                return;
+            }
+
+            $worker->restart();
+        });
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -1478,15 +1513,53 @@ final class WorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new WorkerRestartedEvent($worker)));
-
         self::assertFalse($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->isRunning());
 
-        $worker->restart();
+        $worker->execute(WorkerConfiguration::create());
 
         self::assertFalse($worker->isRunning());
         self::assertCount(0, $worker->getFailedTasks());
         self::assertTrue($worker->getConfiguration()->shouldStop());
+    }
+
+    /**
+     * @throws Throwable {@see WorkerInterface::preempt()}
+     */
+    public function testWorkerCanPreempt(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $barTask = new NullTask('bar');
+        $randomTask = new NullTask('random');
+
+        $preemptList = new TaskList([
+            new NullTask('foo'),
+            $barTask,
+            $randomTask,
+        ]);
+
+        $toPreemptList = new TaskList([
+            new NullTask('foo'),
+            $barTask,
+            $randomTask,
+        ]);
+
+        $worker->preempt($preemptList, $toPreemptList);
+
+        self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
+        self::assertInstanceOf(DateTimeImmutable::class, $randomTask->getLastExecution());
     }
 }
