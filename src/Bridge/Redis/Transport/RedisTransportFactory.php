@@ -43,6 +43,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'auth' => $dsn->getOption('host'),
             'dbindex' => $dsn->getOption('dbindex'),
             'transaction_mode' => $dsn->getOption('transaction_mode'),
+            'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
         ];
 
