@@ -35,6 +35,10 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
+use SchedulerBundle\Export\CronTabExporter;
+use SchedulerBundle\Export\ExporterInterface;
+use SchedulerBundle\Export\ExporterRegistry;
+use SchedulerBundle\Export\ExporterRegistryInterface;
 use SchedulerBundle\Expression\BuilderInterface;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
@@ -252,6 +256,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[SchedulerAwareInterface::class]->hasTag('scheduler.entry_point'));
         self::assertArrayHasKey(ExecutionPolicyInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[ExecutionPolicyInterface::class]->hasTag('scheduler.execution_policy'));
+        self::assertArrayHasKey(ExporterInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ExporterInterface::class]->hasTag('scheduler.task_exporter'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void
@@ -1070,6 +1076,33 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(ChainedTaskRunner::class, $container->getDefinition(ChainedTaskRunner::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testExportToolsAreRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertTrue($container->hasAlias(ExporterRegistryInterface::class));
+        self::assertTrue($container->hasDefinition(ExporterRegistry::class));
+        self::assertFalse($container->getDefinition(ExporterRegistry::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(ExporterRegistry::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ExporterRegistry::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(ExporterRegistry::class)->hasTag('container.preload'));
+        self::assertSame(ExporterRegistry::class, $container->getDefinition(ExporterRegistry::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(CronTabExporter::class));
+        self::assertCount(0, $container->getDefinition(CronTabExporter::class)->getArguments());
+        self::assertTrue($container->getDefinition(CronTabExporter::class)->hasTag('scheduler.task_exporter'));
+        self::assertTrue($container->getDefinition(CronTabExporter::class)->hasTag('container.preload'));
+        self::assertSame(CronTabExporter::class, $container->getDefinition(CronTabExporter::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testNormalizersAreRegistered(): void

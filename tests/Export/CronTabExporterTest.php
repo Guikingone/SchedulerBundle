@@ -9,6 +9,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ExportRegistryTest extends TestCase
+final class CronTabExporterTest extends TestCase
 {
 }
