@@ -1,5 +1,16 @@
 # Changelog
 
+0.7.1
+-----
+
+### Builds
+
+##### Psr
+
+* Update (#196) ([ac22f6](https://github.com/Guikingone/SchedulerBundle/commit/ac22f642df2b950ae1c7ac651afd6c6a3e478218))
+
+---
+
 0.7.0
 -----
 
