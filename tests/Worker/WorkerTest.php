@@ -1562,4 +1562,42 @@ final class WorkerTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
         self::assertInstanceOf(DateTimeImmutable::class, $randomTask->getLastExecution());
     }
+
+    /**
+     * @throws Throwable {@see WorkerInterface::preempt()}
+     */
+    public function testWorkerCannotPreemptEmptyList(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $barTask = new NullTask('bar');
+        $randomTask = new NullTask('random');
+
+        $preemptList = new TaskList([
+            new NullTask('foo'),
+        ]);
+
+        $toPreemptList = new TaskList([
+            new NullTask('foo'),
+            $barTask,
+            $randomTask,
+        ]);
+
+        $worker->preempt($preemptList, $toPreemptList);
+
+        self::assertNull($barTask->getLastExecution());
+        self::assertNull($randomTask->getLastExecution());
+    }
 }

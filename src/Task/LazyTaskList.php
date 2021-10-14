@@ -105,13 +105,17 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function map(Closure $func): array
+    public function map(Closure $func, bool $keepKeys = true): array
     {
         if ($this->initialized) {
-            return $this->list->map($func);
+            return $this->list->map($func, $keepKeys);
         }
 
-        return $this->sourceList->map($func);
+        $results = $this->sourceList->map($func, $keepKeys);
+
+        $this->initialize();
+
+        return $results;
     }
 
     /**

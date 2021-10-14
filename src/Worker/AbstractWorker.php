@@ -92,11 +92,7 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
     {
-        $nonExecutedTasks = $toPreemptTasksList->slice(...array_values($preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName())));
-        if (0 === $nonExecutedTasks->count()) {
-            return;
-        }
-
+        $nonExecutedTasks = $toPreemptTasksList->slice(...$preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName(), false));
         $nonExecutedTasks->walk(function (TaskInterface $task): void {
             $accessLockBag = $task->getAccessLockBag();
 
@@ -110,13 +106,9 @@ abstract class AbstractWorker implements WorkerInterface
         });
 
         $forkWorker = $this->fork();
+        $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
 
-        try {
-            $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
-        } catch (Throwable $throwable) {
-        } finally {
-            $forkWorker->stop();
-        }
+        $forkWorker->stop();
     }
 
     /**
