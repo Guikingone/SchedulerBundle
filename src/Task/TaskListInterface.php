@@ -58,9 +58,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     /**
      * Return an array containing the results of applying @param Closure $func to each tasks
      *
-     * @return array<string, mixed>
+     * Depending on @param bool $keepKeys, the final array can be indexed using numeric keys.
+     *
+     * @return array<int|string, mixed>
      */
-    public function map(Closure $func): array;
+    public function map(Closure $func, bool $keepKeys = true): array;
 
     /**
      * Return the last task of the list.

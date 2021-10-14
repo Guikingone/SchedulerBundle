@@ -153,21 +153,39 @@ final class LazyTaskListTest extends TestCase
 
     public function testInitializedListCanApplyMapClosure(): void
     {
-        $list = new LazyTaskList(new TaskList());
+        $lazyTaskList = new LazyTaskList(new TaskList());
 
-        $list->add(new NullTask('foo'));
-        $list->add(new NullTask('bar'));
+        $lazyTaskList->add(new NullTask('foo'));
+        $lazyTaskList->add(new NullTask('bar'));
 
-        self::assertTrue($list->isInitialized());
-        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $list->map(fn (TaskInterface $task): string => $task->getName()));
+        self::assertTrue($lazyTaskList->isInitialized());
+        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $lazyTaskList->map(fn (TaskInterface $task): string => $task->getName()));
     }
 
     public function testNotInitializedListCanApplyMapClosure(): void
     {
-        $list = new LazyTaskList(new TaskList([new NullTask('foo'), new NullTask('bar')]));
+        $lazyTaskList = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
 
-        self::assertFalse($list->isInitialized());
-        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $list->map(fn (TaskInterface $task): string => $task->getName()));
+        self::assertFalse($lazyTaskList->isInitialized());
+        self::assertSame(['foo' => 'foo', 'bar' => 'bar'], $lazyTaskList->map(fn (TaskInterface $task): string => $task->getName()));
+    }
+
+    public function testListCanApplyMapClosureWithoutKeys(): void
+    {
+        $lazyTaskList = new LazyTaskList(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+
+        self::assertFalse($lazyTaskList->isInitialized());
+        self::assertSame([
+            'foo',
+            'bar',
+        ], $lazyTaskList->map(static fn (TaskInterface $task): string => $task->getName(), false));
+        self::assertTrue($lazyTaskList->isInitialized());
     }
 
     public function testListCanReturnEmptyListAsArray(): void

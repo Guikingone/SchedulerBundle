@@ -125,9 +125,11 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function map(Closure $func): array
+    public function map(Closure $func, bool $keepKeys = true): array
     {
-        return array_map($func, $this->tasks);
+        $results = array_map($func, $this->tasks);
+
+        return $keepKeys ? $results : array_values($results);
     }
 
     /**

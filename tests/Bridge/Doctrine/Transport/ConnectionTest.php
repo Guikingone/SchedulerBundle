@@ -139,7 +139,7 @@ final class ConnectionTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')->with(
-            self::equalTo(':name'),
+            self::equalTo('name'),
             self::equalTo('foo'),
             self::equalTo(ParameterType::STRING)
         );
@@ -147,10 +147,10 @@ final class ConnectionTest extends TestCase
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -200,7 +200,7 @@ final class ConnectionTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')->with(
-            self::equalTo(':name'),
+            self::equalTo('name'),
             self::equalTo('foo'),
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
@@ -208,10 +208,10 @@ final class ConnectionTest extends TestCase
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -221,8 +221,8 @@ final class ConnectionTest extends TestCase
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->with(
             self::equalTo('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE'),
-            self::equalTo([':name' => 'foo']),
-            self::equalTo([':name' => ParameterType::STRING])
+            self::equalTo(['name' => 'foo']),
+            self::equalTo(['name' => ParameterType::STRING])
         )->willReturn($statement);
         $driverConnection->expects(self::once())->method('transactional')->willReturn(new NullTask('foo'));
 
@@ -262,16 +262,16 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo('t.task_name = :name'))
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'))
+            ->with(self::equalTo('name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT COUNT(DISTINCT t.id) FROM _symfony_scheduler_tasks t WHERE t.task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -315,7 +315,7 @@ final class ConnectionTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')->with(
-            self::equalTo(':name'),
+            self::equalTo('name'),
             self::equalTo('foo'),
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
@@ -323,10 +323,10 @@ final class ConnectionTest extends TestCase
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -377,7 +377,7 @@ final class ConnectionTest extends TestCase
             ->willReturnSelf()
         ;
         $queryBuilder->expects(self::once())->method('setParameter')->with(
-            self::equalTo(':name'),
+            self::equalTo('name'),
             self::equalTo('foo'),
             self::equalTo(ParameterType::STRING)
         )->willReturnSelf();
@@ -385,10 +385,10 @@ final class ConnectionTest extends TestCase
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -424,16 +424,16 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo('t.task_name = :name'))
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('bar'))
+            ->with(self::equalTo('name'), self::equalTo('bar'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'bar'])
+            ->willReturn(['name' => 'bar'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -481,16 +481,16 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo('t.task_name = :name'))
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'))
+            ->with(self::equalTo('name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -526,16 +526,16 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo('t.task_name = :name'))
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'))
+            ->with(self::equalTo('name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -583,16 +583,16 @@ final class ConnectionTest extends TestCase
             ->with(self::equalTo('t.task_name = :name'))
         ;
         $queryBuilder->expects(self::once())->method('setParameter')
-            ->with(self::equalTo(':name'), self::equalTo('foo'))
+            ->with(self::equalTo('name'), self::equalTo('foo'))
         ;
         $queryBuilder->expects(self::once())->method('getSQL')
             ->willReturn('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name')
         ;
         $queryBuilder->expects(self::once())->method('getParameters')
-            ->willReturn([':name' => 'foo'])
+            ->willReturn(['name' => 'foo'])
         ;
         $queryBuilder->expects(self::once())->method('getParameterTypes')
-            ->willReturn([':name' => ParameterType::STRING])
+            ->willReturn(['name' => ParameterType::STRING])
         ;
 
         $statement = $this->createMock(Result::class);
@@ -759,6 +759,9 @@ final class ConnectionTest extends TestCase
         $connection->configureSchema($schema, $driverConnection);
     }
 
+    /**
+     * @throws \Exception {@see DoctrineConnection::setup()}
+     */
     public function testConnectionCanSetUp(): void
     {
         $configuration = $this->createMock(Configuration::class);

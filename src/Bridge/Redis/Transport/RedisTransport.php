@@ -7,7 +7,6 @@ namespace SchedulerBundle\Bridge\Redis\Transport;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\AbstractExternalTransport;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -22,22 +21,22 @@ final class RedisTransport extends AbstractExternalTransport
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions(array_merge([
+        $this->defineOptions([
             'host' => $options['host'],
             'password' => $options['password'] ?? null,
             'port' => $options['port'],
-            'scheme' => null,
+            'scheme' => $options['scheme'],
             'timeout' => $options['timeout'],
             'auth' => $options['auth'] ?? null,
             'dbindex' => 0,
             'transaction_mode' => $options['transaction_mode'] ?? null,
             'list' => $options['list'],
             'execution_mode' => $options['execution_mode'],
-        ], $options), [
+        ], [
             'host' => 'string',
             'password' => ['string', 'null'],
             'port' => 'int',
-            'scheme' => ['string', 'null'],
+            'scheme' => 'string',
             'timeout' => 'int',
             'auth' => ['string', 'null'],
             'dbindex' => 'int',

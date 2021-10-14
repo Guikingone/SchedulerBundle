@@ -85,7 +85,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $thirdMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
         $thirdMiddleware->expects(self::never())->method('preScheduling');
 
-        $fourthMiddleware = new class() implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
+        $fourthMiddleware = new class () implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
             public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
             {
                 throw new RuntimeException('An error occurred');
@@ -231,7 +231,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $erroredMiddleware = new class() implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
+        $erroredMiddleware = new class () implements PreSchedulingMiddlewareInterface, OrderedMiddlewareInterface {
             /**
              * {@inheritdoc}
              */
@@ -249,7 +249,7 @@ final class SchedulerMiddlewareStackTest extends TestCase
             }
         };
 
-        $requiredMiddleware = new class() implements PostSchedulingMiddlewareInterface, RequiredMiddlewareInterface {
+        $requiredMiddleware = new class () implements PostSchedulingMiddlewareInterface, RequiredMiddlewareInterface {
             /**
              * {@inheritdoc}
              */

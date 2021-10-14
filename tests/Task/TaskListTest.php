@@ -290,6 +290,19 @@ final class TaskListTest extends TestCase
         ], $taskList->map(static fn (TaskInterface $task): string => $task->getName()));
     }
 
+    public function testListCanApplyMapClosureWithoutKeys(): void
+    {
+        $taskList = new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]);
+
+        self::assertSame([
+            'foo',
+            'bar',
+        ], $taskList->map(static fn (TaskInterface $task): string => $task->getName(), false));
+    }
+
     public function testListCannotReturnLastTaskWhileEmpty(): void
     {
         $taskList = new TaskList();

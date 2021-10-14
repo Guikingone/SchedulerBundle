@@ -92,21 +92,23 @@ abstract class AbstractWorker implements WorkerInterface
      */
     public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
     {
-        $nonExecutedTasks = $toPreemptTasksList->slice(...array_values($preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName())));
+        $nonExecutedTasks = $toPreemptTasksList->slice(...$preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName(), false));
         $nonExecutedTasks->walk(function (TaskInterface $task): void {
-            $lock = $this->lockFactory->createLockFromKey($task->getAccessLockBag()->getKey());
+            $accessLockBag = $task->getAccessLockBag();
+
+            $lock = $this->lockFactory->createLockFromKey(
+                $accessLockBag instanceof AccessLockBag
+                ? $accessLockBag->getKey()
+                : TaskLockBagMiddleware::createKey($task)
+            );
 
             $lock->release();
         });
 
         $forkWorker = $this->fork();
+        $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
 
-        try {
-            $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
-        } catch (Throwable $throwable) {
-        } finally {
-            $forkWorker->stop();
-        }
+        $forkWorker->stop();
     }
 
     /**

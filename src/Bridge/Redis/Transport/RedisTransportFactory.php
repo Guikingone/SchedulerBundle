@@ -9,7 +9,6 @@ use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_merge;
 use function class_exists;
@@ -25,7 +24,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
+    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): RedisTransport
     {
         if (!class_exists(Redis::class)) {
             throw new LogicException('The Redis extension must be installed.');
@@ -44,6 +43,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'auth' => $dsn->getOption('host'),
             'dbindex' => $dsn->getOption('dbindex'),
             'transaction_mode' => $dsn->getOption('transaction_mode'),
+            'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
         ];
 

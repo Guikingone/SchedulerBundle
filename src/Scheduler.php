@@ -203,7 +203,7 @@ final class Scheduler implements SchedulerInterface
         }
 
         $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
-            $timezone = $task->getTimezone() ?? $this->getTimezone();
+            $timezone = $task->getTimezone();
             $lastExecution = $task->getLastExecution();
 
             if (!$lastExecution instanceof DateTimeImmutable) {
