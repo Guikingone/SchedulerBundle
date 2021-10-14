@@ -759,6 +759,9 @@ final class ConnectionTest extends TestCase
         $connection->configureSchema($schema, $driverConnection);
     }
 
+    /**
+     * @throws \Exception {@see DoctrineConnection::setup()}
+     */
     public function testConnectionCanSetUp(): void
     {
         $configuration = $this->createMock(Configuration::class);
