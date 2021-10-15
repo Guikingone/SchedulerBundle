@@ -8,6 +8,7 @@ use SchedulerBundle\Export\ExporterRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -42,8 +43,8 @@ final class ExportCommand extends Command
         $this
             ->setDescription('Export tasks to a specific format')
             ->setDefinition([
-                new InputOption('format', null, InputOption::VALUE_OPTIONAL, 'The format used to export tasks', 'crontab'),
-                new InputOption('filename', null, InputOption::VALUE_OPTIONAL, 'The name of the filename used to export tasks', 'crontab'),
+                new InputArgument('format', InputArgument::REQUIRED, 'The format used to export tasks', 'crontab'),
+                new InputOption('filename', null, InputOption::VALUE_OPTIONAL, 'The name of the filename used to export tasks', '/etc/cron.d'),
             ])
         ;
     }
@@ -64,7 +65,7 @@ final class ExportCommand extends Command
             }
 
             $filename = $input->getOption('filename');
-            $exporter = $this->exporterRegistry->find($input->getOption('format'));
+            $exporter = $this->exporterRegistry->find($input->getArgument('format'));
 
             $tasks->walk(function (TaskInterface $task) use ($exporter, $filename): void {
                 $exporter->export($filename, $task);
