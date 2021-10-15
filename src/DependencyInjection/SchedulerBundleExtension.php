@@ -17,6 +17,7 @@ use SchedulerBundle\Command\DebugMiddlewareCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
+use SchedulerBundle\Command\ExportCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -603,6 +604,17 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->addTag('container.preload', [
                 'class' => ExecuteTaskCommand::class,
+            ])
+        ;
+
+        $container->register(ExportCommand::class, ExportCommand::class)
+            ->setArguments([
+                new Reference(ExporterRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => ExportCommand::class,
             ])
         ;
 

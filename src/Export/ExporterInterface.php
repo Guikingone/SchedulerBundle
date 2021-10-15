@@ -13,5 +13,8 @@ interface ExporterInterface
 {
     public function export(string $filename, TaskInterface $task): void;
 
+    /**
+     * Determine if the exporter support the current @param string $format.
+     */
     public function support(string $format): bool;
 }
