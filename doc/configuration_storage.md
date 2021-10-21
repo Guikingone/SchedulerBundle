@@ -14,7 +14,7 @@ in memory, this configuration is perfect for `test` environnement or/and for POC
 ```yaml
 scheduler_bundle:
     configuration:
-        dsn: 'configuration://memory'
+        dsn: 'configuration://memory' # Or 'configuration://array'
 
 # ...
 ```
@@ -29,7 +29,7 @@ stores every configuration key in the filesystem.
 ```yaml
 scheduler_bundle:
     configuration:
-        dsn: 'configuration://fs' # Or 'configuration://filesystem'
+        dsn: 'configuration://filesystem' # Or 'configuration://fs'
 
 # ...
 ```
@@ -62,10 +62,7 @@ a configuration, this configuration allows to delay the retrieving of keys and v
 ```yaml
 scheduler_bundle:
     configuration:
-        mode: 'lazy'
-        dsn: 'configuration://memory'
+        dsn: 'configuration://lazy(configuration://fs)'
 
 # ...
 ```
-
-**The activation of this configuration is done via the `mode` key and requires that a configuration is defined.**

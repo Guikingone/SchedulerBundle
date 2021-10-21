@@ -52,7 +52,7 @@ final class DebugConfigurationCommand extends Command
         $table = new Table($output);
         $table->setHeaders(['Key', 'Value']);
 
-        $this->configuration->walk(function ($value, string $key) use ($table): void {
+        $this->configuration->walk(static function ($value, string $key) use ($table): void {
             $table->addRow([$key, $value]);
         });
 

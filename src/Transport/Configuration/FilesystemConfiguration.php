@@ -31,6 +31,8 @@ final class FilesystemConfiguration extends AbstractConfiguration
 
         $this->filesystem = new Filesystem();
         $this->serializer = $serializer;
+
+        $this->checkDefaultFilePresence($options['path'], $options['filename_mask'], $options['file_extension']);
     }
 
     /**
@@ -102,10 +104,14 @@ final class FilesystemConfiguration extends AbstractConfiguration
     {
     }
 
-    private function fileExist(string $key): bool
+    private function checkDefaultFilePresence(string $path, string $filename, string $extension): bool
     {
-        $configuration = $this->getConfiguration()->toArray();
+        if ($this->filesystem->exists(sprintf('%s/%s.%s', $path, $filename, $extension))) {
+            return true;
+        }
 
-        return $this->filesystem->exists(sprintf($this->o['filename_mask'], $configuration['path'], $taskName));
+        $this->filesystem->touch(sprintf('%s/%s.%s', $path, $filename, $extension));
+
+        return true;
     }
 }

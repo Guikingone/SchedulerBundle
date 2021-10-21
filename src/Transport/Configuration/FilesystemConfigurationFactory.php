@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+use function strpos;
 use function sys_get_temp_dir;
 
 /**
