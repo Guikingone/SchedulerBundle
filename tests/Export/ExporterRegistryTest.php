@@ -25,7 +25,7 @@ final class ExporterRegistryTest extends TestCase
     public function testRegistryCanFilterExporterList(): void
     {
         $registry = new ExporterRegistry([
-            new CronTabExporter(),
+            new CronTabExporter(__DIR__),
         ]);
 
         $registry->filter(static fn (ExporterInterface $exporter): bool => $exporter instanceof CronTabExporter);
@@ -35,7 +35,7 @@ final class ExporterRegistryTest extends TestCase
     public function testRegistryCannotFindExporterWithEmptyList(): void
     {
         $registry = new ExporterRegistry([
-            new CronTabExporter(),
+            new CronTabExporter(__DIR__),
         ]);
 
         self::expectException(InvalidArgumentException::class);
@@ -47,8 +47,8 @@ final class ExporterRegistryTest extends TestCase
     public function testRegistryCannotFindExporterWithMultipleSupportingExporter(): void
     {
         $registry = new ExporterRegistry([
-            new CronTabExporter(),
-            new CronTabExporter(),
+            new CronTabExporter(__DIR__),
+            new CronTabExporter(__DIR__),
         ]);
 
         self::expectException(InvalidArgumentException::class);
@@ -60,7 +60,7 @@ final class ExporterRegistryTest extends TestCase
     public function testRegistryCanFindExporter(): void
     {
         $registry = new ExporterRegistry([
-            new CronTabExporter(),
+            new CronTabExporter(__DIR__),
         ]);
 
         $exporter = $registry->find('crontab');
@@ -70,7 +70,7 @@ final class ExporterRegistryTest extends TestCase
     public function testRegistryCanReturnCurrentExporter(): void
     {
         $registry = new ExporterRegistry([
-            new CronTabExporter(),
+            new CronTabExporter(__DIR__),
         ]);
 
         $exporter = $registry->current();

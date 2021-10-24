@@ -16,6 +16,7 @@ summary.log
 .php-cs-fixer.cache
 
 # Tests
+tests/**/assets/
 .phpunit.result.cache
 tests/.assets/**/*.json
 

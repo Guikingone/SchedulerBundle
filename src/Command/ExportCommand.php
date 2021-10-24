@@ -72,7 +72,7 @@ final class ExportCommand extends Command
             });
         } catch (Throwable $throwable) {
             $style->error([
-                'An error occurred when exporting tasks',
+                'An error occurred when exporting tasks:',
                 $throwable->getMessage(),
             ]);
 

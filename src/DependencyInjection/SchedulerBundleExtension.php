@@ -993,6 +993,9 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(ExporterRegistryInterface::class, ExporterRegistry::class);
 
         $container->register(CronTabExporter::class, CronTabExporter::class)
+            ->setArguments([
+                $container->getParameter('kernel.project_dir'),
+            ])
             ->addTag(self::TASK_EXPORTER_TAG)
             ->addTag('container.preload', [
                 'class' => CronTabExporter::class,
