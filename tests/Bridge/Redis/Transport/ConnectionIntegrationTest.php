@@ -16,6 +16,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
@@ -37,7 +38,6 @@ use function sprintf;
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private Redis $redis;
     private Connection $connection;
 
     /**
@@ -67,8 +67,7 @@ final class ConnectionIntegrationTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         try {
-            $this->redis = new Redis();
-            $this->connection = new Connection([
+            $this->connection = new Connection(new InMemoryConfiguration([
                 'host' => $dsn->getHost(),
                 'password' => $dsn->getPassword(),
                 'port' => $dsn->getPort(),
@@ -79,7 +78,17 @@ final class ConnectionIntegrationTest extends TestCase
                 'dbindex' => $dsn->getOption('dbindex', 0),
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
-            ], $serializer, $this->redis);
+            ], [
+                'host' => 'string',
+                'password' => ['string', 'null'],
+                'port' => 'int',
+                'scheme' => 'string',
+                'timeout' => 'int',
+                'auth' => ['string', 'null'],
+                'dbindex' => 'int',
+                'transaction_mode' => ['string', 'null'],
+                'list' => 'string',
+            ]), $serializer, new Redis());
             $this->connection->empty();
         } catch (Throwable $throwable) {
             self::markTestSkipped($throwable->getMessage());

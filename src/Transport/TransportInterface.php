@@ -10,6 +10,7 @@ use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -26,6 +27,8 @@ interface TransportInterface
 
     /**
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      *
      * @throws Throwable
      */
@@ -68,7 +71,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string, mixed>
+     * {@see ConfigurationInterface::toArray()}
      */
-    public function getOptions(): array;
+    public function getConfiguration(): ConfigurationInterface;
 }

@@ -6,6 +6,7 @@ namespace SchedulerBundle;
 
 use Closure;
 use DateTimeZone;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 
@@ -145,6 +146,16 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
         $this->initialize();
 
         return $this->scheduler->getTimezone();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration
+    {
+        $this->initialize();
+
+        return $this->scheduler->getPoolConfiguration();
     }
 
     /**

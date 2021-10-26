@@ -19,6 +19,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -69,7 +70,7 @@ final class RedisTransportIntegrationTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         try {
-            $this->transport = new RedisTransport([
+            $this->transport = new RedisTransport(new InMemoryConfiguration([
                 'host' => $dsn->getHost(),
                 'password' => $dsn->getPassword(),
                 'port' => $dsn->getPort(),
@@ -80,19 +81,29 @@ final class RedisTransportIntegrationTest extends TestCase
                 'dbindex' => $dsn->getOption('dbindex', 0),
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
                 'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
-            ], $serializer, new SchedulePolicyOrchestrator([
+            ], [
+                'host' => 'string',
+                'password' => ['string', 'null'],
+                'port' => 'int',
+                'scheme' => 'string',
+                'timeout' => 'int',
+                'auth' => ['string', 'null'],
+                'dbindex' => 'int',
+                'transaction_mode' => ['string', 'null'],
+                'list' => 'string',
+            ]), $serializer, new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ]));
 
-            self::assertSame($dsn->getHost(), $this->transport->getOptions()['host']);
-            self::assertSame($dsn->getPassword(), $this->transport->getOptions()['password']);
-            self::assertSame($dsn->getPort(), $this->transport->getOptions()['port']);
-            self::assertSame($dsn->getScheme(), $this->transport->getOptions()['scheme']);
-            self::assertSame($dsn->getOption('timeout', 30), $this->transport->getOptions()['timeout']);
-            self::assertArrayHasKey('execution_mode', $this->transport->getOptions());
-            self::assertSame('first_in_first_out', $this->transport->getOptions()['execution_mode']);
-            self::assertArrayHasKey('list', $this->transport->getOptions());
-            self::assertSame('_symfony_scheduler_tasks', $this->transport->getOptions()['list']);
+            self::assertSame($dsn->getHost(), $this->transport->getConfiguration()->get('host'));
+            self::assertSame($dsn->getPassword(), $this->transport->getConfiguration()->get('password'));
+            self::assertSame($dsn->getPort(), $this->transport->getConfiguration()->get('port'));
+            self::assertSame($dsn->getScheme(), $this->transport->getConfiguration()->get('scheme'));
+            self::assertSame($dsn->getOption('timeout', 30), $this->transport->getConfiguration()->get('timeout'));
+            self::assertArrayHasKey('execution_mode', $this->transport->getConfiguration()->toArray());
+            self::assertSame('first_in_first_out', $this->transport->getConfiguration()->get('execution_mode'));
+            self::assertArrayHasKey('list', $this->transport->getConfiguration()->toArray());
+            self::assertSame('_symfony_scheduler_tasks', $this->transport->getConfiguration()->get('list'));
 
             $this->transport->clear();
         } catch (Throwable $throwable) {

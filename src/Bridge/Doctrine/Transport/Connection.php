@@ -10,6 +10,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
 use Exception;
+use SchedulerBundle\Bridge\Doctrine\Connection\AbstractDoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\TransportException;
@@ -17,6 +18,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
@@ -28,16 +30,21 @@ use function sprintf;
  */
 final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
-    /**
-     * @param mixed[] $configuration
-     */
+    private ConfigurationInterface $configuration;
+    private SerializerInterface $serializer;
+    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
+
     public function __construct(
-        private array $configuration,
-        private DbalConnection $driverConnection,
-        private SerializerInterface $serializer,
-        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        ConfigurationInterface $configuration,
+        DbalConnection $dbalConnection,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        parent::__construct($driverConnection);
+        $this->configuration = $configuration;
+        $this->serializer = $serializer;
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($dbalConnection);
     }
 
     /**
@@ -45,7 +52,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function list(): TaskListInterface
     {
-        $existingTasksCount = $this->createQueryBuilder($this->configuration['table_name'], 't')
+        $existingTasksCount = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
             ->select((new Expr())->countDistinct('t.id'))
         ;
 
@@ -61,12 +68,12 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
         try {
             return $this->driverConnection->transactional(function (): TaskListInterface {
-                $statement = $this->executeQuery($this->createQueryBuilder($this->configuration['table_name'], 't')->getSQL());
+                $statement = $this->executeQuery($this->createQueryBuilder($this->configuration->get('table_name'), 't')->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
                 $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
 
-                return $this->schedulePolicyOrchestrator->sort($this->configuration['execution_mode'], $taskList);
+                return $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $taskList);
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);
@@ -78,7 +85,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function get(string $taskName): TaskInterface
     {
-        $qb = $this->createQueryBuilder($this->configuration['table_name'], 't');
+        $qb = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
         $existingTaskCount = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter('name', $taskName, ParameterType::STRING)
@@ -96,7 +103,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
         try {
             return $this->driverConnection->transactional(function () use ($taskName): TaskInterface {
-                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
+                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
                 $queryBuilder->where($queryBuilder->expr()->eq('t.task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
@@ -124,7 +131,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function create(TaskInterface $task): void
     {
-        $qb = $this->createQueryBuilder($this->configuration['table_name'], 't');
+        $qb = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
         $existingTaskQuery = $qb->select((new Expr())->countDistinct('t.id'))
             ->where($qb->expr()->eq('t.task_name', ':name'))
             ->setParameter('name', $task->getName(), ParameterType::STRING)
@@ -142,8 +149,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($task): void {
-                $query = $this->createQueryBuilder($this->configuration['table_name'], 't')
-                    ->insert($this->configuration['table_name'])
+                $query = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
+                    ->insert($this->configuration->get('table_name'))
                     ->values([
                         'task_name' => ':name',
                         'body' => ':body',
@@ -174,8 +181,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName, $updatedTask): void {
-                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
-                $queryBuilder->update($this->configuration['table_name'])
+                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
+                $queryBuilder->update($this->configuration->get('table_name'))
                     ->set('body', ':body')
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
@@ -237,8 +244,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
-                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't');
-                $queryBuilder->delete($this->configuration['table_name'])
+                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
+                $queryBuilder->delete($this->configuration->get('table_name'))
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
@@ -265,8 +272,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     {
         try {
             $this->driverConnection->transactional(function (DBALConnection $connection): void {
-                $queryBuilder = $this->createQueryBuilder($this->configuration['table_name'], 't')
-                    ->delete($this->configuration['table_name'])
+                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
+                    ->delete($this->configuration->get('table_name'))
                 ;
 
                 $connection->executeQuery($queryBuilder->getSQL());
@@ -287,7 +294,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         $this->updateSchema();
         $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
 
-        $this->configuration['auto_setup'] = false;
+        $this->configuration->set('auto_setup', false);
     }
 
     public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
@@ -296,7 +303,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             return;
         }
 
-        if ($schema->hasTable($this->configuration['table_name'])) {
+        if ($schema->hasTable($this->configuration->get('table_name'))) {
             return;
         }
 
@@ -305,7 +312,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
     protected function addTableToSchema(Schema $schema): void
     {
-        $table = $schema->createTable($this->configuration['table_name']);
+        $table = $schema->createTable($this->configuration->get('table_name'));
         $table->addColumn('id', Types::BIGINT)
             ->setAutoincrement(true)
             ->setNotnull(true)
@@ -322,7 +329,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     }
 
     /**
-     * @throws Throwable
+     * {@inheritdoc}
      */
     protected function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
@@ -333,7 +340,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                 throw $throwable;
             }
 
-            if (true === $this->configuration['auto_setup']) {
+            if ($this->configuration->get('auto_setup')) {
                 $this->setup();
             }
 

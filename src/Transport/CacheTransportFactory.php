@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -20,11 +21,18 @@ final class CacheTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
-    {
-        return new CacheTransport([
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): CacheTransport {
+        $configuration->init([
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
-        ], $this->pool, $serializer, $schedulePolicyOrchestrator);
+        ]);
+
+        return new CacheTransport($configuration, $this->pool, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

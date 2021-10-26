@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -15,7 +16,13 @@ interface TransportFactoryInterface
     /**
      * @param array<string, int|string|bool|array> $options
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface;
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): TransportInterface;
 
     /**
      * @param array<string, int|string|bool|array> $options

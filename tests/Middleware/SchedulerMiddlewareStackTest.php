@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
@@ -39,9 +40,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preScheduling');
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
@@ -60,10 +61,10 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
@@ -97,12 +98,12 @@ final class SchedulerMiddlewareStackTest extends TestCase
             }
         };
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
             $thirdMiddleware,
             $fourthMiddleware,
-        ]);
+        ]));
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('An error occurred');
@@ -140,14 +141,14 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
             $orderedMiddleware,
             $secondOrderedMiddleware,
             $thirdOrderedMiddleware,
             $fourthOrderedMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
@@ -170,11 +171,11 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postScheduling');
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
             $orderedMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
     }
@@ -193,9 +194,9 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preScheduling');
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $secondMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
     }
@@ -214,10 +215,10 @@ final class SchedulerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostSchedulingMiddlewareInterface::class);
         $secondMiddleware->expects(self::once())->method('postScheduling')->with(self::equalTo($task));
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
     }
@@ -259,10 +260,10 @@ final class SchedulerMiddlewareStackTest extends TestCase
             }
         };
 
-        $schedulerMiddlewareStack = new SchedulerMiddlewareStack([
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $erroredMiddleware,
             $requiredMiddleware,
-        ]);
+        ]));
 
         $schedulerMiddlewareStack->runPostSchedulingMiddleware($task, $scheduler);
 

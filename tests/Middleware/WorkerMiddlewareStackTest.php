@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
@@ -27,9 +28,9 @@ final class WorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ]);
+        ]));
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -47,10 +48,10 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]);
+        ]));
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -66,9 +67,9 @@ final class WorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('preExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ]);
+        ]));
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }
@@ -87,10 +88,10 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack([
+        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]);
+        ]));
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }

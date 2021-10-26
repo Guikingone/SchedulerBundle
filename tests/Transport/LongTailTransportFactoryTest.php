@@ -7,9 +7,10 @@ namespace Tests\SchedulerBundle\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
-use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\LongTailTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -37,9 +38,11 @@ final class LongTailTransportFactoryTest extends TestCase
         $longTailTransportFactory = new LongTailTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $longTailTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
 
-        self::assertInstanceOf(LongTailTransport::class, $transport);
+        $transport = $longTailTransportFactory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
+        $transport->create(new NullTask('foo'));
+
+        self::assertInstanceOf(NullTask::class, $transport->get('foo'));
     }
 
     /**

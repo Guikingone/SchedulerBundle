@@ -475,7 +475,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertNull($configuration['mercure']['jwt_token']);
     }
 
-    public function testPoolConfigurationCanDefineName(): void
+    public function testPoolConfigurationCanBeConfigured(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
             'scheduler_bundle' => [
@@ -485,16 +485,19 @@ final class SchedulerBundleConfigurationTest extends TestCase
                 'pool' => [
                     'enabled' => true,
                     'name' => 'foo',
+                    'path' => '/_foo',
                 ],
             ],
         ]);
 
         self::assertArrayHasKey('pool', $configuration);
-        self::assertCount(2, $configuration['pool']);
+        self::assertCount(3, $configuration['pool']);
         self::assertArrayHasKey('enabled', $configuration['pool']);
         self::assertTrue($configuration['pool']['enabled']);
         self::assertArrayHasKey('name', $configuration['pool']);
         self::assertSame('foo', $configuration['pool']['name']);
+        self::assertArrayHasKey('path', $configuration['pool']);
+        self::assertSame('/_foo', $configuration['pool']['path']);
     }
 
     public function testConfigurationCanDefineConfigurationTransport(): void

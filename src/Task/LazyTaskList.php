@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use ArrayIterator;
 use Closure;
 use SchedulerBundle\LazyInterface;
-use Traversable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -55,7 +55,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): LazyTaskList
+    public function findByName(array $names): self
     {
         $this->initialize();
 
@@ -68,7 +68,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): LazyTaskList
+    public function filter(Closure $filter): self
     {
         $this->initialize();
 
@@ -227,7 +227,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): Traversable
+    public function getIterator(): ArrayIterator
     {
         $this->initialize();
 

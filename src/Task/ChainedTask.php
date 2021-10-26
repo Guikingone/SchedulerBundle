@@ -9,6 +9,9 @@ namespace SchedulerBundle\Task;
  */
 final class ChainedTask extends AbstractTask
 {
+    /**
+     * @var TaskListInterface<string|int, TaskInterface>
+     */
     private TaskListInterface $tasks;
 
     public function __construct(string $name, TaskInterface ...$tasks)
@@ -27,6 +30,9 @@ final class ChainedTask extends AbstractTask
         return $this;
     }
 
+    /**
+     * @param TaskListInterface<string|int, TaskInterface> $list
+     */
     public function setTasks(TaskListInterface $list): self
     {
         $this->tasks = $list;
@@ -39,6 +45,9 @@ final class ChainedTask extends AbstractTask
         return $this->getTasks()->get($name);
     }
 
+    /**
+     * @return TaskListInterface<string|int, TaskInterface>
+     */
     public function getTasks(): TaskListInterface
     {
         return $this->tasks;

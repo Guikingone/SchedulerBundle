@@ -23,7 +23,9 @@ interface ConfigurationInterface extends Countable
     public function set(string $key, $value): void;
 
     /**
-     * Update a configuration @param string $key using the @param mixed $newValue.
+     * Update a configuration @param string $key
+     *
+     * @param mixed $newValue The new value stored in the configuration.
      */
     public function update(string $key, $newValue): void;
 
@@ -44,6 +46,8 @@ interface ConfigurationInterface extends Countable
 
     /**
      * Apply the @param Closure $func to each configuration and return an array after applying the closure.
+     *
+     * @return array<string, mixed>
      */
     public function map(Closure $func): array;
 

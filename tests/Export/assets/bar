@@ -1,0 +1,1 @@
+* * * * * cd /Users/guillaume/Projects/SchedulerBundle/tests/Export/assets && php bin/console scheduler:execute --name bar

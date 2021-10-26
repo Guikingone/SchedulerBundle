@@ -7,9 +7,9 @@ namespace Tests\SchedulerBundle\Transport;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
-use SchedulerBundle\Transport\RoundRobinTransport;
 use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -37,13 +37,13 @@ final class RoundRobinTransportFactoryTest extends TestCase
         $roundRobinTransportFactory = new RoundRobinTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
 
-        self::assertInstanceOf(RoundRobinTransport::class, $transport);
+        self::assertSame(2, $transport->count());
         self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertArrayHasKey('quantum', $transport->getOptions());
-        self::assertSame(2, $transport->getOptions()['quantum']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertArrayHasKey('quantum', $transport->getConfiguration()->toArray());
+        self::assertSame(2, $transport->getConfiguration()->get('quantum'));
     }
 
     /**
@@ -56,13 +56,13 @@ final class RoundRobinTransportFactoryTest extends TestCase
         $roundRobinTransportFactory = new RoundRobinTransportFactory([
             new InMemoryTransportFactory(),
         ]);
-        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transport = $roundRobinTransportFactory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
 
-        self::assertInstanceOf(RoundRobinTransport::class, $transport);
+        self::assertSame(2, $transport->count());
         self::assertSame('first_in_first_out', $transport->getExecutionMode());
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertArrayHasKey('quantum', $transport->getOptions());
-        self::assertSame(10, $transport->getOptions()['quantum']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertArrayHasKey('quantum', $transport->getConfiguration()->toArray());
+        self::assertSame(10, $transport->getConfiguration()->get('quantum'));
     }
 
     /**

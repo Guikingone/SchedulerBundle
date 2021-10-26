@@ -14,6 +14,8 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -27,7 +29,7 @@ final class LongTailTransportTest extends TestCase
 {
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -60,7 +62,7 @@ final class LongTailTransportTest extends TestCase
             $firstTransport,
             $secondTransport,
             $thirdTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -74,7 +76,7 @@ final class LongTailTransportTest extends TestCase
             new NullTask('foo'),
         ]);
 
-        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $firstTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $firstTransport->create(new NullTask('foo'));
@@ -86,7 +88,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $storedTask = $longTailTransport->get('foo');
         self::assertInstanceOf(NullTask::class, $storedTask);
@@ -103,7 +105,7 @@ final class LongTailTransportTest extends TestCase
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
         $secondTransport->expects(self::never())->method('get');
 
-        $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $firstTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $firstTransport->create(new NullTask('foo'));
@@ -111,7 +113,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $lazyTask = $longTailTransport->get('foo', true);
         self::assertInstanceOf(LazyTask::class, $lazyTask);
@@ -129,7 +131,7 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveTaskListWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -142,7 +144,7 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCannotRetrieveLazyTaskListWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -171,7 +173,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -205,7 +207,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -219,13 +221,13 @@ final class LongTailTransportTest extends TestCase
     public function testTransportCanReturnList(): void
     {
         $longTailTransport = new LongTailTransport(new TransportRegistry([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::assertInstanceOf(TaskList::class, $longTailTransport->list());
         self::assertCount(0, $longTailTransport->list());
@@ -237,13 +239,13 @@ final class LongTailTransportTest extends TestCase
     public function testTransportCanReturnLazyList(): void
     {
         $longTailTransport = new LongTailTransport(new TransportRegistry([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration([]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::assertInstanceOf(LazyTaskList::class, $longTailTransport->list(true));
         self::assertCount(0, $longTailTransport->list(true));
@@ -253,7 +255,7 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -282,7 +284,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -309,7 +311,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->create($task);
     }
@@ -318,7 +320,7 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -347,7 +349,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -374,14 +376,14 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->update('foo', $task);
     }
 
     public function testTransportCannotDeleteWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -408,7 +410,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -433,14 +435,14 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->delete('foo');
     }
 
     public function testTransportCannotPauseWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -467,7 +469,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -492,14 +494,14 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->pause('foo');
     }
 
     public function testTransportCannotResumeWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -525,7 +527,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -550,14 +552,14 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->resume('foo');
     }
 
     public function testTransportCannotClearWithoutTransports(): void
     {
-        $longTailTransport = new LongTailTransport(new TransportRegistry([]));
+        $longTailTransport = new LongTailTransport(new TransportRegistry([]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('No transport found');
@@ -584,7 +586,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The transport failed to execute the requested action');
@@ -609,7 +611,7 @@ final class LongTailTransportTest extends TestCase
         $longTailTransport = new LongTailTransport(new TransportRegistry([
             $firstTransport,
             $secondTransport,
-        ]));
+        ]), new InMemoryConfiguration());
 
         $longTailTransport->clear();
     }

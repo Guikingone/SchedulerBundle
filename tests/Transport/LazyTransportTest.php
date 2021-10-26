@@ -17,6 +17,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LazyTransport;
 use Throwable;
@@ -28,9 +29,9 @@ final class LazyTransportTest extends TestCase
 {
     public function testTransportCannotReturnUndefinedTask(): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -46,9 +47,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -67,9 +68,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTaskLazily(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -89,9 +90,9 @@ final class LazyTransportTest extends TestCase
     }
     public function testTransportCanStoreAndSortTasks(): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -113,9 +114,9 @@ final class LazyTransportTest extends TestCase
 
     public function testTransportCannotReturnInvalidTaskLazily(): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -139,9 +140,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanCreateATask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -161,9 +162,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanCreateATaskAndReturnItAsLazy(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -179,9 +180,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCannotCreateATaskTwice(): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -206,9 +207,9 @@ final class LazyTransportTest extends TestCase
         $secondTask->expects(self::any())->method('getName')->willReturn('foo');
         $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
 
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -231,9 +232,9 @@ final class LazyTransportTest extends TestCase
 
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -254,9 +255,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanUpdateATask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -288,9 +289,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -313,9 +314,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -336,9 +337,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCannotPauseUndefinedTask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -356,9 +357,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCannotPausePausedTask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -383,9 +384,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanPauseATask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -411,9 +412,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanResumeAPausedTask(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -441,9 +442,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanEmptyAList(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());
@@ -464,9 +465,9 @@ final class LazyTransportTest extends TestCase
      */
     public function testTransportCanEmptyALazyList(TaskInterface $task): void
     {
-        $transport = new LazyTransport(new InMemoryTransport([
+        $transport = new LazyTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
         self::assertFalse($transport->isInitialized());

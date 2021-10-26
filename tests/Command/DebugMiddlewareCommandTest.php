@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Command;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Command\DebugMiddlewareCommand;
+use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
@@ -28,7 +29,7 @@ final class DebugMiddlewareCommandTest extends TestCase
 {
     public function testCommandIsConfigured(): void
     {
-        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack([]), new WorkerMiddlewareStack([]));
+        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new WorkerMiddlewareStack(new MiddlewareRegistry([])));
 
         self::assertSame('scheduler:debug:middleware', $command->getName());
         self::assertSame('Display the registered middlewares', $command->getDescription());
@@ -36,7 +37,7 @@ final class DebugMiddlewareCommandTest extends TestCase
 
     public function testCommandCanDisplayWarningWithEmptySchedulingPhaseMiddleware(): void
     {
-        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack([]), new WorkerMiddlewareStack([]));
+        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new WorkerMiddlewareStack(new MiddlewareRegistry([])));
 
         $tester = new CommandTester($command);
         $tester->execute([]);
@@ -47,7 +48,7 @@ final class DebugMiddlewareCommandTest extends TestCase
 
     public function testCommandCanDisplayWarningWithEmptyExecutionPhaseMiddleware(): void
     {
-        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack([]), new WorkerMiddlewareStack([]));
+        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new WorkerMiddlewareStack(new MiddlewareRegistry([])));
 
         $tester = new CommandTester($command);
         $tester->execute([]);
@@ -58,12 +59,12 @@ final class DebugMiddlewareCommandTest extends TestCase
 
     public function testCommandCanDisplaySchedulingPhaseMiddlewareList(): void
     {
-        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack([
+        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new NotifierMiddleware(),
             new TaskCallbackMiddleware(),
             new RequiredPreSchedulingMiddleware(),
             new PostSchedulingMiddleware(),
-        ]), new WorkerMiddlewareStack([]));
+        ])), new WorkerMiddlewareStack(new MiddlewareRegistry([])));
 
         $tester = new CommandTester($command);
         $tester->execute([]);
@@ -93,13 +94,13 @@ final class DebugMiddlewareCommandTest extends TestCase
     {
         $scheduler = $this->createMock(SchedulerInterface::class);
 
-        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack([]), new WorkerMiddlewareStack([
+        $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new WorkerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
             new SingleRunTaskMiddleware($scheduler),
             new PostExecutionMiddleware(),
             new PreExecutionMiddleware(),
-        ]));
+        ])));
 
         $tester = new CommandTester($command);
         $tester->execute([]);

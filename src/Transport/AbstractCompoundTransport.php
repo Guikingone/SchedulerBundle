@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use Closure;
+use Countable;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
+use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-abstract class AbstractCompoundTransport extends AbstractTransport
+abstract class AbstractCompoundTransport extends AbstractTransport implements Countable
 {
-    public function __construct(protected TransportRegistryInterface $registry)
-    {
+    public function __construct(
+        protected TransportRegistryInterface $registry,
+        protected ConfigurationInterface $configuration
+    ) {
     }
 
     /**
@@ -110,5 +115,20 @@ abstract class AbstractCompoundTransport extends AbstractTransport
         });
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->transports);
+    }
+
+    /**
+     * @param Closure $func The closure used to perform the desired action.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>|TaskInterface
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     abstract protected function execute(Closure $func);
 }

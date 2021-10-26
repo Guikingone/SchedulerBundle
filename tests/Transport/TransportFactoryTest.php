@@ -8,6 +8,7 @@ use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\FailOverTransport;
 use SchedulerBundle\Transport\FailOverTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransport;
@@ -37,7 +38,7 @@ final class TransportFactoryTest extends TestCase
 
         self::assertInstanceOf(
             FilesystemTransport::class,
-            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -52,7 +53,7 @@ final class TransportFactoryTest extends TestCase
 
         self::assertInstanceOf(
             InMemoryTransport::class,
-            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -70,7 +71,7 @@ final class TransportFactoryTest extends TestCase
 
         self::assertInstanceOf(
             FailOverTransport::class,
-            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -88,7 +89,7 @@ final class TransportFactoryTest extends TestCase
 
         self::assertInstanceOf(
             RoundRobinTransport::class,
-            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -106,7 +107,7 @@ final class TransportFactoryTest extends TestCase
 
         self::assertInstanceOf(
             LongTailTransport::class,
-            $transportFactory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([]))
+            $transportFactory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]))
         );
     }
 
@@ -119,7 +120,7 @@ final class TransportFactoryTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('No transport supports the given Scheduler DSN "foo://".');
         self::expectExceptionCode(0);
-        $transportFactory->createTransport('foo://', [], $serializer, new SchedulePolicyOrchestrator([]));
+        $transportFactory->createTransport('foo://', [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([]));
     }
 
     /**

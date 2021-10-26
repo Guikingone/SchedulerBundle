@@ -14,6 +14,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
 use function array_search;
@@ -29,12 +30,16 @@ final class CacheTransport extends AbstractTransport
     private const TASK_LIST_ITEM_NAME = '_scheduler_task_list';
 
     public function __construct(
-        array $options,
-        private CacheItemPoolInterface $pool,
-        private SerializerInterface $serializer,
-        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        ConfigurationInterface $configuration,
+        CacheItemPoolInterface $cacheItemPool,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions($options);
+        $this->pool = $cacheItemPool;
+        $this->serializer = $serializer;
+        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+
+        parent::__construct($configuration);
 
         $this->boot();
     }

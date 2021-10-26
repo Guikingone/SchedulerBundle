@@ -37,11 +37,15 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * @param array<int, string> $names
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function findByName(array $names): self;
 
     /**
      * Allow to filter the list using a custom filter, the @param Closure $filter receive the task name and the TaskInterface object (in this order).
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function filter(Closure $filter): self;
 
@@ -51,7 +55,9 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function remove(string $taskName): void;
 
     /**
-     * Return the current list after applying the @param Closure $func to each tasks
+     * Return the current list after applying the @param Closure $func to each task.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function walk(Closure $func): self;
 
@@ -72,9 +78,9 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function last(): TaskInterface;
 
     /**
-     * Allow to sort the tasks using @param Closure $func.
+     * Allow to sort the tasks using @param Closure $func, the current list is returned with the sorted tasks.
      *
-     * The current list is returned with the sorted tasks.
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function uasort(Closure $func): TaskListInterface;
 
@@ -84,6 +90,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * If @param bool $preserveKeys is used, the task name as keys are preserved.
      *
      * For more information, see @link https://php.net/manual/en/function.array-chunk.php
+     *
+     * @return array<int, array<string|int, TaskInterface>>
      */
     public function chunk(int $size, bool $preserveKeys = false): array;
 
@@ -91,6 +99,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * Remove and return a list of tasks from the current one.
      *
      * For an equivalent, see @link https://php.net/manual/en/function.array-slice.php
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      *
      * @throws RuntimeException If the tasks cannot be found.
      */

@@ -8,11 +8,11 @@ use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -48,7 +48,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         self::expectException(TransportException::class);
         self::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
         self::expectExceptionCode(0);
-        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://test'), [], $serializer, $schedulePolicyOrchestrator);
+        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://test'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
     }
 
     public function testFactoryCannotReturnTransportWithoutValidConnection(): void
@@ -64,7 +64,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The connection is not a valid one');
         self::expectExceptionCode(0);
-        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], $serializer, $schedulePolicyOrchestrator);
+        $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
     }
 
     public function testFactoryReturnTransport(): void
@@ -78,16 +78,15 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
 
-        self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertTrue($transport->getOptions()['auto_setup']);
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('nice', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getConfiguration()->toArray());
+        self::assertTrue($transport->getConfiguration()->get('auto_setup'));
+        self::assertSame('_symfony_scheduler_tasks', $transport->getConfiguration()->get('table_name'));
+        self::assertArrayHasKey('table_name', $transport->getConfiguration()->toArray());
+        self::assertNotNull($transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('nice', $transport->getConfiguration()->get('execution_mode'));
     }
 
     public function testFactoryReturnTransportWithAutoSetup(): void
@@ -101,16 +100,15 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?auto_setup=false'), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?auto_setup=false'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
 
-        self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertArrayHasKey('auto_setup', $transport->getOptions());
-        self::assertFalse($transport->getOptions()['auto_setup']);
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['table_name']);
-        self::assertArrayHasKey('table_name', $transport->getOptions());
-        self::assertNotNull($transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('auto_setup', $transport->getConfiguration()->toArray());
+        self::assertFalse($transport->getConfiguration()->get('auto_setup'));
+        self::assertSame('_symfony_scheduler_tasks', $transport->getConfiguration()->get('table_name'));
+        self::assertArrayHasKey('table_name', $transport->getConfiguration()->toArray());
+        self::assertNotNull($transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
     }
 
     public function testFactoryReturnTransportWithExecutionMode(): void
@@ -124,7 +122,9 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        self::assertInstanceOf(DoctrineTransport::class, $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], $serializer, $schedulePolicyOrchestrator));
+        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=first_in_first_out'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
+
+        self::assertSame('first_in_first_out', $transport->getExecutionMode());
     }
 
     public function testFactoryReturnTransportWithTableName(): void
@@ -138,9 +138,8 @@ final class DoctrineTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
-        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], $serializer, $schedulePolicyOrchestrator);
+        $transport = $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?table_name=test'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
 
-        self::assertInstanceOf(DoctrineTransport::class, $transport);
-        self::assertSame('test', $transport->getOptions()['table_name']);
+        self::assertSame('test', $transport->getConfiguration()->get('table_name'));
     }
 }

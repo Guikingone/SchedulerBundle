@@ -6,6 +6,7 @@ namespace SchedulerBundle;
 
 use Closure;
 use DateTimeZone;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
@@ -73,6 +74,8 @@ interface SchedulerInterface
      *
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
+     * @return TaskListInterface<string|int, TaskInterface>
+     *
      * @throws Throwable {@see TransportInterface::list()}
      */
     public function getTasks(bool $lazy = false): TaskListInterface;
@@ -82,6 +85,8 @@ interface SchedulerInterface
      *
      * If the @param bool $lazy is used, the tasks are lazy-loaded.
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
@@ -109,4 +114,11 @@ interface SchedulerInterface
      * Return the timezone used by the actual scheduler, each scheduler can use a different timezone.
      */
     public function getTimezone(): DateTimeZone;
+
+    /**
+     * Return the current scheduler configuration, for more information {@see SchedulerConfiguration}
+     *
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration;
 }

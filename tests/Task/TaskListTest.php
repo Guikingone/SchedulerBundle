@@ -374,11 +374,9 @@ final class TaskListTest extends TestCase
 
         self::assertCount(2, $chunk);
         self::assertArrayHasKey(0, $chunk);
-        self::assertIsArray($chunk[0]);
         self::assertCount(1, $chunk[0]);
         self::assertArrayHasKey(0, $chunk[0]);
         self::assertArrayHasKey(1, $chunk);
-        self::assertIsArray($chunk[1]);
         self::assertCount(1, $chunk[1]);
         self::assertArrayHasKey(0, $chunk[1]);
     }
@@ -394,11 +392,9 @@ final class TaskListTest extends TestCase
 
         self::assertCount(2, $chunk);
         self::assertArrayHasKey(0, $chunk);
-        self::assertIsArray($chunk[0]);
         self::assertCount(1, $chunk[0]);
         self::assertArrayHasKey('foo', $chunk[0]);
         self::assertArrayHasKey(1, $chunk);
-        self::assertIsArray($chunk[1]);
         self::assertCount(1, $chunk[1]);
         self::assertArrayHasKey('bar', $chunk[1]);
     }
