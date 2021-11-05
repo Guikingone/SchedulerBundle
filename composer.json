@@ -147,8 +147,7 @@
         "symfony/notifier": "^5.2",
         "symfony/phpunit-bridge": "^5.2",
         "symfony/rate-limiter": "^5.2",
-        "thecodingmachine/safe": "^1.3.3",
-        "vimeo/psalm": "^4.10"
+        "thecodingmachine/safe": "^1.3.3"
     },
     "suggest": {
         "symfony/http-client": "For dispatching http tasks and / or using external probe clients",
