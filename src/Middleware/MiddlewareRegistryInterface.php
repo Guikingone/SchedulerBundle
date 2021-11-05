@@ -41,7 +41,7 @@ interface MiddlewareRegistryInterface extends Countable, IteratorAggregate
     public function uasort(Closure $func): MiddlewareRegistryInterface;
 
     /**
-     * @return array<PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]>
+     * @return array<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface>
      */
     public function toArray(): array;
 }
