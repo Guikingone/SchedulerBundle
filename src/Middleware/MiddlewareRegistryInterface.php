@@ -6,13 +6,14 @@ namespace SchedulerBundle\Middleware;
 
 use Closure;
 use Countable;
+use IteratorAggregate;
 use function uasort;
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface MiddlewareRegistryInterface extends Countable
+interface MiddlewareRegistryInterface extends Countable, IteratorAggregate
 {
     /**
      * Filter the current middleware list using @param Closure $func.
@@ -40,7 +41,7 @@ interface MiddlewareRegistryInterface extends Countable
     public function uasort(Closure $func): MiddlewareRegistryInterface;
 
     /**
-     * @return array<int|string, PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]>
+     * @return array<PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]>
      */
     public function toArray(): array;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
+use ArrayIterator;
 use Closure;
 use function array_filter;
 use function array_walk;
@@ -73,5 +74,13 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
     public function count(): int
     {
         return count($this->middlewareList);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->middlewareList);
     }
 }
