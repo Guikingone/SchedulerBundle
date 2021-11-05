@@ -43,6 +43,6 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array_merge($this->getPreExecutionMiddleware(), $this->getPostExecutionMiddleware()), SORT_REGULAR);
+        return array_unique(array_merge($this->getPreExecutionMiddleware()->toArray(), $this->getPostExecutionMiddleware()->toArray()), SORT_REGULAR);
     }
 }

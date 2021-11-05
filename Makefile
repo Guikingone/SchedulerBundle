@@ -41,17 +41,6 @@ phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon)
 phpstan: phpstan.neon.dist
 	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug
 
-psalm: ## Run Psalm
-psalm: psalm.xml
-	$(PHP) vendor/bin/psalm
-
-static-analysis: ## Launch the static analysis tools
-static-analysis: phpstan psalm
-
-psalm-debug: ## Run Psalm (display informations)
-psalm-debug: psalm.xml
-	$(PHP) vendor/bin/psalm --show-info=true
-
 rector: rector.php
 	$(PHP) vendor/bin/rector
 
