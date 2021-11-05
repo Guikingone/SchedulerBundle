@@ -40,6 +40,8 @@ use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
+use SchedulerBundle\Middleware\MiddlewareRegistry;
+use SchedulerBundle\Middleware\MiddlewareRegistryInterface;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
