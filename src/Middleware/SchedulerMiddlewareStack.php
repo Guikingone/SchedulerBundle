@@ -42,6 +42,6 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array_merge($this->getPreSchedulingMiddleware(), $this->getPostSchedulingMiddleware()), SORT_REGULAR);
+        return array_unique(array_merge($this->getPreSchedulingMiddleware()->toArray(), $this->getPostSchedulingMiddleware()->toArray()), SORT_REGULAR);
     }
 }
