@@ -1,5 +1,7 @@
-PHP            = @symfony php
-COMPOSER       = @symfony composer
+DOCKER_COMPOSE = @docker-compose
+
+PHP            = $(DOCKER_COMPOSE) run --rm php
+COMPOSER       = $(DOCKER_COMPOSE) run --rm php composer
 
 .DEFAULT_GOAL := help
 
@@ -13,7 +15,11 @@ help:
 .PHONY: boot up down vendor
 
 boot: ## Launch the project
-boot: vendor
+boot: up vendor
+
+up: ## Up the containers
+up: .cloud/docker docker-compose.yaml
+	$(DOCKER_COMPOSE) up -d --build --remove-orphans --force-recreate
 
 vendor: ## Install the dependencies
 vendor: composer.json composer.lock
@@ -37,7 +43,7 @@ php-cs-fixer-dry: ## Run PHP-CS-FIXER in --dry-run mode
 php-cs-fixer-dry:
 	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
 
-phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon)
+phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon.dist)
 phpstan: phpstan.neon.dist
 	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug
 
@@ -59,7 +65,7 @@ tests: phpunit.xml.dist autoload
 
 infection: ## Launch Infection
 infection: infection.json.dist autoload
-	$(PHP) vendor/bin/infection
+	$(PHP) vendor/bin/infection --threads=4
 
 ##
 ## Versioning
