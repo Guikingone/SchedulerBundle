@@ -1,0 +1,15 @@
+# Cloud
+.cloud
+
+# CI
+.github
+
+# Assets
+assets
+
+# Documentation
+doc
+README.md
+.changelog
+changelog.md
+LICENSE
