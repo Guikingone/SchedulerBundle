@@ -25,6 +25,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('tasks', $configuration);
         self::assertArrayNotHasKey('probe', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
+        self::assertArrayHasKey('triggers', $configuration);
     }
 
     public function testConfigurationCannotDefineTasksWithoutTransport(): void
@@ -513,5 +514,37 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('configuration://fs', $configuration['configuration']['dsn']);
         self::assertArrayHasKey('mode', $configuration['configuration']);
         self::assertSame('lazy', $configuration['configuration']['mode']);
+    }
+
+    public function testConfigurationCanDefineTriggers(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'cache://app',
+                ],
+                'triggers' => [
+                    'email' => [
+                        'on_failure' => [
+                            'triggered_at' => 10,
+                            'to' => 'foo@foo.foo',
+                            'from' => 'bar@bar.bar',
+                            'subject' => 'An error occurred',
+                        ],
+                        'on_success' => [
+                            'triggered_at' => 10,
+                            'to' => 'foo@foo.foo',
+                            'from' => 'bar@bar.bar',
+                            'subject' => 'An task succeed',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertCount(1, $configuration['triggers']);
+        self::assertCount(2, $configuration['triggers']['email']);
+        self::assertCount(4, $configuration['triggers']['email']['on_failure']);
+        self::assertCount(4, $configuration['triggers']['email']['on_success']);
     }
 }
