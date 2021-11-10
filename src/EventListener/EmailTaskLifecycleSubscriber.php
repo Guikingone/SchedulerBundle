@@ -6,6 +6,9 @@ namespace SchedulerBundle\EventListener;
 
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Task\Output;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Trigger\EmailTriggerConfiguration;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -15,26 +18,31 @@ use Symfony\Component\Mime\Email;
  */
 final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
 {
-    private int $taskFailureAmount;
-    private int $taskSuccessAmount;
+    private int $failedTasks;
+    private int $succeededTasks;
     private ?MailerInterface $mailer;
+    private EmailTriggerConfiguration $emailTriggerConfiguration;
 
     public function __construct(
-        int $taskFailureAmount,
-        int $taskSuccessAmount,
+        EmailTriggerConfiguration $emailTriggerConfiguration,
         ?MailerInterface $mailer = null
     ) {
-        $this->taskFailureAmount = $taskFailureAmount;
-        $this->taskSuccessAmount = $taskSuccessAmount;
+        $this->emailTriggerConfiguration = $emailTriggerConfiguration;
         $this->mailer = $mailer;
     }
 
-    public function onTaskFailure(TaskExecutedEvent $event): void
+    public function onTaskFailure(): void
     {
+        ++$this->failedTasks;
     }
 
-    public function onTaskSuccess(TaskFailedEvent $event): void
+    public function onTaskExecuted(TaskExecutedEvent $event): void
     {
+        $task = $event->getTask();
+        $output = $event->getOutput();
+
+        $this->onTaskFailed($task, $output);
+        $this->onTaskSuccess($task, $output);
     }
 
     private function send(Email $email): void
@@ -46,10 +54,29 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $this->mailer->send($email);
     }
 
+    private function onTaskFailed(TaskInterface $task, Output $output): void
+    {
+        if ($this->failedTasks !== $this->emailTriggerConfiguration->getFailureTriggeredAt()) {
+            return;
+        }
+
+        $this->send();
+    }
+
+    private function onTaskSuccess(TaskInterface $task, Output $output): void
+    {
+        if ($task->getExecutionState() !== TaskInterface::SUCCEED) {
+            return;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function getSubscribedEvents(): array
     {
+        return [
+            TaskFailedEvent::class => 'onTaskFailure',
+        ];
     }
 }

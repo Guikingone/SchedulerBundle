@@ -49,6 +49,7 @@
             "SchedulerBundle\\Test\\Constraint\\Scheduler\\": "src/Test/Constraint/Scheduler/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
             "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
+            "SchedulerBundle\\Trigger\\": "src/Trigger/",
             "SchedulerBundle\\Worker\\": "src/Worker/"
         }
     },
