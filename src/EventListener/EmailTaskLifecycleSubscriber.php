@@ -68,6 +68,12 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         if ($task->getExecutionState() !== TaskInterface::SUCCEED) {
             return;
         }
+
+        ++$this->succeededTasks;
+
+        if ($this->succeededTasks !== $this->emailTriggerConfiguration->getSuccessTriggeredAt()) {
+            return;
+        }
     }
 
     /**
