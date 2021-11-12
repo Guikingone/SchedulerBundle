@@ -6,8 +6,11 @@ namespace SchedulerBundle\EventListener;
 
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
+use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Trigger\EmailTriggerConfiguration;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -18,8 +21,8 @@ use Symfony\Component\Mime\Email;
  */
 final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
 {
-    private int $failedTasks;
-    private int $succeededTasks;
+    private TaskListInterface $failedTasksList;
+    private TaskListInterface $succeedTasksList;
     private ?MailerInterface $mailer;
     private EmailTriggerConfiguration $emailTriggerConfiguration;
 
@@ -29,11 +32,25 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
     ) {
         $this->emailTriggerConfiguration = $emailTriggerConfiguration;
         $this->mailer = $mailer;
+
+        $this->failedTasksList = new TaskList();
+        $this->succeedTasksList = new TaskList();
     }
 
-    public function onTaskFailure(): void
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
     {
-        ++$this->failedTasks;
+        return [
+            TaskExecutedEvent::class => 'onTaskExecuted',
+            TaskFailedEvent::class => 'onTaskFailure',
+        ];
+    }
+
+    public function onTaskFailure(FailedTask $failedTask): void
+    {
+        $this->failedTasksList->add($failedTask->getTask());
     }
 
     public function onTaskExecuted(TaskExecutedEvent $event): void
@@ -56,7 +73,7 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
 
     private function onTaskFailed(TaskInterface $task, Output $output): void
     {
-        if ($this->failedTasks !== $this->emailTriggerConfiguration->getFailureTriggeredAt()) {
+        if ($this->failedTasksList->count() !== $this->emailTriggerConfiguration->getFailureTriggeredAt()) {
             return;
         }
 
@@ -69,20 +86,10 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
             return;
         }
 
-        ++$this->succeededTasks;
+        $this->succeedTasksList->add($task);
 
-        if ($this->succeededTasks !== $this->emailTriggerConfiguration->getSuccessTriggeredAt()) {
+        if ($this->succeedTasksList->count() !== $this->emailTriggerConfiguration->getSuccessTriggeredAt()) {
             return;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TaskFailedEvent::class => 'onTaskFailure',
-        ];
     }
 }

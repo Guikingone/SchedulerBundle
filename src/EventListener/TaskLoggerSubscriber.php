@@ -25,16 +25,6 @@ final class TaskLoggerSubscriber implements EventSubscriberInterface
         $this->events = new TaskEventList();
     }
 
-    public function onTask(TaskEventInterface $taskEvent): void
-    {
-        $this->events->addEvent($taskEvent);
-    }
-
-    public function getEvents(): TaskEventList
-    {
-        return $this->events;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -47,5 +37,15 @@ final class TaskLoggerSubscriber implements EventSubscriberInterface
             TaskScheduledEvent::class => ['onTask', -255],
             TaskUnscheduledEvent::class => ['onTask', -255],
         ];
+    }
+
+    public function onTask(TaskEventInterface $taskEvent): void
+    {
+        $this->events->addEvent($taskEvent);
+    }
+
+    public function getEvents(): TaskEventList
+    {
+        return $this->events;
     }
 }

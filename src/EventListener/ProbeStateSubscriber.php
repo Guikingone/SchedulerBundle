@@ -29,6 +29,16 @@ final class ProbeStateSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => [['onKernelRequest', 50]],
+        ];
+    }
+
+    /**
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     public function onKernelRequest(RequestEvent $event): void
@@ -48,15 +58,5 @@ final class ProbeStateSubscriber implements EventSubscriberInterface
             'executedTasks' => $this->probe->getExecutedTasks(),
             'failedTasks' => $this->probe->getFailedTasks(),
         ]));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => [['onKernelRequest', 50]],
-        ];
     }
 }

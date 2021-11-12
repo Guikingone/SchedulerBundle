@@ -26,6 +26,16 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            WorkerRunningEvent::class => 'onWorkerRunning',
+        ];
+    }
+
     public function onWorkerRunning(WorkerRunningEvent $workerRunningEvent): void
     {
         if (!$workerRunningEvent->isIdle() && ++$this->consumedTasks >= $this->maximumTasks) {
@@ -37,15 +47,5 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
                 'count' => $this->consumedTasks,
             ]);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            WorkerRunningEvent::class => 'onWorkerRunning',
-        ];
     }
 }
