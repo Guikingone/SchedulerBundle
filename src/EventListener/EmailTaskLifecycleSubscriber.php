@@ -44,11 +44,11 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
     {
         return [
             TaskExecutedEvent::class => 'onTaskExecuted',
-            TaskFailedEvent::class => 'onTaskFailure',
+            TaskFailedEvent::class => 'onTaskFailed',
         ];
     }
 
-    public function onTaskFailure(FailedTask $failedTask): void
+    public function onTaskFailed(FailedTask $failedTask): void
     {
         $this->failedTasksList->add($failedTask->getTask());
     }
@@ -58,8 +58,8 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $task = $event->getTask();
         $output = $event->getOutput();
 
-        $this->onTaskFailed($task, $output);
-        $this->onTaskSuccess($task, $output);
+        $this->handleTaskFailure($task, $output);
+        $this->handleTaskSuccess($task, $output);
     }
 
     private function send(Email $email): void
@@ -71,7 +71,7 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $this->mailer->send($email);
     }
 
-    private function onTaskFailed(TaskInterface $task, Output $output): void
+    private function handleTaskFailure(TaskInterface $task, Output $output): void
     {
         if ($this->failedTasksList->count() !== $this->emailTriggerConfiguration->getFailureTriggeredAt()) {
             return;
@@ -80,7 +80,7 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $this->send();
     }
 
-    private function onTaskSuccess(TaskInterface $task, Output $output): void
+    private function handleTaskSuccess(TaskInterface $task, Output $output): void
     {
         if ($task->getExecutionState() !== TaskInterface::SUCCEED) {
             return;

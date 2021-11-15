@@ -9,6 +9,7 @@ namespace SchedulerBundle\Trigger;
  */
 final class EmailTriggerConfiguration
 {
+    private bool $enabled;
     private int $failureTriggeredAt;
     private int $successTriggeredAt;
     private ?string $failureFrom;
@@ -18,9 +19,12 @@ final class EmailTriggerConfiguration
     private string $failureSubject;
     private string $successSubject;
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     public static function create(
+        bool $enabled,
         int $failureTriggeredAt,
         int $successTriggeredAt,
         ?string $failureFrom,
@@ -32,6 +36,7 @@ final class EmailTriggerConfiguration
     ): self {
         $emailTriggerConfiguration = new self();
 
+        $emailTriggerConfiguration->enabled = $enabled;
         $emailTriggerConfiguration->failureTriggeredAt = $failureTriggeredAt;
         $emailTriggerConfiguration->successTriggeredAt = $successTriggeredAt;
         $emailTriggerConfiguration->failureFrom = $failureFrom;
@@ -42,6 +47,11 @@ final class EmailTriggerConfiguration
         $emailTriggerConfiguration->successSubject = $successSubject;
 
         return $emailTriggerConfiguration;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function getFailureTriggeredAt(): int

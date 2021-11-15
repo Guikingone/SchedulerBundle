@@ -115,6 +115,7 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Trigger\EmailTriggerConfiguration;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -192,6 +193,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerMiddlewareStacks($container, $config);
         $this->registerProbeContext($container, $config);
         $this->registerMercureSupport($container, $config);
+        $this->registerTriggers($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -206,6 +208,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
+        $container->setParameter('scheduler.trigger_support', $configuration['triggers']['enabled']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -1324,6 +1327,31 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => MercureEventSubscriber::class,
+            ])
+        ;
+    }
+
+    private function registerTriggers(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->getParameter('scheduler.trigger_support')) {
+            return;
+        }
+
+        $container->register(EmailTriggerConfiguration::class, EmailTriggerConfiguration::class)
+            ->setArguments([
+                $container->getParameter('scheduler.trigger_support'),
+                $config['triggers']['email']['on_failure']['triggered_at'],
+                $config['triggers']['email']['on_success']['triggered_at'],
+                $config['triggers']['email']['on_failure']['from'],
+                $config['triggers']['email']['on_success']['from'],
+                $config['triggers']['email']['on_failure']['to'],
+                $config['triggers']['email']['on_success']['to'],
+                $config['triggers']['email']['on_failure']['subject'],
+                $config['triggers']['email']['on_success']['subject'],
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => EmailTriggerConfiguration::class,
             ])
         ;
     }
