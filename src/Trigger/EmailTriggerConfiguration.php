@@ -7,7 +7,7 @@ namespace SchedulerBundle\Trigger;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class EmailTriggerConfiguration
+final class EmailTriggerConfiguration implements TriggerConfigurationInterface
 {
     private bool $enabled;
     private int $failureTriggeredAt;
@@ -19,11 +19,7 @@ final class EmailTriggerConfiguration
     private string $failureSubject;
     private string $successSubject;
 
-    private function __construct()
-    {
-    }
-
-    public static function create(
+    public function __construct(
         bool $enabled,
         int $failureTriggeredAt,
         int $successTriggeredAt,
@@ -33,22 +29,21 @@ final class EmailTriggerConfiguration
         ?string $successTo,
         string $failureSubject,
         string $successSubject
-    ): self {
-        $emailTriggerConfiguration = new self();
-
-        $emailTriggerConfiguration->enabled = $enabled;
-        $emailTriggerConfiguration->failureTriggeredAt = $failureTriggeredAt;
-        $emailTriggerConfiguration->successTriggeredAt = $successTriggeredAt;
-        $emailTriggerConfiguration->failureFrom = $failureFrom;
-        $emailTriggerConfiguration->successFrom = $successFrom;
-        $emailTriggerConfiguration->failureTo = $failureTo;
-        $emailTriggerConfiguration->successTo = $successTo;
-        $emailTriggerConfiguration->failureSubject = $failureSubject;
-        $emailTriggerConfiguration->successSubject = $successSubject;
-
-        return $emailTriggerConfiguration;
+    ) {
+        $this->enabled = $enabled;
+        $this->failureTriggeredAt = $failureTriggeredAt;
+        $this->successTriggeredAt = $successTriggeredAt;
+        $this->failureFrom = $failureFrom;
+        $this->successFrom = $successFrom;
+        $this->failureTo = $failureTo;
+        $this->successTo = $successTo;
+        $this->failureSubject = $failureSubject;
+        $this->successSubject = $successSubject;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function isEnabled(): bool
     {
         return $this->enabled;
