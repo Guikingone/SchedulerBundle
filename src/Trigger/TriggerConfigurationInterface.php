@@ -13,4 +13,6 @@ interface TriggerConfigurationInterface
      * Specify if the configuration is enabled.
      */
     public function isEnabled(): bool;
+
+    public function support(string $trigger): bool;
 }

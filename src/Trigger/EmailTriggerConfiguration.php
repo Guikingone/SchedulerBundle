@@ -49,6 +49,14 @@ final class EmailTriggerConfiguration implements TriggerConfigurationInterface
         return $this->enabled;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function support(string $trigger): bool
+    {
+        return 'emails' === $trigger;
+    }
+
     public function getFailureTriggeredAt(): int
     {
         return $this->failureTriggeredAt;
