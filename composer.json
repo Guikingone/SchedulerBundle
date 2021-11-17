@@ -89,6 +89,7 @@
             "Tests\\SchedulerBundle\\Transport\\": "tests/Transport/",
             "Tests\\SchedulerBundle\\Transport\\Assets\\": "tests/Transport/Assets/",
             "Tests\\SchedulerBundle\\Transport\\Configuration\\": "tests/Transport/Configuration/",
+            "Tests\\SchedulerBundle\\Trigger\\": "tests/Trigger/",
             "Tests\\SchedulerBundle\\Worker\\": "tests/Worker/",
             "Tests\\SchedulerBundle\\Worker\\Assets\\": "tests/Worker/Assets/"
         }

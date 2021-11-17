@@ -52,6 +52,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
+use SchedulerBundle\Middleware\TriggerMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
@@ -116,6 +117,9 @@ use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Trigger\EmailTriggerConfiguration;
+use SchedulerBundle\Trigger\TriggerConfigurationInterface;
+use SchedulerBundle\Trigger\TriggerConfigurationRegistry;
+use SchedulerBundle\Trigger\TriggerConfigurationRegistryInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -127,6 +131,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mercure\Hub;
 use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Lock\LockFactory;
@@ -159,6 +164,7 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
     private const TRANSPORT_CONFIGURATION_TAG = 'scheduler.configuration';
     private const TRANSPORT_CONFIGURATION_FACTORY_TAG = 'scheduler.configuration_factory';
+    private const SCHEDULER_TRIGGER_CONFIGURATION_TAG = 'scheduler.trigger_configuration';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -209,6 +215,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
         $container->setParameter('scheduler.trigger_support', $configuration['triggers']['enabled']);
+        $container->setParameter('scheduler.trigger_support.emails_enabled', $configuration['triggers']['email']['enabled']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -229,6 +236,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
+        $container->registerForAutoconfiguration(TriggerConfigurationInterface::class)->addTag(self::SCHEDULER_TRIGGER_CONFIGURATION_TAG);
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
@@ -1337,6 +1345,35 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
+        $container->register(TriggerConfigurationRegistry::class, TriggerConfigurationRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_TRIGGER_CONFIGURATION_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => TriggerConfigurationRegistry::class,
+            ])
+        ;
+        $container->setAlias(TriggerConfigurationRegistryInterface::class, TriggerConfigurationRegistry::class);
+
+        $container->register(TriggerMiddleware::class, TriggerMiddleware::class)
+            ->setArguments([
+                new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TriggerConfigurationRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                new Reference(MailerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.preload', [
+                'class' => TriggerMiddleware::class,
+            ])
+        ;
+
+        if (!$container->getParameter('scheduler.trigger_support.emails_enabled')) {
+            return;
+        }
+
         $container->register(EmailTriggerConfiguration::class, EmailTriggerConfiguration::class)
             ->setArguments([
                 $container->getParameter('scheduler.trigger_support'),
@@ -1349,6 +1386,7 @@ final class SchedulerBundleExtension extends Extension
                 $config['triggers']['email']['on_failure']['subject'],
                 $config['triggers']['email']['on_success']['subject'],
             ])
+            ->addTag(self::SCHEDULER_TRIGGER_CONFIGURATION_TAG)
             ->setPublic(false)
             ->addTag('container.preload', [
                 'class' => EmailTriggerConfiguration::class,

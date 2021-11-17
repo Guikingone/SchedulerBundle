@@ -91,5 +91,7 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         if ($this->succeedTasksList->count() !== $this->emailTriggerConfiguration->getSuccessTriggeredAt()) {
             return;
         }
+
+        $this->send();
     }
 }

@@ -6,7 +6,7 @@ namespace SchedulerBundle\Trigger;
 
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\Exception\TriggerConfigurationNotFoundException;
 use function array_filter;
 use function count;
 use function current;
@@ -29,14 +29,20 @@ final class TriggerConfigurationRegistry implements TriggerConfigurationRegistry
         $this->configurationList = $configurationList;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function filter(Closure $func): TriggerConfigurationRegistryInterface
     {
         return new self(array_filter($this->configurationList, $func));
     }
 
-    public function get(string $string): TriggerConfigurationInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function get(string $triggerName): TriggerConfigurationInterface
     {
-        $list = $this->filter(static fn (TriggerConfigurationInterface $configuration): bool => $configuration->support($string));
+        $list = $this->filter(static fn (TriggerConfigurationInterface $configuration): bool => $configuration->support($triggerName));
         if (0 === $list->count()) {
             throw new InvalidArgumentException('No configuration found for this trigger');
         }
@@ -55,7 +61,7 @@ final class TriggerConfigurationRegistry implements TriggerConfigurationRegistry
     {
         $currentConfiguration = current($this->configurationList);
         if (false === $currentConfiguration) {
-            throw new RuntimeException('The current configuration cannot be found');
+            throw new TriggerConfigurationNotFoundException('The current configuration cannot be found');
         }
 
         return $currentConfiguration;

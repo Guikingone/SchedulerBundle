@@ -526,6 +526,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
                 'triggers' => [
                     'enabled' => true,
                     'email' => [
+                        'enabled' => true,
                         'on_failure' => [
                             'triggered_at' => 10,
                             'to' => 'foo@foo.foo',
@@ -545,7 +546,8 @@ final class SchedulerBundleConfigurationTest extends TestCase
 
         self::assertCount(1, $configuration['triggers']);
         self::assertTrue($configuration['triggers']['enabled']);
-        self::assertCount(2, $configuration['triggers']['email']);
+        self::assertCount(3, $configuration['triggers']['email']);
+        self::assertTrue($configuration['triggers']['email']['enabled']);
         self::assertCount(4, $configuration['triggers']['email']['on_failure']);
         self::assertCount(4, $configuration['triggers']['email']['on_success']);
     }

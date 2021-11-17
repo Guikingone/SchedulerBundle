@@ -9,7 +9,6 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\EventListener\EmailTaskLifecycleSubscriber;
 use SchedulerBundle\Exception\TriggerConfigurationNotFoundException;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Trigger\TriggerConfigurationInterface;
 use SchedulerBundle\Trigger\TriggerConfigurationRegistryInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -17,7 +16,7 @@ use Symfony\Component\Mailer\MailerInterface;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TriggerMiddleware implements PreExecutionMiddlewareInterface, RequiredMiddlewareInterface
+final class TriggerMiddleware implements PreExecutionMiddlewareInterface
 {
     private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
@@ -42,19 +41,19 @@ final class TriggerMiddleware implements PreExecutionMiddlewareInterface, Requir
      */
     public function preExecute(TaskInterface $task): void
     {
-        $enabledTriggers = $this->triggerConfigurationRegistry->filter(static fn (TriggerConfigurationInterface $triggerConfiguration) => $triggerConfiguration->isEnabled());
-
-        $this->enableEmailsTrigger($enabledTriggers);
+        $this->enableEmailsTrigger();
     }
 
-    private function enableEmailsTrigger(TriggerConfigurationRegistryInterface $registry): void
+    private function enableEmailsTrigger(): void
     {
         try {
-            $emailTriggerConfiguration = $registry->get('emails');
+            $emailTriggerConfiguration = $this->triggerConfigurationRegistry->get('emails');
 
             $this->eventDispatcher->addSubscriber(new EmailTaskLifecycleSubscriber($emailTriggerConfiguration, $this->mailer));
         } catch (TriggerConfigurationNotFoundException $exception) {
             $this->logger->warning('The "emails" trigger cannot be registered');
+
+            return;
         }
     }
 }
