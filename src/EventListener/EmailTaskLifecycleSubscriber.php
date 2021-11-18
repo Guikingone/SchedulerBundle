@@ -12,8 +12,10 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Trigger\EmailTriggerConfiguration;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 /**
@@ -62,22 +64,22 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $this->handleTaskSuccess($task, $output);
     }
 
-    private function send(Email $email): void
-    {
-        if (null === $this->mailer) {
-            return;
-        }
-
-        $this->mailer->send($email);
-    }
-
     private function handleTaskFailure(TaskInterface $task, Output $output): void
     {
         if ($this->failedTasksList->count() !== $this->emailTriggerConfiguration->getFailureTriggeredAt()) {
             return;
         }
 
-        $this->send();
+        $this->send(
+            (new TemplatedEmail())
+            ->from($this->emailTriggerConfiguration->getFailureFrom())
+            ->to(new Address($this->emailTriggerConfiguration->getFailureTo()))
+            ->subject($this->emailTriggerConfiguration->getFailureSubject())
+            ->htmlTemplate('emails/task_failure.html.twig')
+            ->context([
+                'tasks' => $this->failedTasksList->toArray(false),
+            ])
+        );
     }
 
     private function handleTaskSuccess(TaskInterface $task, Output $output): void
@@ -92,6 +94,24 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->send();
+        $this->send(
+            (new TemplatedEmail())
+            ->from($this->emailTriggerConfiguration->getSuccessFrom())
+            ->to(new Address($this->emailTriggerConfiguration->getSuccessTo()))
+            ->subject($this->emailTriggerConfiguration->getFailureSubject())
+            ->htmlTemplate('emails/task_success.html.twig')
+            ->context([
+                'tasks' => $this->succeedTasksList->toArray(false),
+            ])
+        );
+    }
+
+    private function send(Email $email): void
+    {
+        if (null === $this->mailer) {
+            return;
+        }
+
+        $this->mailer->send($email);
     }
 }

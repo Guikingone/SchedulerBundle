@@ -1379,12 +1379,12 @@ final class SchedulerBundleExtension extends Extension
                 $container->getParameter('scheduler.trigger_support'),
                 $config['triggers']['email']['on_failure']['triggered_at'],
                 $config['triggers']['email']['on_success']['triggered_at'],
+                $config['triggers']['email']['on_failure']['subject'],
+                $config['triggers']['email']['on_success']['subject'],
                 $config['triggers']['email']['on_failure']['from'],
                 $config['triggers']['email']['on_success']['from'],
                 $config['triggers']['email']['on_failure']['to'],
                 $config['triggers']['email']['on_success']['to'],
-                $config['triggers']['email']['on_failure']['subject'],
-                $config['triggers']['email']['on_success']['subject'],
             ])
             ->addTag(self::SCHEDULER_TRIGGER_CONFIGURATION_TAG)
             ->setPublic(false)

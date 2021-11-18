@@ -23,12 +23,12 @@ final class EmailTriggerConfiguration implements TriggerConfigurationInterface
         bool $enabled,
         int $failureTriggeredAt,
         int $successTriggeredAt,
-        ?string $failureFrom,
-        ?string $successFrom,
-        ?string $failureTo,
-        ?string $successTo,
         string $failureSubject,
-        string $successSubject
+        string $successSubject,
+        ?string $failureFrom = null,
+        ?string $successFrom = null,
+        ?string $failureTo = null,
+        ?string $successTo = null
     ) {
         $this->enabled = $enabled;
         $this->failureTriggeredAt = $failureTriggeredAt;

@@ -1787,6 +1787,40 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertFalse($container->hasDefinition(EmailTriggerConfiguration::class));
     }
 
+    public function testEmailsTriggersCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'triggers' => [
+                'enabled' => true,
+                'email' => [
+                    'enabled' => true,
+                    'on_failure' => [
+                        'triggered_at' => 10,
+                        'to' => 'foo@foo.foo',
+                        'from' => 'bar@bar.bar',
+                        'subject' => 'An error occurred',
+                    ],
+                    'on_success' => [
+                        'triggered_at' => 10,
+                        'to' => 'foo@foo.foo',
+                        'from' => 'bar@bar.bar',
+                        'subject' => 'An task succeed',
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition(TriggerMiddleware::class));
+        self::assertTrue($container->hasDefinition(TriggerConfigurationRegistry::class));
+
+        self::assertTrue($container->hasDefinition(EmailTriggerConfiguration::class));
+    }
+
     public function testConfiguration(): void
     {
         $extension = new SchedulerBundleExtension();

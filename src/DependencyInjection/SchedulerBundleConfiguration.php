@@ -97,6 +97,7 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                                 ->defaultValue(false)
                             ->end()
                             ->arrayNode('email')
+                                ->addDefaultsIfNotSet()
                                 ->children()
                                     ->scalarNode('enabled')
                                         ->info('Enable the email triggers')
