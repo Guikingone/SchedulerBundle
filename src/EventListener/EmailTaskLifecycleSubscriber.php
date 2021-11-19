@@ -70,6 +70,10 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (null === $this->emailTriggerConfiguration->getFailureTo()) {
+            return;
+        }
+
         $this->send(
             (new TemplatedEmail())
             ->from($this->emailTriggerConfiguration->getFailureFrom())
@@ -91,6 +95,10 @@ final class EmailTaskLifecycleSubscriber implements EventSubscriberInterface
         $this->succeedTasksList->add($task);
 
         if ($this->succeedTasksList->count() !== $this->emailTriggerConfiguration->getSuccessTriggeredAt()) {
+            return;
+        }
+
+        if (null === $this->emailTriggerConfiguration->getSuccessTo()) {
             return;
         }
 

@@ -37,7 +37,7 @@ final class EmailTaskLifecycleSubscriberTest extends TestCase
 
         $task = new NullTask('foo');
 
-        $configuration = new EmailTriggerConfiguration(true, 2, 2, 'foo', 'bar');
+        $configuration = new EmailTriggerConfiguration(true, 2, 2, 'foo.foo@foo.com', 'bar.bar@bar.com');
 
         $subscriber = new EmailTaskLifecycleSubscriber($configuration, $mailer);
 
@@ -51,7 +51,7 @@ final class EmailTaskLifecycleSubscriberTest extends TestCase
         $mailer->expects(self::once())->method('send');
 
         $task = new NullTask('foo');
-        $configuration = new EmailTriggerConfiguration(true, 1, 1, 'foo', 'bar');
+        $configuration = new EmailTriggerConfiguration(true, 1, 1, 'foo.foo@foo.com', 'bar.bar@bar.com');
 
         $subscriber = new EmailTaskLifecycleSubscriber($configuration, $mailer);
 
