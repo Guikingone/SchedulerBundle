@@ -33,6 +33,23 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        if (!function_exists('pcntl_signal')) {
+            return [];
+        }
+
+        return [
+            TaskExecutingEvent::class => ['onTaskExecuting', 100],
+            WorkerStartedEvent::class => ['onWorkerStarted', 100],
+            WorkerRunningEvent::class => ['onWorkerRunning', 100],
+            WorkerSleepingEvent::class => ['onWorkerSleeping', 100],
+        ];
+    }
+
     public function onTaskExecuting(TaskExecutingEvent $taskExecutingEvent): void
     {
         foreach ([SIGTERM, SIGINT] as $signal) {
@@ -67,23 +84,6 @@ final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
     public function onWorkerSleeping(WorkerSleepingEvent $workerSleepingEvent): void
     {
         $this->stopWorker($workerSleepingEvent);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        if (!function_exists('pcntl_signal')) {
-            return [];
-        }
-
-        return [
-            TaskExecutingEvent::class => ['onTaskExecuting', 100],
-            WorkerStartedEvent::class => ['onWorkerStarted', 100],
-            WorkerRunningEvent::class => ['onWorkerRunning', 100],
-            WorkerSleepingEvent::class => ['onWorkerSleeping', 100],
-        ];
     }
 
     private function stopWorker(WorkerEventInterface $event): void

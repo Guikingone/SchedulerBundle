@@ -42,6 +42,24 @@ final class MercureEventSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            TaskScheduledEvent::class => ['onTaskScheduled', -255],
+            TaskUnscheduledEvent::class => ['onTaskUnscheduled', -255],
+            TaskExecutedEvent::class => ['onTaskExecuted', -255],
+            TaskFailedEvent::class => ['onTaskFailed', -255],
+            WorkerPausedEvent::class => ['onWorkerPaused', -255],
+            WorkerStartedEvent::class => ['onWorkerStarted', -255],
+            WorkerStoppedEvent::class => ['onWorkerStopped', -255],
+            WorkerForkedEvent::class => ['onWorkerForked', -255],
+            WorkerRestartedEvent::class => ['onWorkerRestarted', -255],
+        ];
+    }
+
+    /**
      * @throws JsonException {@see json_encode()}
      */
     public function onTaskScheduled(TaskScheduledEvent $event): void
@@ -184,23 +202,5 @@ final class MercureEventSubscriber implements EventSubscriberInterface
                 'options' => $configuration->toArray(),
             ],
         ], JSON_THROW_ON_ERROR)));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TaskScheduledEvent::class => ['onTaskScheduled', -255],
-            TaskUnscheduledEvent::class => ['onTaskUnscheduled', -255],
-            TaskExecutedEvent::class => ['onTaskExecuted', -255],
-            TaskFailedEvent::class => ['onTaskFailed', -255],
-            WorkerPausedEvent::class => ['onWorkerPaused', -255],
-            WorkerStartedEvent::class => ['onWorkerStarted', -255],
-            WorkerStoppedEvent::class => ['onWorkerStopped', -255],
-            WorkerForkedEvent::class => ['onWorkerForked', -255],
-            WorkerRestartedEvent::class => ['onWorkerRestarted', -255],
-        ];
     }
 }

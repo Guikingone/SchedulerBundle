@@ -56,6 +56,16 @@ final class TaskSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => [['onKernelRequest', 50]],
+        ];
+    }
+
+    /**
      * @throws Throwable          {@see SchedulerInterface::getTasks()}
      * @throws ExceptionInterface {@see SerializerInterface::serialize()}
      */
@@ -103,15 +113,5 @@ final class TaskSubscriber implements EventSubscriberInterface
             'code' => JsonResponse::HTTP_OK,
             'tasks' => $this->serializer->normalize($tasks, 'json'),
         ]));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => [['onKernelRequest', 50]],
-        ];
     }
 }

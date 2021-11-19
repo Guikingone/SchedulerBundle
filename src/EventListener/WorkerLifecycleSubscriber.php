@@ -27,6 +27,21 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            WorkerForkedEvent::class => 'onWorkerForked',
+            WorkerPausedEvent::class => 'onWorkerPaused',
+            WorkerRestartedEvent::class => 'onWorkerRestarted',
+            WorkerRunningEvent::class => 'onWorkerRunning',
+            WorkerStartedEvent::class => 'onWorkerStarted',
+            WorkerStoppedEvent::class => 'onWorkerStopped',
+        ];
+    }
+
     public function onWorkerForked(WorkerForkedEvent $workerForkedEvent): void
     {
         $forkedWorker = $workerForkedEvent->getForkedWorker();
@@ -94,20 +109,5 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
             'failedTasks' => $worker->getFailedTasks()->count(),
             'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
         ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            WorkerForkedEvent::class => 'onWorkerForked',
-            WorkerPausedEvent::class => 'onWorkerPaused',
-            WorkerRestartedEvent::class => 'onWorkerRestarted',
-            WorkerRunningEvent::class => 'onWorkerRunning',
-            WorkerStartedEvent::class => 'onWorkerStarted',
-            WorkerStoppedEvent::class => 'onWorkerStopped',
-        ];
     }
 }

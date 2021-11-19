@@ -33,6 +33,17 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            TaskFailedEvent::class => 'onTaskFailedEvent',
+            WorkerRunningEvent::class => 'onWorkerStarted',
+        ];
+    }
+
     public function onTaskFailedEvent(): void
     {
         ++$this->failedTasks;
@@ -55,16 +66,5 @@ final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterfa
                 $this->failedTasks
             ));
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TaskFailedEvent::class => 'onTaskFailedEvent',
-            WorkerRunningEvent::class => 'onWorkerStarted',
-        ];
     }
 }

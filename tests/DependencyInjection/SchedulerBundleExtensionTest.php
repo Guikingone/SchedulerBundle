@@ -57,6 +57,7 @@ use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
+use SchedulerBundle\Middleware\TriggerMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Probe\Probe;
 use SchedulerBundle\Probe\ProbeInterface;
@@ -116,6 +117,10 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Trigger\EmailTriggerConfiguration;
+use SchedulerBundle\Trigger\TriggerConfigurationInterface;
+use SchedulerBundle\Trigger\TriggerConfigurationRegistry;
+use SchedulerBundle\Trigger\TriggerConfigurationRegistryInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
@@ -125,6 +130,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mercure\Hub;
 use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Lock\LockFactory;
@@ -216,6 +222,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[ProbeInterface::class]->hasTag('scheduler.probe'));
         self::assertArrayHasKey(TaskBagInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[TaskBagInterface::class]->hasTag('scheduler.task_bag'));
+        self::assertArrayHasKey(TriggerConfigurationInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[TriggerConfigurationInterface::class]->hasTag('scheduler.trigger_configuration'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void
@@ -1731,6 +1739,86 @@ final class SchedulerBundleExtensionTest extends TestCase
         ]);
 
         self::assertTrue($container->getParameter('scheduler.pool_support'));
+    }
+
+    public function testTriggersCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'triggers' => [
+                'enabled' => true,
+            ],
+        ]);
+
+        self::assertTrue($container->hasAlias(TriggerConfigurationRegistryInterface::class));
+        self::assertTrue($container->hasDefinition(TriggerConfigurationRegistry::class));
+        self::assertCount(1, $container->getDefinition(TriggerConfigurationRegistry::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(TriggerConfigurationRegistry::class)->getArgument(0));
+        self::assertSame('scheduler.trigger_configuration', $container->getDefinition(TriggerConfigurationRegistry::class)->getArgument(0)->getTag());
+        self::assertFalse($container->getDefinition(TriggerConfigurationRegistry::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(TriggerConfigurationRegistry::class)->getTags());
+        self::assertTrue($container->getDefinition(TriggerConfigurationRegistry::class)->hasTag('container.preload'));
+        self::assertSame(TriggerConfigurationRegistry::class, $container->getDefinition(TriggerConfigurationRegistry::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TriggerMiddleware::class));
+        self::assertCount(4, $container->getDefinition(TriggerMiddleware::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TriggerMiddleware::class)->getArgument(0));
+        self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(TriggerMiddleware::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TriggerMiddleware::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TriggerMiddleware::class)->getArgument(1));
+        self::assertSame(TriggerConfigurationRegistryInterface::class, (string) $container->getDefinition(TriggerMiddleware::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TriggerMiddleware::class)->getArgument(1)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TriggerMiddleware::class)->getArgument(2));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(TriggerMiddleware::class)->getArgument(2));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TriggerMiddleware::class)->getArgument(2)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TriggerMiddleware::class)->getArgument(3));
+        self::assertSame(MailerInterface::class, (string) $container->getDefinition(TriggerMiddleware::class)->getArgument(3));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(TriggerMiddleware::class)->getArgument(3)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(TriggerMiddleware::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(TriggerMiddleware::class)->getTags());
+        self::assertTrue($container->getDefinition(TriggerMiddleware::class)->hasTag('scheduler.worker_middleware'));
+        self::assertTrue($container->getDefinition(TriggerMiddleware::class)->hasTag('container.preload'));
+        self::assertSame(TriggerMiddleware::class, $container->getDefinition(TriggerMiddleware::class)->getTag('container.preload')[0]['class']);
+
+        self::assertFalse($container->hasDefinition(EmailTriggerConfiguration::class));
+    }
+
+    public function testEmailsTriggersCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'triggers' => [
+                'enabled' => true,
+                'email' => [
+                    'enabled' => true,
+                    'on_failure' => [
+                        'triggered_at' => 10,
+                        'to' => 'foo@foo.foo',
+                        'from' => 'bar@bar.bar',
+                        'subject' => 'An error occurred',
+                    ],
+                    'on_success' => [
+                        'triggered_at' => 10,
+                        'to' => 'foo@foo.foo',
+                        'from' => 'bar@bar.bar',
+                        'subject' => 'An task succeed',
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition(TriggerMiddleware::class));
+        self::assertTrue($container->hasDefinition(TriggerConfigurationRegistry::class));
+
+        self::assertTrue($container->hasDefinition(EmailTriggerConfiguration::class));
     }
 
     public function testConfiguration(): void

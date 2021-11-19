@@ -30,6 +30,17 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            WorkerStartedEvent::class => 'onWorkerStarted',
+            WorkerRunningEvent::class => 'onWorkerRunning',
+        ];
+    }
+
     public function onWorkerStarted(): void
     {
         $this->endTime = microtime(true) + $this->timeLimitInSeconds;
@@ -46,16 +57,5 @@ final class StopWorkerOnTimeLimitSubscriber implements EventSubscriberInterface
                 'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
             ]);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            WorkerStartedEvent::class => 'onWorkerStarted',
-            WorkerRunningEvent::class => 'onWorkerRunning',
-        ];
     }
 }
