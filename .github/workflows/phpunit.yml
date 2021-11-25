@@ -22,7 +22,7 @@ jobs:
         os: ['ubuntu-latest']
         include:
           - php-version: '8.0'
-            symfony-version: '6.0.x@dev'
+            symfony-versions: '6.0.x@dev'
     env:
       SYMFONY_REQUIRE: ${{ matrix.symfony-versions }}
     services:
