@@ -21,7 +21,7 @@ jobs:
         composer-dependencies: ['highest', 'lowest']
         os: ['ubuntu-latest']
         include:
-          - php-version: '8.0'
+          - php-versions: '8.0'
             symfony-versions: '6.0.x@dev'
     env:
       SYMFONY_REQUIRE: ${{ matrix.symfony-versions }}
