@@ -17,8 +17,14 @@ jobs:
       fail-fast: true
       matrix:
         php-versions: ['7.4', '8.0']
+        symfony-versions: ['5.3.*', '5.4.x@dev']
         composer-dependencies: ['highest', 'lowest']
         os: ['ubuntu-latest']
+        include:
+          - php-version: '8.0'
+            symfony-version: '6.0.x@dev'
+    env:
+      SYMFONY_REQUIRE: ${{ matrix.symfony-version }}
     services:
       redis:
         image: redis:6.0.0
@@ -35,6 +41,17 @@ jobs:
           extensions: zip, redis, pcntl
         env:
           update: true
+
+      - name: Install Symfony Flex
+        run: composer global require --no-progress --no-scripts --no-plugins symfony/flex
+
+      - name: Set composer minimum stability
+        run: composer config minimum-stability dev
+        if: matrix.symfony-version == '5.4.x@dev' || matrix.symfony-version == '6.0.x@dev'
+
+      - name: Remove not compatible vendors
+        run: composer remove --no-update --dev friendsofphp/php-cs-fixer
+        if: matrix.symfony-version == '6.0.x@dev'
 
       - name: Install Composer dependencies
         uses: "ramsey/composer-install@v1"
