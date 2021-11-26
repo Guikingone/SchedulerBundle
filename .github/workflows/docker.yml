@@ -1,4 +1,4 @@
-name: Code style
+name: Docker linting
 on:
   push:
     branches:
