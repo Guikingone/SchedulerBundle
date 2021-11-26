@@ -302,8 +302,9 @@ final class Scheduler implements SchedulerInterface
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
         $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
-        if ($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
-            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
+        $microSecondsInterval = (int) $dateInterval->f;
+        if ($microSecondsInterval % self::MIN_SYNCHRONIZATION_DELAY < 0 || $microSecondsInterval % self::MAX_SYNCHRONIZATION_DELAY > 0) {
+            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $microSecondsInterval, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
         return $this->initializationDate->add($dateInterval);
