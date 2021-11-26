@@ -1,4 +1,4 @@
-FROM composer as composer
+FROM composer:2.1 as composer
 FROM php:7.4-cli
 
 ENV SCHEDULER_REDIS_DSN 'redis://redis:6379/_symfony_scheduler_tasks'
