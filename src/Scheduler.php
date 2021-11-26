@@ -29,6 +29,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
+use function abs;
 use function is_bool;
 use function next;
 use function sprintf;
@@ -38,14 +39,7 @@ use function sprintf;
  */
 final class Scheduler implements SchedulerInterface
 {
-    /**
-     * @var int
-     */
     private const MIN_SYNCHRONIZATION_DELAY = 1_000_000;
-
-    /**
-     * @var int
-     */
     private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000;
 
     private DateTimeImmutable $initializationDate;
@@ -302,7 +296,7 @@ final class Scheduler implements SchedulerInterface
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
         $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
-        if ($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY < 0 || $dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY > 0) {
+        if (abs($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY) < 0 || abs($dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY) > 0) {
             throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
