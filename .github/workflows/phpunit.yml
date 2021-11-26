@@ -52,7 +52,7 @@ jobs:
         if: matrix.symfony-versions == '5.4.x@dev' || matrix.symfony-versions == '6.0.x@dev'
 
       - name: Remove not compatible vendors
-        run: composer remove --no-update --dev friendsofphp/php-cs-fixer infection/infection marcocesarato/php-conventional-changelog psalm/plugin-symfony
+        run: composer remove --no-update --dev friendsofphp/php-cs-fixer infection/infection marcocesarato/php-conventional-changelog
         if: matrix.symfony-versions == '6.0.x@dev'
 
       - name: Install Composer dependencies
