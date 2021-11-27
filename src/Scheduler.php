@@ -29,19 +29,19 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
+use function fmod;
 use function is_bool;
 use function next;
 use function round;
 use function sprintf;
-use const PHP_ROUND_HALF_UP;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class Scheduler implements SchedulerInterface
 {
-    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000.00000;
-    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000.00000;
+    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000;
+    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000;
 
     private DateTimeImmutable $initializationDate;
     private DateTimeZone $timezone;
@@ -297,10 +297,8 @@ final class Scheduler implements SchedulerInterface
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
         $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
-        $roundedMinInterval = round($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY, 5, PHP_ROUND_HALF_UP);
-        $roundedMaxInterval = round($dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY, 5, PHP_ROUND_HALF_UP);
 
-        if ($roundedMinInterval < 0.00000 || $roundedMaxInterval > 0.00000) {
+        if (round(fmod($dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY)) < 0 || round(fmod($dateInterval->f, self::MAX_SYNCHRONIZATION_DELAY)) > 0) {
             throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
