@@ -40,8 +40,8 @@ use const PHP_ROUND_HALF_UP;
  */
 final class Scheduler implements SchedulerInterface
 {
-    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000;
-    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000;
+    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000.00000;
+    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000.00000;
 
     private DateTimeImmutable $initializationDate;
     private DateTimeZone $timezone;
