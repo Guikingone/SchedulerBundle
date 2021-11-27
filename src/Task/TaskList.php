@@ -9,6 +9,7 @@ use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use Throwable;
+use Traversable;
 use function array_chunk;
 use function array_filter;
 use function array_key_exists;
@@ -244,7 +245,7 @@ final class TaskList implements TaskListInterface
     /**
      * @return ArrayIterator<int|string, TaskInterface>
      */
-    public function getIterator(): ArrayIterator
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->tasks);
     }
