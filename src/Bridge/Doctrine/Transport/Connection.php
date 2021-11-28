@@ -101,7 +101,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             $existingTaskCount->getParameterTypes()
         )->fetchOne();
 
-        if ('0' === $statement) {
+        if ('0' == $statement) {
             throw new TransportException(sprintf('The task "%s" cannot be found', $taskName));
         }
 
@@ -147,7 +147,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             $existingTaskQuery->getParameterTypes()
         )->fetchOne();
 
-        if ('0' !== $existingTask) {
+        if (0 != $existingTask) {
             return;
         }
 

@@ -760,51 +760,6 @@ final class ConnectionTest extends TestCase
     }
 
     /**
-     * @throws \Exception {@see DoctrineConnection::setup()}
-     */
-    public function testConnectionCanSetUp(): void
-    {
-        $configuration = $this->createMock(Configuration::class);
-        $serializer = $this->createMock(SerializerInterface::class);
-        $sequence = $this->createMock(Sequence::class);
-
-        $platform = $this->createMock(AbstractPlatform::class);
-        $platform->expects(self::once())->method('getCreateTableSQL')->willReturn([]);
-
-        $table = $this->createMock(Table::class);
-        $table->expects(self::once())->method('getForeignKeys')->willReturn([]);
-
-        $schema = $this->createMock(Schema::class);
-        $schema->expects(self::once())->method('getNamespaces')->willReturn(['foo', 'bar']);
-        $schema->expects(self::once())->method('getTables')->willReturn([$table]);
-        $schema->expects(self::once())->method('getTable')->willReturn($table);
-        $schema->expects(self::once())->method('getSequences')->willReturn([$sequence]);
-
-        $schemaManager = $this->createMock(AbstractSchemaManager::class);
-        $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
-
-        $configuration->expects(self::once())->method('getSchemaAssetsFilter')->willReturn(null);
-        $configuration->expects(self::exactly(2))
-            ->method('setSchemaAssetsFilter')
-            ->withConsecutive([self::equalTo(null)], [self::equalTo(null)])
-        ;
-
-        $driverConnection = $this->createMock(Connection::class);
-        $driverConnection->method('getDatabasePlatform')->willReturn($platform);
-        $driverConnection->method('getConfiguration')->willReturn($configuration);
-        $driverConnection->method('getSchemaManager')->willReturn($schemaManager);
-
-        $connection = new DoctrineConnection([
-            'auto_setup' => true,
-            'table_name' => '_symfony_scheduler_tasks',
-        ], $driverConnection, $serializer, new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ]));
-
-        $connection->setup();
-    }
-
-    /**
      * @return Connection&MockObject
      */
     private function getDBALConnectionMock()
