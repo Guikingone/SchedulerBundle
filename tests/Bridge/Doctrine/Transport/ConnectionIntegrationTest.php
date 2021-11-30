@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
@@ -135,12 +136,15 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testConnectionCannotRetrieveAnUndefinedTask(): void
     {
         $this->connection->setup();
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" cannot be found');
+        self::expectExceptionMessage('The desired task cannot be found.');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -215,6 +219,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCannotBeUpdatedIfUndefined(): void
     {
         $this->connection->setup();
@@ -224,7 +231,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->update('foo', $nullTask);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" cannot be found');
+        self::expectExceptionMessage('The desired task cannot be found.');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -292,6 +299,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->pause('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCanBeEnabled(): void
     {
         $this->connection->setup();
@@ -318,6 +328,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame(TaskInterface::ENABLED, $task->getState());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCannotBeEnabledTwice(): void
     {
         $this->connection->setup();
@@ -344,6 +357,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->resume('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCannotBeDeletedIfUndefined(): void
     {
         $this->connection->setup();
@@ -354,6 +370,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCanBeDeleted(): void
     {
         $this->connection->setup();
@@ -361,11 +380,14 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" cannot be found');
+        self::expectExceptionMessage('The desired task cannot be found.');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskListCanBeEmpty(): void
     {
         $this->connection->setup();
@@ -375,7 +397,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The task "foo" cannot be found');
+        self::expectExceptionMessage('The desired task cannot be found.');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }

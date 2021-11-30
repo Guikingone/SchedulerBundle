@@ -255,7 +255,6 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),

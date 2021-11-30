@@ -25,6 +25,14 @@ vendor: ## Install the dependencies
 vendor: composer.json
 	$(PHP) composer install
 
+vendor-highest: ## Install the dependencies (highest version)
+vendor-highest: composer.json
+	$(PHP) composer update --no-interaction --no-progress --ansi --prefer-stable
+
+vendor-lowest: ## Install the dependencies (lowest version)
+vendor-lowest: composer.json
+	$(PHP) composer update --prefer-lowest --no-interaction --no-progress --ansi --prefer-stable
+
 autoload: ## Dump the autoload
 autoload: composer.json composer.lock
 	$(COMPOSER) dump-autoload
