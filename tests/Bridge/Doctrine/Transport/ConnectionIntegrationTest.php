@@ -122,6 +122,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(NullTask::class, $list->get('bar'));
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testConnectionCanListHydratedTasks(): void
     {
         $this->connection->setup();
@@ -144,11 +147,14 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->setup();
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testConnectionCanRetrieveASingleTaskWithoutExistingSchema(): void
     {
         $this->connection->create(new NullTask('foo'));
@@ -160,6 +166,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testConnectionCanRetrieveASingleTask(): void
     {
         $this->connection->setup();
@@ -172,6 +181,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCannotBeCreatedTwice(): void
     {
         $this->connection->setup();
@@ -194,6 +206,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCanBeCreated(): void
     {
         $this->connection->setup();
@@ -206,6 +221,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('* * * * *', $task->getExpression());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testMessengerTaskCanBeCreated(): void
     {
         $this->connection->setup();
@@ -231,11 +249,14 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->update('foo', $nullTask);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCanBeUpdated(): void
     {
         $this->connection->setup();
@@ -261,6 +282,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $task->getLastExecution());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCanBePaused(): void
     {
         $this->connection->setup();
@@ -280,6 +304,9 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame(TaskInterface::PAUSED, $task->getState());
     }
 
+    /**
+     * @throws Exception {@see Connection::setup()}
+     */
     public function testTaskCannotBePausedTwice(): void
     {
         $this->connection->setup();
@@ -380,7 +407,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->delete('foo');
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }
@@ -397,7 +424,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('The desired task cannot be found.');
+        self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
         $this->connection->get('foo');
     }

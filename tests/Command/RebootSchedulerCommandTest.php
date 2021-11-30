@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Command;
 
-use ArrayIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
@@ -16,7 +15,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
@@ -55,10 +53,7 @@ final class RebootSchedulerCommandTest extends TestCase
     {
         $eventDispatcher = $this->createMock(EventDispatcher::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('getIterator')->willReturn(new ArrayIterator([]));
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('count')->willReturn(0);
+        $taskList = new TaskList();
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
@@ -77,13 +72,8 @@ final class RebootSchedulerCommandTest extends TestCase
     {
         $eventDispatcher = $this->createMock(EventDispatcher::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::never())->method('getIterator');
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList());
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('execute');

@@ -19,7 +19,7 @@
   </coverage>
 
   <php>
-    <ini name="error_reporting" value="-1"/>
+    <ini name="error_reporting" value="-1" />
   </php>
 
   <testsuites>
@@ -29,6 +29,6 @@
   </testsuites>
 
   <listeners>
-    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener"/>
+    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
   </listeners>
 </phpunit>

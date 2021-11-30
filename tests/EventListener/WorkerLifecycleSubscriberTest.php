@@ -15,7 +15,7 @@ use SchedulerBundle\Event\WorkerStoppedEvent;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
@@ -74,11 +74,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
     public function testSubscriberLogOnWorkerRestartedWithoutExecutedTask(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -96,11 +93,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn($task);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -115,11 +109,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
     public function testSubscriberLogOnWorkerRunningWithoutExecutedTask(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -138,11 +129,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn($task);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -158,11 +146,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
     public function testSubscriberLogOnWorkerStartedWithoutExecutedTask(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -180,11 +165,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn($task);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -199,11 +181,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
 
     public function testSubscriberLogOnWorkerStoppedWithoutExecutedTask(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn(null);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -221,11 +200,8 @@ final class WorkerLifecycleSubscriberTest extends TestCase
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
 
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('count')->willReturn(0);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($list);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
         $worker->expects(self::once())->method('getLastExecutedTask')->willReturn($task);
 
         $logger = $this->createMock(LoggerInterface::class);

@@ -71,6 +71,10 @@ tests: ## Launch the PHPUnit tests
 tests: phpunit.xml.dist autoload
 	$(PHP) vendor/bin/phpunit tests -v
 
+tests-group: ## Launch the PHPUnit tests using a specific group
+tests-group: phpunit.xml.dist autoload
+	$(PHP) vendor/bin/phpunit tests -v --group $(GROUP)
+
 infection: ## Launch Infection
 infection: infection.json.dist autoload
 	$(PHP) vendor/bin/infection --threads=4

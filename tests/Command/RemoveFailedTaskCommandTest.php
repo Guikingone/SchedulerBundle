@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -73,13 +74,10 @@ final class RemoveFailedTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('unschedule')->willThrowException(new Exception('Random error'));
 
-        $task = $this->createMock(TaskInterface::class);
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
         $commandTester = new CommandTester($removeFailedTaskCommand);
@@ -98,14 +96,10 @@ final class RemoveFailedTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('unschedule');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
         $commandTester = new CommandTester($removeFailedTaskCommand);
@@ -122,14 +116,10 @@ final class RemoveFailedTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('unschedule');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
         $commandTester = new CommandTester($removeFailedTaskCommand);
@@ -147,14 +137,10 @@ final class RemoveFailedTaskCommandTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('unschedule');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
         $commandTester = new CommandTester($removeFailedTaskCommand);

@@ -129,7 +129,6 @@ final class WorkerTest extends TestCase
      */
     public function testWorkerCanBeForked(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -137,7 +136,9 @@ final class WorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker($scheduler, new RunnerRegistry([
+        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([]), $eventDispatcher), new RunnerRegistry([
             new NullTaskRunner(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
