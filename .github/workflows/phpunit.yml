@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.4', '8.0', '8.1']
+        php-versions: ['8.0', '8.1']
         composer-dependencies: ['highest', 'lowest']
         os: ['ubuntu-latest']
     services:

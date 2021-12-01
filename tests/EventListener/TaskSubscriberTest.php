@@ -22,7 +22,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\Serializer;
 use function json_decode;

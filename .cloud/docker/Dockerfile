@@ -1,5 +1,5 @@
 FROM composer:2.1 as composer
-FROM php:7.4-cli
+FROM php:8.0-cli
 
 ENV SCHEDULER_REDIS_DSN 'redis://redis:6379/_symfony_scheduler_tasks'
 

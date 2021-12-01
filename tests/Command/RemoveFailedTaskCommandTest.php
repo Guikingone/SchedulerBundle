@@ -12,8 +12,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**

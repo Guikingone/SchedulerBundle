@@ -14,7 +14,6 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\LongTailTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -37,14 +36,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCannotGetWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::exactly(3))->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('get')
             ->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task list not found'))
@@ -72,8 +69,9 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanRetrieveTask(): void
     {
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -96,8 +94,9 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanRetrieveTaskLazily(): void
     {
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $secondTransport = $this->createMock(TransportInterface::class);
         $secondTransport->expects(self::once())->method('list')->willReturn($secondTaskList);
@@ -155,15 +154,13 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCannotReturnAListWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')->willReturnOnConsecutiveCalls(
-            $taskList,
+            new TaskList(),
             self::throwException(new RuntimeException('Task list not found'))
         );
 
@@ -186,16 +183,14 @@ final class LongTailTransportTest extends TestCase
      */
     public function testTransportCannotReturnALazyListWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
         $firstTransport->method('list')
             ->willReturnOnConsecutiveCalls(
-                $taskList,
+                new TaskList(),
                 self::throwException(new RuntimeException('Task list not found'))
             )
         ;
@@ -269,14 +264,12 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('create')->with($task)
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -300,14 +293,12 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('create')->with($task);
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -338,14 +329,12 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task)
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -369,14 +358,12 @@ final class LongTailTransportTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
 
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('update')->with(self::equalTo('foo'), $task);
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -403,14 +390,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCannotDeleteWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -432,14 +417,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanDelete(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -466,14 +449,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCannotPauseWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('pause')->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -495,14 +476,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanPause(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('pause')->with(self::equalTo('foo'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -528,14 +507,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCannotResumeWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('resume')->with(self::equalTo('foo'))
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -557,14 +534,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanResume(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('resume')->with(self::equalTo('foo'));
 
         $secondTransport = $this->createMock(TransportInterface::class);
@@ -591,14 +566,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCannotClearWithFailingTransports(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('clear')
             ->willThrowException(new RuntimeException('Task cannot be created'))
         ;
@@ -620,14 +593,12 @@ final class LongTailTransportTest extends TestCase
 
     public function testTransportCanClear(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
-        $secondTaskList = $this->createMock(TaskListInterface::class);
-        $secondTaskList->expects(self::once())->method('count')->willReturn(1);
+        $secondTaskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         $firstTransport = $this->createMock(TransportInterface::class);
-        $firstTransport->expects(self::once())->method('list')->willReturn($taskList);
+        $firstTransport->expects(self::once())->method('list')->willReturn(new TaskList());
         $firstTransport->expects(self::once())->method('clear');
 
         $secondTransport = $this->createMock(TransportInterface::class);
