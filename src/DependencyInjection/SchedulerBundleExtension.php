@@ -4,16 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
-use Doctrine\DBAL\Connection;
-use Memcached;
-use MongoDB\Collection;
-use PDO;
-use Predis\ClientInterface;
-use RedisArray;
-use RedisCluster;
-use Symfony\Component\Cache\Traits\RedisClusterProxy;
-use Symfony\Component\Cache\Traits\RedisProxy;
-use Zookeeper;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;

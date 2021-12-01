@@ -421,7 +421,7 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create(new NullTask('foo'));
         $this->connection->empty();
 
-        self::assertTrue($this->driverConnection->getSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
+        self::assertTrue($this->driverConnection->createSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be found');

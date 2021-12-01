@@ -333,7 +333,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                 throw $throwable;
             }
 
-            if ($this->configuration['auto_setup']) {
+            if (true === $this->configuration['auto_setup']) {
                 $this->setup();
             }
 
