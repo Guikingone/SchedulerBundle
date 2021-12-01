@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -26,6 +25,6 @@ final class InMemoryConfigurationFactory implements ConfigurationFactoryInterfac
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://memory') || 0 === strpos($dsn, 'configuration://array');
+        return str_starts_with($dsn, 'configuration://memory') || str_starts_with($dsn, 'configuration://array');
     }
 }

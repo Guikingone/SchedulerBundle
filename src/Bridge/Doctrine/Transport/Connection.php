@@ -28,26 +28,16 @@ use function sprintf;
  */
 final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
-    private array $configuration;
-    private DbalConnection $driverConnection;
-    private SerializerInterface $serializer;
-    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
-
     /**
      * @param mixed[] $configuration
      */
     public function __construct(
-        array $configuration,
-        DbalConnection $dbalConnection,
-        SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        private array $configuration,
+        private DbalConnection $driverConnection,
+        private SerializerInterface $serializer,
+        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->configuration = $configuration;
-        $this->driverConnection = $dbalConnection;
-        $this->serializer = $serializer;
-        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
-
-        parent::__construct($dbalConnection);
+        parent::__construct($driverConnection);
     }
 
     /**

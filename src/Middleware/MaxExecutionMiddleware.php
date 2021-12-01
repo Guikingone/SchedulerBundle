@@ -19,14 +19,12 @@ use function sprintf;
  */
 final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
 {
-    private ?RateLimiterFactory $rateLimiter;
     private LoggerInterface $logger;
 
     public function __construct(
-        ?RateLimiterFactory $rateLimiterFactory = null,
+        private ?RateLimiterFactory $rateLimiter = null,
         ?LoggerInterface $logger = null
     ) {
-        $this->rateLimiter = $rateLimiterFactory;
         $this->logger = $logger ?? new NullLogger();
     }
 

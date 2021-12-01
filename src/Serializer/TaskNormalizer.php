@@ -35,7 +35,6 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function get_class;
 use function is_array;
 use function is_object;
 use function sprintf;
@@ -50,27 +49,8 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
-    private DateTimeNormalizer $dateTimeNormalizer;
-    private DateIntervalNormalizer $dateIntervalNormalizer;
-    private ObjectNormalizer $objectNormalizer;
-    private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
-    private NotificationTaskBagNormalizer $notificationTaskBagNormalizer;
-    private AccessLockBagNormalizer $accessLockBagNormalizer;
-
-    public function __construct(
-        DateTimeNormalizer            $dateTimeNormalizer,
-        DateTimeZoneNormalizer        $dateTimeZoneNormalizer,
-        DateIntervalNormalizer        $dateIntervalNormalizer,
-        ObjectNormalizer              $objectNormalizer,
-        NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
-        AccessLockBagNormalizer       $accessLockBagNormalizer
-    ) {
-        $this->dateTimeNormalizer = $dateTimeNormalizer;
-        $this->dateTimeZoneNormalizer = $dateTimeZoneNormalizer;
-        $this->dateIntervalNormalizer = $dateIntervalNormalizer;
-        $this->objectNormalizer = $objectNormalizer;
-        $this->notificationTaskBagNormalizer = $notificationTaskBagNormalizer;
-        $this->accessLockBagNormalizer = $accessLockBagNormalizer;
+    public function __construct(private DateTimeNormalizer $dateTimeNormalizer, private DateTimeZoneNormalizer $dateTimeZoneNormalizer, private DateIntervalNormalizer $dateIntervalNormalizer, private ObjectNormalizer $objectNormalizer, private NotificationTaskBagNormalizer $notificationTaskBagNormalizer, private AccessLockBagNormalizer $accessLockBagNormalizer)
+    {
     }
 
     /**
@@ -95,7 +75,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             return null === $innerObject ? null : [
                 'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
                 'method' => $innerObject[1],
-                'type' => get_class($innerObject[0]),
+                'type' => $innerObject[0]::class,
             ];
         };
 
@@ -126,13 +106,13 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'importance' => $innerObject->getImportance(),
                 ],
                 'message' => fn ($innerObject, MessengerTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
-                    'class' => get_class($innerObject),
+                    'class' => $innerObject::class,
                     'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
                 ],
                 'callback' => fn ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                     'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
                     'method' => $innerObject[1],
-                    'type' => get_class($innerObject[0]),
+                    'type' => $innerObject[0]::class,
                 ],
                 'tasks' => fn (TaskListInterface $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
@@ -149,7 +129,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'options' => [],
                 ],
             ])),
-            self::NORMALIZATION_DISCRIMINATOR => get_class($object),
+            self::NORMALIZATION_DISCRIMINATOR => $object::class,
         ];
     }
 

@@ -20,14 +20,12 @@ use function sprintf;
  */
 final class TaskToExecuteMessageHandler implements MessageHandlerInterface
 {
-    private WorkerInterface $worker;
     private LoggerInterface $logger;
 
     public function __construct(
-        WorkerInterface $worker,
+        private WorkerInterface $worker,
         ?LoggerInterface $logger = null
     ) {
-        $this->worker = $worker;
         $this->logger = $logger ?? new NullLogger();
     }
 

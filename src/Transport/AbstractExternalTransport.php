@@ -17,15 +17,8 @@ use SchedulerBundle\Task\TaskListInterface;
  */
 abstract class AbstractExternalTransport extends AbstractTransport
 {
-    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
-    protected ConnectionInterface $connection;
-
-    public function __construct(
-        ConnectionInterface $connection,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
-    ) {
-        $this->connection = $connection;
-        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
+    public function __construct(protected ConnectionInterface $connection, private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator)
+    {
     }
 
     /**

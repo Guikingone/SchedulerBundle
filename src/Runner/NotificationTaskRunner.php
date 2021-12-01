@@ -16,11 +16,8 @@ use Throwable;
  */
 final class NotificationTaskRunner implements RunnerInterface
 {
-    private ?NotifierInterface $notifier;
-
-    public function __construct(NotifierInterface $notifier = null)
+    public function __construct(private ?NotifierInterface $notifier = null)
     {
-        $this->notifier = $notifier;
     }
 
     /**

@@ -12,11 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskScheduledEvent extends Event implements TaskEventInterface
 {
-    private TaskInterface $task;
-
-    public function __construct(TaskInterface $task)
+    public function __construct(private TaskInterface $task)
     {
-        $this->task = $task;
     }
 
     public function getTask(): TaskInterface

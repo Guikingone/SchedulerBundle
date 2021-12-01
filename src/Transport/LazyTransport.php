@@ -14,12 +14,10 @@ use SchedulerBundle\Task\TaskListInterface;
 final class LazyTransport implements TransportInterface, LazyInterface
 {
     private TransportInterface $transport;
-    private TransportInterface $sourceTransport;
     private bool $initialized = false;
 
-    public function __construct(TransportInterface $sourceTransport)
+    public function __construct(private TransportInterface $sourceTransport)
     {
-        $this->sourceTransport = $sourceTransport;
     }
 
     /**

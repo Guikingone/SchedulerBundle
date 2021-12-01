@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -14,16 +13,10 @@ use function strpos;
 final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
 {
     /**
-     * @var TransportFactoryInterface[]
-     */
-    private iterable $transportFactories;
-
-    /**
      * @param TransportFactoryInterface[] $transportFactories
      */
-    public function __construct(iterable $transportFactories)
+    public function __construct(private iterable $transportFactories)
     {
-        $this->transportFactories = $transportFactories;
     }
 
     /**
@@ -41,6 +34,6 @@ final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'roundrobin://') || 0 === strpos($dsn, 'rr://');
+        return str_starts_with($dsn, 'roundrobin://') || str_starts_with($dsn, 'rr://');
     }
 }

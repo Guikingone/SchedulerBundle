@@ -12,11 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 final class SchedulerPass implements CompilerPassInterface
 {
-    private string $schedulerExtraTag;
-
-    public function __construct(string $schedulerExtraTag = 'scheduler.extra')
+    public function __construct(private string $schedulerExtraTag = 'scheduler.extra')
     {
-        $this->schedulerExtraTag = $schedulerExtraTag;
     }
 
     /**

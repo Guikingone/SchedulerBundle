@@ -9,20 +9,12 @@ namespace SchedulerBundle\Task;
  */
 final class ProbeTask extends AbstractTask
 {
-    private string $externalProbePath;
-    private bool $errorOnFailedTasks;
-    private int $delay;
-
     public function __construct(
         string $name,
-        string $externalProbePath,
-        bool $errorOnFailedTasks = false,
-        int $delay = 0
+        private string $externalProbePath,
+        private bool $errorOnFailedTasks = false,
+        private int $delay = 0
     ) {
-        $this->externalProbePath = $externalProbePath;
-        $this->errorOnFailedTasks = $errorOnFailedTasks;
-        $this->delay = $delay;
-
         $this->defineOptions();
 
         parent::__construct($name);

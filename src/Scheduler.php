@@ -45,27 +45,19 @@ final class Scheduler implements SchedulerInterface
 
     private DateTimeImmutable $initializationDate;
     private DateTimeZone $timezone;
-    private TransportInterface $transport;
-    private SchedulerMiddlewareStack $middlewareStack;
-    private EventDispatcherInterface $eventDispatcher;
-    private ?MessageBusInterface $bus;
 
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
      */
     public function __construct(
         string $timezone,
-        TransportInterface $transport,
-        SchedulerMiddlewareStack $schedulerMiddlewareStack,
-        EventDispatcherInterface $eventDispatcher,
-        ?MessageBusInterface $messageBus = null
+        private TransportInterface $transport,
+        private SchedulerMiddlewareStack $middlewareStack,
+        private EventDispatcherInterface $eventDispatcher,
+        private ?MessageBusInterface $bus = null
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
-        $this->transport = $transport;
-        $this->middlewareStack = $schedulerMiddlewareStack;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->bus = $messageBus;
     }
 
     /**

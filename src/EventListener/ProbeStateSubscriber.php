@@ -19,13 +19,8 @@ use function rawurldecode;
  */
 final class ProbeStateSubscriber implements EventSubscriberInterface
 {
-    private ProbeInterface $probe;
-    private string $path;
-
-    public function __construct(ProbeInterface $probe, string $path = '/_probe')
+    public function __construct(private ProbeInterface $probe, private string $path = '/_probe')
     {
-        $this->probe = $probe;
-        $this->path = $path;
     }
 
     /**

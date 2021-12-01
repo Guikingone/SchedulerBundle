@@ -18,13 +18,11 @@ use function sprintf;
 final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface, RequiredMiddlewareInterface
 {
     private LoggerInterface $logger;
-    private SchedulerInterface $scheduler;
 
     public function __construct(
-        SchedulerInterface $scheduler,
+        private SchedulerInterface $scheduler,
         ?LoggerInterface $logger = null
     ) {
-        $this->scheduler = $scheduler;
         $this->logger = $logger ?? new NullLogger();
     }
 

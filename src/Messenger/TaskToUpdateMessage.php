@@ -11,15 +11,8 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class TaskToUpdateMessage
 {
-    private string $taskName;
-    private TaskInterface $task;
-
-    public function __construct(
-        string $taskName,
-        TaskInterface $task
-    ) {
-        $this->taskName = $taskName;
-        $this->task = $task;
+    public function __construct(private string $taskName, private TaskInterface $task)
+    {
     }
 
     public function getTaskName(): string

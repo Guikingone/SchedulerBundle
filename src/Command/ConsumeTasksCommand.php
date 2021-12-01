@@ -36,10 +36,7 @@ use function sprintf;
  */
 final class ConsumeTasksCommand extends Command
 {
-    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
-    private SchedulerInterface $scheduler;
-    private WorkerInterface $worker;
 
     /**
      * @var string|null
@@ -47,14 +44,11 @@ final class ConsumeTasksCommand extends Command
     protected static $defaultName = 'scheduler:consume';
 
     public function __construct(
-        SchedulerInterface $scheduler,
-        WorkerInterface $worker,
-        EventDispatcherInterface $eventDispatcher,
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker,
+        private EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger = null
     ) {
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
-        $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();

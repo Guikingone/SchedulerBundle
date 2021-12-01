@@ -7,18 +7,14 @@ namespace SchedulerBundle\Transport\Configuration;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class CacheConfigurationFactory implements ConfigurationFactoryInterface
 {
-    private CacheItemPoolInterface $pool;
-
-    public function __construct(CacheItemPoolInterface $pool)
+    public function __construct(private CacheItemPoolInterface $pool)
     {
-        $this->pool = $pool;
     }
 
     /**
@@ -34,6 +30,6 @@ final class CacheConfigurationFactory implements ConfigurationFactoryInterface
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://cache');
+        return str_starts_with($dsn, 'configuration://cache');
     }
 }

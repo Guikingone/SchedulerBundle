@@ -12,16 +12,13 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotificationTask extends AbstractTask
 {
-    private Notification $notification;
-
     /**
      * @var Recipient[]
      */
     private array $recipients;
 
-    public function __construct(string $name, Notification $notification, Recipient ...$recipients)
+    public function __construct(string $name, private Notification $notification, Recipient ...$recipients)
     {
-        $this->notification = $notification;
         $this->recipients = $recipients;
 
         $this->defineOptions();

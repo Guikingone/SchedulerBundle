@@ -12,11 +12,8 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
  */
 final class TaskToYieldMessageHandler implements MessageHandlerInterface
 {
-    private SchedulerInterface $scheduler;
-
-    public function __construct(SchedulerInterface $scheduler)
+    public function __construct(private SchedulerInterface $scheduler)
     {
-        $this->scheduler = $scheduler;
     }
 
     public function __invoke(TaskToYieldMessage $taskToYieldMessage): void

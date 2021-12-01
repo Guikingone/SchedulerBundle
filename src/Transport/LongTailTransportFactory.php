@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -14,16 +13,10 @@ use function strpos;
 final class LongTailTransportFactory extends AbstractCompoundTransportFactory
 {
     /**
-     * @var iterable|TransportFactoryInterface[]
-     */
-    private iterable $transportFactories;
-
-    /**
      * @param iterable|TransportFactoryInterface[] $transportFactories
      */
-    public function __construct(iterable $transportFactories)
+    public function __construct(private iterable $transportFactories)
     {
-        $this->transportFactories = $transportFactories;
     }
 
     /**
@@ -39,6 +32,6 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'longtail://') || 0 === strpos($dsn, 'lt://');
+        return str_starts_with($dsn, 'longtail://') || str_starts_with($dsn, 'lt://');
     }
 }

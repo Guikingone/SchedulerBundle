@@ -23,21 +23,15 @@ use function sprintf;
  */
 final class DebugProbeCommand extends Command
 {
-    private ProbeInterface $probe;
-    private SchedulerInterface $scheduler;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:debug:probe';
 
     public function __construct(
-        ProbeInterface $probe,
-        SchedulerInterface $scheduler
+        private ProbeInterface $probe,
+        private SchedulerInterface $scheduler
     ) {
-        $this->probe = $probe;
-        $this->scheduler = $scheduler;
-
         parent::__construct();
     }
 

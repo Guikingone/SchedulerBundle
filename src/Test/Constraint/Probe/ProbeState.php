@@ -15,16 +15,10 @@ use function sprintf;
 final class ProbeState extends Constraint
 {
     /**
-     * @var array<string, int>
-     */
-    private array $expectedState;
-
-    /**
      * @param array<string, int> $expectedState
      */
-    public function __construct(array $expectedState)
+    public function __construct(private array $expectedState)
     {
-        $this->expectedState = $expectedState;
     }
 
     /**

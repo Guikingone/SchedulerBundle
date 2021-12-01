@@ -9,7 +9,6 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use function call_user_func;
-use function get_class;
 use function sprintf;
 
 /**
@@ -60,7 +59,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), get_class($task), ));
+            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), $task::class, ));
         }
     }
 
@@ -75,7 +74,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), get_class($task), ));
+            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), $task::class, ));
         }
     }
 

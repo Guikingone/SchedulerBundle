@@ -7,18 +7,14 @@ namespace SchedulerBundle\Transport;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class CacheTransportFactory implements TransportFactoryInterface
 {
-    private CacheItemPoolInterface $pool;
-
-    public function __construct(CacheItemPoolInterface $cacheItemPool)
+    public function __construct(private CacheItemPoolInterface $pool)
     {
-        $this->pool = $cacheItemPool;
     }
 
     /**
@@ -36,6 +32,6 @@ final class CacheTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'cache://');
+        return str_starts_with($dsn, 'cache://');
     }
 }

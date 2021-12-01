@@ -8,7 +8,6 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,16 +15,10 @@ use function strpos;
 final class LazyConfigurationFactory implements ConfigurationFactoryInterface
 {
     /**
-     * @var ConfigurationFactoryInterface[]
-     */
-    private iterable $factories;
-
-    /**
      * @param ConfigurationFactoryInterface[] $factories
      */
-    public function __construct(iterable $factories)
+    public function __construct(private iterable $factories)
     {
-        $this->factories = $factories;
     }
 
     /**
@@ -49,6 +42,6 @@ final class LazyConfigurationFactory implements ConfigurationFactoryInterface
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://lazy');
+        return str_starts_with($dsn, 'configuration://lazy');
     }
 }

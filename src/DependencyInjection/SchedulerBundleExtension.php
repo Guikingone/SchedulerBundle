@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
+use Doctrine\DBAL\Connection;
+use Memcached;
+use MongoDB\Collection;
+use PDO;
+use Predis\ClientInterface;
+use RedisArray;
+use RedisCluster;
+use Symfony\Component\Cache\Traits\RedisClusterProxy;
+use Symfony\Component\Cache\Traits\RedisProxy;
+use Zookeeper;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
@@ -141,7 +151,6 @@ use function array_merge;
 use function class_exists;
 use function interface_exists;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -261,7 +270,6 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param ContainerBuilder     $container
      * @param array<string, mixed> $configuration
      */
     private function registerConfiguration(ContainerBuilder $container, array $configuration): void
@@ -355,7 +363,7 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
 
-        if (0 !== strpos($configuration['transport']['dsn'], 'cache://')) {
+        if (!str_starts_with($configuration['transport']['dsn'], 'cache://')) {
             return;
         }
 
@@ -1049,7 +1057,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerDoctrineBridge(ContainerBuilder $container, array $configuration): void
     {
-        if (0 !== strpos($configuration['transport']['dsn'], 'doctrine://') && 0 !== strpos($configuration['transport']['dsn'], 'dbal://')) {
+        if (!str_starts_with($configuration['transport']['dsn'], 'doctrine://') && !str_starts_with($configuration['transport']['dsn'], 'dbal://')) {
             return;
         }
 

@@ -15,11 +15,8 @@ use Doctrine\DBAL\Schema\Schema;
  */
 abstract class AbstractDoctrineConnection
 {
-    private DbalConnection $driverConnection;
-
-    public function __construct(DBALConnection $driverConnection)
+    public function __construct(private DBALConnection $driverConnection)
     {
-        $this->driverConnection = $driverConnection;
     }
 
     abstract protected function addTableToSchema(Schema $schema): void;

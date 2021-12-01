@@ -23,21 +23,15 @@ use function sprintf;
  */
 final class ExecuteExternalProbeCommand extends Command
 {
-    private SchedulerInterface $scheduler;
-    private WorkerInterface $worker;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:execute:external-probe';
 
     public function __construct(
-        SchedulerInterface $scheduler,
-        WorkerInterface $worker
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker
     ) {
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
-
         parent::__construct();
     }
 

@@ -12,11 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class SchedulerRebootedEvent extends Event
 {
-    private SchedulerInterface $scheduler;
-
-    public function __construct(SchedulerInterface $scheduler)
+    public function __construct(private SchedulerInterface $scheduler)
     {
-        $this->scheduler = $scheduler;
     }
 
     public function getScheduler(): SchedulerInterface

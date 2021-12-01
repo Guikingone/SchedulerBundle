@@ -21,19 +21,13 @@ use function sprintf;
  */
 final class RemoveFailedTaskCommand extends Command
 {
-    private SchedulerInterface $scheduler;
-    private WorkerInterface $worker;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:remove:failed';
 
-    public function __construct(SchedulerInterface $scheduler, WorkerInterface $worker)
+    public function __construct(private SchedulerInterface $scheduler, private WorkerInterface $worker)
     {
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
-
         parent::__construct();
     }
 
@@ -76,7 +70,7 @@ final class RemoveFailedTaskCommand extends Command
 
         try {
             $toRemoveTask = $this->worker->getFailedTasks()->get($name);
-        } catch (InvalidArgumentException $invalidArgumentException) {
+        } catch (InvalidArgumentException) {
             $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;

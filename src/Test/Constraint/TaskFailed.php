@@ -14,11 +14,8 @@ use function sprintf;
  */
 final class TaskFailed extends Constraint
 {
-    private int $expectedCount;
-
-    public function __construct(int $expectedCount)
+    public function __construct(private int $expectedCount)
     {
-        $this->expectedCount = $expectedCount;
     }
 
     /**
@@ -34,6 +31,6 @@ final class TaskFailed extends Constraint
      */
     protected function matches($other): bool
     {
-        return $this->expectedCount === count($other->getFailedTaskEvents());
+        return $this->expectedCount === (is_countable($other->getFailedTaskEvents()) ? count($other->getFailedTaskEvents()) : 0);
     }
 }

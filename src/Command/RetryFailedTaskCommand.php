@@ -25,8 +25,6 @@ use function sprintf;
  */
 final class RetryFailedTaskCommand extends Command
 {
-    private WorkerInterface $worker;
-    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
 
     /**
@@ -35,12 +33,10 @@ final class RetryFailedTaskCommand extends Command
     protected static $defaultName = 'scheduler:retry:failed';
 
     public function __construct(
-        WorkerInterface $worker,
-        EventDispatcherInterface $eventDispatcher,
+        private WorkerInterface $worker,
+        private EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger = null
     ) {
-        $this->worker = $worker;
-        $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();
@@ -85,7 +81,7 @@ final class RetryFailedTaskCommand extends Command
 
         try {
             $task = $this->worker->getFailedTasks()->get($name);
-        } catch (InvalidArgumentException $invalidArgumentException) {
+        } catch (InvalidArgumentException) {
             $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;

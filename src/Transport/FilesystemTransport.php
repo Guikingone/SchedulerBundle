@@ -27,14 +27,12 @@ use function strtr;
 final class FilesystemTransport extends AbstractTransport
 {
     private Filesystem $filesystem;
-    private SchedulePolicyOrchestratorInterface $orchestrator;
-    private SerializerInterface $serializer;
 
     public function __construct(
-        string $path = null,
         array $options,
-        SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        private SerializerInterface $serializer,
+        private SchedulePolicyOrchestratorInterface $orchestrator,
+        string $path = null
     ) {
         $this->defineOptions(array_merge([
             'path' => $path,
@@ -45,8 +43,6 @@ final class FilesystemTransport extends AbstractTransport
         ]);
 
         $this->filesystem = new Filesystem();
-        $this->serializer = $serializer;
-        $this->orchestrator = $schedulePolicyOrchestrator;
     }
 
     /**

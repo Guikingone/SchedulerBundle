@@ -163,7 +163,7 @@ final class TaskList implements TaskListInterface
     {
         try {
             $chunks = array_chunk($this->tasks, $size, $preserveKeys);
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             throw new InvalidArgumentException(sprintf('The given size "%d" cannot be used to split the list', $size));
         }
 

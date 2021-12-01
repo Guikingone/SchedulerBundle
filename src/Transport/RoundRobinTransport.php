@@ -48,7 +48,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== count($this->transports)) {
+        while ($this->sleepingTransports->count() !== (is_countable($this->transports) ? count($this->transports) : 0)) {
             foreach ($this->transports as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;
@@ -60,7 +60,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
                     $stopWatch->start('quantum');
 
                     return $func($transport);
-                } catch (Throwable $throwable) {
+                } catch (Throwable) {
                     $this->sleepingTransports->attach($transport);
 
                     continue;
@@ -68,7 +68,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
                     $event = $stopWatch->stop('quantum');
 
                     $duration = $event->getDuration() / 1000;
-                    if ($duration > (count($this->transports) * $this->options['quantum'])) {
+                    if ($duration > ((is_countable($this->transports) ? count($this->transports) : 0) * $this->options['quantum'])) {
                         $this->sleepingTransports->attach($transport);
                     }
                 }

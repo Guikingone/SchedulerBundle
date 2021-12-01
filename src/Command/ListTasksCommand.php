@@ -25,8 +25,6 @@ use const DATE_ATOM;
  */
 final class ListTasksCommand extends Command
 {
-    private SchedulerInterface $scheduler;
-
     /**
      * @var string|null
      */
@@ -35,10 +33,8 @@ final class ListTasksCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function __construct(SchedulerInterface $scheduler)
+    public function __construct(private SchedulerInterface $scheduler)
     {
-        $this->scheduler = $scheduler;
-
         parent::__construct();
     }
 

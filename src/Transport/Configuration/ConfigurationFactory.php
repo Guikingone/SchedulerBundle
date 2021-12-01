@@ -16,16 +16,10 @@ use function sprintf;
 final class ConfigurationFactory
 {
     /**
-     * @var ConfigurationFactoryInterface[] $factories
-     */
-    private iterable $factories;
-
-    /**
      * @param ConfigurationFactoryInterface[] $factories
      */
-    public function __construct(iterable $factories)
+    public function __construct(private iterable $factories)
     {
-        $this->factories = $factories;
     }
 
     public function build(string $dsn, SerializerInterface $serializer): ConfigurationInterface

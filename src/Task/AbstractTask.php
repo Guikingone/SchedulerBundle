@@ -35,16 +35,13 @@ abstract class AbstractTask implements TaskInterface
     private const MIN_PRIORITY = -1000;
     private const MAX_PRIORITY = 1000;
 
-    private string $name;
-
     /**
      * @var array<string, mixed|bool|string|float|int|DateTimeImmutable|DateTimeZone|DateInterval|NotificationTaskBag|null>
      */
     protected array $options = [];
 
-    public function __construct(string $name)
+    public function __construct(private string $name)
     {
-        $this->name = $name;
     }
 
     /**

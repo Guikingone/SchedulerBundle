@@ -12,11 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskFailedEvent extends Event implements TaskEventInterface
 {
-    private FailedTask $task;
-
-    public function __construct(FailedTask $failedTask)
+    public function __construct(private FailedTask $task)
     {
-        $this->task = $failedTask;
     }
 
     public function getTask(): FailedTask

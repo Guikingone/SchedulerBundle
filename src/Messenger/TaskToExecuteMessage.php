@@ -11,13 +11,8 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class TaskToExecuteMessage
 {
-    private TaskInterface $task;
-    private int $workerTimeout;
-
-    public function __construct(TaskInterface $task, int $workerTimeout = 1)
+    public function __construct(private TaskInterface $task, private int $workerTimeout = 1)
     {
-        $this->task = $task;
-        $this->workerTimeout = $workerTimeout;
     }
 
     public function getTask(): TaskInterface

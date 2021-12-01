@@ -15,16 +15,10 @@ use Throwable;
 abstract class AbstractCompoundTransport extends AbstractTransport
 {
     /**
-     * @var TransportInterface[]
-     */
-    protected iterable $transports;
-
-    /**
      * @param TransportInterface[] $transports
      */
-    public function __construct(iterable $transports)
+    public function __construct(protected iterable $transports)
     {
-        $this->transports = $transports;
     }
 
     /**

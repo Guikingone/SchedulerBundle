@@ -17,16 +17,10 @@ use function sprintf;
 final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInterface
 {
     /**
-     * @var PolicyInterface[]
-     */
-    private iterable $policies;
-
-    /**
      * @param PolicyInterface[] $policies
      */
-    public function __construct(iterable $policies)
+    public function __construct(private iterable $policies)
     {
-        $this->policies = $policies;
     }
 
     /**

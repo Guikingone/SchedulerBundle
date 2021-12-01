@@ -9,11 +9,8 @@ namespace SchedulerBundle\Messenger;
  */
 final class TaskToPauseMessage
 {
-    private string $task;
-
-    public function __construct(string $task)
+    public function __construct(private string $task)
     {
-        $this->task = $task;
     }
 
     public function getTask(): string

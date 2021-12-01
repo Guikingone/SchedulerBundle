@@ -19,14 +19,12 @@ use Throwable;
  */
 final class AccessLockBagNormalizer implements NormalizerInterface, DenormalizerInterface
 {
-    private ObjectNormalizer $objectNormalizer;
     private LoggerInterface $logger;
 
     public function __construct(
-        ObjectNormalizer $objectNormalizer,
+        private ObjectNormalizer $objectNormalizer,
         ?LoggerInterface $logger = null
     ) {
-        $this->objectNormalizer = $objectNormalizer;
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -44,7 +42,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
                     ],
                 ]),
             ];
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             $this->logger->warning('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
 
             return [
