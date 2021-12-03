@@ -12,11 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerStartedEvent extends Event implements WorkerEventInterface
 {
-    private WorkerInterface $worker;
-
-    public function __construct(WorkerInterface $worker)
+    public function __construct(private WorkerInterface $worker)
     {
-        $this->worker = $worker;
     }
 
     public function getWorker(): WorkerInterface

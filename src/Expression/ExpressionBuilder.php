@@ -13,16 +13,10 @@ use SchedulerBundle\Exception\RuntimeException;
 final class ExpressionBuilder implements BuilderInterface
 {
     /**
-     * @var iterable|ExpressionBuilderInterface[]
-     */
-    private iterable $builders;
-
-    /**
      * @param iterable|ExpressionBuilderInterface[] $builders
      */
-    public function __construct(iterable $builders)
+    public function __construct(private iterable $builders)
     {
-        $this->builders = $builders;
     }
 
     /**

@@ -12,13 +12,11 @@ use SchedulerBundle\LazyInterface;
  */
 final class LazyConfiguration implements ConfigurationInterface, LazyInterface
 {
-    private ConfigurationInterface $sourceConfiguration;
     private ConfigurationInterface $configuration;
     private bool $initialized = false;
 
-    public function __construct(ConfigurationInterface $sourceConfiguration)
+    public function __construct(private ConfigurationInterface $sourceConfiguration)
     {
-        $this->sourceConfiguration = $sourceConfiguration;
     }
 
     /**

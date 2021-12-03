@@ -18,17 +18,13 @@ use Throwable;
  */
 final class YieldTaskCommand extends Command
 {
-    private SchedulerInterface $scheduler;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:yield';
 
-    public function __construct(SchedulerInterface $scheduler)
+    public function __construct(private SchedulerInterface $scheduler)
     {
-        $this->scheduler = $scheduler;
-
         parent::__construct();
     }
 

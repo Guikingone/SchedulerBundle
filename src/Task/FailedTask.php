@@ -12,14 +12,10 @@ use function sprintf;
  */
 final class FailedTask extends AbstractTask
 {
-    private TaskInterface $task;
-    private string $reason;
     private DateTimeImmutable $failedAt;
 
-    public function __construct(TaskInterface $task, string $reason)
+    public function __construct(private TaskInterface $task, private string $reason)
     {
-        $this->task = $task;
-        $this->reason = $reason;
         $this->failedAt = new DateTimeImmutable();
 
         parent::__construct(sprintf('%s.failed', $task->getName()));

@@ -15,11 +15,6 @@ use Throwable;
 final class FailOverConfiguration extends AbstractConfiguration
 {
     /**
-     * @var ConfigurationInterface[]
-     */
-    private iterable $configurationStorageList;
-
-    /**
      * @var SplObjectStorage<object, mixed>
      */
     private SplObjectStorage $failedConfigurations;
@@ -27,9 +22,8 @@ final class FailOverConfiguration extends AbstractConfiguration
     /**
      * @param ConfigurationInterface[] $configurationStorageList
      */
-    public function __construct(iterable $configurationStorageList)
+    public function __construct(private iterable $configurationStorageList)
     {
-        $this->configurationStorageList = $configurationStorageList;
         $this->failedConfigurations = new SplObjectStorage();
     }
 
@@ -126,7 +120,7 @@ final class FailOverConfiguration extends AbstractConfiguration
 
             try {
                 return $func($configurationStorage);
-            } catch (Throwable $throwable) {
+            } catch (Throwable) {
                 $this->failedConfigurations->attach($configurationStorage);
 
                 continue;

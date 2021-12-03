@@ -23,13 +23,11 @@ final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, O
     private const TASK_LOCK_MASK = '_symfony_scheduler_foo_';
 
     private LoggerInterface $logger;
-    private LockFactory $lockFactory;
 
     public function __construct(
-        LockFactory $lockFactory,
+        private LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
-        $this->lockFactory = $lockFactory;
         $this->logger = $logger ?? new NullLogger();
     }
 

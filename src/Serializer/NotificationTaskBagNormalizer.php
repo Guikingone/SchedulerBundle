@@ -19,11 +19,8 @@ use function array_merge;
  */
 final class NotificationTaskBagNormalizer implements DenormalizerInterface, NormalizerInterface
 {
-    private ObjectNormalizer $objectNormalizer;
-
-    public function __construct(ObjectNormalizer $objectNormalizer)
+    public function __construct(private ObjectNormalizer $objectNormalizer)
     {
-        $this->objectNormalizer = $objectNormalizer;
     }
 
     /**

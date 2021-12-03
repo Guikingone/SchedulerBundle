@@ -15,18 +15,14 @@ use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class DoctrineTransportFactory implements TransportFactoryInterface
 {
-    private ConnectionRegistry $registry;
-
-    public function __construct(ConnectionRegistry $registry)
+    public function __construct(private ConnectionRegistry $registry)
     {
-        $this->registry = $registry;
     }
 
     /**
@@ -56,6 +52,6 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'doctrine://') || 0 === strpos($dsn, 'dbal://');
+        return str_starts_with($dsn, 'doctrine://') || str_starts_with($dsn, 'dbal://');
     }
 }

@@ -26,14 +26,12 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
     public const NAME = 'scheduler';
 
     private TaskEventList $events;
-    private ?ProbeInterface $probe;
 
     public function __construct(
         TaskLoggerSubscriber $taskLoggerSubscriber,
-        ?ProbeInterface $probe = null
+        private ?ProbeInterface $probe = null
     ) {
         $this->events = $taskLoggerSubscriber->getEvents();
-        $this->probe = $probe;
     }
 
     /**

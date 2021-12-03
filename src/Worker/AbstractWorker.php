@@ -42,31 +42,19 @@ use function in_array;
  */
 abstract class AbstractWorker implements WorkerInterface
 {
-    private RunnerRegistryInterface $runnerRegistry;
     private TaskListInterface $failedTasks;
-    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
-    private SchedulerInterface $scheduler;
-    private TaskExecutionTrackerInterface $taskExecutionTracker;
-    private WorkerMiddlewareStack $middlewareStack;
-    private LockFactory $lockFactory;
     private WorkerConfiguration $configuration;
 
     public function __construct(
-        SchedulerInterface $scheduler,
-        RunnerRegistryInterface $runnerRegistry,
-        TaskExecutionTrackerInterface $taskExecutionTracker,
-        WorkerMiddlewareStack $workerMiddlewareStack,
-        EventDispatcherInterface $eventDispatcher,
-        LockFactory $lockFactory,
+        private SchedulerInterface $scheduler,
+        private RunnerRegistryInterface $runnerRegistry,
+        private TaskExecutionTrackerInterface $taskExecutionTracker,
+        private WorkerMiddlewareStack $middlewareStack,
+        private EventDispatcherInterface $eventDispatcher,
+        private LockFactory $lockFactory,
         ?LoggerInterface $logger = null
     ) {
-        $this->scheduler = $scheduler;
-        $this->runnerRegistry = $runnerRegistry;
-        $this->taskExecutionTracker = $taskExecutionTracker;
-        $this->middlewareStack = $workerMiddlewareStack;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->lockFactory = $lockFactory;
         $this->configuration = WorkerConfiguration::create();
         $this->logger = $logger ?? new NullLogger();
         $this->failedTasks = new TaskList();

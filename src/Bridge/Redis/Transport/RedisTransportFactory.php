@@ -13,7 +13,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use function array_merge;
 use function class_exists;
 use function phpversion;
-use function strpos;
 use function version_compare;
 
 /**
@@ -55,6 +54,6 @@ final class RedisTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'redis://');
+        return str_starts_with($dsn, 'redis://');
     }
 }

@@ -284,11 +284,10 @@ final class ConsumeTasksCommandTest extends TestCase
     /**
      * @dataProvider provideLimitOption
      *
-     * @param int|string $limit
      *
      * @throws Throwable {@see TaskListInterface::add()}
      */
-    public function testCommandCanConsumeSchedulersWithTimeLimit($limit): void
+    public function testCommandCanConsumeSchedulersWithTimeLimit(int|string $limit): void
     {
         $logger = $this->createMock(LoggerInterface::class);
 

@@ -11,6 +11,7 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result as NextResult;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\SchemaConfig;
 use JsonException;
@@ -133,7 +134,7 @@ final class DoctrineTransportTest extends TestCase
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
@@ -183,7 +184,7 @@ final class DoctrineTransportTest extends TestCase
         $abstractPlatform = $this->createMock(AbstractPlatform::class);
         $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
@@ -254,7 +255,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn(['name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
@@ -318,7 +319,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn(['name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
@@ -393,7 +394,7 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform = $this->createMock(AbstractPlatform::class);
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->createMock(Connection::class);
@@ -461,7 +462,7 @@ final class DoctrineTransportTest extends TestCase
         $dbalPlatform = $this->createMock(AbstractPlatform::class);
         $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
@@ -549,7 +550,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn(['name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();
@@ -621,7 +622,7 @@ final class DoctrineTransportTest extends TestCase
             ->willReturn(['name' => ParameterType::STRING])
         ;
 
-        $statement = $this->createMock(Result::class);
+        $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->getDBALConnectionMock();

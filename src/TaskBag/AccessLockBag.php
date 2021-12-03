@@ -11,11 +11,8 @@ use Symfony\Component\Lock\Key;
  */
 final class AccessLockBag implements TaskBagInterface
 {
-    private ?Key $key;
-
-    public function __construct(?Key $key = null)
+    public function __construct(private ?Key $key = null)
     {
-        $this->key = $key;
     }
 
     public function getKey(): ?Key

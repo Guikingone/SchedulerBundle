@@ -7,7 +7,6 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sys_get_temp_dir;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -19,10 +18,10 @@ final class FilesystemTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new FilesystemTransport($dsn->getOption('path', $options['path'] ?? sys_get_temp_dir()), [
+        return new FilesystemTransport([
             'execution_mode' => $dsn->getHost(),
             'filename_mask' => $dsn->getOption('filename_mask', '%s/_symfony_scheduler_/%s.json'),
-        ], $serializer, $schedulePolicyOrchestrator);
+        ], $serializer, $schedulePolicyOrchestrator, $dsn->getOption('path', $options['path'] ?? sys_get_temp_dir()));
     }
 
     /**
@@ -30,6 +29,6 @@ final class FilesystemTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'fs://') || 0 === strpos($dsn, 'filesystem://') || 0 === strpos($dsn, 'file://');
+        return str_starts_with($dsn, 'fs://') || str_starts_with($dsn, 'filesystem://') || str_starts_with($dsn, 'file://');
     }
 }

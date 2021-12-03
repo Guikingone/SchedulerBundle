@@ -12,13 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerRunningEvent extends Event implements WorkerEventInterface
 {
-    private WorkerInterface $worker;
-    private bool $isIdle;
-
-    public function __construct(WorkerInterface $worker, bool $idle = false)
+    public function __construct(private WorkerInterface $worker, private bool $isIdle = false)
     {
-        $this->worker = $worker;
-        $this->isIdle = $idle;
     }
 
     public function getWorker(): WorkerInterface

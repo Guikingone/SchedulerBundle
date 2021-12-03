@@ -20,17 +20,13 @@ use const DATE_ATOM;
  */
 final class ListFailedTasksCommand extends Command
 {
-    private WorkerInterface $worker;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:list:failed';
 
-    public function __construct(WorkerInterface $worker)
+    public function __construct(private WorkerInterface $worker)
     {
-        $this->worker = $worker;
-
         parent::__construct();
     }
 

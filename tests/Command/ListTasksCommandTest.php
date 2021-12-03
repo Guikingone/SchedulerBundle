@@ -8,13 +8,13 @@ use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\NullTask;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -69,11 +69,8 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCannotReturnTaskOnEmptyTaskList(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('count')->willReturn(0);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList());
 
         $commandTester = new CommandTester(new ListTasksCommand($scheduler));
         $commandTester->execute([]);
@@ -353,12 +350,10 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidExpressionFilter(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('count')->willReturn(1);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $commandTester = new CommandTester(new ListTasksCommand($scheduler));
         $commandTester->execute([
@@ -371,12 +366,10 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidStateFilter(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('count')->willReturn(1);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $commandTester = new CommandTester(new ListTasksCommand($scheduler));
         $commandTester->execute([
@@ -389,12 +382,10 @@ final class ListTasksCommandTest extends TestCase
 
     public function testCommandCanReturnTasksWithInvalidStateAndExpressionFilter(): void
     {
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturn(new TaskList());
-        $taskList->expects(self::once())->method('count')->willReturn(1);
-
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $commandTester = new CommandTester(new ListTasksCommand($scheduler));
         $commandTester->execute([

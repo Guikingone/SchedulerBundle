@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use Stringable;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Output
+final class Output implements Stringable
 {
     /**
      * @var string
@@ -19,18 +21,8 @@ final class Output
      */
     public const ERROR = 'error';
 
-    private ?string $output;
-    private TaskInterface $task;
-    private string $type;
-
-    public function __construct(
-        TaskInterface $task,
-        ?string $output = 'undefined',
-        string $type = self::SUCCESS
-    ) {
-        $this->task = $task;
-        $this->output = $output;
-        $this->type = $type;
+    public function __construct(private TaskInterface $task, private ?string $output = 'undefined', private string $type = self::SUCCESS)
+    {
     }
 
     public function __toString(): string

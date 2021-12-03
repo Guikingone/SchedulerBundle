@@ -29,30 +29,20 @@ use function rawurldecode;
  */
 final class TaskSubscriber implements EventSubscriberInterface
 {
-    private SchedulerInterface $scheduler;
-    private string $tasksPath;
-    private WorkerInterface $worker;
-    private EventDispatcherInterface $eventDispatcher;
-    private Serializer $serializer;
     private LoggerInterface $logger;
 
     /**
      * @param string $tasksPath The path that trigger this listener
      */
     public function __construct(
-        SchedulerInterface $scheduler,
-        WorkerInterface $worker,
-        EventDispatcherInterface $eventDispatcher,
-        Serializer $serializer,
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker,
+        private EventDispatcherInterface $eventDispatcher,
+        private Serializer $serializer,
         LoggerInterface $logger = null,
-        string $tasksPath = '/_tasks'
+        private string $tasksPath = '/_tasks'
     ) {
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->serializer = $serializer;
         $this->logger = $logger ?? new NullLogger();
-        $this->tasksPath = $tasksPath;
     }
 
     /**

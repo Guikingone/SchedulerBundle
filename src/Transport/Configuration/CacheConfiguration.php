@@ -19,14 +19,10 @@ final class CacheConfiguration extends AbstractConfiguration
 {
     private const CONFIGURATION_LIST_KEY = '_symfony_configuration';
 
-    private CacheItemPoolInterface $pool;
-
     public function __construct(
-        CacheItemPoolInterface $cacheItemPool,
+        private CacheItemPoolInterface $pool,
         array $options = []
     ) {
-        $this->pool = $cacheItemPool;
-
         $this->boot();
         $this->init($options);
     }

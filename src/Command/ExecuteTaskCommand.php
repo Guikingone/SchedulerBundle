@@ -29,9 +29,6 @@ use function sprintf;
  */
 final class ExecuteTaskCommand extends Command
 {
-    private EventDispatcherInterface $eventDispatcher;
-    private SchedulerInterface $scheduler;
-    private WorkerInterface $worker;
     private LoggerInterface $logger;
 
     /**
@@ -40,14 +37,11 @@ final class ExecuteTaskCommand extends Command
     protected static $defaultName = 'scheduler:execute';
 
     public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        SchedulerInterface $scheduler,
-        WorkerInterface $worker,
+        private EventDispatcherInterface $eventDispatcher,
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker,
         ?LoggerInterface $logger = null
     ) {
-        $this->eventDispatcher = $eventDispatcher;
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
         $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();

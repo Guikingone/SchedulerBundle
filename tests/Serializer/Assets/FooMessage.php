@@ -9,11 +9,8 @@ namespace Tests\SchedulerBundle\Serializer\Assets;
  */
 final class FooMessage
 {
-    private int $id;
-
-    public function __construct(int $id = 1)
+    public function __construct(private int $id = 1)
     {
-        $this->id = $id;
     }
 
     public function getId(): int

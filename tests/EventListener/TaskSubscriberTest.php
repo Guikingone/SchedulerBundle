@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -21,7 +22,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\Serializer;
 use function json_decode;
@@ -148,15 +148,11 @@ final class TaskSubscriberTest extends TestCase
     public function testResponseIsSetWhenWorkerErrorIsThrown(): void
     {
         $serializer = $this->createMock(Serializer::class);
-        $task = $this->createMock(TaskInterface::class);
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('toArray')->willReturn([$task]);
-        $taskList->expects(self::once())->method('count')->willReturn(1);
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute')->willThrowException(new RuntimeException('An error occur'));
@@ -188,15 +184,12 @@ final class TaskSubscriberTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('filter')->willReturnSelf();
-        $taskList->expects(self::once())->method('toArray')->with(self::equalTo(false))->willReturn([$task]);
-        $taskList->expects(self::once())->method('count')->willReturn(1);
+        $task = new NullTask('foo');
 
         $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
+            $task,
+        ]));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('execute');

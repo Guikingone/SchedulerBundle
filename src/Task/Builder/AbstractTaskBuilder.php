@@ -14,11 +14,8 @@ use SchedulerBundle\Task\TaskInterface;
  */
 abstract class AbstractTaskBuilder
 {
-    private ExpressionBuilderInterface $expressionBuilder;
-
-    public function __construct(ExpressionBuilderInterface $expressionBuilder)
+    public function __construct(private ExpressionBuilderInterface $expressionBuilder)
     {
-        $this->expressionBuilder = $expressionBuilder;
     }
 
     protected function handleTaskAttributes(TaskInterface $task, array $options, PropertyAccessorInterface $propertyAccessor): TaskInterface

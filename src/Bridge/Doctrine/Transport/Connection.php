@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
@@ -29,26 +28,16 @@ use function sprintf;
  */
 final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
-    private array $configuration;
-    private DbalConnection $driverConnection;
-    private SerializerInterface $serializer;
-    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
-
     /**
      * @param mixed[] $configuration
      */
     public function __construct(
-        array $configuration,
-        DbalConnection $dbalConnection,
-        SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        private array $configuration,
+        private DbalConnection $driverConnection,
+        private SerializerInterface $serializer,
+        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->configuration = $configuration;
-        $this->driverConnection = $dbalConnection;
-        $this->serializer = $serializer;
-        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
-
-        parent::__construct($dbalConnection);
+        parent::__construct($driverConnection);
     }
 
     /**
@@ -66,7 +55,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             $existingTasksCount->getParameterTypes()
         )->fetchOne();
 
-        if ('0' === $statement) {
+        if (0 === (int) $statement) {
             return new TaskList();
         }
 
@@ -101,7 +90,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             $existingTaskCount->getParameterTypes()
         )->fetchOne();
 
-        if ('0' === $statement) {
+        if (0 === (int) $statement) {
             throw new TransportException(sprintf('The task "%s" cannot be found', $taskName));
         }
 
@@ -147,7 +136,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             $existingTaskQuery->getParameterTypes()
         )->fetchOne();
 
-        if ('0' !== $existingTask) {
+        if (0 !== (int) $existingTask) {
             return;
         }
 
@@ -163,14 +152,13 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                     ->setParameter('body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $query->getSQL(),
                     $query->getParameters(),
                     $query->getParameterTypes()
                 );
 
-                if (1 !== $statement->rowCount()) {
+                if (false !== $statement->fetchOne()) {
                     throw new Exception('The given data are invalid.');
                 }
             });
@@ -255,7 +243,6 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
 
-                /** @var Statement $statement */
                 $statement = $connection->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),
@@ -346,7 +333,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                 throw $throwable;
             }
 
-            if ($this->configuration['auto_setup']) {
+            if (true === $this->configuration['auto_setup']) {
                 $this->setup();
             }
 

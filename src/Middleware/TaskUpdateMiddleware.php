@@ -13,11 +13,8 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class TaskUpdateMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface, RequiredMiddlewareInterface
 {
-    private SchedulerInterface $scheduler;
-
-    public function __construct(SchedulerInterface $scheduler)
+    public function __construct(private SchedulerInterface $scheduler)
     {
-        $this->scheduler = $scheduler;
     }
 
     /**

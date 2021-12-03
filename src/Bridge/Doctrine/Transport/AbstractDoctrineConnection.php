@@ -15,11 +15,8 @@ use Doctrine\DBAL\Schema\Schema;
  */
 abstract class AbstractDoctrineConnection
 {
-    private DbalConnection $driverConnection;
-
-    public function __construct(DBALConnection $driverConnection)
+    public function __construct(private DBALConnection $driverConnection)
     {
-        $this->driverConnection = $driverConnection;
     }
 
     abstract protected function addTableToSchema(Schema $schema): void;
@@ -31,8 +28,7 @@ abstract class AbstractDoctrineConnection
      */
     protected function updateSchema(): void
     {
-        $comparator = new Comparator();
-        $schemaDiff = $comparator->compare($this->driverConnection->getSchemaManager()->createSchema(), $this->getSchema());
+        $schemaDiff = Comparator::compareSchemas($this->driverConnection->createSchemaManager()->createSchema(), $this->getSchema());
 
         foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
             $this->driverConnection->executeStatement($sql);
@@ -49,7 +45,7 @@ abstract class AbstractDoctrineConnection
 
     private function getSchema(): Schema
     {
-        $schema = new Schema([], [], $this->driverConnection->getSchemaManager()->createSchemaConfig());
+        $schema = new Schema([], [], $this->driverConnection->createSchemaManager()->createSchemaConfig());
         $this->addTableToSchema($schema);
 
         return $schema;

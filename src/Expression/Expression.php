@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Expression;
 
+use Stringable;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\InvalidExpressionException;
 use function array_key_exists;
@@ -11,12 +12,11 @@ use function count;
 use function explode;
 use function implode;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class Expression
+final class Expression implements Stringable
 {
     /**
      * @var string
@@ -74,7 +74,7 @@ final class Expression
 
     public function setExpression(string $expression): void
     {
-        if (0 === strpos($expression, '@')) {
+        if (str_starts_with($expression, '@')) {
             $this->setMacro($expression);
 
             return;

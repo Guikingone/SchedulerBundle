@@ -12,15 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerForkedEvent extends Event
 {
-    private WorkerInterface $forkedWorker;
-    private WorkerInterface $newWorker;
-
-    public function __construct(
-        WorkerInterface $forkedWorker,
-        WorkerInterface $newWorker
-    ) {
-        $this->forkedWorker = $forkedWorker;
-        $this->newWorker = $newWorker;
+    public function __construct(private WorkerInterface $forkedWorker, private WorkerInterface $newWorker)
+    {
     }
 
     public function getForkedWorker(): WorkerInterface

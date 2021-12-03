@@ -12,13 +12,10 @@ use SchedulerBundle\LazyInterface;
  */
 final class LazyTask extends AbstractTask implements LazyInterface
 {
-    private Closure $sourceTaskClosure;
     private bool $initialized = false;
 
-    public function __construct(string $name, Closure $func)
+    public function __construct(string $name, private Closure $sourceTaskClosure)
     {
-        $this->sourceTaskClosure = $func;
-
         parent::__construct(sprintf('%s.lazy', $name));
     }
 

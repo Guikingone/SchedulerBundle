@@ -15,7 +15,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function array_map;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,17 +23,16 @@ final class Connection implements ConnectionInterface
 {
     private Redis $connection;
     private string $list;
-    private SerializerInterface $serializer;
 
     /**
      * @param array<string, mixed|string|int|float|null> $options
      */
-    public function __construct(array $options, SerializerInterface $serializer, ?Redis $redis = null)
+    public function __construct(array $options, private SerializerInterface $serializer, ?Redis $redis = null)
     {
         $this->connection = $redis ?? new Redis();
         $this->connection->connect($options['host'], $options['port'], $options['timeout']);
 
-        if (0 !== strpos($this->list = $options['list'], '_')) {
+        if (!str_starts_with($this->list = $options['list'], '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 
@@ -45,8 +43,6 @@ final class Connection implements ConnectionInterface
         if (!$this->connection->select($options['dbindex'] ?? 0)) {
             throw new InvalidArgumentException(sprintf('Redis connection failed: "%s".', $this->connection->getLastError() ?? ''));
         }
-
-        $this->serializer = $serializer;
     }
 
     /**

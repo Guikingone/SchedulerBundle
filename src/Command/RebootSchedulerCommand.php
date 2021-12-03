@@ -20,7 +20,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
-use function get_class;
 use function implode;
 
 /**
@@ -28,9 +27,6 @@ use function implode;
  */
 final class RebootSchedulerCommand extends Command
 {
-    private SchedulerInterface $scheduler;
-    private WorkerInterface $worker;
-    private EventDispatcherInterface $eventDispatcher;
     private LoggerInterface $logger;
 
     /**
@@ -39,14 +35,11 @@ final class RebootSchedulerCommand extends Command
     protected static $defaultName = 'scheduler:reboot';
 
     public function __construct(
-        SchedulerInterface $scheduler,
-        WorkerInterface $worker,
-        EventDispatcherInterface $eventDispatcher,
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker,
+        private EventDispatcherInterface $eventDispatcher,
         ?LoggerInterface $logger = null
     ) {
-        $this->scheduler = $scheduler;
-        $this->worker = $worker;
-        $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger ?? new NullLogger();
 
         parent::__construct();
@@ -100,7 +93,7 @@ final class RebootSchedulerCommand extends Command
 
             $table->addRows(array_map(static fn (TaskInterface $task): array => [
                 $task->getName(),
-                get_class($task),
+                $task::class,
                 $task->getState(),
                 implode(', ', $task->getTags()),
             ], $tasks->toArray()));
@@ -137,7 +130,7 @@ final class RebootSchedulerCommand extends Command
 
         $table->addRows(array_map(static fn (TaskInterface $task): array => [
             $task->getName(),
-            get_class($task),
+            $task::class,
             $task->getState(),
             implode(', ', $task->getTags()),
         ], $tasks->toArray()));

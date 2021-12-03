@@ -27,21 +27,15 @@ use function sprintf;
  */
 final class DebugMiddlewareCommand extends Command
 {
-    private SchedulerMiddlewareStack $schedulerMiddlewareStack;
-    private WorkerMiddlewareStack $workerMiddlewareStack;
-
     /**
      * @var string|null
      */
     protected static $defaultName = 'scheduler:debug:middleware';
 
     public function __construct(
-        SchedulerMiddlewareStack $schedulerMiddlewareStack,
-        WorkerMiddlewareStack $workerMiddlewareStack
+        private SchedulerMiddlewareStack $schedulerMiddlewareStack,
+        private WorkerMiddlewareStack $workerMiddlewareStack
     ) {
-        $this->schedulerMiddlewareStack = $schedulerMiddlewareStack;
-        $this->workerMiddlewareStack = $workerMiddlewareStack;
-
         parent::__construct();
     }
 

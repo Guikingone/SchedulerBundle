@@ -8,7 +8,6 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,16 +15,10 @@ use function strpos;
 final class LazyTransportFactory implements TransportFactoryInterface
 {
     /**
-     * @var TransportFactoryInterface[] $factories
-     */
-    private iterable $factories;
-
-    /**
      * @param TransportFactoryInterface[] $factories
      */
-    public function __construct(iterable $factories)
+    public function __construct(private iterable $factories)
     {
-        $this->factories = $factories;
     }
 
     /**
@@ -49,6 +42,6 @@ final class LazyTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return 0 === strpos($dsn, 'lazy://');
+        return str_starts_with($dsn, 'lazy://');
     }
 }

@@ -9,12 +9,8 @@ namespace SchedulerBundle\Task;
  */
 final class MessengerTask extends AbstractTask
 {
-    private object $message;
-
-    public function __construct(string $name, object $message)
+    public function __construct(string $name, private object $message)
     {
-        $this->message = $message;
-
         $this->defineOptions();
 
         parent::__construct($name);

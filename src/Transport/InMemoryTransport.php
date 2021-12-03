@@ -21,14 +21,12 @@ use function sprintf;
 final class InMemoryTransport extends AbstractTransport
 {
     private TaskListInterface $tasks;
-    private SchedulePolicyOrchestratorInterface $orchestrator;
 
     public function __construct(
         array $options,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        private SchedulePolicyOrchestratorInterface $orchestrator
     ) {
         $this->defineOptions($options);
-        $this->orchestrator = $schedulePolicyOrchestrator;
         $this->tasks = new TaskList();
     }
 

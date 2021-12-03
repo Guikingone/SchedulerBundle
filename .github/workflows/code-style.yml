@@ -11,14 +11,13 @@ on:
 
 jobs:
   php-cs-fixer:
-    name: Code style with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies - ${{ matrix.os }} OS
-    runs-on: ${{ matrix.os }}
+    name: Code style with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies
+    runs-on: 'ubuntu-latest'
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.4', '8.0']
+        php-versions: ['8.0']
         composer-dependencies: ['highest', 'lowest']
-        os: ['ubuntu-latest', 'macOS-latest']
     steps:
       - name: Checkout
         uses: actions/checkout@v2

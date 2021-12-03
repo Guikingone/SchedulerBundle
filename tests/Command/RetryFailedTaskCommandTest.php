@@ -8,12 +8,11 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -74,13 +73,10 @@ final class RetryFailedTaskCommandTest extends TestCase
     {
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
         $worker->expects(self::once())->method('execute')->willThrowException(new Exception('Random execution error'));
 
         $retryFailedTaskCommand = new RetryFailedTaskCommand($worker, $eventDispatcher);
@@ -100,14 +96,10 @@ final class RetryFailedTaskCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
         $worker->expects(self::never())->method('execute');
 
         $retryFailedTaskCommand = new RetryFailedTaskCommand($worker, $eventDispatcher);
@@ -129,14 +121,10 @@ final class RetryFailedTaskCommandTest extends TestCase
             ->with(new StopWorkerOnTaskLimitSubscriber(1, $logger))
         ;
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
         $worker->expects(self::once())->method('execute');
 
         $retryFailedTaskCommand = new RetryFailedTaskCommand($worker, $eventDispatcher, $logger);
@@ -159,14 +147,10 @@ final class RetryFailedTaskCommandTest extends TestCase
             ->with(new StopWorkerOnTaskLimitSubscriber(1, $logger))
         ;
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $taskList = $this->createMock(TaskListInterface::class);
-        $taskList->expects(self::once())->method('get')->willReturn($task);
-
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn($taskList);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+        ]));
         $worker->expects(self::once())->method('execute');
 
         $retryFailedTaskCommand = new RetryFailedTaskCommand($worker, $eventDispatcher, $logger);

@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters = $containerConfigurator->parameters();
 
-    $parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_74);
+    $parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_80);
     $parameters->set(Option::AUTO_IMPORT_NAMES, true);
     $parameters->set(Option::IMPORT_SHORT_CLASSES, true);
     $parameters->set(Option::IMPORT_DOC_BLOCKS, true);
@@ -29,10 +29,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $parameters->set(Option::SKIP, [
         __DIR__ . '/vendor',
+        __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
+        __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
     ]);
 
     $containerConfigurator->import(DoctrineSetList::DOCTRINE_25);
     $containerConfigurator->import(DoctrineSetList::DOCTRINE_DBAL_211);
+    $containerConfigurator->import(DoctrineSetList::DOCTRINE_DBAL_30);
     $containerConfigurator->import(PHPUnitSetList::PHPUNIT_91);
     $containerConfigurator->import(PHPUnitSetList::PHPUNIT_EXCEPTION);
     $containerConfigurator->import(PHPUnitSetList::PHPUNIT_MOCK);
@@ -46,6 +49,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(SetList::PHP_72);
     $containerConfigurator->import(SetList::PHP_73);
     $containerConfigurator->import(SetList::PHP_74);
+    $containerConfigurator->import(SetList::PHP_80);
     $containerConfigurator->import(SetList::UNWRAP_COMPAT);
     $containerConfigurator->import(SymfonySetList::SYMFONY_50);
     $containerConfigurator->import(SymfonySetList::SYMFONY_50_TYPES);

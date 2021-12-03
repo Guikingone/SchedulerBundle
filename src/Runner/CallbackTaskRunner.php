@@ -34,7 +34,7 @@ final class CallbackTaskRunner implements RunnerInterface
             }
 
             return new Output($task, trim((string) $output));
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             return new Output($task, null, Output::ERROR);
         }
     }

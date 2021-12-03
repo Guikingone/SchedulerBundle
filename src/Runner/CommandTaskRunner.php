@@ -17,18 +17,14 @@ use Throwable;
 use function implode;
 use function is_int;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class CommandTaskRunner implements RunnerInterface
 {
-    private Application $application;
-
-    public function __construct(Application $application)
+    public function __construct(private Application $application)
     {
-        $this->application = $application;
     }
 
     /**
@@ -51,7 +47,7 @@ final class CommandTaskRunner implements RunnerInterface
             if (Command::FAILURE === $statusCode) {
                 return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
             }
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             return new Output($task, $bufferedOutput->fetch(), Output::ERROR);
         }
 
@@ -81,12 +77,12 @@ final class CommandTaskRunner implements RunnerInterface
         $options = [];
         foreach ($commandTask->getOptions() as $key => $option) {
             if (is_int($key)) {
-                $options[] = 0 === strpos($option, '--') ? $option : sprintf('--%s', $option);
+                $options[] = str_starts_with($option, '--') ? $option : sprintf('--%s', $option);
 
                 continue;
             }
 
-            $options[] = sprintf('%s %s', 0 === strpos($key, '--') ? $key : sprintf('--%s', $key), $option);
+            $options[] = sprintf('%s %s', str_starts_with($key, '--') ? $key : sprintf('--%s', $key), $option);
         }
 
         return $options;

@@ -27,18 +27,8 @@ use const JSON_THROW_ON_ERROR;
  */
 final class MercureEventSubscriber implements EventSubscriberInterface
 {
-    private HubInterface $hub;
-    private string $updateUrl;
-    private SerializerInterface $serializer;
-
-    public function __construct(
-        HubInterface $hub,
-        string $updateUrl,
-        SerializerInterface $serializer
-    ) {
-        $this->hub = $hub;
-        $this->updateUrl = $updateUrl;
-        $this->serializer = $serializer;
+    public function __construct(private HubInterface $hub, private string $updateUrl, private SerializerInterface $serializer)
+    {
     }
 
     /**
