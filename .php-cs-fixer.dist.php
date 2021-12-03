@@ -12,7 +12,8 @@ return $config->setRules([
     '@PSR1' => true,
     '@PSR2' => true,
     '@PSR12' => true,
-    '@PHP74Migration' => true,
+    '@PHP80Migration' => true,
+    '@PHP80Migration:risky' => true,
     'array_indentation' => true,
     'array_syntax' => [
         'syntax' => 'short',
