@@ -30,6 +30,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set(Option::SKIP, [
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
+        __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
     ]);
 
     $containerConfigurator->import(DoctrineSetList::DOCTRINE_25);
