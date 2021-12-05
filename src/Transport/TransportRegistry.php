@@ -16,8 +16,17 @@ use function usort;
  */
 final class TransportRegistry implements TransportRegistryInterface
 {
-    public function __construct(private iterable $transports)
+    /**
+     * @var TransportInterface[]
+     */
+    private array $transports;
+
+    /**
+     * @param TransportInterface[] $transports
+     */
+    public function __construct(iterable $transports)
     {
+        $this->transports = is_array($transports) ? $transports : iterator_to_array($transports);
     }
 
     public function usort(Closure $func): TransportRegistryInterface
