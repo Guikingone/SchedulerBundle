@@ -565,7 +565,10 @@ final class WorkerTest extends TestCase
             $logger
         );
 
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+
         $worker->execute(WorkerConfiguration::create());
+        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
 
         $task = $scheduler->getTasks()->get('foo');
