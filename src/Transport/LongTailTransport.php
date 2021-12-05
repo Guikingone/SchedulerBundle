@@ -7,8 +7,6 @@ namespace SchedulerBundle\Transport;
 use Closure;
 use SchedulerBundle\Exception\TransportException;
 use Throwable;
-use function reset;
-use function usort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -20,13 +18,13 @@ final class LongTailTransport extends AbstractCompoundTransport
      */
     protected function execute(Closure $func)
     {
-        if ([] === $this->transports) {
+        if (0 === $this->registry->count()) {
             throw new TransportException('No transport found');
         }
 
-        usort($this->transports, static fn (TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() <=> $nextTransport->list()->count());
+        $this->registry->usort(static fn (TransportInterface $transport, TransportInterface $nextTransport): int => $transport->list()->count() <=> $nextTransport->list()->count());
 
-        $transport = reset($this->transports);
+        $transport = $this->registry->reset();
 
         try {
             return $func($transport);

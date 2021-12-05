@@ -24,7 +24,7 @@ final class FailOverTransportFactory extends AbstractCompoundTransportFactory
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new FailOverTransport($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator));
+        return new FailOverTransport(new TransportRegistry($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator)));
     }
 
     /**
