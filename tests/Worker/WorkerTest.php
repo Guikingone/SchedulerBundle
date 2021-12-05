@@ -583,6 +583,50 @@ final class WorkerTest extends TestCase
     /**
      * @throws Throwable {@see TaskListInterface::add()}
      */
+    public function testEmptyTaskCannotBeExecuted(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info');
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([
+            new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
+        ]), $eventDispatcher);
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([
+                new NullTaskRunner(),
+            ]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack([
+                new TaskCallbackMiddleware(),
+                new NotifierMiddleware(),
+                new SingleRunTaskMiddleware($scheduler),
+                new TaskUpdateMiddleware($scheduler),
+                new TaskLockBagMiddleware($lockFactory),
+            ]),
+            $eventDispatcher,
+            $lockFactory,
+            $logger
+        );
+
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+
+        $worker->execute(WorkerConfiguration::create());
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertNull($worker->getLastExecutedTask());
+    }
+
+    /**
+     * @throws Throwable {@see TaskListInterface::add()}
+     */
     public function testTaskCanBeExecutedAndTheWorkerCanReturnTheLastExecutedTask(): void
     {
         $task = new NullTask('foo');
