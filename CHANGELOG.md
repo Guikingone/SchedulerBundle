@@ -1,5 +1,30 @@
 # Changelog
 
+0.8.0
+-----
+
+### Features
+
+##### Middleware
+
+* Registry introduced (#203) ([06f36c](https://github.com/Guikingone/SchedulerBundle/commit/06f36c9d18ab407b707ca8a128102604d29b5787))
+
+##### Transport
+
+* Registry introduced (#212) ([fe730b](https://github.com/Guikingone/SchedulerBundle/commit/fe730b463dc8da89abb08788b6f06dd9488ad197))
+
+### Builds
+
+##### Docker
+
+* Configuration started (#204) ([baea89](https://github.com/Guikingone/SchedulerBundle/commit/baea89a8d9134c4d9c2f45212d4728f51d00821a))
+
+##### Php
+
+* 8.1 added && Symfony 6.0 (#31) ([dcbc6f](https://github.com/Guikingone/SchedulerBundle/commit/dcbc6f731156daa2650e399288b569b10acffbb6))
+
+---
+
 0.7.1
 -----
 
