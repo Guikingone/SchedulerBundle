@@ -31,7 +31,7 @@ final class FailOverConfigurationFactory extends AbstractCompoundConfigurationFa
      */
     public function create(Dsn $dsn, SerializerInterface $serializer): FailOverConfiguration
     {
-        return new FailOverConfiguration($this->handleCompoundConfiguration(' || ', $dsn, $this->factories, $serializer));
+        return new FailOverConfiguration(new ConfigurationRegistry($this->handleCompoundConfiguration(' || ', $dsn, $this->factories, $serializer)));
     }
 
     /**

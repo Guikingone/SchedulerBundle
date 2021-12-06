@@ -60,7 +60,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): void
     {
         // TODO: Implement get() method.
     }

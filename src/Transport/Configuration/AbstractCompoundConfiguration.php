@@ -11,17 +11,8 @@ use Closure;
  */
 abstract class AbstractCompoundConfiguration extends AbstractConfiguration
 {
-    /**
-     * @var ConfigurationInterface[]
-     */
-    protected iterable $configurationStorageList;
-
-    /**
-     * @param ConfigurationInterface[] $configurationStorageList
-     */
-    public function __construct(iterable $configurationStorageList)
+    public function __construct(protected ConfigurationRegistryInterface $configurationRegistry)
     {
-        $this->configurationStorageList = $configurationStorageList;
     }
 
     /**

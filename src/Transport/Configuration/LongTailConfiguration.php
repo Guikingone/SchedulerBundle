@@ -7,8 +7,6 @@ namespace SchedulerBundle\Transport\Configuration;
 use Closure;
 use SchedulerBundle\Exception\ConfigurationException;
 use Throwable;
-use function reset;
-use function usort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -20,13 +18,13 @@ final class LongTailConfiguration extends AbstractCompoundConfiguration
      */
     protected function execute(Closure $func)
     {
-        if ([] === $this->configurationStorageList) {
+        if (0 === $this->configurationRegistry->count()) {
             throw new ConfigurationException('No configuration found');
         }
 
-        usort($this->configurationStorageList, static fn (ConfigurationInterface $configuration, ConfigurationInterface $nextConfiguration): int => $configuration->count() <=> $nextConfiguration->count());
+        $this->configurationRegistry->usort(static fn (ConfigurationInterface $configuration, ConfigurationInterface $nextConfiguration): int => $configuration->count() <=> $nextConfiguration->count());
 
-        $configuration = reset($this->configurationStorageList);
+        $configuration = $this->configurationRegistry->reset();
 
         try {
             return $func($configuration);

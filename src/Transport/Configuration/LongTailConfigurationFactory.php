@@ -31,7 +31,7 @@ final class LongTailConfigurationFactory extends AbstractCompoundConfigurationFa
      */
     public function create(Dsn $dsn, SerializerInterface $serializer): LongTailConfiguration
     {
-        return new LongTailConfiguration($this->handleCompoundConfiguration(' <> ', $dsn, $this->factories, $serializer));
+        return new LongTailConfiguration(new ConfigurationRegistry($this->handleCompoundConfiguration(' <> ', $dsn, $this->factories, $serializer)));
     }
 
     /**
