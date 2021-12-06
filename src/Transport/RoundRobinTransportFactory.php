@@ -24,7 +24,7 @@ final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
      */
     public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
     {
-        return new RoundRobinTransport($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator), [
+        return new RoundRobinTransport(new TransportRegistry($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator)), [
             'quantum' => $dsn->getOptionAsInt('quantum', 2),
         ]);
     }

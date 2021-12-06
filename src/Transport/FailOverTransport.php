@@ -21,11 +21,10 @@ final class FailOverTransport extends AbstractCompoundTransport
     private SplObjectStorage $failedTransports;
 
     /**
-     * @param TransportInterface[] $transports
      * @param array<string, mixed> $options
      */
     public function __construct(
-        iterable $transports,
+        TransportRegistryInterface $registry,
         array $options = []
     ) {
         $this->defineOptions(array_merge([
@@ -36,7 +35,7 @@ final class FailOverTransport extends AbstractCompoundTransport
 
         $this->failedTransports = new SplObjectStorage();
 
-        parent::__construct($transports);
+        parent::__construct($registry);
     }
 
     /**
@@ -44,11 +43,11 @@ final class FailOverTransport extends AbstractCompoundTransport
      */
     protected function execute(Closure $func)
     {
-        if ([] === $this->transports) {
+        if (0 === $this->registry->count()) {
             throw new TransportException('No transport found');
         }
 
-        foreach ($this->transports as $transport) {
+        foreach ($this->registry as $transport) {
             if ($this->failedTransports->contains($transport)) {
                 continue;
             }

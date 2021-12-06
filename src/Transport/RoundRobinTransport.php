@@ -9,7 +9,6 @@ use SchedulerBundle\Exception\TransportException;
 use SplObjectStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
-use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -21,11 +20,8 @@ final class RoundRobinTransport extends AbstractCompoundTransport
      */
     private SplObjectStorage $sleepingTransports;
 
-    /**
-     * @param TransportInterface[] $transports
-     */
     public function __construct(
-        iterable $transports,
+        TransportRegistryInterface $registry,
         array $options = []
     ) {
         $this->defineOptions([
@@ -36,7 +32,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
         $this->sleepingTransports = new SplObjectStorage();
 
-        parent::__construct($transports);
+        parent::__construct($registry);
     }
 
     /**
@@ -44,12 +40,12 @@ final class RoundRobinTransport extends AbstractCompoundTransport
      */
     protected function execute(Closure $func)
     {
-        if ([] === $this->transports) {
+        if (0 === $this->registry->count()) {
             throw new TransportException('No transport found');
         }
 
-        while ($this->sleepingTransports->count() !== (is_countable($this->transports) ? count($this->transports) : 0)) {
-            foreach ($this->transports as $transport) {
+        while ($this->sleepingTransports->count() !== $this->registry->count()) {
+            foreach ($this->registry as $transport) {
                 if ($this->sleepingTransports->contains($transport)) {
                     continue;
                 }
@@ -68,7 +64,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
                     $event = $stopWatch->stop('quantum');
 
                     $duration = $event->getDuration() / 1000;
-                    if ($duration > ((is_countable($this->transports) ? count($this->transports) : 0) * $this->options['quantum'])) {
+                    if ($duration > ($this->registry->count() * $this->options['quantum'])) {
                         $this->sleepingTransports->attach($transport);
                     }
                 }

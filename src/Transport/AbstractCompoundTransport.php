@@ -14,10 +14,7 @@ use Throwable;
  */
 abstract class AbstractCompoundTransport extends AbstractTransport
 {
-    /**
-     * @param TransportInterface[] $transports
-     */
-    public function __construct(protected iterable $transports)
+    public function __construct(protected TransportRegistryInterface $registry)
     {
     }
 
