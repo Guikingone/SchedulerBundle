@@ -1,3 +1,6 @@
+# Docker
+docker-compose.override.yml
+
 vendor/
 composer.lock
 phpunit.xml

@@ -65,6 +65,7 @@
             "Tests\\SchedulerBundle\\Command\\": "tests/Command/",
             "Tests\\SchedulerBundle\\DataCollector\\": "tests/DataCollector/",
             "Tests\\SchedulerBundle\\DependencyInjection\\": "tests/DependencyInjection/",
+            "Tests\\SchedulerBundle\\DependencyInjection\\Assets\\": "tests/DependencyInjection/Assets/",
             "Tests\\SchedulerBundle\\Event\\": "tests/Event/",
             "Tests\\SchedulerBundle\\EventListener\\": "tests/EventListener/",
             "Tests\\SchedulerBundle\\Expression\\": "tests/Expression/",

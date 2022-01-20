@@ -35,10 +35,12 @@ use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
@@ -47,6 +49,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ShellTask;
@@ -412,6 +415,24 @@ final class SchedulerTest extends TestCase
         self::assertCount(0, $scheduler->getTasks());
         self::assertInstanceOf(TaskList::class, $scheduler->getTasks());
         self::assertCount(0, $scheduler->getTasks(true));
+        self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
+    }
+
+    /**
+     * @throws Exception|Throwable {@see Scheduler::__construct()}
+     * @throws Throwable           {@see SchedulerInterface::schedule()}
+     *
+     * @dataProvider provideTransports
+     */
+    public function testMessengerTaskCanBeScheduledWithMessageBus(TransportInterface $transport): void
+    {
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), new MessageBus());
+
+        $scheduler->schedule(new MessengerTask('bar', new stdClass()));
+
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertInstanceOf(TaskList::class, $scheduler->getTasks());
+        self::assertCount(1, $scheduler->getTasks(true));
         self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
     }
 
@@ -1691,6 +1712,49 @@ final class SchedulerTest extends TestCase
         yield 'Shell tasks' => [
             new ShellTask('Bar', ['echo', 'Symfony']),
             new ShellTask('Foo', ['echo', 'Symfony']),
+        ];
+    }
+
+    /**
+     * @return Generator<array<int, TransportInterface>>
+     */
+    public function provideTransports(): Generator
+    {
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $notificationTaskBagNormalizer = new NotificationTaskBagNormalizer($objectNormalizer);
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            $notificationTaskBagNormalizer,
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                $notificationTaskBagNormalizer,
+                $lockTaskBagNormalizer,
+            ),
+            new DateTimeNormalizer(),
+            new DateTimeZoneNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
+
+        yield 'InMemoryTransport' => [
+            new InMemoryTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ];
+        yield 'FilesystemTransport' => [
+            new FilesystemTransport([
+                'execution_mode' => 'first_in_first_out',
+            ], $serializer, new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ]), __DIR__ . '/.assets'),
         ];
     }
 }

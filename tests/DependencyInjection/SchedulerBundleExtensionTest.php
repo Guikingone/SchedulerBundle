@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
+use Closure;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -25,6 +26,7 @@ use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
+use SchedulerBundle\DependencyInjection\SchedulerPass;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
@@ -85,6 +87,7 @@ use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
+use SchedulerBundle\SchedulerAwareInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
@@ -134,6 +137,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Tests\SchedulerBundle\DependencyInjection\Assets\FooSchedulerAware;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -216,6 +220,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[ProbeInterface::class]->hasTag('scheduler.probe'));
         self::assertArrayHasKey(TaskBagInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[TaskBagInterface::class]->hasTag('scheduler.task_bag'));
+        self::assertArrayHasKey(SchedulerAwareInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[SchedulerAwareInterface::class]->hasTag('scheduler.entry_point'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void
@@ -1733,6 +1739,26 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getParameter('scheduler.pool_support'));
     }
 
+    public function testSchedulerAwareServicesCanBeRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ], static function (ContainerBuilder $container): void {
+            $container->register(FooSchedulerAware::class, FooSchedulerAware::class);
+        }, static function (ContainerBuilder $container): void {
+            $container->addCompilerPass(new SchedulerPass());
+        });
+
+        self::assertTrue($container->hasDefinition(FooSchedulerAware::class));
+        self::assertCount(1, $container->getDefinition(FooSchedulerAware::class)->getMethodCalls());
+    }
+
     public function testConfiguration(): void
     {
         $extension = new SchedulerBundleExtension();
@@ -1752,11 +1778,19 @@ final class SchedulerBundleExtensionTest extends TestCase
     /**
      * @param array<string, mixed> $configuration
      */
-    private function getContainer(array $configuration = []): ContainerBuilder
+    private function getContainer(array $configuration = [], Closure $extraDefinitions = null, Closure $extraPasses = null): ContainerBuilder
     {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->registerExtension(new SchedulerBundleExtension());
         $containerBuilder->loadFromExtension('scheduler_bundle', $configuration);
+
+        if ($extraDefinitions instanceof Closure) {
+            $extraDefinitions($containerBuilder);
+        }
+
+        if ($extraPasses instanceof Closure) {
+            $extraPasses($containerBuilder);
+        }
 
         $containerBuilder->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $containerBuilder->getCompilerPassConfig()->setRemovingPasses([]);
