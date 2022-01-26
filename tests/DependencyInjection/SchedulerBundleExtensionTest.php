@@ -26,7 +26,6 @@ use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
-use SchedulerBundle\DependencyInjection\SchedulerPass;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
@@ -137,7 +136,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Tests\SchedulerBundle\DependencyInjection\Assets\FooSchedulerAware;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -1737,26 +1735,6 @@ final class SchedulerBundleExtensionTest extends TestCase
         ]);
 
         self::assertTrue($container->getParameter('scheduler.pool_support'));
-    }
-
-    public function testSchedulerAwareServicesCanBeRegistered(): void
-    {
-        $container = $this->getContainer([
-            'path' => '/_foo',
-            'timezone' => 'Europe/Paris',
-            'transport' => [
-                'dsn' => 'memory://first_in_first_out',
-            ],
-            'tasks' => [],
-            'lock_store' => null,
-        ], static function (ContainerBuilder $container): void {
-            $container->register(FooSchedulerAware::class, FooSchedulerAware::class);
-        }, static function (ContainerBuilder $container): void {
-            $container->addCompilerPass(new SchedulerPass());
-        });
-
-        self::assertTrue($container->hasDefinition(FooSchedulerAware::class));
-        self::assertCount(1, $container->getDefinition(FooSchedulerAware::class)->getMethodCalls());
     }
 
     public function testConfiguration(): void
