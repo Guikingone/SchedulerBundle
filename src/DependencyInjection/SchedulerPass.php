@@ -8,6 +8,7 @@ use SchedulerBundle\SchedulerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
+use function array_keys;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -44,8 +45,7 @@ final class SchedulerPass implements CompilerPassInterface
 
     private function registerSchedulerEntrypoint(ContainerBuilder $container): void
     {
-        foreach ($container->findTaggedServiceIds($this->schedulerEntryPointTag) as $service => $args) {
-            dump($service);
+        foreach (array_keys($container->findTaggedServiceIds($this->schedulerEntryPointTag)) as $service) {
             $container->getDefinition($service)->addMethodCall('schedule', [
                 new Reference(SchedulerInterface::class),
             ]);
