@@ -9,8 +9,8 @@
         "configDir": "."
     },
     "logs": {
-        "badge": {
-            "branch": "main"
+        "stryker": {
+            "badge": "main"
         },
         "text": "infection.log",
         "summary": "summary.log"
