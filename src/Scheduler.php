@@ -29,10 +29,10 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
-use function abs;
 use function is_bool;
 use function next;
 use function sprintf;
+use function round;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -289,7 +289,7 @@ final class Scheduler implements SchedulerInterface
     {
         $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
 
-        if (abs($dateInterval->f % self::MIN_SYNCHRONIZATION_DELAY) < 0 || abs($dateInterval->f % self::MAX_SYNCHRONIZATION_DELAY) > 0) {
+        if (($dateInterval->f % round(self::MIN_SYNCHRONIZATION_DELAY)) < 0 || ($dateInterval->f % round(self::MIN_SYNCHRONIZATION_DELAY)) > 0) {
             throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
         }
 
