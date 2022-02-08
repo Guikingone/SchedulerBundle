@@ -6,6 +6,7 @@ namespace SchedulerBundle;
 
 use Closure;
 use Cron\CronExpression;
+use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -32,18 +33,16 @@ use Throwable;
 use function is_bool;
 use function next;
 use function sprintf;
-use function round;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class Scheduler implements SchedulerInterface
 {
-    private const MIN_SYNCHRONIZATION_DELAY = 1_000_000;
-    private const MAX_SYNCHRONIZATION_DELAY = 86_400_000_000;
-
     private DateTimeImmutable $initializationDate;
     private DateTimeZone $timezone;
+    private DateInterval $minSynchronizationDelay;
+    private DateInterval $maxSynchronizationDelay;
 
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
@@ -57,6 +56,9 @@ final class Scheduler implements SchedulerInterface
     ) {
         $this->timezone = new DateTimeZone($timezone);
         $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
+
+        $this->minSynchronizationDelay = new DateInterval('PT1S');
+        $this->maxSynchronizationDelay = new DateInterval('P1D');
     }
 
     /**
@@ -287,12 +289,19 @@ final class Scheduler implements SchedulerInterface
      */
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
-        $dateInterval = $this->initializationDate->diff(new DateTimeImmutable('now', $this->timezone));
+        $currentDate = new DateTimeImmutable('now', $this->timezone);
+        $currentDateIntervalWithInitialization = $this->initializationDate->diff($currentDate);
 
-        if (($dateInterval->f % round(self::MIN_SYNCHRONIZATION_DELAY)) < 0 || ($dateInterval->f % round(self::MIN_SYNCHRONIZATION_DELAY)) > 0) {
-            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %d microseconds, allowed range: [%s, %s]', $dateInterval->f, self::MIN_SYNCHRONIZATION_DELAY, self::MAX_SYNCHRONIZATION_DELAY));
+        $currentDateWithMinInterval = $currentDate->add($this->minSynchronizationDelay);
+        $currentDateWithMaxInterval = $currentDate->add($this->maxSynchronizationDelay);
+
+        $initializationDateMinInterval = $this->initializationDate->diff($currentDateWithMinInterval);
+        $initializationDateMaxInterval = $this->initializationDate->diff($currentDateWithMaxInterval);
+
+        if ($currentDateIntervalWithInitialization->f - $initializationDateMinInterval->f < 0.0 || $currentDateIntervalWithInitialization->f - $initializationDateMaxInterval->f > 0.0) {
+            throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %f microseconds, allowed range: [%f, %f]', $currentDateIntervalWithInitialization->f, $this->minSynchronizationDelay->f, $this->maxSynchronizationDelay->f));
         }
 
-        return $this->initializationDate->add($dateInterval);
+        return $this->initializationDate->add($currentDateIntervalWithInitialization);
     }
 }
