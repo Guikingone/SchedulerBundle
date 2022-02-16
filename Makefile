@@ -1,7 +1,12 @@
-DOCKER_COMPOSE = @docker-compose
+DOCKER_COMPOSE 			= @docker-compose
 
-PHP            = $(DOCKER_COMPOSE) run --rm php
-COMPOSER       = $(DOCKER_COMPOSE) run --rm php composer
+PHP            			= $(DOCKER_COMPOSE) run --rm php
+COMPOSER       			= $(DOCKER_COMPOSE) run --rm php composer
+MUTAGEN_COMPOSE_ENABLED := $(shell type mutagen-compose)
+
+ifdef MUTAGEN_COMPOSE_ENABLED
+	DOCKER_COMPOSE = mutagen-compose
+endif
 
 .DEFAULT_GOAL := help
 

@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  php:
+    volumes:
+      - code:/srv/app
+
+volumes:
+  code:
+
+x-mutagen:
+  sync:
+    defaults:
+      permissions:
+        defaultDirectoryMode: 0755
+        defaultFileMode: 0644
+      ignore:
+        vcs: true
+    code:
+      alpha: "."
+      beta: "volume://code"
+      mode: "two-way-resolved"
