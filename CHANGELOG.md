@@ -1,5 +1,16 @@
 # Changelog
 
+0.8.1
+-----
+
+### Code Refactoring
+
+##### Scheduler
+
+* Synchronization improved (#220) ([4a675b6](https://github.com/Guikingone/SchedulerBundle/commit/4a675b6e5d1f41d2d9f2c67a2f808a899e441311))
+
+---
+
 0.8.0
 -----
 
