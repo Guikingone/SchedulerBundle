@@ -34,6 +34,10 @@ ps: ## List the services
 ps: docker-compose.yaml
 	$(DOCKER_COMPOSE) ps
 
+##
+## Dependencies
+##---------------------------------------------------------------------------
+
 vendor: ## Install the dependencies
 vendor: composer.json
 	$(PHP) composer install
