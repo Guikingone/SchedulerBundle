@@ -309,6 +309,10 @@ interface TaskInterface
 
     public function setSingleRun(bool $singleRun): self;
 
+    public function isDeleteAfterExecute(): bool;
+
+    public function setDeleteAfterExecute(bool $deleteAfterExecute): self;
+
     /**
      * @return array<int, string>
      */

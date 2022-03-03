@@ -41,6 +41,12 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
             return;
         }
 
+        if ($task->isDeleteAfterExecute()) {
+            $this->scheduler->unschedule($task->getName());
+
+            return;
+        }
+
         $this->scheduler->pause($task->getName());
     }
 

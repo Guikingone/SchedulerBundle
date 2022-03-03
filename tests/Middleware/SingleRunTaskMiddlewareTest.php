@@ -40,6 +40,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('pause');
+        $scheduler->expects(self::never())->method('unschedule');
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler, $logger);
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
@@ -59,6 +60,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('pause');
+        $scheduler->expects(self::never())->method('unschedule');
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler, $logger);
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
@@ -79,6 +81,7 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::never())->method('pause');
+        $scheduler->expects(self::never())->method('unschedule');
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
         $singleRunTaskMiddleware->postExecute($task, $worker);
@@ -97,6 +100,27 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 
         $scheduler = $this->createMock(SchedulerInterface::class);
         $scheduler->expects(self::once())->method('pause')->with(self::equalTo('foo'));
+        $scheduler->expects(self::never())->method('unschedule');
+
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware->postExecute($task, $worker);
+    }
+
+    /**
+     * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
+     */
+    public function testMiddlewareCanHandleSingleRunAndDeleteAfterExecuteTask(): void
+    {
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $task = $this->createMock(TaskInterface::class);
+        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::once())->method('isSingleRun')->willReturn(true);
+        $task->expects(self::once())->method('isDeleteAfterExecute')->willReturn(true);
+
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler->expects(self::never())->method('pause');
+        $scheduler->expects(self::once())->method('unschedule')->with(self::equalTo('foo'));
 
         $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
         $singleRunTaskMiddleware->postExecute($task, $worker);
