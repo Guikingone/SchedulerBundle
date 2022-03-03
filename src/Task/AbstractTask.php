@@ -87,6 +87,7 @@ abstract class AbstractTask implements TaskInterface
             'queued' => false,
             'scheduled_at' => null,
             'single_run' => false,
+            'delete_after_execute' => false,
             'state' => TaskInterface::ENABLED,
             'execution_state' => null,
             'tags' => [],
@@ -128,6 +129,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes('queued', 'bool');
         $optionsResolver->setAllowedTypes('scheduled_at', [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes('single_run', 'bool');
+        $optionsResolver->setAllowedTypes('delete_after_execute', 'bool');
         $optionsResolver->setAllowedTypes('state', 'string');
         $optionsResolver->setAllowedTypes('execution_state', ['string', 'null']);
         $optionsResolver->setAllowedTypes('tags', 'string[]');
@@ -168,6 +170,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setInfo('output_to_store', 'Define if the output of the task must be stored');
         $optionsResolver->setInfo('scheduled_at', 'Define the date where the task has been scheduled');
         $optionsResolver->setInfo('single_run', 'Define if the task must run only once, if so, the task is unscheduled from the scheduler once executed');
+        $optionsResolver->setInfo('delete_after_execute', 'Define if the task will be deleted from the scheduler after execution (works only with single_run at true)');
         $optionsResolver->setInfo('state', 'Define the state of the task, mainly used by the worker and transports to execute enabled tasks');
         $optionsResolver->setInfo('execution_state', '[INTERNAL] Define the state of the task during the execution phase, mainly used by the worker');
         $optionsResolver->setInfo('queued', 'Define if the task need to be dispatched to a "symfony/messenger" queue');
@@ -716,6 +719,18 @@ abstract class AbstractTask implements TaskInterface
     public function setSingleRun(bool $singleRun): TaskInterface
     {
         $this->options['single_run'] = $singleRun;
+
+        return $this;
+    }
+
+    public function isDeleteAfterExecute(): bool
+    {
+        return is_bool($this->options['delete_after_execute']) && $this->options['delete_after_execute'];
+    }
+
+    public function setDeleteAfterExecute(bool $deleteAfterExecute): TaskInterface
+    {
+        $this->options['delete_after_execute'] = $deleteAfterExecute;
 
         return $this;
     }
