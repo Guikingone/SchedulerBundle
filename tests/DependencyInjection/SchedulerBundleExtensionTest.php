@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
+use Closure;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -85,6 +86,7 @@ use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Scheduler;
+use SchedulerBundle\SchedulerAwareInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
@@ -216,6 +218,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[ProbeInterface::class]->hasTag('scheduler.probe'));
         self::assertArrayHasKey(TaskBagInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[TaskBagInterface::class]->hasTag('scheduler.task_bag'));
+        self::assertArrayHasKey(SchedulerAwareInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[SchedulerAwareInterface::class]->hasTag('scheduler.entry_point'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void
@@ -449,8 +453,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(MessageBusInterface::class, (string) $container->getDefinition(Scheduler::class)->getArgument(4));
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Scheduler::class)->getArgument(4)->getInvalidBehavior());
         self::assertFalse($container->getDefinition(Scheduler::class)->isPublic());
+        self::assertCount(3, $container->getDefinition(Scheduler::class)->getTags());
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Scheduler::class)->getTag('monolog.logger')[0]['channel']);
+        self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(Scheduler::class)->hasTag('container.preload'));
         self::assertSame(Scheduler::class, $container->getDefinition(Scheduler::class)->getTag('container.preload')[0]['class']);
     }
@@ -1123,8 +1129,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(Worker::class)->getArgument(6));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(Worker::class)->getArgument(6));
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(Worker::class)->getArgument(6)->getInvalidBehavior());
+        self::assertCount(4, $container->getDefinition(Worker::class)->getTags());
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(Worker::class)->getTag('monolog.logger')[0]['channel']);
+        self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(Worker::class)->hasTag('container.preload'));
         self::assertSame(Worker::class, $container->getDefinition(Worker::class)->getTag('container.preload')[0]['class']);
 
@@ -1752,11 +1760,19 @@ final class SchedulerBundleExtensionTest extends TestCase
     /**
      * @param array<string, mixed> $configuration
      */
-    private function getContainer(array $configuration = []): ContainerBuilder
+    private function getContainer(array $configuration = [], Closure $extraDefinitions = null, Closure $extraPasses = null): ContainerBuilder
     {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->registerExtension(new SchedulerBundleExtension());
         $containerBuilder->loadFromExtension('scheduler_bundle', $configuration);
+
+        if ($extraDefinitions instanceof Closure) {
+            $extraDefinitions($containerBuilder);
+        }
+
+        if ($extraPasses instanceof Closure) {
+            $extraPasses($containerBuilder);
+        }
 
         $containerBuilder->getCompilerPassConfig()->setOptimizationPasses([new ResolveChildDefinitionsPass()]);
         $containerBuilder->getCompilerPassConfig()->setRemovingPasses([]);

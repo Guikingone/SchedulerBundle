@@ -17,7 +17,7 @@ help:
 ## Project
 ##---------------------------------------------------------------------------
 
-.PHONY: boot up down vendor
+.PHONY: boot up ps down vendor
 
 boot: ## Launch the project
 boot: up vendor
@@ -25,6 +25,14 @@ boot: up vendor
 up: ## Up the containers
 up: .cloud/docker docker-compose.yaml
 	$(DOCKER_COMPOSE) up -d --build --remove-orphans --force-recreate
+
+down: ## Down the containers
+down: .cloud/docker docker-compose.yaml
+	$(DOCKER_COMPOSE) down --volumes --remove-orphans
+
+ps: ## List the services
+ps: docker-compose.yaml
+	$(DOCKER_COMPOSE) ps
 
 vendor: ## Install the dependencies
 vendor: composer.json
