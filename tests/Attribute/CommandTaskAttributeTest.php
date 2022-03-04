@@ -9,6 +9,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CommandTaskTest extends TestCase
+final class CommandTaskAttributeTest extends TestCase
 {
 }
