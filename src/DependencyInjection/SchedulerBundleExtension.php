@@ -440,6 +440,7 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => Scheduler::class,
             ])
@@ -1019,6 +1020,7 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => Worker::class,
             ])

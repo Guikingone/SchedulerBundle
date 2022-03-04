@@ -5,6 +5,7 @@ The [Scheduler](../src/Scheduler.php) is the main entrypoint for every action re
 - [API](#api)
 - [Asynchronous API](#asynchronous-api)
 - [Lazy scheduler](#lazy-scheduler)
+- [SchedulerAware](#scheduleraware)
 
 ## API
 
@@ -159,3 +160,36 @@ The [LazyScheduler](../src/LazyScheduler.php) act as a wrapper around
 the default `Scheduler`, when enabled via the configuration, each action performed in a "lazy" approach.
 
 The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).
+
+## SchedulerAware
+
+_Introduced in `0.9`_
+
+The [SchedulerAwareInterface](../src/SchedulerAwareInterface.php) act as an entrypoint used to schedule tasks directly 
+from classes that implements it.
+
+For example, this interface can help schedule tasks from within a command: 
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Command;
+
+# ...
+
+final class FooCommand extends Command implements SchedulerAwareInterface
+{
+    protected static $defaultName = 'app:foo';
+
+    public function schedule(SchedulerInterface $scheduler): void
+    {
+        $scheduler->schedule(new NullTask('foo_command'));
+    }
+
+    # ...
+}
+```
+
+_The task will be scheduled once you can `bin/console app:foo`._
