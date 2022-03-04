@@ -26,9 +26,9 @@ up: ## Up the containers
 up: .cloud/docker docker-compose.yaml
 	$(DOCKER_COMPOSE) up -d --build --remove-orphans --force-recreate
 
-down: ## Up the containers
+down: ## Down the containers
 down: .cloud/docker docker-compose.yaml
-	$(DOCKER_COMPOSE) down --volumes
+	$(DOCKER_COMPOSE) down --volumes --remove-orphans
 
 ps: ## List the services
 ps: docker-compose.yaml
