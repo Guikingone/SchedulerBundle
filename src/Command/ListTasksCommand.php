@@ -113,7 +113,7 @@ final class ListTasksCommand extends Command
                 null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
                 0 !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
                 $task->getState(),
-                implode(', ', $task->getTags()) ?? 'No tags set',
+                implode(', ', $task->getTags()),
             ]);
 
             if ($task instanceof ChainedTask) {
@@ -127,7 +127,7 @@ final class ListTasksCommand extends Command
                     null !== $subTask->getExecutionComputationTime() ? Helper::formatTime($subTask->getExecutionComputationTime() / 1000) : 'Not tracked',
                     0 !== $subTask->getExecutionMemoryUsage() ? Helper::formatMemory($subTask->getExecutionMemoryUsage()) : 'Not tracked',
                     $subTask->getState(),
-                    implode(', ', $subTask->getTags()) ?? 'No tags set',
+                    implode(', ', $subTask->getTags()),
                 ]));
             }
         });

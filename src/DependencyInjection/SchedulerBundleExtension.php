@@ -1317,7 +1317,7 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
-        if (!$configuration['probe']['enabled']) {
+        if (false === $configuration['probe']['enabled']) {
             return;
         }
 
