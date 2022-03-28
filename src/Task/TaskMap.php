@@ -18,9 +18,7 @@ final class TaskMap implements TaskListInterface
     {
         $this->map = new Map();
 
-        array_walk($tasks, function (TaskInterface $task): void {
-            $this->add($task);
-        });
+        $this->add(...$tasks);
     }
 
     /**
@@ -133,17 +131,17 @@ final class TaskMap implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetExists(mixed $offset)
+    public function offsetExists(mixed $offset): bool
     {
-        // TODO: Implement offsetExists() method.
+        return $this->has($offset);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function offsetGet(mixed $offset)
+    public function offsetGet(mixed $offset): TaskInterface
     {
-        // TODO: Implement offsetGet() method.
+        return $this->get($offset);
     }
 
     /**
@@ -157,9 +155,9 @@ final class TaskMap implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset(mixed $offset)
+    public function offsetUnset(mixed $offset): void
     {
-        // TODO: Implement offsetUnset() method.
+        $this->remove($offset);
     }
 
     /**

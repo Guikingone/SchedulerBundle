@@ -305,6 +305,8 @@ use it to access and mutate the tasks, each transport also return a task list wh
 
 ## TaskMap
 
+_Introduced in `0.9`_
+
 The [TaskMap](../src/Task/TaskMap.php) act as a wrapper around tasks using the `ds` extension.
 
 ## LazyTaskList

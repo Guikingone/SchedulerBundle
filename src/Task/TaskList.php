@@ -39,9 +39,7 @@ final class TaskList implements TaskListInterface
      */
     public function __construct(array $tasks = [])
     {
-        foreach ($tasks as $task) {
-            $this->add($task);
-        }
+        $this->add(...$tasks);
     }
 
     /**
