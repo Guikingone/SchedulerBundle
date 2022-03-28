@@ -6,11 +6,7 @@ namespace SchedulerBundle\Task;
 
 use Closure;
 use Ds\Map;
-use Exception;
 use Generator;
-use JetBrains\PhpStorm\Pure;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
 use function array_walk;
 
@@ -90,7 +86,9 @@ final class TaskMap implements TaskListInterface
      */
     public function map(Closure $func, bool $keepKeys = true): array
     {
-        // TODO: Implement map() method.
+        $mappedMapValues = $this->map->map($func);
+
+        return $keepKeys ? $mappedMapValues->values()->toArray() : $mappedMapValues->toArray();
     }
 
     /**
@@ -106,7 +104,6 @@ final class TaskMap implements TaskListInterface
      */
     public function uasort(Closure $func): TaskListInterface
     {
-        // TODO: Implement uasort() method.
     }
 
     /**
@@ -168,7 +165,7 @@ final class TaskMap implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    #[Pure] public function count(): int
+    public function count(): int
     {
         return $this->map->count();
     }
