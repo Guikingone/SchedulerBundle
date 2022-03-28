@@ -14,6 +14,7 @@ This bundle provides multiple type of tasks:
 ## Storage
 
 - [TaskList](#tasklist)
+- [TaskMap](#taskmap)
 - [LazyTaskList](#lazytasklist)
 
 ## Lifecycle
@@ -301,6 +302,10 @@ listing, retrieving and so on.
 
 The task list is deeply integrated within this bundle as the worker, scheduler and even the commands
 use it to access and mutate the tasks, each transport also return a task list when retrieving tasks.
+
+## TaskMap
+
+The [TaskMap](../src/Task/TaskMap.php) act as a wrapper around tasks using the `ds` extension.
 
 ## LazyTaskList
 

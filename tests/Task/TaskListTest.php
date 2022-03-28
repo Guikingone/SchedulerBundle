@@ -30,8 +30,9 @@ final class TaskListTest extends TestCase
 
     public function testListCanBeCreatedWithTasks(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $taskList = new TaskList([$task]);
+        $taskList = new TaskList([
+            new NullTask('foo'),
+        ]);
 
         self::assertNotEmpty($taskList);
         self::assertSame(1, $taskList->count());
@@ -39,11 +40,8 @@ final class TaskListTest extends TestCase
 
     public function testListCanBeHydrated(): void
     {
-        $task = $this->createMock(TaskInterface::class);
         $taskList = new TaskList();
-
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-        $taskList->add($task);
+        $taskList->add(new NullTask('foo'));
 
         self::assertNotEmpty($taskList);
         self::assertSame(1, $taskList->count());
