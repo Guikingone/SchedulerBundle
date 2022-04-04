@@ -22,5 +22,4 @@ jobs:
       - name: PHP-CS-Fixer
         uses: dagger/dagger-for-github@v2
         with:
-          workdir: pkg/universe.dagger.io/examples/todoapp
           args: do php_cs_fixer --plan .cloud/dagger/scheduler_bundle.cue
