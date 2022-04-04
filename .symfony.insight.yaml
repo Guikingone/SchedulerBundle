@@ -1,4 +1,4 @@
-php_version: 7.4
+php_version: 8.0
 
 global_exclude_dirs:
   - .github
