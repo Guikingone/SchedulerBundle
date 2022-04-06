@@ -191,7 +191,7 @@ final class Scheduler implements SchedulerInterface
             return $lazy ? new LazyTaskList(new TaskList()) : new TaskList();
         }
 
-        $dueTasks = $this->getTasks($lazy)->filter(function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        $dueTasks = $this->getTasks($lazy)->filter(static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $timezone = $task->getTimezone();
             $lastExecution = $task->getLastExecution();
 
