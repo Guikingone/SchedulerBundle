@@ -66,7 +66,7 @@ use Tests\SchedulerBundle\Worker\Assets\LongExecutionCommand;
 use Throwable;
 
 /**
- * @requires php >= 8.1
+ * @requires php 8.1
  */
 final class FiberWorkerTest extends TestCase
 {
