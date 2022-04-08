@@ -514,4 +514,25 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('mode', $configuration['configuration']);
         self::assertSame('lazy', $configuration['configuration']['mode']);
     }
+
+    public function testWorkerCanBeSetToFiber(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'worker' => [
+                    'mode' => 'fiber',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotNull($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['worker']);
+        self::assertSame('fiber', $configuration['worker']['mode']);
+    }
 }

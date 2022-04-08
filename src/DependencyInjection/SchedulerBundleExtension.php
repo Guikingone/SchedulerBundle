@@ -116,6 +116,7 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\FiberWorker;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -206,6 +207,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
+        $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -1006,7 +1008,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorker(ContainerBuilder $container): void
     {
-        $container->register(Worker::class, Worker::class)
+        $container->register('scheduler.worker', Worker::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
@@ -1025,7 +1027,29 @@ final class SchedulerBundleExtension extends Extension
                 'class' => Worker::class,
             ])
         ;
-        $container->setAlias(WorkerInterface::class, Worker::class);
+        $container->setAlias(WorkerInterface::class, 'scheduler.worker');
+
+        if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
+            $container->register('scheduler.worker', FiberWorker::class)
+                ->setArguments([
+                    new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->addTag('scheduler.worker')
+                ->addTag('monolog.logger', [
+                    'channel' => 'scheduler',
+                ])
+                ->addTag('container.hot_path')
+                ->addTag('container.preload', [
+                    'class' => FiberWorker::class,
+                ])
+            ;
+        }
     }
 
     /**

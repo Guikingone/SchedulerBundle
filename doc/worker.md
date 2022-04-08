@@ -8,6 +8,7 @@ and executed thanks to [runners](runners.md).
 - [Daemon](#daemon)
 - [Loop](#loop)
 - [Forking a worker](#forking-a-worker)
+- [Using fibers](#using-fibers)
 - [Extending](#extending)
 
 ## API
@@ -76,6 +77,26 @@ a [WorkerForkedEvent](../src/Event/WorkerForkedEvent.php) is dispatched.
 **PS: The default worker can be retrieved via `$forkedWorker->getOptions()['forkedFrom']`.**
 
 **PS II: You can determine if the current worker is a fork via the option `isForked`.**
+
+## Using fibers
+
+_Introduced in `0.9`_
+
+Since PHP `8.1`, you can use fibers to "fork" the current process and create an isolated process
+that can execute some logic.
+
+Thanks to the [FiberWorker](../src/Worker/FiberWorker.php), you can use fibers to execute tasks, 
+you can enable it via the configuration:
+
+```yaml
+scheduler_bundle:
+    # ...
+
+    worker:
+        mode: 'fiber'
+```
+
+**PS: Keep in mind that a fiber is created for each task to execute.**
 
 ## Extending
 
