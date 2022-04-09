@@ -199,11 +199,9 @@ final class FiberSchedulerTest extends TestCase
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $fiberScheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus);
-
-        $fiberScheduler = new FiberScheduler($scheduler);
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
         $fiberScheduler->schedule(new NullTask('foo'));
         $fiberScheduler->pause('foo', true);
 
@@ -218,11 +216,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCannotResumeUndefinedTask(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $fiberScheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
-
-        $fiberScheduler = new FiberScheduler($scheduler);
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
@@ -236,11 +232,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanResume(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $fiberScheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
-
-        $fiberScheduler = new FiberScheduler($scheduler);
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
         $fiberScheduler->schedule(new NullTask('foo'));
         $fiberScheduler->pause('foo');
 
@@ -261,11 +255,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanGetTasksWhenEmpty(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $fiberScheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
-
-        $fiberScheduler = new FiberScheduler($scheduler);
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
         $tasks = $fiberScheduler->getTasks();
         self::assertInstanceOf(TaskList::class, $tasks);
