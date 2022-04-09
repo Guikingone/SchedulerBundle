@@ -7,22 +7,17 @@ namespace SchedulerBundle;
 use Closure;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
-use Fiber;
-use Throwable;
-use function sprintf;
 
-final class FiberScheduler implements SchedulerInterface
+final class FiberScheduler extends AbstractFiberHandler implements SchedulerInterface
 {
-    private LoggerInterface $logger;
-
     public function __construct(
         private SchedulerInterface $scheduler,
         ?LoggerInterface $logger = null
     ) {
-        $this->logger = $logger ?? new NullLogger();
+        parent::__construct($logger);
     }
 
     /**
@@ -137,24 +132,5 @@ final class FiberScheduler implements SchedulerInterface
         return $this->handleOperationViaFiber(function (): void {
             $this->scheduler->getTimezone();
         });
-    }
-
-    private function handleOperationViaFiber(Closure $func): mixed
-    {
-        $fiber = new Fiber(function (Closure $func): void {
-            $value = $func();
-
-            Fiber::suspend($value);
-        });
-
-        try {
-            $return = $fiber->start($func);
-        } catch (Throwable $throwable) {
-            $this->logger->critical(sprintf('An error occurred while performing the action: %s', $throwable->getMessage()));
-
-            throw $throwable;
-        }
-
-        return $return;
     }
 }
