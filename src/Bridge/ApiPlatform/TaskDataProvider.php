@@ -4,32 +4,27 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\ApiPlatform;
 
-use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
+use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
-use function array_key_exists;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CollectionDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface
+final class TaskDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
 {
-    private SearchFilter $searchFilter;
     private TransportInterface $transport;
     private LoggerInterface $logger;
 
     public function __construct(
-        SearchFilter $searchFilter,
         TransportInterface $transport,
         ?LoggerInterface $logger = null
     ) {
-        $this->searchFilter = $searchFilter;
         $this->transport = $transport;
         $this->logger = $logger ?: new NullLogger();
     }
@@ -45,22 +40,18 @@ final class CollectionDataProvider implements ContextAwareCollectionDataProvider
     /**
      * {@inheritdoc}
      */
-    public function getCollection(string $resourceClass, string $operationName = null, array $context = []): TaskListInterface
+    public function getItem(string $resourceClass, $id, string $operationName = null, array $context = []): TaskInterface
     {
         try {
-            $list = $this->transport->list();
+            $task = $this->transport->get($id);
         } catch (Throwable $throwable) {
-            $this->logger->critical('The list cannot be retrieved', [
+            $this->logger->critical(sprintf('The task "%s" cannot be found', $id), [
                 'error' => $throwable->getMessage(),
             ]);
 
             throw $throwable;
         }
 
-        if (array_key_exists('filters', $context) && [] !== $context['filters']) {
-            return $this->searchFilter->filter($list, $context['filters']);
-        }
-
-        return $list;
+        return $task;
     }
 }

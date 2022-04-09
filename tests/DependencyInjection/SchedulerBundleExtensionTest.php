@@ -9,9 +9,9 @@ use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Bridge\ApiPlatform\CollectionDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\TaskListDataProvider;
 use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
-use SchedulerBundle\Bridge\ApiPlatform\ItemDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\TaskDataProvider;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -1647,24 +1647,24 @@ final class SchedulerBundleExtensionTest extends TestCase
             'api_platform' => true,
         ]);
 
-        self::assertTrue($container->hasDefinition(ItemDataProvider::class));
-        self::assertFalse($container->getDefinition(ItemDataProvider::class)->isPublic());
-        self::assertCount(2, $container->getDefinition(ItemDataProvider::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(ItemDataProvider::class)->getArgument(0));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(ItemDataProvider::class)->getArgument(1));
-        self::assertTrue($container->getDefinition(ItemDataProvider::class)->hasTag('api_platform.item_data_provider'));
-        self::assertTrue($container->getDefinition(ItemDataProvider::class)->hasTag('container.preload'));
-        self::assertSame(ItemDataProvider::class, $container->getDefinition(ItemDataProvider::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(TaskDataProvider::class));
+        self::assertFalse($container->getDefinition(TaskDataProvider::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(TaskDataProvider::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskDataProvider::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskDataProvider::class)->getArgument(1));
+        self::assertTrue($container->getDefinition(TaskDataProvider::class)->hasTag('api_platform.item_data_provider'));
+        self::assertTrue($container->getDefinition(TaskDataProvider::class)->hasTag('container.preload'));
+        self::assertSame(TaskDataProvider::class, $container->getDefinition(TaskDataProvider::class)->getTag('container.preload')[0]['class']);
 
-        self::assertTrue($container->hasDefinition(CollectionDataProvider::class));
-        self::assertFalse($container->getDefinition(CollectionDataProvider::class)->isPublic());
-        self::assertCount(3, $container->getDefinition(CollectionDataProvider::class)->getArguments());
-        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(0));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(1));
-        self::assertInstanceOf(Reference::class, $container->getDefinition(CollectionDataProvider::class)->getArgument(2));
-        self::assertTrue($container->getDefinition(CollectionDataProvider::class)->hasTag('api_platform.collection_data_provider'));
-        self::assertTrue($container->getDefinition(CollectionDataProvider::class)->hasTag('container.preload'));
-        self::assertSame(CollectionDataProvider::class, $container->getDefinition(CollectionDataProvider::class)->getTag('container.preload')[0]['class']);
+        self::assertTrue($container->hasDefinition(TaskListDataProvider::class));
+        self::assertFalse($container->getDefinition(TaskListDataProvider::class)->isPublic());
+        self::assertCount(3, $container->getDefinition(TaskListDataProvider::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskListDataProvider::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskListDataProvider::class)->getArgument(1));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskListDataProvider::class)->getArgument(2));
+        self::assertTrue($container->getDefinition(TaskListDataProvider::class)->hasTag('api_platform.collection_data_provider'));
+        self::assertTrue($container->getDefinition(TaskListDataProvider::class)->hasTag('container.preload'));
+        self::assertSame(TaskListDataProvider::class, $container->getDefinition(TaskListDataProvider::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(SearchFilter::class));
         self::assertFalse($container->getDefinition(SearchFilter::class)->isPublic());

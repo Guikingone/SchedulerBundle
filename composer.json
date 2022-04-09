@@ -122,6 +122,7 @@
         "ext-pcntl": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
+        "api-platform/core": "^2.6",
         "doctrine/dbal": "^3.1.4",
         "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^3.5",

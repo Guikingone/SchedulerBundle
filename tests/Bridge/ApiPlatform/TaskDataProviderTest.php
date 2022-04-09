@@ -7,22 +7,22 @@ namespace Tests\SchedulerBundle\Bridge\ApiPlatform;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Bridge\ApiPlatform\ItemDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\TaskDataProvider;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Transport\InMemoryTransport;
 use stdClass;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class ItemDataProviderTest extends TestCase
+final class TaskDataProviderTest extends TestCase
 {
     public function testProviderSupport(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-
-        $provider = new ItemDataProvider($transport);
+        $provider = new TaskDataProvider(new InMemoryTransport([], new SchedulePolicyOrchestrator([])));
 
         self::assertInstanceOf(RestrictedDataProviderInterface::class, $provider);
         self::assertFalse($provider->supports(stdClass::class));
@@ -31,37 +31,32 @@ final class ItemDataProviderTest extends TestCase
 
     public function testProviderCannotReturnUndefinedTask(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))
-            ->willThrowException(new InvalidArgumentException('The task "foo" does not exist'))
-        ;
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical')
             ->with(self::equalTo('The task "foo" cannot be found'), self::equalTo([
-                'error' => 'The task "foo" does not exist',
+                'error' => 'The task "foo" does not exist or is invalid',
             ]))
         ;
 
-        $provider = new ItemDataProvider($transport, $logger);
+        $provider = new TaskDataProvider(new InMemoryTransport([], new SchedulePolicyOrchestrator([])), $logger);
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "foo" does not exist');
+        self::expectExceptionMessage('The task "foo" does not exist or is invalid');
         self::expectExceptionCode(0);
         $provider->getItem(TaskInterface::class, 'foo');
     }
 
     public function testProviderCanReturnTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
 
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
+        $transport = new InMemoryTransport([], new SchedulePolicyOrchestrator([]));
+        $transport->create($task);
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('critical');
 
-        $provider = new ItemDataProvider($transport, $logger);
+        $provider = new TaskDataProvider($transport, $logger);
 
         self::assertSame($task, $provider->getItem(TaskInterface::class, 'foo'));
     }

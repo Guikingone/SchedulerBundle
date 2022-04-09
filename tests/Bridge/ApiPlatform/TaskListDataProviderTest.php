@@ -7,24 +7,26 @@ namespace Tests\SchedulerBundle\Bridge\ApiPlatform;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use SchedulerBundle\Bridge\ApiPlatform\CollectionDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\TaskListDataProvider;
 use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
 use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use stdClass;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class CollectionDataProviderTest extends TestCase
+final class TaskListDataProviderTest extends TestCase
 {
     public function testProviderSupport(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-
-        $provider = new CollectionDataProvider(new SearchFilter(), $transport);
+        $provider = new TaskListDataProvider(new SearchFilter(), new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])));
 
         self::assertInstanceOf(RestrictedDataProviderInterface::class, $provider);
         self::assertFalse($provider->supports(stdClass::class));
@@ -48,7 +50,7 @@ final class CollectionDataProviderTest extends TestCase
             )
         ;
 
-        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider = new TaskListDataProvider(new SearchFilter(), $transport, $logger);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('Random error');
@@ -58,32 +60,24 @@ final class CollectionDataProviderTest extends TestCase
 
     public function testProviderCanReturnTaskList(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::never())->method('filter');
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('list')->willReturn($list);
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('critical');
 
-        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider = new TaskListDataProvider(new SearchFilter(), new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), $logger);
 
-        self::assertSame($list, $provider->getCollection(TaskInterface::class));
+        self::assertCount(0, $provider->getCollection(TaskInterface::class));
     }
 
     public function testProviderCannotReturnFilteredTaskListWithoutFilters(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::never())->method('filter')->willReturnSelf();
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('list')->willReturn($list);
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('critical');
 
-        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider = new TaskListDataProvider(new SearchFilter(), new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), $logger);
         $provider->getCollection(TaskInterface::class, 'GET', [
             'filters' => [],
         ]);
@@ -91,16 +85,12 @@ final class CollectionDataProviderTest extends TestCase
 
     public function testProviderCanReturnFilteredTaskList(): void
     {
-        $list = $this->createMock(TaskListInterface::class);
-        $list->expects(self::once())->method('filter')->willReturnSelf();
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('list')->willReturn($list);
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('critical');
 
-        $provider = new CollectionDataProvider(new SearchFilter(), $transport, $logger);
+        $provider = new TaskListDataProvider(new SearchFilter(), new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), $logger);
         $provider->getCollection(TaskInterface::class, 'GET', [
             'filters' => [
                 'expression' => '* * * * *',

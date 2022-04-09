@@ -7,7 +7,6 @@ namespace SchedulerBundle\Bridge\ApiPlatform\Filter;
 use ApiPlatform\Core\Api\FilterInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
-use function get_class;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -90,23 +89,23 @@ final class SearchFilter implements FilterInterface
         foreach ($filters as $filter => $value) {
             switch ($filter) {
                 case 'expression':
-                    $list = $list->filter(fn (TaskInterface $task): bool => $value === $task->getExpression());
+                    $list = $list->filter(static fn (TaskInterface $task): bool => $value === $task->getExpression());
                     break;
                 case 'queued':
-                    $list = $list->filter(fn (TaskInterface $task): bool => $task->isQueued());
+                    $list = $list->filter(static fn (TaskInterface $task): bool => $task->isQueued());
                     break;
                 case 'state':
-                    $list = $list->filter(fn (TaskInterface $task): bool => $value === $task->getState());
+                    $list = $list->filter(static fn (TaskInterface $task): bool => $value === $task->getState());
                     break;
                 case 'timezone':
-                    $list = $list->filter(function (TaskInterface $task) use ($value): bool {
+                    $list = $list->filter(static function (TaskInterface $task) use ($value): bool {
                         $timezone = $task->getTimezone();
 
                         return null !== $timezone && $value === $timezone->getName();
                     });
                     break;
                 case 'type':
-                    $list = $list->filter(fn (TaskInterface $task): bool => $value === get_class($task));
+                    $list = $list->filter(static fn (TaskInterface $task): bool => $value === $task::class);
                     break;
             }
         }

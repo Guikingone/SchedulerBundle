@@ -109,14 +109,8 @@ final class SearchFilterTest extends TestCase
 
     public function testFilterCanFilterOnExpression(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::never())->method('getState');
-        $task->expects(self::never())->method('getTimezone');
-
         $filter = new SearchFilter();
-        $list = $filter->filter(new TaskList([$task]), [
+        $list = $filter->filter(new TaskList([new NullTask('foo')]), [
             'expression' => '* * * * *',
         ]);
 
@@ -126,14 +120,10 @@ final class SearchFilterTest extends TestCase
 
     public function testFilterCanFilterOnQueuedTask(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getExpression');
-        $task->expects(self::once())->method('isQueued')->willReturn(true);
-        $task->expects(self::never())->method('getState');
-        $task->expects(self::never())->method('getTimezone');
-
         $filter = new SearchFilter();
-        $list = $filter->filter(new TaskList([$task]), [
+        $list = $filter->filter(new TaskList([new NullTask('foo', [
+            'queued' => true,
+        ])]), [
             'queued' => true,
         ]);
 
@@ -143,15 +133,11 @@ final class SearchFilterTest extends TestCase
 
     public function testFilterCanFilterOnTaskState(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getExpression');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getState')->willReturn(TaskInterface::SUCCEED);
-        $task->expects(self::never())->method('getTimezone');
-
         $filter = new SearchFilter();
-        $list = $filter->filter(new TaskList([$task]), [
-            'state' => TaskInterface::SUCCEED,
+        $list = $filter->filter(new TaskList([new NullTask('foo', [
+            'execution_state' => TaskInterface::SUCCEED,
+        ])]), [
+            'execution_state' => TaskInterface::SUCCEED,
         ]);
 
         self::assertNotEmpty($list);
@@ -160,14 +146,10 @@ final class SearchFilterTest extends TestCase
 
     public function testFilterCanFilterOnTaskTimezone(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getExpression');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::never())->method('getState');
-        $task->expects(self::once())->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
-
         $filter = new SearchFilter();
-        $list = $filter->filter(new TaskList([$task]), [
+        $list = $filter->filter(new TaskList([new NullTask('foo', [
+            'timezone' => new DateTimeZone('UTC'),
+        ])]), [
             'timezone' => 'UTC',
         ]);
 
@@ -177,12 +159,6 @@ final class SearchFilterTest extends TestCase
 
     public function testFilterCanFilterOnTaskType(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getExpression');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::never())->method('getState');
-        $task->expects(self::never())->method('getTimezone');
-
         $filter = new SearchFilter();
         $list = $filter->filter(new TaskList([new NullTask('foo')]), [
             'type' => NullTask::class,
