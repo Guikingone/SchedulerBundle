@@ -142,7 +142,9 @@ final class FiberScheduler implements SchedulerInterface
     private function handleOperationViaFiber(Closure $func): mixed
     {
         $fiber = new Fiber(function (Closure $func): void {
-            Fiber::suspend($func());
+            $value = $func();
+
+            Fiber::suspend($value);
         });
 
         try {
