@@ -225,6 +225,10 @@ final class SchedulerBundleConfiguration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->scalarNode('api_platform')
+                        ->info('Enable the API-Platform support')
+                        ->defaultValue(false)
+                    ->end()
                 ->end()
             ->end()
         ;

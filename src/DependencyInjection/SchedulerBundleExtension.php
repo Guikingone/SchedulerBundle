@@ -7,6 +7,9 @@ namespace SchedulerBundle\DependencyInjection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
+use SchedulerBundle\Bridge\ApiPlatform\TaskListDataProvider;
+use SchedulerBundle\Bridge\ApiPlatform\Filter\SearchFilter;
+use SchedulerBundle\Bridge\ApiPlatform\TaskDataProvider;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerTransportDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
@@ -192,6 +195,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerMiddlewareStacks($container, $config);
         $this->registerProbeContext($container, $config);
         $this->registerMercureSupport($container, $config);
+        $this->registerApiPlatformBridge($container, $config);
         $this->registerDataCollector($container);
     }
 
@@ -1326,6 +1330,52 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => MercureEventSubscriber::class,
+            ])
+        ;
+    }
+
+    private function registerApiPlatformBridge(ContainerBuilder $container, array $configuration): void
+    {
+        if (false === $configuration['api_platform']) {
+            return;
+        }
+
+        $container->register(TaskDataProvider::class, TaskDataProvider::class)
+            ->setArguments([
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.item_data_provider')
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => TaskDataProvider::class,
+            ])
+        ;
+
+        $container->register(TaskListDataProvider::class, TaskListDataProvider::class)
+            ->setArguments([
+                new Reference(SearchFilter::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('api_platform.collection_data_provider')
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => TaskListDataProvider::class,
+            ])
+        ;
+
+        $container->register(SearchFilter::class, SearchFilter::class)
+            ->setPublic(false)
+            ->addTag('api_platform.filter')
+            ->addTag('container.preload', [
+                'class' => SearchFilter::class,
             ])
         ;
     }
