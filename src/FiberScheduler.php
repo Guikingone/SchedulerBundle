@@ -6,14 +6,24 @@ namespace SchedulerBundle;
 
 use Closure;
 use DateTimeZone;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Fiber;
-use FiberError;
+use Throwable;
+use function sprintf;
 
 final class FiberScheduler implements SchedulerInterface
 {
-    public function __construct(private SchedulerInterface $scheduler) {}
+    private LoggerInterface $logger;
+
+    public function __construct(
+        private SchedulerInterface $scheduler,
+        ?LoggerInterface $logger = null
+    ) {
+        $this->logger = $logger ?? new NullLogger();
+    }
 
     /**
      * {@inheritdoc}
@@ -90,9 +100,7 @@ final class FiberScheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
-        return $this->handleOperationViaFiber(function () use ($lazy): void {
-            $this->scheduler->getTasks($lazy);
-        });
+        return $this->handleOperationViaFiber(fn (): TaskListInterface => $this->scheduler->getTasks($lazy));
     }
 
     /**
@@ -100,9 +108,7 @@ final class FiberScheduler implements SchedulerInterface
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
     {
-        return $this->handleOperationViaFiber(function () use ($lazy, $strict): void {
-            $this->scheduler->getDueTasks($lazy, $strict);
-        });
+        return $this->handleOperationViaFiber(fn (): TaskListInterface => $this->scheduler->getDueTasks($lazy, $strict));
     }
 
     /**
@@ -110,9 +116,7 @@ final class FiberScheduler implements SchedulerInterface
      */
     public function next(bool $lazy = false): TaskInterface
     {
-        return $this->handleOperationViaFiber(function () use ($lazy): void {
-            $this->scheduler->next($lazy);
-        });
+        return $this->handleOperationViaFiber(fn (): TaskInterface => $this->scheduler->next($lazy));
     }
 
     /**
@@ -137,12 +141,16 @@ final class FiberScheduler implements SchedulerInterface
 
     private function handleOperationViaFiber(Closure $func): mixed
     {
-        $fiber = new \Fiber($func);
+        $fiber = new Fiber(function (Closure $func): void {
+            Fiber::suspend($func());
+        });
 
         try {
-            $return = $fiber->start();
-        } catch (Throwable|\FiberError $throwable) {
-            // TODO
+            $return = $fiber->start($func);
+        } catch (Throwable $throwable) {
+            $this->logger->critical(sprintf('An error occurred while performing the action: %s', $throwable->getMessage()));
+
+            throw $throwable;
         }
 
         return $return;

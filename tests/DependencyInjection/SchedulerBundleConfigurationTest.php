@@ -390,7 +390,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
     public function testConfigurationCannotEnableInvalidSchedulerMode(): void
     {
         self::expectException(InvalidConfigurationException::class);
-        self::expectExceptionMessage('The value "foo" is not allowed for path "scheduler_bundle.scheduler.mode". Permissible values: "default", "lazy"');
+        self::expectExceptionMessage('The value "foo" is not allowed for path "scheduler_bundle.scheduler.mode". Permissible values: "default", "lazy", "fiber"');
         self::expectExceptionCode(0);
         (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
             'scheduler_bundle' => [
@@ -427,6 +427,21 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('scheduler', $configuration);
         self::assertArrayHasKey('mode', $configuration['scheduler']);
         self::assertSame('lazy', $configuration['scheduler']['mode']);
+    }
+
+    public function testConfigurationCanEnableFiberScheduler(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'scheduler' => [
+                    'mode' => 'fiber',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('scheduler', $configuration);
+        self::assertArrayHasKey('mode', $configuration['scheduler']);
+        self::assertSame('fiber', $configuration['scheduler']['mode']);
     }
 
     public function testMercureSupportCanBeEnabled(): void

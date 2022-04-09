@@ -36,6 +36,7 @@ use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
@@ -459,6 +460,20 @@ final class SchedulerBundleExtension extends Extension
                 ->setPublic(false)
                 ->addTag('container.preload', [
                     'class' => LazyScheduler::class,
+                ])
+            ;
+        }
+
+        if ('fiber' === $container->getParameter('scheduler.scheduler_mode')) {
+            $container->register(FiberScheduler::class, FiberScheduler::class)
+                ->setDecoratedService(Scheduler::class, 'scheduler.scheduler')
+                ->setArguments([
+                    new Reference('scheduler.scheduler', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('container.preload', [
+                    'class' => FiberScheduler::class,
                 ])
             ;
         }
