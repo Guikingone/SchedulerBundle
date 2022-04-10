@@ -122,13 +122,16 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCannotScheduleTasksWithErroredBeforeCallback(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
-        ]), new EventDispatcher()));
+        ]), new EventDispatcher()), $logger);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task cannot be scheduled');
@@ -311,13 +314,16 @@ final class FiberSchedulerTest extends TestCase
             [new TaskUnscheduledEvent('foo')]
         );
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
-        ]), $eventDispatcher));
+        ]), $eventDispatcher), $logger);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task has encountered an error after scheduling, it has been unscheduled');
@@ -1511,9 +1517,12 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCannotReturnNextDueTaskWhenEmpty(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()), $logger);
 
         self::assertCount(0, $scheduler->getDueTasks());
 
@@ -1530,9 +1539,12 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCannotReturnNextDueTaskWhenASingleTaskIsFound(): void
     {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()), $logger);
 
         self::assertCount(0, $scheduler->getDueTasks());
 
