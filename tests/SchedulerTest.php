@@ -85,10 +85,7 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasks(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
+        $task = new NullTask('foo');
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
@@ -97,6 +94,7 @@ final class SchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $scheduler->schedule($task);
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -105,11 +103,9 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasksWithCustomTimezone(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone')->with(new DateTimeZone('Europe/Paris'));
-        $task->expects(self::once())->method('getTimezone')->willReturn(new DateTimeZone('Europe/Paris'));
-        $task->expects(self::never())->method('isQueued');
+        $task = new NullTask('foo', [
+            'timezone' => new DateTimeZone('Europe/Paris'),
+        ]);
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
@@ -118,6 +114,7 @@ final class SchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $scheduler->schedule($task);
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -126,12 +123,6 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCannotScheduleTasksWithErroredBeforeCallback(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('setScheduledAt');
-        $task->expects(self::never())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): bool => false);
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -143,7 +134,9 @@ final class SchedulerTest extends TestCase
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task cannot be scheduled');
         self::expectExceptionCode(0);
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling' => static fn (): bool => false,
+        ]));
     }
 
     /**
@@ -152,12 +145,6 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasksWithBeforeCallback(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): int => 1 + 1);
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -166,7 +153,10 @@ final class SchedulerTest extends TestCase
             new TaskCallbackMiddleware(),
         ]), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling' => static fn (): int => 1 + 1,
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -181,16 +171,6 @@ final class SchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -200,7 +180,10 @@ final class SchedulerTest extends TestCase
             new NotifierMiddleware(),
         ]), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -215,16 +198,6 @@ final class SchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -234,7 +207,10 @@ final class SchedulerTest extends TestCase
             new NotifierMiddleware($notifier),
         ]), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -249,16 +225,6 @@ final class SchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -268,7 +234,10 @@ final class SchedulerTest extends TestCase
             new NotifierMiddleware(),
         ]), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'after_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -283,16 +252,6 @@ final class SchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-
         $scheduler = new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -302,7 +261,10 @@ final class SchedulerTest extends TestCase
             new NotifierMiddleware($notifier),
         ]), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'after_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**

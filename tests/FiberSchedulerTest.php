@@ -112,7 +112,6 @@ final class FiberSchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
         $scheduler->schedule($task);
-
         self::assertCount(1, $scheduler->getTasks());
     }
 
@@ -158,7 +157,6 @@ final class FiberSchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('foo', [
             'before_scheduling' => static fn (): int => 1 + 1,
         ]));
-
         self::assertCount(1, $scheduler->getTasks());
     }
 
@@ -174,16 +172,6 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
-
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -193,7 +181,10 @@ final class FiberSchedulerTest extends TestCase
             new NotifierMiddleware(),
         ]), new EventDispatcher()));
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -208,16 +199,6 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(null);
-
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -227,7 +208,10 @@ final class FiberSchedulerTest extends TestCase
             new NotifierMiddleware($notifier),
         ]), new EventDispatcher()));
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'before_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -242,16 +226,6 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -261,7 +235,10 @@ final class FiberSchedulerTest extends TestCase
             new NotifierMiddleware(),
         ]), new EventDispatcher()));
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'after_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -276,16 +253,6 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getBeforeSchedulingNotificationBag')->willReturn(null);
-        $task->expects(self::once())->method('getAfterSchedulingNotificationBag')->willReturn(new NotificationTaskBag($notification, $recipient));
-
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
         ], new SchedulePolicyOrchestrator([
@@ -295,7 +262,10 @@ final class FiberSchedulerTest extends TestCase
             new NotifierMiddleware($notifier),
         ]), new EventDispatcher()));
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(new NullTask('foo', [
+            'after_scheduling_notification' => new NotificationTaskBag($notification, $recipient),
+        ]));
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -348,7 +318,6 @@ final class FiberSchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('foo', [
             'after_scheduling' => static fn (): bool => true,
         ]));
-
         self::assertCount(1, $scheduler->getTasks());
     }
 
