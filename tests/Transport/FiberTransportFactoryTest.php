@@ -23,6 +23,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Generator;
 
 /**
+ * @requires PHP 8.1
+ *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class FiberTransportFactoryTest extends TestCase

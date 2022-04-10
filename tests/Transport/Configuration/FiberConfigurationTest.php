@@ -10,6 +10,8 @@ use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
+ * @requires PHP 8.1
+ *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class FiberConfigurationTest extends TestCase
