@@ -32,6 +32,8 @@ final class LazyTransportFactory implements TransportFactoryInterface
                 continue;
             }
 
+            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+
             return new LazyTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
         }
 

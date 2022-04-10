@@ -6,8 +6,17 @@ namespace Tests\SchedulerBundle\Transport;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\SchedulePolicy\BatchPolicy;
+use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
+use SchedulerBundle\SchedulePolicy\ExecutionDurationPolicy;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
+use SchedulerBundle\SchedulePolicy\IdlePolicy;
+use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
+use SchedulerBundle\SchedulePolicy\NicePolicy;
+use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LazyTransportFactory;
@@ -40,10 +49,22 @@ final class LazyTransportFactoryTest extends TestCase
         ]);
 
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+            new BatchPolicy(),
+            new DeadlinePolicy(),
+            new ExecutionDurationPolicy(),
             new FirstInFirstOutPolicy(),
+            new FirstInLastOutPolicy(),
+            new IdlePolicy(),
+            new MemoryUsagePolicy(),
+            new NicePolicy(),
+            new RoundRobinPolicy(),
         ]));
 
         self::assertFalse($transport->isInitialized());
+
+        $transport->create(new NullTask('foo'));
+        self::assertCount(1, $transport->list());
+        self::assertTrue($transport->isInitialized());
     }
 
     /**

@@ -22,12 +22,18 @@ final class FiberTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): FiberTransport
-    {
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): FiberTransport {
         foreach ($this->factories as $factory) {
             if (!$factory->support($dsn->getOptions()[0])) {
                 continue;
             }
+
+            $dsn = Dsn::fromString($dsn->getOptions()[0]);
 
             return new FiberTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
         }

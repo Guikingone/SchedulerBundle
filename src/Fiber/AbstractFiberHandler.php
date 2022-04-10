@@ -9,6 +9,7 @@ use Fiber;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Throwable;
+use function sprintf;
 
 abstract class AbstractFiberHandler
 {

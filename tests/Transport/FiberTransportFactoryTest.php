@@ -5,7 +5,15 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\SchedulePolicy\BatchPolicy;
+use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
+use SchedulerBundle\SchedulePolicy\ExecutionDurationPolicy;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\FirstInLastOutPolicy;
+use SchedulerBundle\SchedulePolicy\IdlePolicy;
+use SchedulerBundle\SchedulePolicy\MemoryUsagePolicy;
+use SchedulerBundle\SchedulePolicy\NicePolicy;
+use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Transport\Dsn;
@@ -38,7 +46,15 @@ final class FiberTransportFactoryTest extends TestCase
         ]);
 
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+            new BatchPolicy(),
+            new DeadlinePolicy(),
+            new ExecutionDurationPolicy(),
             new FirstInFirstOutPolicy(),
+            new FirstInLastOutPolicy(),
+            new IdlePolicy(),
+            new MemoryUsagePolicy(),
+            new NicePolicy(),
+            new RoundRobinPolicy(),
         ]));
 
         $transport->create(new NullTask('foo'));

@@ -93,6 +93,9 @@ final class InMemoryTransportTest extends TestCase
         self::assertSame($storedTask->getName(), $task->getName());
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanStoreAndSortTasks(): void
     {
         $inMemoryTransport = new InMemoryTransport([
@@ -195,13 +198,13 @@ final class InMemoryTransportTest extends TestCase
      */
     public function testTransportCanAddTaskAndSortAList(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::any())->method('getName')->willReturn('bar');
-        $task->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable());
+        $task = new NullTask('bar', [
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::any())->method('getName')->willReturn('foo');
-        $secondTask->expects(self::any())->method('getScheduledAt')->willReturn(new DateTimeImmutable('+ 1 minute'));
+        $secondTask = new NullTask('foo', [
+            'scheduled_at' => new DateTimeImmutable('+ 1 minute'),
+        ]);
 
         $inMemoryTransport = new InMemoryTransport([
             'execution_mode' => 'first_in_first_out',
@@ -232,13 +235,10 @@ final class InMemoryTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The task "foo" does not exist');
         self::expectExceptionCode(0);
-        $inMemoryTransport->update($task->getName(), $task);
+        $inMemoryTransport->update('foo', new NullTask('foo'));
     }
 
     /**
