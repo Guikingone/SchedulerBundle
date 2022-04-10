@@ -18,7 +18,8 @@ jobs:
       matrix:
         php-versions: ['8.0', '8.1']
         composer-dependencies: ['highest', 'lowest']
-        postgres: ['9.5', '11.5', 'latest']
+        postgres: ['9-alpine', '10-alpine', '11-alpine', '12-alpine', 'latest']
+        mysql: ['5.7', '8.0']
         os: ['ubuntu-latest']
     services:
       redis:
