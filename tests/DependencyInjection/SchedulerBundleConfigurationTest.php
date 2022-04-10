@@ -530,6 +530,41 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('lazy', $configuration['configuration']['mode']);
     }
 
+    public function testConfigurationCannotEnableInvalidWorkerMode(): void
+    {
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The value "foo" is not allowed for path "scheduler_bundle.worker.mode". Permissible values: "default", "fiber"');
+        self::expectExceptionCode(0);
+        (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'worker' => [
+                    'mode' => 'foo',
+                ],
+            ],
+        ]);
+    }
+
+    public function testWorkerCanBeSetToDefault(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'worker' => [
+                    'mode' => 'default',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotNull($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['worker']);
+        self::assertSame('default', $configuration['worker']['mode']);
+    }
+
     public function testWorkerCanBeSetToFiber(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
