@@ -22,6 +22,9 @@ use SchedulerBundle\Transport\InMemoryTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
 use Generator;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 final class FiberTransportFactoryTest extends TestCase
 {
     public function testTransportCanSupport(): void

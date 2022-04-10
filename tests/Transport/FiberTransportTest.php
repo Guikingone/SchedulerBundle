@@ -22,6 +22,9 @@ use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
 use Generator;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 final class FiberTransportTest extends TestCase
 {
     public function testTransportCannotReturnUndefinedTask(): void

@@ -33,6 +33,7 @@
             "SchedulerBundle\\EventListener\\": "src/EventListener/",
             "SchedulerBundle\\Exception\\": "src/Exception/",
             "SchedulerBundle\\Expression\\": "src/Expression/",
+            "SchedulerBundle\\Fiber\\": "src/Fiber/",
             "SchedulerBundle\\Messenger\\": "src/Messenger/",
             "SchedulerBundle\\Middleware\\": "src/Middleware/",
             "SchedulerBundle\\Pool\\": "src/Pool/",

@@ -13,7 +13,7 @@ use function str_starts_with;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazyConfigurationFactory implements ConfigurationFactoryInterface
+final class FiberConfigurationFactory implements ConfigurationFactoryInterface
 {
     /**
      * @param ConfigurationFactoryInterface[] $factories
@@ -22,27 +22,21 @@ final class LazyConfigurationFactory implements ConfigurationFactoryInterface
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function create(Dsn $dsn, SerializerInterface $serializer): LazyConfiguration
+    public function create(Dsn $dsn, SerializerInterface $serializer): FiberConfiguration
     {
         foreach ($this->factories as $factory) {
             if (!$factory->support($dsn->getOptions()[0])) {
                 continue;
             }
 
-            return new LazyConfiguration($factory->create($dsn, $serializer));
+            return new FiberConfiguration($factory->create($dsn, $serializer));
         }
 
         throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function support(string $dsn): bool
     {
-        return str_starts_with($dsn, 'configuration://lazy');
+        return str_starts_with($dsn, 'configuration://fiber');
     }
 }

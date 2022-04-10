@@ -108,9 +108,11 @@ use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FiberConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\FailOverTransportFactory;
+use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LazyTransportFactory;
@@ -260,6 +262,14 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(LazyConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
         self::assertTrue($container->getDefinition(LazyConfigurationFactory::class)->hasTag('container.preload'));
         self::assertSame(LazyConfigurationFactory::class, $container->getDefinition(LazyConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FiberConfigurationFactory::class));
+        self::assertCount(1, $container->getDefinition(FiberConfigurationFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(FiberConfigurationFactory::class)->getArgument(0));
+        self::assertFalse($container->getDefinition(FiberConfigurationFactory::class)->isPublic());
+        self::assertTrue($container->getDefinition(FiberConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
+        self::assertTrue($container->getDefinition(FiberConfigurationFactory::class)->hasTag('container.preload'));
+        self::assertSame(FiberConfigurationFactory::class, $container->getDefinition(FiberConfigurationFactory::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testConfigurationCanBeConfigured(): void
@@ -351,6 +361,14 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(LazyTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(LazyTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(LazyTransportFactory::class, $container->getDefinition(LazyTransportFactory::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FiberTransportFactory::class));
+        self::assertFalse($container->getDefinition(FiberTransportFactory::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(FiberTransportFactory::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(FiberTransportFactory::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(FiberTransportFactory::class)->hasTag('scheduler.transport_factory'));
+        self::assertTrue($container->getDefinition(FiberTransportFactory::class)->hasTag('container.preload'));
+        self::assertSame(FiberTransportFactory::class, $container->getDefinition(FiberTransportFactory::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(RedisTransportFactory::class));
         self::assertFalse($container->getDefinition(RedisTransportFactory::class)->isPublic());

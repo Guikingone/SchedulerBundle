@@ -32,7 +32,7 @@ interface ConfigurationInterface extends Countable
      *
      * @return mixed
      */
-    public function get(string $key);
+    public function get(string $key): mixed;
 
     /**
      * Remove the option stored under the @param string $key.

@@ -67,6 +67,8 @@ use Throwable;
 
 /**
  * @requires PHP 8.1
+ *
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class FiberWorkerTest extends TestCase
 {

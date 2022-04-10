@@ -9,6 +9,9 @@ use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 final class FiberTransport extends AbstractFiberHandler implements TransportInterface
 {
     public function __construct(

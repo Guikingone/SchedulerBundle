@@ -50,9 +50,9 @@ final class FailOverConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
-        return $this->execute(static fn (ConfigurationInterface $configuration) => $configuration->get($key));
+        return $this->execute(static fn (ConfigurationInterface $configuration): mixed => $configuration->get($key));
     }
 
     /**

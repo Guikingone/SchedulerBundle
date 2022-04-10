@@ -10,6 +10,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
 use function str_starts_with;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 final class FiberTransportFactory implements TransportFactoryInterface
 {
     /**

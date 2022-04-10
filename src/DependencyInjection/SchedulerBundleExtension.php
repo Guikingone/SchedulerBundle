@@ -105,10 +105,12 @@ use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface as TransportConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FiberConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransportFactory;
+use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LazyTransportFactory;
@@ -262,6 +264,17 @@ final class SchedulerBundleExtension extends Extension
                 'class' => LazyConfigurationFactory::class,
             ])
         ;
+
+        $container->register(FiberConfigurationFactory::class, FiberConfigurationFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::TRANSPORT_CONFIGURATION_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => FiberConfigurationFactory::class,
+            ])
+        ;
     }
 
     /**
@@ -355,6 +368,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => LazyTransportFactory::class,
+            ])
+        ;
+
+        $container->register(FiberTransportFactory::class, FiberTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => FiberTransportFactory::class,
             ])
         ;
 
