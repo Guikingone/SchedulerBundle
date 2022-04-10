@@ -231,7 +231,7 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
         $driverConnection->expects(self::once())->method('executeQuery')->with(
-            self::equalTo('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name FOR UPDATE'),
+            self::equalTo('SELECT * FROM _symfony_scheduler_tasks WHERE task_name = :name'),
             self::equalTo(['name' => 'foo']),
             self::equalTo(['name' => ParameterType::STRING])
         )->willReturn($statement);
