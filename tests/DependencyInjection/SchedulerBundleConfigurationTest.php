@@ -511,6 +511,25 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('default', $configuration['configuration']['mode']);
     }
 
+    public function testConfigurationCanDefineConfigurationTransportWithDefaultMode(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'configuration' => [
+                    'dsn' => 'configuration://fs',
+                    'mode' => 'default',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('configuration', $configuration);
+        self::assertNotNull($configuration['configuration']);
+        self::assertArrayHasKey('dsn', $configuration['configuration']);
+        self::assertSame('configuration://fs', $configuration['configuration']['dsn']);
+        self::assertArrayHasKey('mode', $configuration['configuration']);
+        self::assertSame('default', $configuration['configuration']['mode']);
+    }
+
     public function testConfigurationCanDefineConfigurationTransportWithLazyMode(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
