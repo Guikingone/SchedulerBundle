@@ -29,8 +29,6 @@ interface ConfigurationInterface extends Countable
 
     /**
      * Return a configuration value using the @param string $key.
-     *
-     * @return mixed
      */
     public function get(string $key): mixed;
 
