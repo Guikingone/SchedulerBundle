@@ -30,6 +30,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     '8.1' !== PHP_VERSION ? $parameters->set(Option::SKIP, [
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
+        __DIR__ . '/src/Fiber/AbstractFiberHandler.php',
         __DIR__ . '/src/Transport/Configuration/FiberConfiguration.php',
         __DIR__ . '/src/Transport/FiberTransport.php',
         __DIR__ . '/src/Worker/FiberWorker.php',

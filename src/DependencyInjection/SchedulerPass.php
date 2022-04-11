@@ -7,6 +7,7 @@ namespace SchedulerBundle\DependencyInjection;
 use SchedulerBundle\SchedulerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use function array_keys;
 
@@ -47,7 +48,7 @@ final class SchedulerPass implements CompilerPassInterface
     {
         foreach (array_keys($container->findTaggedServiceIds($this->schedulerEntryPointTag)) as $service) {
             $container->getDefinition($service)->addMethodCall('schedule', [
-                new Reference(SchedulerInterface::class),
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ]);
         }
     }
