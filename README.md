@@ -38,6 +38,7 @@
 - Background worker
 - [Symfony/Messenger](https://symfony.com/doc/current/messenger.html) integration
 - [Mercure](https://www.mercure.rocks) integration
+- [Fibers](https://www.php.net/manual/en/language.fibers.php) support
 
 ## Installation
 
