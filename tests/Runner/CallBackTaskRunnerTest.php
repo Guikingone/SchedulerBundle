@@ -49,6 +49,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::SUCCESS, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertSame('hello', $output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -63,6 +64,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::SUCCESS, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertSame('2', $output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -77,6 +79,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::SUCCESS, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertSame('Symfony', $callbackTaskRunner->run($callbackTask, $worker)->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -91,6 +94,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::SUCCESS, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertSame('2', $callbackTaskRunner->run($callbackTask, $worker)->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -105,6 +109,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -119,6 +124,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::ERROR, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertNull($output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());
@@ -133,6 +139,7 @@ final class CallBackTaskRunnerTest extends TestCase
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
+        self::assertSame(Output::SUCCESS, $output->getType());
         self::assertNull($callbackTask->getExecutionState());
         self::assertSame('1', $output->getOutput());
         self::assertNull($output->getTask()->getExecutionState());

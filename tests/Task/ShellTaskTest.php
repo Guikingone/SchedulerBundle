@@ -33,6 +33,16 @@ final class ShellTaskTest extends TestCase
         self::assertSame('/srv/app', $shellTask->getCwd());
     }
 
+    public function testTaskCanBeCreatedWithSpecificCommandAndChangedLater(): void
+    {
+        $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');
+        self::assertSame(['echo', 'Symfony!'], $shellTask->getCommand());
+        self::assertSame('/srv/app', $shellTask->getCwd());
+
+        $shellTask->setCommand(['echo', 'Foo']);
+        self::assertSame(['echo', 'Foo'], $shellTask->getCommand());
+    }
+
     public function testTaskCanBeCreatedWithSpecificCwdAndChangedLater(): void
     {
         $shellTask = new ShellTask('foo', ['echo', 'Symfony!'], '/srv/app');

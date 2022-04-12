@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Expression;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Expression\CronExpressionBuilder;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -20,6 +21,9 @@ final class CronExpressionBuilderTest extends TestCase
         self::assertTrue($cronExpressionBuilder->support('* * * * *'));
     }
 
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
     public function testBuilderCanBuildExpression(): void
     {
         $cronExpressionBuilder = new CronExpressionBuilder();

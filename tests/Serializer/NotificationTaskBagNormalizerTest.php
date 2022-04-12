@@ -34,7 +34,10 @@ final class NotificationTaskBagNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new NotificationTaskBagNormalizer($objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new NotificationTaskBagNormalizer($objectNormalizer),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->normalize(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')));
@@ -65,12 +68,16 @@ final class NotificationTaskBagNormalizerTest extends TestCase
     {
         $objectNormalizer = new ObjectNormalizer();
 
-        $serializer = new Serializer([new NotificationTaskBagNormalizer($objectNormalizer), $objectNormalizer], [new JsonEncoder()]);
+        $serializer = new Serializer([
+            new NotificationTaskBagNormalizer($objectNormalizer),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
         $data = $serializer->serialize(new NotificationTaskBag(new Notification('foo', ['email']), new Recipient('test@test.fr', '')), 'json');
         $bag = $serializer->deserialize($data, NotificationTaskBag::class, 'json');
 
+        self::assertNotNull($bag->getNotification());
         self::assertCount(1, $bag->getRecipients());
     }
 }

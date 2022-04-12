@@ -49,6 +49,9 @@ final class RoundRobinTransportTest extends TestCase
         self::assertSame(2, $roundRobinTransport->getOptions()['quantum']);
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskWithoutTransports(): void
     {
         $roundRobinTransport = new RoundRobinTransport(new TransportRegistry([]), [
@@ -61,6 +64,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->get('foo');
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotGetWithFailingTransports(): void
     {
         $roundRobinTransport = new RoundRobinTransport(new TransportRegistry([
@@ -80,6 +86,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->get('foo');
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanRetrieveTaskWithFailingTransports(): void
     {
         $thirdTransport = new InMemoryTransport([], new SchedulePolicyOrchestrator([
@@ -88,13 +97,13 @@ final class RoundRobinTransportTest extends TestCase
         $thirdTransport->create(new NullTask('foo'));
 
         $roundRobinTransport = new RoundRobinTransport(new TransportRegistry([
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
-                new FirstInFirstOutPolicy(),
-            ])),
-            new InMemoryTransport([], new SchedulePolicyOrchestrator([
-                new FirstInFirstOutPolicy(),
-            ])),
             $thirdTransport,
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
         ]), [
             'quantum' => 2,
         ]);
@@ -103,6 +112,9 @@ final class RoundRobinTransportTest extends TestCase
         self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotRetrieveTaskWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
@@ -128,6 +140,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->get('foo');
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanRetrieveTaskLazilyWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
@@ -534,6 +549,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->resume('foo');
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotClearWithoutTransports(): void
     {
         $roundRobinTransport = new RoundRobinTransport(new TransportRegistry([]), [
@@ -546,6 +564,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->clear();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCannotClearWithFailingTransports(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);
@@ -571,6 +592,9 @@ final class RoundRobinTransportTest extends TestCase
         $roundRobinTransport->clear();
     }
 
+    /**
+     * @throws Throwable {@see TransportInterface::list()}
+     */
     public function testTransportCanClearTasks(): void
     {
         $firstTransport = $this->createMock(TransportInterface::class);

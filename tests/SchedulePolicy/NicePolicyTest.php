@@ -40,4 +40,60 @@ final class NicePolicyTest extends TestCase
             'foo' => $secondTask,
         ], $sortedTasks->toArray());
     }
+
+    public function testTasksCanBeSortedWithZeroPriority(): void
+    {
+        $task = new NullTask('app', [
+            'nice' => 0,
+        ]);
+
+        $secondTask = new NullTask('foo', [
+            'nice' => 5,
+        ]);
+
+        $thirdTask = new NullTask('third', [
+            'nice' => 5,
+        ]);
+
+        $nicePolicy = new NicePolicy();
+        $sortedTasks = $nicePolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+            $thirdTask,
+        ]));
+
+        self::assertSame([
+            'app' => $task,
+            'foo' => $secondTask,
+            'third' => $thirdTask,
+        ], $sortedTasks->toArray());
+    }
+
+    public function testTasksCanBeSortedWithNegativePriority(): void
+    {
+        $task = new NullTask('app', [
+            'nice' => -10,
+        ]);
+
+        $secondTask = new NullTask('foo', [
+            'nice' => 5,
+        ]);
+
+        $thirdTask = new NullTask('third', [
+            'nice' => 5,
+        ]);
+
+        $nicePolicy = new NicePolicy();
+        $sortedTasks = $nicePolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+            $thirdTask,
+        ]));
+
+        self::assertSame([
+            'app' => $task,
+            'foo' => $secondTask,
+            'third' => $thirdTask,
+        ], $sortedTasks->toArray());
+    }
 }

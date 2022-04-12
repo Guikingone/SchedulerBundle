@@ -28,6 +28,22 @@ final class DsnTest extends TestCase
     public function testDsnCanBeCreated(string $input, Dsn $dsn): void
     {
         self::assertEquals($dsn, Dsn::fromString($input));
+        self::assertSame($dsn->getPort(), (Dsn::fromString($input))->getPort());
+        self::assertEquals($dsn->getOptions(), (Dsn::fromString($input))->getOptions());
+    }
+
+    public function testDsnCanBeCreatedWithDefaultPort(): void
+    {
+        $dsn = new Dsn('doctrine', 'default', null, null, null, null, [], 'doctrine://default');
+
+        self::assertSame(20, $dsn->getPort(20));
+    }
+
+    public function testDsnCanReturnAnOptionAsBool(): void
+    {
+        $dsn = new Dsn('doctrine', 'default', null, null, null, null, [], 'doctrine://default?foo=false');
+
+        self::assertFalse($dsn->getOptionAsBool('foo'));
     }
 
     /**

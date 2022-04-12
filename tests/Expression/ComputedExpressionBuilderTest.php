@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Expression;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
+use Throwable;
 use function explode;
 
 /**
@@ -22,6 +23,26 @@ final class ComputedExpressionBuilderTest extends TestCase
         self::assertTrue($computedExpressionBuilder->support('# * * * *'));
     }
 
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
+    public function testBuilderCanHandleEmptyParts(): void
+    {
+        $builder = new ComputedExpressionBuilder();
+
+        $expression = $builder->build('* * * * *');
+        $explodedExpression = explode(' ', $expression->getExpression());
+
+        self::assertSame('*', $explodedExpression[0]);
+        self::assertSame('*', $explodedExpression[1]);
+        self::assertSame('*', $explodedExpression[2]);
+        self::assertSame('*', $explodedExpression[3]);
+        self::assertSame('*', $explodedExpression[4]);
+    }
+
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
     public function testBuilderCanHandleMinutes(): void
     {
         $builder = new ComputedExpressionBuilder();
@@ -37,6 +58,9 @@ final class ComputedExpressionBuilderTest extends TestCase
         self::assertSame('*', $explodedExpression[4]);
     }
 
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
     public function testBuilderCanHandleHours(): void
     {
         $builder = new ComputedExpressionBuilder();
@@ -52,6 +76,9 @@ final class ComputedExpressionBuilderTest extends TestCase
         self::assertSame('*', $explodedExpression[4]);
     }
 
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
     public function testBuilderCanHandleDays(): void
     {
         $builder = new ComputedExpressionBuilder();
@@ -67,6 +94,9 @@ final class ComputedExpressionBuilderTest extends TestCase
         self::assertSame('*', $explodedExpression[4]);
     }
 
+    /**
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
+     */
     public function testBuilderCanHandleMonths(): void
     {
         $builder = new ComputedExpressionBuilder();
@@ -84,6 +114,8 @@ final class ComputedExpressionBuilderTest extends TestCase
 
     /**
      * @dataProvider provideExpression
+     *
+     * @throws Throwable {@see ExpressionBuilderInterface::build()}
      */
     public function testBuilderCanBuild(string $expression): void
     {

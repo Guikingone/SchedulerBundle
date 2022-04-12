@@ -14,8 +14,12 @@ use function is_string;
  */
 final class CommandTask extends AbstractTask
 {
-    public function __construct(string $name, string $command, array $arguments = [], array $options = [])
-    {
+    public function __construct(
+        string $name,
+        string $command,
+        array $arguments = [],
+        array $options = []
+    ) {
         $this->validateCommand($command);
 
         $this->defineOptions([

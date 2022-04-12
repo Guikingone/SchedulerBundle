@@ -51,7 +51,6 @@ final class FilesystemTransport extends AbstractTransport
     public function list(bool $lazy = false): TaskListInterface
     {
         $tasks = new TaskList();
-
         $finder = new Finder();
 
         $this->filesystem->mkdir($this->options['path']);
