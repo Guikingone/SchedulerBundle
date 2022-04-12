@@ -13,7 +13,7 @@ use function str_starts_with;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazyTransportFactory implements TransportFactoryInterface
+final class FiberTransportFactory implements TransportFactoryInterface
 {
     /**
      * @param TransportFactoryInterface[] $factories
@@ -25,8 +25,12 @@ final class LazyTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): LazyTransport
-    {
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): FiberTransport {
         foreach ($this->factories as $factory) {
             if (!$factory->support($dsn->getOptions()[0])) {
                 continue;
@@ -34,7 +38,7 @@ final class LazyTransportFactory implements TransportFactoryInterface
 
             $dsn = Dsn::fromString($dsn->getOptions()[0]);
 
-            return new LazyTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
+            return new FiberTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
         }
 
         throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));
@@ -45,6 +49,6 @@ final class LazyTransportFactory implements TransportFactoryInterface
      */
     public function support(string $dsn, array $options = []): bool
     {
-        return str_starts_with($dsn, 'lazy://');
+        return str_starts_with($dsn, 'fiber://');
     }
 }

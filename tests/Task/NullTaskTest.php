@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Task;
 
+use DateInterval;
 use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +39,9 @@ final class NullTaskTest extends TestCase
         self::assertNull($nullTask->getDescription());
         self::assertSame(TaskInterface::DISABLED, $nullTask->getState());
         self::assertFalse($nullTask->isSingleRun());
+        self::assertNull($nullTask->getExecutionRelativeDeadline());
+        self::assertNull($nullTask->getMaxRetries());
+        self::assertNull($nullTask->getScheduledAt());
     }
 
     public function testTaskCannotBeCreatedWithInvalidArrivalTime(): void
@@ -632,6 +636,54 @@ final class NullTaskTest extends TestCase
 
         $task->setLastExecution();
         self::assertNull($task->getLastExecution());
+    }
+
+    public function testTaskCanBeCreatedWithExecutionRelativeDeadline(): void
+    {
+        $nullTask = new NullTask('foo', [
+            'expression' => '* * * * *',
+            'background' => true,
+            'execution_relative_deadline' => new DateInterval('P1D'),
+        ]);
+
+        self::assertSame('foo', $nullTask->getName());
+        self::assertSame('* * * * *', $nullTask->getExpression());
+        self::assertTrue($nullTask->mustRunInBackground());
+        self::assertNull($nullTask->getDescription());
+        self::assertFalse($nullTask->isSingleRun());
+        self::assertInstanceOf(DateInterval::class, $nullTask->getExecutionRelativeDeadline());
+    }
+
+    public function testTaskCanBeCreatedWithMaxRetries(): void
+    {
+        $nullTask = new NullTask('foo', [
+            'expression' => '* * * * *',
+            'background' => true,
+            'max_retries' => 10,
+        ]);
+
+        self::assertSame('foo', $nullTask->getName());
+        self::assertSame('* * * * *', $nullTask->getExpression());
+        self::assertTrue($nullTask->mustRunInBackground());
+        self::assertNull($nullTask->getDescription());
+        self::assertFalse($nullTask->isSingleRun());
+        self::assertSame(10, $nullTask->getMaxRetries());
+    }
+
+    public function testTaskCanBeCreatedWithScheduledAt(): void
+    {
+        $nullTask = new NullTask('foo', [
+            'expression' => '* * * * *',
+            'background' => true,
+            'scheduled_at' => new DateTimeImmutable(),
+        ]);
+
+        self::assertSame('foo', $nullTask->getName());
+        self::assertSame('* * * * *', $nullTask->getExpression());
+        self::assertTrue($nullTask->mustRunInBackground());
+        self::assertNull($nullTask->getDescription());
+        self::assertFalse($nullTask->isSingleRun());
+        self::assertInstanceOf(DateTimeImmutable::class, $nullTask->getScheduledAt());
     }
 
     /**

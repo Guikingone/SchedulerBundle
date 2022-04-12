@@ -48,7 +48,7 @@ final class InMemoryConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->options[$key] ?? null;
     }

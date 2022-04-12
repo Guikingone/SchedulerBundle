@@ -52,13 +52,28 @@ final class IdlePolicyTest extends TestCase
             'priority' => 10,
         ]);
 
-        $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+        $thirdTask = new NullTask('third', [
+            'priority' => 19,
+        ]);
 
-        self::assertCount(2, $tasks);
+        $fourthTask = new NullTask('fourth', [
+            'priority' => -10,
+        ]);
+
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([
+            $secondTask,
+            $thirdTask,
+            $task,
+            $fourthTask,
+        ]));
+
+        self::assertCount(4, $tasks);
         self::assertSame([
+            'third' => $thirdTask,
             'app' => $secondTask,
             'foo' => $task,
+            'fourth' => $fourthTask,
         ], $tasks->toArray());
     }
 
@@ -72,13 +87,22 @@ final class IdlePolicyTest extends TestCase
             'priority' => 19,
         ]);
 
-        $idlePolicy = new IdlePolicy();
-        $tasks = $idlePolicy->sort(new TaskList([$secondTask, $task]));
+        $thirdTask = new NullTask('third', [
+            'priority' => 15,
+        ]);
 
-        self::assertCount(2, $tasks);
+        $idlePolicy = new IdlePolicy();
+        $tasks = $idlePolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+            $thirdTask,
+        ]));
+
+        self::assertCount(3, $tasks);
         self::assertSame([
             'app' => $secondTask,
             'foo' => $task,
+            'third' => $thirdTask,
         ], $tasks->toArray());
     }
 

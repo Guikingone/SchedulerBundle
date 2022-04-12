@@ -36,6 +36,7 @@ use SchedulerBundle\Expression\Expression;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilderInterface;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
+use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
@@ -104,10 +105,12 @@ use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface as TransportConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\FiberConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FailOverTransportFactory;
+use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use SchedulerBundle\Transport\LazyTransportFactory;
@@ -116,6 +119,7 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\FiberWorker;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -206,6 +210,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
+        $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -257,6 +262,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => LazyConfigurationFactory::class,
+            ])
+        ;
+
+        $container->register(FiberConfigurationFactory::class, FiberConfigurationFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::TRANSPORT_CONFIGURATION_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => FiberConfigurationFactory::class,
             ])
         ;
     }
@@ -352,6 +368,17 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
             ->addTag('container.preload', [
                 'class' => LazyTransportFactory::class,
+            ])
+        ;
+
+        $container->register(FiberTransportFactory::class, FiberTransportFactory::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
+            ])
+            ->setPublic(false)
+            ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
+            ->addTag('container.preload', [
+                'class' => FiberTransportFactory::class,
             ])
         ;
 
@@ -457,6 +484,20 @@ final class SchedulerBundleExtension extends Extension
                 ->setPublic(false)
                 ->addTag('container.preload', [
                     'class' => LazyScheduler::class,
+                ])
+            ;
+        }
+
+        if ('fiber' === $container->getParameter('scheduler.scheduler_mode')) {
+            $container->register(FiberScheduler::class, FiberScheduler::class)
+                ->setDecoratedService(Scheduler::class, 'scheduler.scheduler')
+                ->setArguments([
+                    new Reference('scheduler.scheduler', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('container.preload', [
+                    'class' => FiberScheduler::class,
                 ])
             ;
         }
@@ -1006,7 +1047,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorker(ContainerBuilder $container): void
     {
-        $container->register(Worker::class, Worker::class)
+        $container->register('scheduler.worker', Worker::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
@@ -1025,7 +1066,29 @@ final class SchedulerBundleExtension extends Extension
                 'class' => Worker::class,
             ])
         ;
-        $container->setAlias(WorkerInterface::class, Worker::class);
+        $container->setAlias(WorkerInterface::class, 'scheduler.worker');
+
+        if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
+            $container->register('scheduler.worker', FiberWorker::class)
+                ->setArguments([
+                    new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->addTag('scheduler.worker')
+                ->addTag('monolog.logger', [
+                    'channel' => 'scheduler',
+                ])
+                ->addTag('container.hot_path')
+                ->addTag('container.preload', [
+                    'class' => FiberWorker::class,
+                ])
+            ;
+        }
     }
 
     /**

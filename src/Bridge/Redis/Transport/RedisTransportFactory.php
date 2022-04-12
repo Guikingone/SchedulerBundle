@@ -10,7 +10,6 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_merge;
 use function class_exists;
 use function phpversion;
 use function version_compare;
@@ -46,7 +45,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
         ];
 
-        return new RedisTransport(array_merge($connectionOptions, $options), $serializer, $schedulePolicyOrchestrator);
+        return new RedisTransport($connectionOptions + $options, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use Closure;
-use function array_merge;
 use function is_array;
 
 /**
@@ -15,10 +14,10 @@ final class CallbackTask extends AbstractTask
 {
     public function __construct(string $name, $callback, array $arguments = [], array $options = [])
     {
-        $this->defineOptions(array_merge($options, [
+        $this->defineOptions($options + [
             'callback' => $callback,
             'arguments' => $arguments,
-        ]), [
+        ], [
             'callback' => ['callable', 'string', 'array'],
             'arguments' => ['array', 'string[]'],
         ]);

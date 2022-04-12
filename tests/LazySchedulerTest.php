@@ -67,6 +67,7 @@ final class LazySchedulerTest extends TestCase
 
         $lazyScheduler->schedule(new NullTask('foo'));
         self::assertTrue($lazyScheduler->isInitialized());
+        self::assertCount(1, $scheduler->getTasks());
 
         $task = $lazyScheduler->getTasks()->get('foo');
         self::assertTrue($lazyScheduler->isInitialized());

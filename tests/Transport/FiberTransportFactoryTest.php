@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
-use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
@@ -18,23 +17,26 @@ use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Transport\Dsn;
+use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
-use SchedulerBundle\Transport\LazyTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
+use Generator;
 
 /**
+ * @requires PHP 8.1
+ *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazyTransportFactoryTest extends TestCase
+final class FiberTransportFactoryTest extends TestCase
 {
     public function testTransportCanSupport(): void
     {
-        $factory = new LazyTransportFactory([
+        $factory = new FiberTransportFactory([
             new InMemoryTransportFactory(),
         ]);
 
         self::assertFalse($factory->support('test://'));
-        self::assertTrue($factory->support('lazy://'));
+        self::assertTrue($factory->support('fiber://'));
     }
 
     /**
@@ -44,7 +46,7 @@ final class LazyTransportFactoryTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $factory = new LazyTransportFactory([
+        $factory = new FiberTransportFactory([
             new InMemoryTransportFactory(),
         ]);
 
@@ -60,11 +62,8 @@ final class LazyTransportFactoryTest extends TestCase
             new RoundRobinPolicy(),
         ]));
 
-        self::assertFalse($transport->isInitialized());
-
         $transport->create(new NullTask('foo'));
         self::assertCount(1, $transport->list());
-        self::assertTrue($transport->isInitialized());
     }
 
     /**
@@ -73,14 +72,14 @@ final class LazyTransportFactoryTest extends TestCase
     public function provideDsn(): Generator
     {
         yield 'simple configuration' => [
-            'lazy://(memory://batch)',
-            'lazy://(memory://deadline)',
-            'lazy://(memory://first_in_first_out)',
-            'lazy://(memory://first_in_last_out)',
-            'lazy://(memory://idle)',
-            'lazy://(memory://memory_usage)',
-            'lazy://(memory://normal)',
-            'lazy://(memory://round_robin)',
+            'fiber://(memory://batch)',
+            'fiber://(memory://deadline)',
+            'fiber://(memory://first_in_first_out)',
+            'fiber://(memory://first_in_last_out)',
+            'fiber://(memory://idle)',
+            'fiber://(memory://memory_usage)',
+            'fiber://(memory://normal)',
+            'fiber://(memory://round_robin)',
         ];
     }
 }

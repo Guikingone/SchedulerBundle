@@ -124,11 +124,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         ];
 
         return [
-            'body' => $this->objectNormalizer->normalize($object, $format, array_merge($context, $normalizationCallbacks, [
+            'body' => $this->objectNormalizer->normalize($object, $format, $context + $normalizationCallbacks + [
                 AbstractNormalizer::IGNORED_ATTRIBUTES => $object instanceof CommandTask ? [] : [
                     'options' => [],
                 ],
-            ])),
+            ]),
             self::NORMALIZATION_DISCRIMINATOR => $object::class,
         ];
     }

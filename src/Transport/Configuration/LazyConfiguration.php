@@ -58,7 +58,7 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         if ($this->initialized) {
             return $this->configuration->get($key);

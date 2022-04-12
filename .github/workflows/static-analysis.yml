@@ -41,4 +41,4 @@ jobs:
           composer-options: "--prefer-stable"
 
       - name: Run PHPStan
-        run: php vendor/bin/phpstan analyze --xdebug
+        run: php vendor/bin/phpstan analyze --xdebug --configuration phpstan.neon.${{ matrix.php-versions }}.dist

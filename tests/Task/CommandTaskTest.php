@@ -46,5 +46,20 @@ final class CommandTaskTest extends TestCase
         self::assertSame('app:foo', $commandTask->getCommand());
         self::assertContainsEquals('test', $commandTask->getArguments());
         self::assertSame(['--env' => 'test'], $commandTask->getOptions());
+
+        $commandTask->setArguments(['test2']);
+        self::assertContainsEquals('test2', $commandTask->getArguments());
+    }
+
+    public function testCommandCanBeCreatedWithExtraOptions(): void
+    {
+        $commandTask = new CommandTask('test', 'app:foo', ['test'], ['--env' => 'test']);
+
+        self::assertSame('app:foo', $commandTask->getCommand());
+        self::assertContainsEquals('test', $commandTask->getArguments());
+        self::assertSame(['--env' => 'test'], $commandTask->getOptions());
+
+        $commandTask->setOptions(['--env' => 'prod']);
+        self::assertSame(['--env' => 'prod'], $commandTask->getOptions());
     }
 }

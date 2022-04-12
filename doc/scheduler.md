@@ -5,6 +5,7 @@ The [Scheduler](../src/Scheduler.php) is the main entrypoint for every action re
 - [API](#api)
 - [Asynchronous API](#asynchronous-api)
 - [Lazy scheduler](#lazy-scheduler)
+- [Fiber scheduler](#fiber-scheduler)
 - [SchedulerAware](#scheduleraware)
 
 ## API
@@ -158,6 +159,15 @@ _Introduced in `0.5`_
 
 The [LazyScheduler](../src/LazyScheduler.php) act as a wrapper around
 the default `Scheduler`, when enabled via the configuration, each action performed in a "lazy" approach.
+
+The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).
+
+## Fiber scheduler
+
+_Introduced in `0.9`_
+
+The [FiberScheduler](../src/FiberScheduler.php) act as a wrapper around
+the default `Scheduler`, when enabled via the configuration, each action is performed using a dedicated fiber.
 
 The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).
 

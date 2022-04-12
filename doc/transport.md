@@ -19,6 +19,7 @@ This bundle defines a set of transports, each transport has its own configuratio
 - [FailOver](#failover)
 - [RoundRobin](#roundrobin)
 - [Lazy](#lazy)
+- [Fiber](#fiber)
 - [Redis](#redis)
 - [Doctrine](#doctrine)
 
@@ -193,7 +194,7 @@ scheduler_bundle:
 
 ## Lazy
 
-The [Lazy](../src/Transport/LazyTransport.php) allows to perform actions using an asynchronous approach.
+The [LazyTransport](../src/Transport/LazyTransport.php) allows to perform actions using an asynchronous approach.
 
 ### Usage
 
@@ -201,6 +202,20 @@ The [Lazy](../src/Transport/LazyTransport.php) allows to perform actions using a
 scheduler_bundle:
     transport:
         dsn: 'lazy://(memory://batch)'
+```
+
+## Fiber
+
+_Introduced in `0.9`_
+
+The [FiberTransport](../src/Transport/FiberTransport.php) allows to perform actions using native fibers.
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    transport:
+        dsn: 'fiber://(memory://batch)'
 ```
 
 ## Redis

@@ -9,6 +9,7 @@ use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -17,6 +18,9 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class ProbeTaskMiddlewareTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
     public function testMiddlewareCannotBeCalledOnInvalidTask(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
@@ -28,6 +32,9 @@ final class ProbeTaskMiddlewareTest extends TestCase
         $middleware->preExecute($task);
     }
 
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
     public function testMiddlewareCannotBeCalledOnTaskWithoutDelay(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
@@ -39,7 +46,10 @@ final class ProbeTaskMiddlewareTest extends TestCase
         $middleware->preExecute($task);
     }
 
-    public function testMiddlewareCannotBeCalledOnTaskWithDelay(): void
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
+    public function testMiddlewareCanBeCalledOnTaskWithDelay(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('isRunning');
