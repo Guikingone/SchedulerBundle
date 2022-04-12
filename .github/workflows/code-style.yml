@@ -38,3 +38,5 @@ jobs:
 
       - name: PHP CS Fixer
         run: php vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: 1
