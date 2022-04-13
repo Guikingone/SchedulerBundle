@@ -86,6 +86,7 @@ final class LazyTaskListTest extends TestCase
         $list->add(new NullTask('foo'));
         $filteredLazyList = $list->findByName(['foo']);
 
+        self::assertInstanceOf(LazyTaskList::class, $filteredLazyList);
         self::assertTrue($filteredLazyList->isInitialized());
         self::assertCount(1, $filteredLazyList);
     }
@@ -100,6 +101,7 @@ final class LazyTaskListTest extends TestCase
         $lazyList->add(new NullTask('foo'));
         $filteredLazyList = $lazyList->filter(fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *');
 
+        self::assertInstanceOf(LazyTaskList::class, $filteredLazyList);
         self::assertTrue($filteredLazyList->isInitialized());
         self::assertCount(1, $filteredLazyList);
     }

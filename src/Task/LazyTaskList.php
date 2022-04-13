@@ -55,7 +55,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): LazyTaskList
+    public function findByName(array $names): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -68,7 +68,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): LazyTaskList
+    public function filter(Closure $filter): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
