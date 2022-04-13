@@ -43,7 +43,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         $this->handleOperationViaFiber(function () use ($key, $newValue): void {
             $this->configuration->update($key, $newValue);

@@ -42,7 +42,7 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         if ($this->initialized) {
             $this->configuration->update($key, $newValue);

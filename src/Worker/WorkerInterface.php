@@ -104,6 +104,8 @@ interface WorkerInterface
 
     /**
      * Every task in this list can also be retrieved independently thanks to {@see TaskFailedEvent}.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getFailedTasks(): TaskListInterface;
 

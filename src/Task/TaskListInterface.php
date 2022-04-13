@@ -37,11 +37,15 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * @param array<int, string> $names
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function findByName(array $names): self;
 
     /**
      * Allow to filter the list using a custom filter, the @param Closure $filter receive the task name and the TaskInterface object (in this order).
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function filter(Closure $filter): self;
 
@@ -52,6 +56,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
 
     /**
      * Return the current list after applying the @param Closure $func to each tasks
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function walk(Closure $func): self;
 
@@ -75,6 +81,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * Allow to sort the tasks using @param Closure $func.
      *
      * The current list is returned with the sorted tasks.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function uasort(Closure $func): TaskListInterface;
 
@@ -93,6 +101,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * For an equivalent, see @link https://php.net/manual/en/function.array-slice.php
      *
      * @throws RuntimeException If the tasks cannot be found.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function slice(string ...$tasks): TaskListInterface;
 

@@ -40,7 +40,7 @@ final class FailOverConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         $this->execute(static function (ConfigurationInterface $configuration) use ($key, $newValue): void {
             $configuration->update($key, $newValue);
@@ -107,7 +107,7 @@ final class FailOverConfiguration extends AbstractConfiguration
         return $this->execute(static fn (ConfigurationInterface $configuration): int => $configuration->count());
     }
 
-    private function execute(Closure $func)
+    private function execute(Closure $func): mixed
     {
         if ([] === $this->configurationStorageList) {
             throw new ConfigurationException('No configuration found');

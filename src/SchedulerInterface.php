@@ -74,6 +74,8 @@ interface SchedulerInterface
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getTasks(bool $lazy = false): TaskListInterface;
 
@@ -84,6 +86,8 @@ interface SchedulerInterface
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
      *
      * @throws Throwable {@see TransportInterface::list()}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface;
 

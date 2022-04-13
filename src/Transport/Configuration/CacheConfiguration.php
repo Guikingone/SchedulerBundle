@@ -54,7 +54,7 @@ final class CacheConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         if (!$this->pool->hasItem($key)) {
             throw new InvalidArgumentException(sprintf('The configuration key "%s" does not exist', $key));

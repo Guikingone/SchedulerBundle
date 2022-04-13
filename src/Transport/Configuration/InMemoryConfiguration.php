@@ -36,7 +36,7 @@ final class InMemoryConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         if (!array_key_exists($key, $this->options)) {
             return;

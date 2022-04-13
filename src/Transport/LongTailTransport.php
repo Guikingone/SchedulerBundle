@@ -16,7 +16,7 @@ final class LongTailTransport extends AbstractCompoundTransport
     /**
      * @throws Throwable {@see TransportInterface::list()}
      */
-    protected function execute(Closure $func)
+    protected function execute(Closure $func): mixed
     {
         if (0 === $this->registry->count()) {
             throw new TransportException('No transport found');
