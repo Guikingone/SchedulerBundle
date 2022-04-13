@@ -6,8 +6,11 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use ArrayIterator;
 use Closure;
+use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
 use function count;
+use function current;
 use function is_array;
 use function iterator_to_array;
 use function reset;
@@ -31,6 +34,47 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
         $this->policies = is_array($policies) ? $policies : iterator_to_array($policies);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function find(string $desiredPolicy): ExecutionPolicyInterface
+    {
+        $list = $this->filter(static fn (ExecutionPolicyInterface $policy): bool => $policy->support($desiredPolicy));
+        if (0 === $list->count()) {
+            throw new InvalidArgumentException('No policy found for this task');
+        }
+
+        if (1 < $list->count()) {
+            throw new InvalidArgumentException('More than one policy found, consider improving the policy(es)');
+        }
+
+        return $list->current();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function filter(Closure $func): ExecutionPolicyRegistryInterface
+    {
+        return new self(array_filter($this->policies, $func, ARRAY_FILTER_USE_BOTH));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function current(): ExecutionPolicyInterface
+    {
+        $currentPolicy = current($this->policies);
+        if (false === $currentPolicy) {
+            throw new RuntimeException('The current policy cannot be found');
+        }
+
+        return $currentPolicy;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function usort(Closure $func): ExecutionPolicyRegistry
     {
         usort($this->policies, $func);
@@ -38,6 +82,9 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reset(): ExecutionPolicyInterface
     {
         return reset($this->policies);

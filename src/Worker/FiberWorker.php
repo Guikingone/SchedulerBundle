@@ -7,7 +7,7 @@ namespace SchedulerBundle\Worker;
 use Fiber;
 use SchedulerBundle\Task\TaskInterface;
 
-final class FiberWorker extends AbstractWorker
+final class FiberWorker extends Worker
 {
     /**
      * {@inheritdoc}

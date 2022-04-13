@@ -124,6 +124,8 @@ use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\FiberWorker;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
+use SchedulerBundle\Worker\WorkerRegistry;
+use SchedulerBundle\Worker\WorkerRegistryInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -1248,6 +1250,29 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition('scheduler.lock_store.factory')->getMethodCalls()[0][1][0]->getInvalidBehavior());
         self::assertTrue($container->getDefinition('scheduler.lock_store.factory')->hasTag('container.preload'));
         self::assertSame(LockFactory::class, $container->getDefinition('scheduler.lock_store.factory')->getTag('container.preload')[0]['class']);
+    }
+
+    public function testWorkerRegistryIsRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertTrue($container->hasDefinition(WorkerRegistry::class));
+        self::assertTrue($container->hasAlias(WorkerRegistryInterface::class));
+        self::assertCount(1, $container->getDefinition(WorkerRegistry::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(WorkerRegistry::class)->getArgument(0));
+        self::assertSame('scheduler.worker', $container->getDefinition(WorkerRegistry::class)->getArgument(0)->getTag());
+        self::assertCount(2, $container->getDefinition(WorkerRegistry::class)->getTags());
+        self::assertTrue($container->getDefinition(WorkerRegistry::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(WorkerRegistry::class)->hasTag('container.preload'));
+        self::assertSame(WorkerRegistry::class, $container->getDefinition(WorkerRegistry::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testFiberWorkerIsRegistered(): void

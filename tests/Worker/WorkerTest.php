@@ -40,6 +40,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
@@ -82,7 +83,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new Worker($scheduler, new RunnerRegistry([]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
+        $worker = new Worker($scheduler, new RunnerRegistry([]), new ExecutionPolicyRegistry([]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
 
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
@@ -103,7 +104,7 @@ final class WorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), new ExecutionPolicyRegistry([]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 

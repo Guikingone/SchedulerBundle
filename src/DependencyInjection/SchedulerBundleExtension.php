@@ -119,9 +119,14 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
 use SchedulerBundle\Worker\FiberWorker;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
+use SchedulerBundle\Worker\WorkerRegistry;
+use SchedulerBundle\Worker\WorkerRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
@@ -162,6 +167,7 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
     private const TRANSPORT_CONFIGURATION_TAG = 'scheduler.configuration';
     private const TRANSPORT_CONFIGURATION_FACTORY_TAG = 'scheduler.configuration_factory';
+    private const EXECUTION_POLICY_TAG = 'scheduler.execution_policy';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -190,6 +196,8 @@ final class SchedulerBundleExtension extends Extension
         $this->registerSubscribers($container);
         $this->registerTracker($container);
         $this->registerWorker($container);
+        $this->registerExecutionPolicyRegistry($container);
+        $this->registerWorkerRegistry($container);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
@@ -232,6 +240,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
         $container->registerForAutoconfiguration(SchedulerAwareInterface::class)->addTag('scheduler.entry_point');
+        $container->registerForAutoconfiguration(ExecutionPolicyInterface::class)->addTag(self::EXECUTION_POLICY_TAG);
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
@@ -1089,6 +1098,34 @@ final class SchedulerBundleExtension extends Extension
                 ])
             ;
         }
+    }
+
+    private function registerExecutionPolicyRegistry(ContainerBuilder $container): void
+    {
+        $container->register(ExecutionPolicyRegistry::class, ExecutionPolicyRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::EXECUTION_POLICY_TAG),
+            ])
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => ExecutionPolicyRegistry::class,
+            ])
+        ;
+        $container->setAlias(ExecutionPolicyRegistryInterface::class, ExecutionPolicyRegistry::class);
+    }
+
+    private function registerWorkerRegistry(ContainerBuilder $container): void
+    {
+        $container->register(WorkerRegistry::class, WorkerRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument('scheduler.worker'),
+            ])
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => WorkerRegistry::class,
+            ])
+        ;
+        $container->setAlias(WorkerRegistryInterface::class, WorkerRegistry::class);
     }
 
     /**

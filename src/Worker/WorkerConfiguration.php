@@ -22,6 +22,7 @@ final class WorkerConfiguration
     private bool $shouldRetrieveTasksLazily;
     private bool $mustStrictlyCheckDate;
     private ?TaskInterface $currentlyExecutedTask = null;
+    private string $executionPolicy;
 
     private function __construct()
     {
@@ -42,6 +43,7 @@ final class WorkerConfiguration
         $self->lastExecutedTask = null;
         $self->forkedFrom = null;
         $self->mustStrictlyCheckDate = false;
+        $self->executionPolicy = 'default';
 
         return $self;
     }
@@ -64,6 +66,16 @@ final class WorkerConfiguration
     public function setExecutedTasksCount(int $executedTasksCount): void
     {
         $this->executedTasksCount = $executedTasksCount;
+    }
+
+    public function getExecutionPolicy(): string
+    {
+        return $this->executionPolicy;
+    }
+
+    public function setExecutionPolicy(string $executionPolicy): void
+    {
+        $this->executionPolicy = $executionPolicy;
     }
 
     public function getForkedFrom(): ?WorkerInterface
@@ -163,6 +175,7 @@ final class WorkerConfiguration
     {
         return [
             'executedTasksCount' => $this->executedTasksCount,
+            'executionPolicy' => $this->executionPolicy,
             'forkedFrom' => $this->forkedFrom,
             'isFork' => $this->isFork,
             'isRunning' => $this->isRunning,

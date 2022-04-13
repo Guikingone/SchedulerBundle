@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
-use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\Worker\WorkerConfiguration;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -14,31 +13,30 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class DefaultPolicy implements ExecutionPolicyInterface
 {
-    public function execute(WorkerConfiguration $configuration, TaskListInterface $taskList): Closure
-    {
-        return static function (WorkerInterface $worker, TaskListInterface $taskList): void {
-            while (!$worker->getConfiguration()->shouldStop()) {
-                if (0 === $taskList->count() && !$worker->getConfiguration()->isSleepingUntilNextMinute()) {
-                    $worker->stop();
-                }
-
-                $taskList->walk(static function () use ($worker, $taskList): void {
-                    $worker->execute(
-                        $worker->getConfiguration(),
-                        $taskList->toArray(false)
-                    );
-                });
-
-                if ($worker->getConfiguration()->shouldStop()) {
-                    break;
-                }
-
-                if ($worker->getConfiguration()->isSleepingUntilNextMinute()) {
-                    $worker->sleep();
-                    $this->execute($worker->getConfiguration(), $taskList->toArray(false));
-                }
+    public function execute(
+        WorkerInterface $worker,
+        Closure $fetchTaskListFunc,
+        Closure $handleTaskFunc
+    ): void {
+        while (!$worker->getConfiguration()->shouldStop()) {
+            $tasks = $fetchTaskListFunc();
+            if (0 === $tasks->count() && !$worker->getConfiguration()->isSleepingUntilNextMinute()) {
+                $worker->stop();
             }
-        };
+
+            $tasks->walk(static function (TaskInterface $task) use ($worker, $handleTaskFunc, $tasks): void {
+                $handleTaskFunc($task, $tasks);
+            });
+
+            if ($worker->getConfiguration()->shouldStop()) {
+                break;
+            }
+
+            if ($worker->getConfiguration()->isSleepingUntilNextMinute()) {
+                $worker->sleep();
+                $this->execute($worker, $fetchTaskListFunc, $handleTaskFunc);
+            }
+        }
     }
 
     public function support(string $policy): bool

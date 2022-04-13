@@ -13,6 +13,12 @@ use IteratorAggregate;
  */
 interface ExecutionPolicyRegistryInterface extends Countable, IteratorAggregate
 {
+    public function find(string $desiredPolicy): ExecutionPolicyInterface;
+
+    public function filter(Closure $func): ExecutionPolicyRegistryInterface;
+
+    public function current(): ExecutionPolicyInterface;
+
     public function usort(Closure $func): ExecutionPolicyRegistryInterface;
 
     public function reset(): ExecutionPolicyInterface;
