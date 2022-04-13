@@ -28,10 +28,10 @@ abstract class AbstractDoctrineConnection
      */
     protected function updateSchema(): void
     {
-        $comparator = new Comparator($this->driverConnection->getDatabasePlatform());
-        $schemaDiff = $comparator->compareSchemas($this->driverConnection->createSchemaManager()->createSchema(), $this->getSchema());
+        $schemaManager = $this->driverConnection->createSchemaManager();
+        $schema = $schemaManager->createSchema();
 
-        foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
+        foreach ($schema->getMigrateToSql($this->getSchema(), $this->driverConnection->getDatabasePlatform()) as $sql) {
             $this->driverConnection->executeStatement($sql);
         }
     }
