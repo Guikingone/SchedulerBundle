@@ -50,7 +50,8 @@
             "SchedulerBundle\\Test\\Constraint\\Scheduler\\": "src/Test/Constraint/Scheduler/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
             "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
-            "SchedulerBundle\\Worker\\": "src/Worker/"
+            "SchedulerBundle\\Worker\\": "src/Worker/",
+            "SchedulerBundle\\Worker\\ExecutionPolicy\\": "src/Worker/ExecutionPolicy"
         }
     },
     "autoload-dev": {
