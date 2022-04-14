@@ -18,38 +18,39 @@ dagger.#Plan & {
 	}
 
 	actions: {
-		build: docker.#Build & {
-			#Run: docker.#Run & {
-				command: name: "composer"
-			}
-			steps: [
-				docker.#Dockerfile & {
-					source: client.filesystem."./".read.contents
-					dockerfile: path: ".cloud/docker/Dockerfile"
-				},
-				#Run & {
-					command: args: ["update", "--prefer-stable"]
-					mounts: _vendorMount
-				},
-				#Run & {
-					command: args: ["dump-autoload", "--optimize", "--classmap-authoritative"]
-				},
-			]
+		#Composer: docker.#Run & {
+			command: name: "composer"
 		}
-		#Run: docker.#Run & {
-			input: build.output
-			mounts: _vendorMount
+		composer: docker.#Pull & {
+			source: "composer"
 		}
-		php_cs_fixer: #Run & {
-			command: {
-				name: "vendor/bin/php-cs-fixer"
-				args: ["fix", "--allow-risky=yes", "--dry-run"]
-			}
-		}
-		phpstan: #Run & {
-			command: {
-				name: "vendor/bin/phpstan"
-				args: ["analyze", "--xdebug"]
+		[tag=string]: {
+			versions: {
+				"8.0": _,
+				"8.1": _,
+				build: docker.#Build & {
+					#Run: docker.#Run & {
+						input: build.output
+						mounts: _vendorMount
+					}
+					steps: [
+						docker.#Pull & {
+							source: "php:\(tag)"
+						},
+						docker.#Copy & {
+							input: composer.output
+							contents: build.output
+							path: "/usr/bin/composer"
+						},
+						#Composer & {
+							command: args: ["update", "--prefer-stable"]
+							mounts: _vendorMount
+						},
+						#Composer & {
+							command: args: ["dump-autoload", "--optimize", "--classmap-authoritative"]
+						},
+					]
+				}
 			}
 		}
 	}
