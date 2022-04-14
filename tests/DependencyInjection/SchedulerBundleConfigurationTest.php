@@ -25,6 +25,10 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('tasks', $configuration);
         self::assertArrayNotHasKey('probe', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
+        self::assertArrayHasKey('pool', $configuration);
+        self::assertArrayHasKey('worker', $configuration);
+        self::assertArrayHasKey('mode', $configuration['worker']);
+        self::assertArrayHasKey('registry', $configuration['worker']);
     }
 
     public function testConfigurationCannotDefineTasksWithoutTransport(): void
@@ -603,5 +607,26 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
         self::assertArrayHasKey('mode', $configuration['worker']);
         self::assertSame('fiber', $configuration['worker']['mode']);
+    }
+
+    public function testWorkerCanEnableRegistry(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'worker' => [
+                    'registry' => true,
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('transport', $configuration);
+        self::assertNotNull($configuration['transport']);
+        self::assertArrayHasKey('dsn', $configuration['transport']);
+        self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
+        self::assertArrayHasKey('registry', $configuration['worker']);
+        self::assertTrue($configuration['worker']['registry']);
     }
 }

@@ -119,9 +119,11 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use SchedulerBundle\Worker\WorkerRegistry;
@@ -196,7 +198,9 @@ final class SchedulerBundleExtension extends Extension
         $this->registerSubscribers($container);
         $this->registerTracker($container);
         $this->registerWorker($container);
+        $this->registerWorkerRegistry($container);
         $this->registerExecutionPolicyRegistry($container);
+        $this->registerExecutionPolicies($container);
         $this->registerWorkerRegistry($container);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container, $config);
@@ -219,6 +223,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
         $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
+        $container->setParameter('scheduler.worker_registry', $configuration['worker']['registry']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -1079,6 +1084,24 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(WorkerInterface::class, Worker::class);
     }
 
+    private function registerWorkerRegistry(ContainerBuilder $container): void
+    {
+        if (!$container->getParameter('scheduler.worker_registry')) {
+            return;
+        }
+
+        $container->register(WorkerRegistry::class, WorkerRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::WORKER_TAG),
+            ])
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => WorkerRegistry::class,
+            ])
+        ;
+        $container->setAlias(WorkerRegistryInterface::class, WorkerRegistry::class);
+    }
+
     private function registerExecutionPolicyRegistry(ContainerBuilder $container): void
     {
         $container->register(ExecutionPolicyRegistry::class, ExecutionPolicyRegistry::class)
@@ -1093,18 +1116,25 @@ final class SchedulerBundleExtension extends Extension
         $container->setAlias(ExecutionPolicyRegistryInterface::class, ExecutionPolicyRegistry::class);
     }
 
-    private function registerWorkerRegistry(ContainerBuilder $container): void
+    private function registerExecutionPolicies(ContainerBuilder $container): void
     {
-        $container->register(WorkerRegistry::class, WorkerRegistry::class)
-            ->setArguments([
-                new TaggedIteratorArgument(self::WORKER_TAG),
-            ])
+        $container->register(DefaultPolicy::class, DefaultPolicy::class)
+            ->addTag(self::EXECUTION_POLICY_TAG)
             ->addTag('container.hot_path')
             ->addTag('container.preload', [
-                'class' => WorkerRegistry::class,
+                'class' => DefaultPolicy::class,
             ])
         ;
-        $container->setAlias(WorkerRegistryInterface::class, WorkerRegistry::class);
+
+        if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
+            $container->register(FiberPolicy::class, FiberPolicy::class)
+                ->addTag(self::EXECUTION_POLICY_TAG)
+                ->addTag('container.hot_path')
+                ->addTag('container.preload', [
+                    'class' => FiberPolicy::class,
+                ])
+            ;
+        }
     }
 
     /**

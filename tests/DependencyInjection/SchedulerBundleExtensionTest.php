@@ -121,8 +121,10 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use SchedulerBundle\Worker\WorkerRegistry;
@@ -1280,6 +1282,65 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(ExecutionPolicyRegistry::class, $container->getDefinition(ExecutionPolicyRegistry::class)->getTag('container.preload')[0]['class']);
     }
 
+    public function testExecutionPoliciesAreRegistered(): void
+    {
+        $container = $this->getContainer([
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'worker' => [
+                'mode' => 'default',
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition(DefaultPolicy::class));
+        self::assertCount(0, $container->getDefinition(DefaultPolicy::class)->getArguments());
+        self::assertCount(3, $container->getDefinition(DefaultPolicy::class)->getTags());
+        self::assertTrue($container->getDefinition(DefaultPolicy::class)->hasTag('scheduler.execution_policy'));
+        self::assertTrue($container->getDefinition(DefaultPolicy::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(DefaultPolicy::class)->hasTag('container.preload'));
+        self::assertSame(DefaultPolicy::class, $container->getDefinition(DefaultPolicy::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testExecutionPoliciesAreRegisteredWhenUsingFiber(): void
+    {
+        $container = $this->getContainer([
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'worker' => [
+                'mode' => 'fiber',
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition(FiberPolicy::class));
+        self::assertCount(0, $container->getDefinition(FiberPolicy::class)->getArguments());
+        self::assertCount(3, $container->getDefinition(FiberPolicy::class)->getTags());
+        self::assertTrue($container->getDefinition(FiberPolicy::class)->hasTag('scheduler.execution_policy'));
+        self::assertTrue($container->getDefinition(FiberPolicy::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(FiberPolicy::class)->hasTag('container.preload'));
+        self::assertSame(FiberPolicy::class, $container->getDefinition(FiberPolicy::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testWorkerRegistryCannotBeRegisteredWithoutBeingEnabled(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertFalse($container->hasDefinition(WorkerRegistry::class));
+    }
+
     public function testWorkerRegistryIsRegistered(): void
     {
         $container = $this->getContainer([
@@ -1290,6 +1351,9 @@ final class SchedulerBundleExtensionTest extends TestCase
             ],
             'tasks' => [],
             'lock_store' => null,
+            'worker' => [
+                'registry' => true,
+            ],
         ]);
 
         self::assertTrue($container->hasDefinition(WorkerRegistry::class));

@@ -1545,9 +1545,9 @@ final class WorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertFalse($worker->getConfiguration()->isRunning());
-        self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
-        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
-        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertNull($worker->getLastExecutedTask());
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
     /**

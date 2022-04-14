@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Worker;
 
 use DateTimeImmutable;
-use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -33,11 +32,9 @@ use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
-use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\FailedTask;
-use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
@@ -48,7 +45,9 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
-use SchedulerBundle\Worker\FiberWorker;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
+use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
+use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -77,12 +76,22 @@ final class FiberWorkerTest extends TestCase
      */
     public function testTaskCannotBeExecutedWithoutRunner(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([]), $watcher, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()), $logger);
+        $worker = new Worker(
+            new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])), new SchedulerMiddlewareStack([]), new EventDispatcher()),
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            $watcher,
+            new WorkerMiddlewareStack(),
+            $eventDispatcher,
+            new LockFactory(new InMemoryStore()),
+            $logger
+        );
 
         self::expectException(UndefinedRunnerException::class);
         self::expectExceptionMessage('No runner found');
@@ -96,14 +105,19 @@ final class FiberWorkerTest extends TestCase
     public function testWorkerCanBeConfigured(): void
     {
         $runner = $this->createMock(RunnerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([$runner]), $watcher, new WorkerMiddlewareStack([
+        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()), new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
@@ -122,6 +136,8 @@ final class FiberWorkerTest extends TestCase
         self::assertTrue($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->getConfiguration()->shouldRetrieveTasksLazily());
         self::assertFalse($worker->getConfiguration()->isStrictlyCheckingDate());
+        self::assertSame('default', $worker->getConfiguration()->getExecutionPolicy());
+        self::assertCount(1, $worker->getExecutionPolicyRegistry());
     }
 
     /**
@@ -136,10 +152,12 @@ final class FiberWorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), $eventDispatcher), new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, new NullLogger());
@@ -172,21 +190,21 @@ final class FiberWorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::never())->method('update');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(5))->method('dispatch');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new CallbackTaskRunner(),
             new ShellTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -216,15 +234,16 @@ final class FiberWorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::never())->method('getDueTasks');
-        $scheduler->expects(self::never())->method('update');
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -264,17 +283,21 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($secondTask));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($secondTask));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task, $secondTask]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler->schedule($task);
+        $scheduler->schedule($secondTask);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -305,17 +328,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone')->willReturn(new DateTimeZone('UTC'));
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -331,7 +357,7 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCannotBeExecutedWithErroredBeforeExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'before_executing' => fn (): bool => false,
+            'before_executing' => static fn (): bool => false,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -341,17 +367,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::never())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::never())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -369,11 +398,11 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCanBeExecutedWithErroredBeforeExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'before_executing' => fn (): bool => false,
+            'before_executing' => static fn (): bool => false,
         ]);
 
         $validTask = new NullTask('bar', [
-            'before_executing' => fn (): bool => true,
+            'before_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -383,17 +412,21 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($validTask));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($validTask));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task, $validTask]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
+        $scheduler->schedule($validTask);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -413,7 +446,7 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCanBeExecutedWithBeforeExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'before_executing' => fn (): bool => true,
+            'before_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -423,17 +456,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -465,17 +501,21 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::exactly(2))->method('startTracking')->withConsecutive([$task], [$validTask]);
         $tracker->expects(self::exactly(2))->method('endTracking')->withConsecutive([$task], [$validTask]);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task, $validTask]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
+        $scheduler->schedule($validTask);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(3));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -495,7 +535,7 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCanBeExecutedWithAfterExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'after_executing' => fn (): bool => true,
+            'after_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -505,17 +545,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -547,23 +590,17 @@ final class FiberWorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker(
-            $scheduler,
-            new RunnerRegistry([
-                new NullTaskRunner(),
-            ]),
-            new TaskExecutionTracker(new Stopwatch()),
-            new WorkerMiddlewareStack([
-                new TaskCallbackMiddleware(),
-                new NotifierMiddleware(),
-                new SingleRunTaskMiddleware($scheduler),
-                new TaskUpdateMiddleware($scheduler),
-                new TaskLockBagMiddleware($lockFactory),
-            ]),
-            $eventDispatcher,
-            $lockFactory,
-            $logger
-        );
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
+            new TaskCallbackMiddleware(),
+            new NotifierMiddleware(),
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
 
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
@@ -599,23 +636,17 @@ final class FiberWorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker(
-            $scheduler,
-            new RunnerRegistry([
-                new NullTaskRunner(),
-            ]),
-            new TaskExecutionTracker(new Stopwatch()),
-            new WorkerMiddlewareStack([
-                new TaskCallbackMiddleware(),
-                new NotifierMiddleware(),
-                new SingleRunTaskMiddleware($scheduler),
-                new TaskUpdateMiddleware($scheduler),
-                new TaskLockBagMiddleware($lockFactory),
-            ]),
-            $eventDispatcher,
-            $lockFactory,
-            $logger
-        );
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
+            new TaskCallbackMiddleware(),
+            new NotifierMiddleware(),
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
 
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
@@ -638,17 +669,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -678,18 +712,21 @@ final class FiberWorkerTest extends TestCase
         $secondRunner->expects(self::once())->method('support')->willReturn(false);
         $secondRunner->expects(self::never())->method('run')->willReturn(new Output($shellTask, null));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$shellTask]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($shellTask);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(2));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             $runner,
             $secondRunner,
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -716,17 +753,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::never())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             $runner,
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
@@ -760,17 +800,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -805,17 +848,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -845,17 +891,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -890,17 +939,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskCallbackMiddleware(),
@@ -927,17 +979,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new MaxExecutionMiddleware(),
             new SingleRunTaskMiddleware($scheduler),
@@ -964,17 +1019,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new MaxExecutionMiddleware(new RateLimiterFactory([
                 'id' => 'foo',
@@ -1008,17 +1066,20 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new MaxExecutionMiddleware(new RateLimiterFactory([
                 'id' => 'foo',
@@ -1057,15 +1118,19 @@ final class FiberWorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
@@ -1094,14 +1159,20 @@ final class FiberWorkerTest extends TestCase
         $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
         $runner->expects(self::once())->method('run')->with($task)->willThrowException(new RuntimeException('An error occurred'));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
@@ -1136,28 +1207,28 @@ final class FiberWorkerTest extends TestCase
             ],
         ]);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList(
-            [
-                new NullTask('bar', [
-                    'access_lock_bag' => new AccessLockBag(new Key('bar')),
-                    'state' => TaskInterface::PAUSED,
-                ]),
-                new NullTask('foo', [
-                    'access_lock_bag' => new AccessLockBag(new Key('foo')),
-                    'state' => TaskInterface::PAUSED,
-                ]),
-            ]
-        ));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+
+        $scheduler->schedule(new NullTask('bar', [
+            'access_lock_bag' => new AccessLockBag(new Key('bar')),
+            'state' => TaskInterface::PAUSED,
+        ]));
+        $scheduler->schedule(new NullTask('foo', [
+            'access_lock_bag' => new AccessLockBag(new Key('foo')),
+            'state' => TaskInterface::PAUSED,
+        ]));
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1181,29 +1252,26 @@ final class FiberWorkerTest extends TestCase
         $shellTask = new ShellTask('bar', ['ls', '-al']);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$chainedTask, $shellTask]));
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($chainedTask);
+        $scheduler->schedule($shellTask);
 
         $eventDispatcher = new EventDispatcher();
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker(
-            $scheduler,
-            new RunnerRegistry([
-                new ChainedTaskRunner(),
-                new ShellTaskRunner(),
-            ]),
-            new TaskExecutionTracker(new Stopwatch()),
-            new WorkerMiddlewareStack([
-                new SingleRunTaskMiddleware($scheduler),
-                new TaskUpdateMiddleware($scheduler),
-                new TaskLockBagMiddleware($lockFactory),
-            ]),
-            $eventDispatcher,
-            $lockFactory,
-            $logger
-        );
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new ChainedTaskRunner(),
+            new ShellTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
         $worker->execute(WorkerConfiguration::create());
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
@@ -1241,33 +1309,26 @@ final class FiberWorkerTest extends TestCase
         $shellTask = new ShellTask('bar', ['ls', '-al']);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())
-            ->method('getDueTasks')
-            ->with(self::equalTo(true))
-            ->willReturn(new LazyTaskList(new TaskList([$chainedTask, $shellTask])))
-        ;
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($chainedTask);
+        $scheduler->schedule($shellTask);
 
         $eventDispatcher = new EventDispatcher();
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker(
-            $scheduler,
-            new RunnerRegistry([
-                new ChainedTaskRunner(),
-                new ShellTaskRunner(),
-            ]),
-            new TaskExecutionTracker(new Stopwatch()),
-            new WorkerMiddlewareStack([
-                new SingleRunTaskMiddleware($scheduler),
-                new TaskUpdateMiddleware($scheduler),
-                new TaskLockBagMiddleware($lockFactory),
-            ]),
-            $eventDispatcher,
-            $lockFactory,
-            $logger
-        );
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new ChainedTaskRunner(),
+            new ShellTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($scheduler),
+            new TaskUpdateMiddleware($scheduler),
+            new TaskLockBagMiddleware($lockFactory),
+        ]), $eventDispatcher, $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
         $configuration->mustRetrieveTasksLazily(true);
@@ -1315,14 +1376,17 @@ final class FiberWorkerTest extends TestCase
         $task->setScheduledAt(new DateTimeImmutable('- 1 month'));
         $task->setSingleRun(true);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new CommandTaskRunner($application),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1347,23 +1411,22 @@ final class FiberWorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(6))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('getExecutionDelay')->willReturn(5000);
-        $task->expects(self::once())->method('getAccessLockBag')->willReturn(new AccessLockBag(new Key('foo')));
+        $task = new NullTask('foo', [
+            'execution_delay' => 5000,
+            'access_lock_bag' => new AccessLockBag(new Key('foo')),
+        ]);
 
-        $runner = $this->createMock(RunnerInterface::class);
-        $runner->expects(self::once())->method('support')->with(self::equalTo($task))->willReturn(true);
-        $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, Output::SUCCESS));
-
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([$task]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule($task);
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
-            $runner,
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1387,14 +1450,16 @@ final class FiberWorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList());
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1419,16 +1484,17 @@ final class FiberWorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new ShellTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1451,16 +1517,17 @@ final class FiberWorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('getTimezone');
-        $scheduler->expects(self::exactly(2))->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1478,20 +1545,23 @@ final class FiberWorkerTest extends TestCase
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertFalse($worker->getConfiguration()->isRunning());
-        self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
-        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
-        self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertNull($worker->getLastExecutedTask());
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
+        self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
     }
 
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
     public function testWorkerCanBePaused(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
@@ -1513,8 +1583,10 @@ final class FiberWorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1529,15 +1601,18 @@ final class FiberWorkerTest extends TestCase
         self::assertFalse($worker->isRunning());
     }
 
+    /**
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
     public function testWorkerCanBeRestarted(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
@@ -1553,8 +1628,10 @@ final class FiberWorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1578,12 +1655,17 @@ final class FiberWorkerTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
@@ -1618,12 +1700,17 @@ final class FiberWorkerTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
+
+        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new FiberWorker($scheduler, new RunnerRegistry([
+        $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),

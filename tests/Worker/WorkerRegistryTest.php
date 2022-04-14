@@ -34,8 +34,4 @@ final class WorkerRegistryTest extends TestCase
 
         self::assertCount(1, $pool->getWorkers());
     }
-
-    public function testRegistryCanApplyToEachWorker(): void
-    {
-    }
 }

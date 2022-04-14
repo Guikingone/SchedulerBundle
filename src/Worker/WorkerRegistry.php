@@ -28,14 +28,6 @@ final class WorkerRegistry implements WorkerRegistryInterface
     /**
      * {@inheritdoc}
      */
-    public function walk(Closure $func): void
-    {
-        array_walk($this->workers, $func);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getWorkers(): iterable
     {
         return $this->workers;
