@@ -37,9 +37,9 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
     /**
      * {@inheritdoc}
      */
-    public function find(string $desiredPolicy): ExecutionPolicyInterface
+    public function find(string $policy): ExecutionPolicyInterface
     {
-        $list = $this->filter(static fn (ExecutionPolicyInterface $policy): bool => $policy->support($desiredPolicy));
+        $list = $this->filter(static fn (ExecutionPolicyInterface $executionPolicy): bool => $executionPolicy->support($policy));
         if (0 === $list->count()) {
             throw new InvalidArgumentException('No policy found for this task');
         }

@@ -82,9 +82,27 @@ final class Worker implements WorkerInterface
             return;
         }
 
-        $executionPolicy->execute($this, fn (): TaskListInterface => $this->getTasks($tasks), function (TaskInterface $task, TaskListInterface $taskList): void {
-            $this->handleTask($task, $taskList);
-        });
+        while (!$this->getConfiguration()->shouldStop()) {
+            $executionPolicy->execute(function () use ($tasks): TaskListInterface {
+                $toExecuteTasks = $this->getTasks($tasks);
+                if (0 === $toExecuteTasks->count() && !$this->getConfiguration()->isSleepingUntilNextMinute()) {
+                    $this->stop();
+                }
+
+                return $toExecuteTasks;
+            }, function (TaskInterface $task, TaskListInterface $taskList): void {
+                $this->handleTask($task, $taskList);
+            });
+
+            if ($this->configuration->shouldStop()) {
+                break;
+            }
+
+            if ($this->getConfiguration()->isSleepingUntilNextMinute()) {
+                $this->sleep();
+                $this->execute($this->configuration, ...$tasks);
+            }
+        }
 
         $this->eventDispatcher->dispatch(new WorkerStoppedEvent($this));
     }
@@ -201,6 +219,14 @@ final class Worker implements WorkerInterface
     public function getRunners(): RunnerRegistryInterface
     {
         return $this->runnerRegistry;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExecutionPolicyRegistry(): ExecutionPolicyRegistryInterface
+    {
+        return $this->executionPolicyRegistry;
     }
 
     /**

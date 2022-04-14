@@ -39,6 +39,7 @@
             "SchedulerBundle\\Pool\\": "src/Pool/",
             "SchedulerBundle\\Probe\\": "src/Probe/",
             "SchedulerBundle\\Runner\\": "src/Runner/",
+            "SchedulerBundle\\Runtime\\": "src/Runtime/",
             "SchedulerBundle\\SchedulePolicy\\": "src/SchedulePolicy/",
             "SchedulerBundle\\Serializer\\": "src/Serializer/",
             "SchedulerBundle\\Task\\": "src/Task/",
@@ -77,6 +78,7 @@
             "Tests\\SchedulerBundle\\Pool\\": "tests/Pool/",
             "Tests\\SchedulerBundle\\Probe\\": "tests/Probe/",
             "Tests\\SchedulerBundle\\Runner\\": "tests/Runner/",
+            "Tests\\SchedulerBundle\\Runtime\\": "tests/Runtime/",
             "Tests\\SchedulerBundle\\Runner\\Assets\\": "tests/Runner/Assets/",
             "Tests\\SchedulerBundle\\SchedulePolicy\\": "tests/SchedulePolicy/",
             "Tests\\SchedulerBundle\\Serializer\\": "tests/Serializer/",
@@ -144,6 +146,7 @@
         "symfony/messenger": "^5.4 || ^6.0",
         "symfony/notifier": "^5.4 || ^6.0",
         "symfony/rate-limiter": "^5.4 || ^6.0",
+        "symfony/runtime": "^5.4 || ^6.0",
         "thecodingmachine/safe": "^1.3.3"
     },
     "suggest": {

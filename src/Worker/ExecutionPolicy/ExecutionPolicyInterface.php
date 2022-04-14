@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
-use SchedulerBundle\Worker\WorkerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,7 +12,6 @@ use SchedulerBundle\Worker\WorkerInterface;
 interface ExecutionPolicyInterface
 {
     public function execute(
-        WorkerInterface $worker,
         Closure $fetchTaskListFunc,
         Closure $handleTaskFunc
     ): void;

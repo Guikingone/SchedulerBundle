@@ -40,6 +40,7 @@ use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -104,7 +105,9 @@ final class WorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), new ExecutionPolicyRegistry([]), $watcher, new WorkerMiddlewareStack([
+        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
@@ -123,6 +126,8 @@ final class WorkerTest extends TestCase
         self::assertTrue($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->getConfiguration()->shouldRetrieveTasksLazily());
         self::assertFalse($worker->getConfiguration()->isStrictlyCheckingDate());
+        self::assertSame('default', $worker->getConfiguration()->getExecutionPolicy());
+        self::assertCount(1, $worker->getExecutionPolicyRegistry());
     }
 
     /**
