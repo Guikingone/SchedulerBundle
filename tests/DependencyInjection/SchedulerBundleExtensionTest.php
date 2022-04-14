@@ -122,6 +122,7 @@ use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
@@ -181,6 +182,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
         self::assertFalse($container->getParameter('scheduler.probe_enabled'));
         self::assertFalse($container->getParameter('scheduler.pool_support'));
+        self::assertSame('default', $container->getParameter('scheduler.worker_mode'));
+        self::assertFalse($container->getParameter('scheduler.worker_registry'));
     }
 
     public function testInterfacesForAutoconfigureAreRegistered(): void
@@ -195,6 +198,7 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         $autoconfigurationInterfaces = $container->getAutoconfiguredInstanceof();
 
+        self::assertCount(18, $autoconfigurationInterfaces);
         self::assertArrayHasKey(RunnerInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[RunnerInterface::class]->hasTag('scheduler.runner'));
         self::assertArrayHasKey(TransportInterface::class, $autoconfigurationInterfaces);
@@ -229,6 +233,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[TaskBagInterface::class]->hasTag('scheduler.task_bag'));
         self::assertArrayHasKey(SchedulerAwareInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[SchedulerAwareInterface::class]->hasTag('scheduler.entry_point'));
+        self::assertArrayHasKey(ExecutionPolicyInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ExecutionPolicyInterface::class]->hasTag('scheduler.execution_policy'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void

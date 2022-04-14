@@ -201,7 +201,6 @@ final class SchedulerBundleExtension extends Extension
         $this->registerWorkerRegistry($container);
         $this->registerExecutionPolicyRegistry($container);
         $this->registerExecutionPolicies($container);
-        $this->registerWorkerRegistry($container);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
