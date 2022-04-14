@@ -65,6 +65,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
                 'shouldStop' => false,
                 'shouldRetrieveTasksLazily' => false,
                 'mustStrictlyCheckDate' => false,
+                'executionPolicy' => 'default',
             ],
         ]));
 
@@ -235,6 +236,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
                 'shouldStop' => false,
                 'shouldRetrieveTasksLazily' => false,
                 'mustStrictlyCheckDate' => false,
+                'executionPolicy' => 'default',
             ],
             'newWorker' => [
                 'executedTasksCount' => 0,
@@ -247,6 +249,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
                 'shouldStop' => false,
                 'shouldRetrieveTasksLazily' => false,
                 'mustStrictlyCheckDate' => false,
+                'executionPolicy' => 'default',
             ],
         ]));
 
@@ -278,6 +281,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
                 'shouldStop' => false,
                 'shouldRetrieveTasksLazily' => false,
                 'mustStrictlyCheckDate' => false,
+                'executionPolicy' => 'default',
             ],
             'newWorker' => [
                 'executedTasksCount' => 0,
@@ -290,6 +294,7 @@ final class WorkerLifecycleSubscriberTest extends TestCase
                 'shouldStop' => false,
                 'shouldRetrieveTasksLazily' => false,
                 'mustStrictlyCheckDate' => false,
+                'executionPolicy' => 'default',
             ],
         ]));
 

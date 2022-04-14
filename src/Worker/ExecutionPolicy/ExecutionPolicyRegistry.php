@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker\ExecutionPolicy;
 
-use ArrayIterator;
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
-use Traversable;
 use function count;
 use function current;
 use function is_array;
 use function iterator_to_array;
-use function reset;
-use function usort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -41,7 +37,7 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
     {
         $list = $this->filter(static fn (ExecutionPolicyInterface $executionPolicy): bool => $executionPolicy->support($policy));
         if (0 === $list->count()) {
-            throw new InvalidArgumentException('No policy found for this task');
+            throw new InvalidArgumentException(sprintf('No policy found for "%s"', $policy));
         }
 
         if (1 < $list->count()) {
@@ -75,34 +71,8 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
     /**
      * {@inheritdoc}
      */
-    public function usort(Closure $func): ExecutionPolicyRegistry
-    {
-        usort($this->policies, $func);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function reset(): ExecutionPolicyInterface
-    {
-        return reset($this->policies);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function count(): int
     {
         return count($this->policies);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): Traversable
-    {
-        return new ArrayIterator($this->policies);
     }
 }

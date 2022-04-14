@@ -196,6 +196,7 @@ final class MercureEventSubscriberTest extends TestCase
             'body' => [
                 'options' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,
@@ -230,6 +231,7 @@ final class MercureEventSubscriberTest extends TestCase
             'body' => [
                 'options' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,
@@ -266,6 +268,7 @@ final class MercureEventSubscriberTest extends TestCase
                 'lastExecutedTask' => 'foo',
                 'options' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,
@@ -305,6 +308,7 @@ final class MercureEventSubscriberTest extends TestCase
             'body' => [
                 'oldWorkerOptions' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,
@@ -317,6 +321,7 @@ final class MercureEventSubscriberTest extends TestCase
                 ],
                 'forkedWorkerOptions' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,
@@ -353,6 +358,7 @@ final class MercureEventSubscriberTest extends TestCase
                 'lastExecutedTask' => 'foo',
                 'options' => [
                     'executedTasksCount' => 0,
+                    'executionPolicy' => 'default',
                     'forkedFrom' => null,
                     'isFork' => false,
                     'isRunning' => false,

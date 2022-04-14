@@ -6,6 +6,7 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -13,16 +14,17 @@ use SchedulerBundle\Task\TaskInterface;
 final class DefaultPolicy implements ExecutionPolicyInterface
 {
     public function execute(
-        Closure $fetchTaskListFunc,
+        TaskListInterface $toExecuteTasks,
         Closure $handleTaskFunc
     ): void {
-        $toExecuteTasks = $fetchTaskListFunc();
-
         $toExecuteTasks->walk(static function (TaskInterface $task) use ($handleTaskFunc, $toExecuteTasks): void {
             $handleTaskFunc($task, $toExecuteTasks);
         });
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function support(string $policy): bool
     {
         return 'default' === $policy;

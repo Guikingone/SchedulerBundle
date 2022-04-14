@@ -12,13 +12,14 @@ use Symfony\Component\Runtime\RunnerInterface;
  */
 final class WorkerRunner implements RunnerInterface
 {
-    public function __construct(private WorkerInterface $worker) {}
+    public function __construct(private WorkerInterface $worker)
+    {
+    }
 
     /**
      * {@inheritdoc}
      */
     public function run(): int
     {
-
     }
 }

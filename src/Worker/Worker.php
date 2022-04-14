@@ -82,23 +82,21 @@ final class Worker implements WorkerInterface
             return;
         }
 
-        while (!$this->getConfiguration()->shouldStop()) {
-            $executionPolicy->execute(function () use ($tasks): TaskListInterface {
-                $toExecuteTasks = $this->getTasks($tasks);
-                if (0 === $toExecuteTasks->count() && !$this->getConfiguration()->isSleepingUntilNextMinute()) {
-                    $this->stop();
-                }
+        while (!$this->configuration->shouldStop()) {
+            $toExecuteTasks = $this->getTasks($tasks);
+            if (0 === $toExecuteTasks->count() && !$this->configuration->isSleepingUntilNextMinute()) {
+                $this->stop();
+            }
 
-                return $toExecuteTasks;
-            }, function (TaskInterface $task, TaskListInterface $taskList): void {
+            $executionPolicy->execute($toExecuteTasks, function (TaskInterface $task, TaskListInterface $taskList): void {
                 $this->handleTask($task, $taskList);
             });
 
-            if ($this->configuration->shouldStop()) {
+            if ($this->shouldStop($toExecuteTasks)) {
                 break;
             }
 
-            if ($this->getConfiguration()->isSleepingUntilNextMinute()) {
+            if ($this->configuration->isSleepingUntilNextMinute()) {
                 $this->sleep();
                 $this->execute($this->configuration, ...$tasks);
             }

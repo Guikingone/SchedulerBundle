@@ -6,6 +6,7 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,11 +17,9 @@ final class FiberPolicy implements ExecutionPolicyInterface
      * {@inheritdoc}
      */
     public function execute(
-        Closure $fetchTaskListFunc,
+        TaskListInterface $toExecuteTasks,
         Closure $handleTaskFunc
     ): void {
-        $toExecuteTasks = $fetchTaskListFunc();
-
         $toExecuteTasks->walk(function (TaskInterface $task) use ($toExecuteTasks, $handleTaskFunc): void {
             $fiber = new Fiber(function (TaskInterface $toExecuteTask) use ($toExecuteTasks, $handleTaskFunc): void {
                 $handleTaskFunc($toExecuteTask, $toExecuteTasks);

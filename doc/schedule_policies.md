@@ -1,6 +1,6 @@
-# Policies
+# Scheduling Policies
 
-Policies (also called `SchedulePolicies`) are the sort policies used by the transports to return tasks,
+Scheduling policies are the sort policies used by the transports to return tasks,
 the idea is to sort tasks when retrieving the full list in order to improve performances.
 
 The main entrypoint for using policies is the `execution_mode` option sent to every transport.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
+use SchedulerBundle\Task\TaskListInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -12,7 +13,7 @@ use Closure;
 interface ExecutionPolicyInterface
 {
     public function execute(
-        Closure $fetchTaskListFunc,
+        TaskListInterface $toExecuteTasks,
         Closure $handleTaskFunc
     ): void;
 

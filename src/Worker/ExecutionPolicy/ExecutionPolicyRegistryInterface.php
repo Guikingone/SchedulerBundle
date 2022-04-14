@@ -6,12 +6,11 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
 use Countable;
-use IteratorAggregate;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface ExecutionPolicyRegistryInterface extends Countable, IteratorAggregate
+interface ExecutionPolicyRegistryInterface extends Countable
 {
     /**
      * Return a {@see ExecutionPolicyInterface} that supports the @param string $policy.
@@ -21,8 +20,4 @@ interface ExecutionPolicyRegistryInterface extends Countable, IteratorAggregate
     public function filter(Closure $func): ExecutionPolicyRegistryInterface;
 
     public function current(): ExecutionPolicyInterface;
-
-    public function usort(Closure $func): ExecutionPolicyRegistryInterface;
-
-    public function reset(): ExecutionPolicyInterface;
 }
