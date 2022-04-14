@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Worker;
 
-use Closure;
-use function array_walk;
 use function count;
 use function is_array;
 use function iterator_to_array;

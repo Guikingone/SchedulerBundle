@@ -45,6 +45,7 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
 use SchedulerBundle\Worker\Worker;
@@ -122,6 +123,7 @@ final class FiberWorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
         $configuration->stop();
 
         $worker->execute($configuration);
@@ -136,7 +138,7 @@ final class FiberWorkerTest extends TestCase
         self::assertTrue($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->getConfiguration()->shouldRetrieveTasksLazily());
         self::assertFalse($worker->getConfiguration()->isStrictlyCheckingDate());
-        self::assertSame('default', $worker->getConfiguration()->getExecutionPolicy());
+        self::assertSame('fiber', $worker->getConfiguration()->getExecutionPolicy());
         self::assertCount(1, $worker->getExecutionPolicyRegistry());
     }
 
@@ -163,6 +165,7 @@ final class FiberWorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, new NullLogger());
 
         $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
         $configuration->setSleepDurationDelay(5);
 
         $worker->execute($configuration);
@@ -209,7 +212,11 @@ final class FiberWorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+
+        $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -250,6 +257,7 @@ final class FiberWorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
         $configuration->stop();
 
         $worker->execute($configuration);
@@ -303,7 +311,10 @@ final class FiberWorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertNull($task->getExecutionState());
         self::assertSame(TaskInterface::SUCCEED, $secondTask->getExecutionState());
@@ -346,7 +357,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -386,7 +400,10 @@ final class FiberWorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -432,7 +449,10 @@ final class FiberWorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertInstanceOf(FailedTask::class, $worker->getFailedTasks()->get('foo.failed'));
@@ -475,7 +495,10 @@ final class FiberWorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -521,7 +544,10 @@ final class FiberWorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertInstanceOf(FailedTask::class, $worker->getFailedTasks()->get('foo.failed'));
@@ -564,7 +590,10 @@ final class FiberWorkerTest extends TestCase
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -604,7 +633,10 @@ final class FiberWorkerTest extends TestCase
 
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
+
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
 
@@ -650,7 +682,10 @@ final class FiberWorkerTest extends TestCase
 
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
+
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -687,7 +722,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -731,7 +769,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
     }
@@ -770,7 +811,10 @@ final class FiberWorkerTest extends TestCase
         ]), $tracker, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         $failedTasks = $worker->getFailedTasks();
         self::assertCount(1, $failedTasks);
@@ -820,7 +864,10 @@ final class FiberWorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -868,7 +915,10 @@ final class FiberWorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -911,7 +961,10 @@ final class FiberWorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -959,7 +1012,10 @@ final class FiberWorkerTest extends TestCase
             new NotifierMiddleware($notifier),
             new TaskLockBagMiddleware($lockFactory, $logger),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertCount(0, $worker->getFailedTasks());
@@ -998,7 +1054,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -1045,7 +1104,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
     }
@@ -1093,7 +1155,9 @@ final class FiberWorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
         self::assertCount(1, $worker->getFailedTasks());
@@ -1135,7 +1199,10 @@ final class FiberWorkerTest extends TestCase
             new SingleRunTaskMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create(), $task);
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration, $task);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1177,7 +1244,9 @@ final class FiberWorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create(), $task);
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration, $task);
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
@@ -1234,7 +1303,10 @@ final class FiberWorkerTest extends TestCase
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertNull($worker->getLastExecutedTask());
     }
@@ -1266,13 +1338,17 @@ final class FiberWorkerTest extends TestCase
             new ChainedTaskRunner(),
             new ShellTaskRunner(),
         ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
             new FiberPolicy(),
         ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
-        $worker->execute(WorkerConfiguration::create());
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
         self::assertSame(TaskInterface::SUCCEED, $chainedTask->getExecutionState());
@@ -1323,6 +1399,7 @@ final class FiberWorkerTest extends TestCase
             new ChainedTaskRunner(),
             new ShellTaskRunner(),
         ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
             new FiberPolicy(),
         ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
@@ -1331,8 +1408,8 @@ final class FiberWorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
         $configuration->mustRetrieveTasksLazily(true);
-
         $worker->execute($configuration);
 
         self::assertSame($shellTask, $worker->getLastExecutedTask());
@@ -1393,7 +1470,9 @@ final class FiberWorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertSame($task, $worker->getLastExecutedTask());
         self::assertNull($task->getAccessLockBag());
@@ -1434,7 +1513,9 @@ final class FiberWorkerTest extends TestCase
             new TaskExecutionMiddleware(),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame($task, $worker->getLastExecutedTask());
@@ -1467,7 +1548,9 @@ final class FiberWorkerTest extends TestCase
         ]), new EventDispatcher(), $lockFactory, $logger);
         self::assertSame(0, $worker->getConfiguration()->getExecutedTasksCount());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
@@ -1501,7 +1584,9 @@ final class FiberWorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(1, $worker->getFailedTasks());
         self::assertNull($worker->getLastExecutedTask());
@@ -1534,14 +1619,18 @@ final class FiberWorkerTest extends TestCase
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertFalse($worker->getConfiguration()->isRunning());
         self::assertInstanceOf(NullTask::class, $worker->getLastExecutedTask());
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertCount(0, $worker->getFailedTasks());
         self::assertFalse($worker->getConfiguration()->isRunning());
@@ -1595,7 +1684,10 @@ final class FiberWorkerTest extends TestCase
 
         self::assertFalse($worker->isRunning());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
+
         self::assertCount(0, $worker->getFailedTasks());
         self::assertSame(1, $worker->getConfiguration()->getExecutedTasksCount());
         self::assertFalse($worker->isRunning());
@@ -1641,7 +1733,9 @@ final class FiberWorkerTest extends TestCase
         self::assertFalse($worker->getConfiguration()->shouldStop());
         self::assertFalse($worker->isRunning());
 
-        $worker->execute(WorkerConfiguration::create());
+        $configuration = WorkerConfiguration::create();
+        $configuration->setExecutionPolicy('fiber');
+        $worker->execute($configuration);
 
         self::assertFalse($worker->isRunning());
         self::assertCount(0, $worker->getFailedTasks());
@@ -1665,12 +1759,14 @@ final class FiberWorkerTest extends TestCase
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
             new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
+        $worker->getConfiguration()->setExecutionPolicy('fiber');
 
         $barTask = new NullTask('bar');
         $randomTask = new NullTask('random');
@@ -1710,12 +1806,14 @@ final class FiberWorkerTest extends TestCase
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
             new FiberPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),
             new TaskLockBagMiddleware($lockFactory),
         ]), new EventDispatcher(), $lockFactory, $logger);
+        $worker->getConfiguration()->setExecutionPolicy('fiber');
 
         $barTask = new NullTask('bar');
         $randomTask = new NullTask('random');

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 use Closure;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Fiber;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
