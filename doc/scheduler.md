@@ -171,6 +171,16 @@ the default `Scheduler`, when enabled via the configuration, each action is perf
 
 The scheduler still available to injection via [SchedulerInterface](../src/SchedulerInterface.php).
 
+To enable it, just configure the `scheduler`:
+
+```yaml
+scheduler_bundle:
+    scheduler:
+        mode: 'fiber'
+
+    # ...
+```
+
 ## SchedulerAware
 
 _Introduced in `0.9`_

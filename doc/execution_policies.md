@@ -2,7 +2,15 @@
 
 Execution policies are the policies used by the worker to execute tasks.
 
-// TODO
+The execution policy is configured via the `worker`:
+
+```yaml
+scheduler_bundle:
+    # ...
+
+    worker:
+        mode: 'default'
+```
 
 Supported policies:
 
@@ -15,11 +23,16 @@ Extending the policies:
 
 ## DefaultPolicy
 
-// TODO
+The [DefaultPolicy](../src/Worker/ExecutionPolicy/DefaultPolicy.php) is the default policy used by the worker.
+
+It executes the tasks one by one in the order they are received.
 
 ## FiberPolicy
 
-// TODO
+The [FiberPolicy](../src/Worker/ExecutionPolicy/FiberPolicy.php) uses [Fibers](https://www.php.net/manual/en/language.fibers.php) to execute tasks,
+a fiber is created for each task.
+
+It executes the tasks one by one in the order they are received.
 
 ## Creating a custom execution policy
 
