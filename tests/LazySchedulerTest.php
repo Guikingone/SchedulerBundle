@@ -35,6 +35,8 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use stdClass;
@@ -674,6 +676,8 @@ final class LazySchedulerTest extends TestCase
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
         ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($scheduler),
             new TaskUpdateMiddleware($scheduler),

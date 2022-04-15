@@ -18,6 +18,8 @@ use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
 use Throwable;
 
 /**
@@ -114,6 +116,13 @@ interface WorkerInterface
      * Return the runners available in the worker.
      */
     public function getRunners(): RunnerRegistryInterface;
+
+    /**
+     * Return the available execution policies.
+     *
+     * @return ExecutionPolicyRegistryInterface<int, ExecutionPolicyInterface>
+     */
+    public function getExecutionPolicyRegistry(): ExecutionPolicyRegistryInterface;
 
     /**
      * Return the configuration of the worker currently used.

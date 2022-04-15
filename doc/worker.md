@@ -80,23 +80,7 @@ a [WorkerForkedEvent](../src/Event/WorkerForkedEvent.php) is dispatched.
 
 ## Using fibers
 
-_Introduced in `0.9`_
-
-Since PHP `8.1`, you can use fibers to "fork" the current process and create an isolated process
-that can execute some logic.
-
-Thanks to the [FiberWorker](../src/Worker/FiberWorker.php), you can use fibers to execute tasks, 
-you can enable it via the configuration:
-
-```yaml
-scheduler_bundle:
-    # ...
-
-    worker:
-        mode: 'fiber'
-```
-
-**PS: Keep in mind that a fiber is created for each task to execute.**
+See [Execution policies](execution_policies.md).
 
 ## Extending
 

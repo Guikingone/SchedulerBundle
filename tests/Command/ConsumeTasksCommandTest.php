@@ -22,6 +22,8 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -434,7 +436,11 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -474,7 +480,11 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -513,7 +523,11 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -553,7 +567,11 @@ final class ConsumeTasksCommandTest extends TestCase
         $runner->expects(self::once())->method('support')->willReturn(true);
         $runner->expects(self::once())->method('run')->with(self::equalTo($task))->willReturn(new Output($task, 'Success output'));
 
-        $worker = new Worker($scheduler, new RunnerRegistry([$runner]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            $runner,
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([

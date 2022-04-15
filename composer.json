@@ -39,6 +39,7 @@
             "SchedulerBundle\\Pool\\": "src/Pool/",
             "SchedulerBundle\\Probe\\": "src/Probe/",
             "SchedulerBundle\\Runner\\": "src/Runner/",
+            "SchedulerBundle\\Runtime\\": "src/Runtime/",
             "SchedulerBundle\\SchedulePolicy\\": "src/SchedulePolicy/",
             "SchedulerBundle\\Serializer\\": "src/Serializer/",
             "SchedulerBundle\\Task\\": "src/Task/",
@@ -50,7 +51,8 @@
             "SchedulerBundle\\Test\\Constraint\\Scheduler\\": "src/Test/Constraint/Scheduler/",
             "SchedulerBundle\\Transport\\": "src/Transport/",
             "SchedulerBundle\\Transport\\Configuration\\": "src/Transport/Configuration/",
-            "SchedulerBundle\\Worker\\": "src/Worker/"
+            "SchedulerBundle\\Worker\\": "src/Worker/",
+            "SchedulerBundle\\Worker\\ExecutionPolicy\\": "src/Worker/ExecutionPolicy"
         }
     },
     "autoload-dev": {
@@ -76,6 +78,7 @@
             "Tests\\SchedulerBundle\\Pool\\": "tests/Pool/",
             "Tests\\SchedulerBundle\\Probe\\": "tests/Probe/",
             "Tests\\SchedulerBundle\\Runner\\": "tests/Runner/",
+            "Tests\\SchedulerBundle\\Runtime\\": "tests/Runtime/",
             "Tests\\SchedulerBundle\\Runner\\Assets\\": "tests/Runner/Assets/",
             "Tests\\SchedulerBundle\\SchedulePolicy\\": "tests/SchedulePolicy/",
             "Tests\\SchedulerBundle\\Serializer\\": "tests/Serializer/",

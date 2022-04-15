@@ -42,6 +42,8 @@ final class NullTaskTest extends TestCase
         self::assertNull($nullTask->getExecutionRelativeDeadline());
         self::assertNull($nullTask->getMaxRetries());
         self::assertNull($nullTask->getScheduledAt());
+        self::assertNull($nullTask->getMaxDuration());
+        self::assertSame(0, $nullTask->getPriority());
     }
 
     public function testTaskCannotBeCreatedWithInvalidArrivalTime(): void
@@ -561,6 +563,7 @@ final class NullTaskTest extends TestCase
 
         $bag = $nullTask->getAfterSchedulingNotificationBag();
 
+        self::assertInstanceOf(NotificationTaskBag::class, $bag);
         self::assertSame($notificationTaskBag, $bag);
         self::assertSame($notification, $bag->getNotification());
         self::assertContains($recipient, $bag->getRecipients());
@@ -684,6 +687,15 @@ final class NullTaskTest extends TestCase
         self::assertNull($nullTask->getDescription());
         self::assertFalse($nullTask->isSingleRun());
         self::assertInstanceOf(DateTimeImmutable::class, $nullTask->getScheduledAt());
+    }
+
+    public function testTaskCanBeCreatedWithPriority(): void
+    {
+        $nullTask = new NullTask('foo', [
+            'priority' => 10,
+        ]);
+
+        self::assertSame(10, $nullTask->getPriority());
     }
 
     /**

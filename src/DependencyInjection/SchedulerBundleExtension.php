@@ -119,9 +119,15 @@ use SchedulerBundle\Transport\RoundRobinTransportFactory;
 use SchedulerBundle\Transport\TransportFactory;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use SchedulerBundle\Worker\FiberWorker;
+use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
+use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
+use SchedulerBundle\Worker\WorkerRegistry;
+use SchedulerBundle\Worker\WorkerRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
@@ -162,6 +168,8 @@ final class SchedulerBundleExtension extends Extension
     private const SCHEDULER_SCHEDULE_POLICY = 'scheduler.schedule_policy';
     private const TRANSPORT_CONFIGURATION_TAG = 'scheduler.configuration';
     private const TRANSPORT_CONFIGURATION_FACTORY_TAG = 'scheduler.configuration_factory';
+    private const EXECUTION_POLICY_TAG = 'scheduler.execution_policy';
+    private const WORKER_TAG = 'scheduler.worker';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -190,6 +198,9 @@ final class SchedulerBundleExtension extends Extension
         $this->registerSubscribers($container);
         $this->registerTracker($container);
         $this->registerWorker($container);
+        $this->registerWorkerRegistry($container);
+        $this->registerExecutionPolicyRegistry($container);
+        $this->registerExecutionPolicies($container);
         $this->registerTasks($container, $config);
         $this->registerDoctrineBridge($container, $config);
         $this->registerRedisBridge($container);
@@ -211,6 +222,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
         $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
+        $container->setParameter('scheduler.worker_registry', $configuration['worker']['registry']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -221,7 +233,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(TransportConfigurationInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_TAG);
         $container->registerForAutoconfiguration(ConfigurationFactoryInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG);
         $container->registerForAutoconfiguration(PolicyInterface::class)->addTag(self::SCHEDULER_SCHEDULE_POLICY);
-        $container->registerForAutoconfiguration(WorkerInterface::class)->addTag('scheduler.worker');
+        $container->registerForAutoconfiguration(WorkerInterface::class)->addTag(self::WORKER_TAG);
         $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
         $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
         $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
@@ -232,6 +244,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
         $container->registerForAutoconfiguration(SchedulerAwareInterface::class)->addTag('scheduler.entry_point');
+        $container->registerForAutoconfiguration(ExecutionPolicyInterface::class)->addTag(self::EXECUTION_POLICY_TAG);
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
@@ -1047,17 +1060,18 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorker(ContainerBuilder $container): void
     {
-        $container->register('scheduler.worker', Worker::class)
+        $container->register(Worker::class, Worker::class)
             ->setArguments([
                 new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(ExecutionPolicyRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
-            ->addTag('scheduler.worker')
+            ->addTag(self::WORKER_TAG)
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
             ])
@@ -1066,26 +1080,57 @@ final class SchedulerBundleExtension extends Extension
                 'class' => Worker::class,
             ])
         ;
-        $container->setAlias(WorkerInterface::class, 'scheduler.worker');
+        $container->setAlias(WorkerInterface::class, Worker::class);
+    }
+
+    private function registerWorkerRegistry(ContainerBuilder $container): void
+    {
+        if (!$container->getParameter('scheduler.worker_registry')) {
+            return;
+        }
+
+        $container->register(WorkerRegistry::class, WorkerRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::WORKER_TAG),
+            ])
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => WorkerRegistry::class,
+            ])
+        ;
+        $container->setAlias(WorkerRegistryInterface::class, WorkerRegistry::class);
+    }
+
+    private function registerExecutionPolicyRegistry(ContainerBuilder $container): void
+    {
+        $container->register(ExecutionPolicyRegistry::class, ExecutionPolicyRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::EXECUTION_POLICY_TAG),
+            ])
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => ExecutionPolicyRegistry::class,
+            ])
+        ;
+        $container->setAlias(ExecutionPolicyRegistryInterface::class, ExecutionPolicyRegistry::class);
+    }
+
+    private function registerExecutionPolicies(ContainerBuilder $container): void
+    {
+        $container->register(DefaultPolicy::class, DefaultPolicy::class)
+            ->addTag(self::EXECUTION_POLICY_TAG)
+            ->addTag('container.hot_path')
+            ->addTag('container.preload', [
+                'class' => DefaultPolicy::class,
+            ])
+        ;
 
         if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
-            $container->register('scheduler.worker', FiberWorker::class)
-                ->setArguments([
-                    new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                ])
-                ->addTag('scheduler.worker')
-                ->addTag('monolog.logger', [
-                    'channel' => 'scheduler',
-                ])
+            $container->register(FiberPolicy::class, FiberPolicy::class)
+                ->addTag(self::EXECUTION_POLICY_TAG)
                 ->addTag('container.hot_path')
                 ->addTag('container.preload', [
-                    'class' => FiberWorker::class,
+                    'class' => FiberPolicy::class,
                 ])
             ;
         }

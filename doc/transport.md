@@ -208,7 +208,7 @@ scheduler_bundle:
 
 _Introduced in `0.9`_
 
-The [FiberTransport](../src/Transport/FiberTransport.php) allows to perform actions using native fibers.
+The [FiberTransport](../src/Transport/FiberTransport.php) allows performing actions using native fibers.
 
 ### Usage
 

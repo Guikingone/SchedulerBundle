@@ -47,6 +47,15 @@ final class WorkerConfigurationTest extends TestCase
         self::assertSame(1, $configuration->getExecutedTasksCount());
     }
 
+    public function testConfigurationCanDefineTheExecutionPolicy(): void
+    {
+        $configuration = WorkerConfiguration::create();
+        self::assertSame('default', $configuration->getExecutionPolicy());
+
+        $configuration->setExecutionPolicy('fiber');
+        self::assertSame('fiber', $configuration->getExecutionPolicy());
+    }
+
     public function testConfigurationCanSetTheWorkerHasBeenForked(): void
     {
         $configuration = WorkerConfiguration::create();
