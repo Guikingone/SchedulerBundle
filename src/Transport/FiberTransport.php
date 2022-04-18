@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,6 +24,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function get(string $name, bool $lazy = false): TaskInterface
     {
@@ -31,6 +34,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function list(bool $lazy = false): TaskListInterface
     {
@@ -39,6 +44,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function create(TaskInterface $task): void
     {
@@ -49,6 +56,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function update(string $name, TaskInterface $updatedTask): void
     {
@@ -59,6 +68,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function delete(string $name): void
     {
@@ -69,6 +80,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function pause(string $name): void
     {
@@ -79,6 +92,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function resume(string $name): void
     {
@@ -89,6 +104,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function clear(): void
     {
@@ -99,6 +116,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function getOptions(): array
     {

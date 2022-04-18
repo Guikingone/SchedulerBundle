@@ -375,8 +375,11 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         self::assertTrue($container->hasDefinition(FiberTransportFactory::class));
         self::assertFalse($container->getDefinition(FiberTransportFactory::class)->isPublic());
-        self::assertCount(1, $container->getDefinition(FiberTransportFactory::class)->getArguments());
+        self::assertCount(2, $container->getDefinition(FiberTransportFactory::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(FiberTransportFactory::class)->getArgument(0));
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberTransportFactory::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(FiberTransportFactory::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(FiberTransportFactory::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(FiberTransportFactory::class)->hasTag('scheduler.transport_factory'));
         self::assertTrue($container->getDefinition(FiberTransportFactory::class)->hasTag('container.preload'));
         self::assertSame(FiberTransportFactory::class, $container->getDefinition(FiberTransportFactory::class)->getTag('container.preload')[0]['class']);
@@ -550,6 +553,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame('scheduler.scheduler', (string) $container->getDefinition(LazyScheduler::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(LazyScheduler::class)->getArgument(0)->getInvalidBehavior());
         self::assertFalse($container->getDefinition(LazyScheduler::class)->isPublic());
+        self::assertTrue($container->getDefinition(LazyScheduler::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(LazyScheduler::class)->hasTag('container.preload'));
         self::assertSame(LazyScheduler::class, $container->getDefinition(LazyScheduler::class)->getTag('container.preload')[0]['class']);
     }
@@ -615,6 +619,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(FiberScheduler::class)->getArgument(1));
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(FiberScheduler::class)->getArgument(1)->getInvalidBehavior());
         self::assertFalse($container->getDefinition(FiberScheduler::class)->isPublic());
+        self::assertTrue($container->getDefinition(FiberScheduler::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(FiberScheduler::class)->hasTag('container.preload'));
         self::assertSame(FiberScheduler::class, $container->getDefinition(FiberScheduler::class)->getTag('container.preload')[0]['class']);
     }
@@ -1324,7 +1329,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         ]);
 
         self::assertTrue($container->hasDefinition(FiberPolicy::class));
-        self::assertCount(0, $container->getDefinition(FiberPolicy::class)->getArguments());
+        self::assertCount(1, $container->getDefinition(FiberPolicy::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberPolicy::class)->getArgument(0));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(FiberPolicy::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(FiberPolicy::class)->getArgument(0)->getInvalidBehavior());
         self::assertCount(3, $container->getDefinition(FiberPolicy::class)->getTags());
         self::assertTrue($container->getDefinition(FiberPolicy::class)->hasTag('scheduler.execution_policy'));
         self::assertTrue($container->getDefinition(FiberPolicy::class)->hasTag('container.hot_path'));

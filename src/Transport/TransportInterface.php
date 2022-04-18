@@ -68,7 +68,7 @@ interface TransportInterface
     public function clear(): void;
 
     /**
-     * @return array<string, mixed|int|float|string|bool|array|null>
+     * @return array<string, mixed>
      */
     public function getOptions(): array;
 }

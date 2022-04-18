@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -18,8 +20,11 @@ final class FiberTransportFactory implements TransportFactoryInterface
     /**
      * @param TransportFactoryInterface[] $factories
      */
-    public function __construct(private iterable $factories)
-    {
+    public function __construct(
+        private iterable $factories,
+        private ?LoggerInterface $logger = null
+    ) {
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -38,7 +43,10 @@ final class FiberTransportFactory implements TransportFactoryInterface
 
             $dsn = Dsn::fromString($dsn->getOptions()[0]);
 
-            return new FiberTransport($factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator));
+            return new FiberTransport(
+                $factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator),
+                $this->logger
+            );
         }
 
         throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));

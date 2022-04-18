@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport\Configuration;
 use Closure;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -22,6 +23,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function init(array $options, array $extraOptions = []): void
     {
@@ -32,6 +35,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function set(string $key, $value): void
     {
@@ -42,6 +47,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function update(string $key, $newValue): void
     {
@@ -52,6 +59,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function get(string $key): mixed
     {
@@ -60,6 +69,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function remove(string $key): void
     {
@@ -70,6 +81,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function walk(Closure $func): ConfigurationInterface
     {
@@ -78,6 +91,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function map(Closure $func): array
     {
@@ -86,6 +101,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function toArray(): array
     {
@@ -94,6 +111,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function clear(): void
     {
@@ -104,6 +123,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function count(): int
     {

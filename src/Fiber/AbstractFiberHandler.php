@@ -22,10 +22,10 @@ abstract class AbstractFiberHandler
 
     protected function handleOperationViaFiber(Closure $func): mixed
     {
-        $fiber = new Fiber(static function (Closure $func): void {
+        $fiber = new Fiber(static function (Closure $func): mixed {
             $value = $func();
 
-            Fiber::suspend($value);
+            return Fiber::suspend($value);
         });
 
         try {

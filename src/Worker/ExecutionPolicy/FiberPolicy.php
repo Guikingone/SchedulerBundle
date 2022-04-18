@@ -8,6 +8,7 @@ use Closure;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -16,6 +17,8 @@ final class FiberPolicy extends AbstractFiberHandler implements ExecutionPolicyI
 {
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function execute(
         TaskListInterface $toExecuteTasks,
