@@ -43,6 +43,7 @@ use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\FilesystemTransport;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -87,9 +88,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasks(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -107,9 +108,9 @@ final class FiberSchedulerTest extends TestCase
             'timezone' => new DateTimeZone('Europe/Paris'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -126,9 +127,9 @@ final class FiberSchedulerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -148,9 +149,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasksWithBeforeCallback(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -174,9 +175,9 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -201,9 +202,9 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -228,9 +229,9 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::never())->method('send');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -255,9 +256,9 @@ final class FiberSchedulerTest extends TestCase
         $notifier = $this->createMock(NotifierInterface::class);
         $notifier->expects(self::once())->method('send')->with(self::equalTo($notification), $recipient);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -289,9 +290,9 @@ final class FiberSchedulerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -309,9 +310,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasksWithAfterCallback(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
@@ -336,9 +337,9 @@ final class FiberSchedulerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->with(new TaskToExecuteMessage($task))->willReturn(new Envelope(new stdClass()));
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
 
@@ -362,9 +363,9 @@ final class FiberSchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new TaskScheduledEvent($task)));
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher, $bus));
 
@@ -400,9 +401,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCannotBeScheduledTwice(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -424,9 +425,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -453,9 +454,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -480,9 +481,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -510,9 +511,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -534,9 +535,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testDueTasksCanBeReturnedWithSpecificFilter(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -554,9 +555,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testLazyDueTasksCanBeReturnedWithSpecificFilter(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
         $scheduler->schedule($task);
@@ -582,9 +583,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -618,9 +619,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -657,9 +658,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -694,9 +695,9 @@ final class FiberSchedulerTest extends TestCase
 
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -721,9 +722,9 @@ final class FiberSchedulerTest extends TestCase
     {
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -750,9 +751,9 @@ final class FiberSchedulerTest extends TestCase
     {
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -779,9 +780,9 @@ final class FiberSchedulerTest extends TestCase
     {
         $scheduler = new FiberScheduler(new Scheduler(
             'UTC',
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
             new SchedulerMiddlewareStack(),
@@ -808,9 +809,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUnScheduled(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -828,9 +829,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUnScheduledAndLazilyRetrieved(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -890,9 +891,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenRetrieved(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -913,9 +914,9 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenLazilyRetrieved(TaskInterface $task): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -941,9 +942,9 @@ final class FiberSchedulerTest extends TestCase
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
 
@@ -1006,9 +1007,9 @@ final class FiberSchedulerTest extends TestCase
             'timezone' => new DateTimeZone('UTC'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1029,9 +1030,9 @@ final class FiberSchedulerTest extends TestCase
             'timezone' => new DateTimeZone('UTC'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1054,9 +1055,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 2 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1076,9 +1077,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 2 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1097,9 +1098,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 2 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1122,9 +1123,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('+ 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1144,9 +1145,9 @@ final class FiberSchedulerTest extends TestCase
             'execution_end_date' => '+ 10 minutes',
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1170,9 +1171,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1195,9 +1196,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1220,9 +1221,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1245,9 +1246,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1270,9 +1271,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1295,9 +1296,9 @@ final class FiberSchedulerTest extends TestCase
             'last_execution' => new DateTimeImmutable('- 10 minutes'),
         ]);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1420,9 +1421,9 @@ final class FiberSchedulerTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher()));
 
@@ -1468,7 +1469,7 @@ final class FiberSchedulerTest extends TestCase
         $pdoConnection = new PDO(sprintf('sqlite://%s/tasks.db', sys_get_temp_dir()));
         $pdoConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher()));
 
@@ -1491,7 +1492,7 @@ final class FiberSchedulerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()), $logger);
 
@@ -1513,7 +1514,7 @@ final class FiberSchedulerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()), $logger);
 
@@ -1535,7 +1536,7 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanReturnNextDueTask(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1556,7 +1557,7 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanReturnNextDueTaskAsynchronously(): void
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1582,7 +1583,7 @@ final class FiberSchedulerTest extends TestCase
     {
         $task = new NullTask('foo');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
@@ -1599,7 +1600,7 @@ final class FiberSchedulerTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::never())->method('addListener');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher));
 
@@ -1617,7 +1618,7 @@ final class FiberSchedulerTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), $eventDispatcher));
 
@@ -1703,16 +1704,16 @@ final class FiberSchedulerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         yield 'InMemoryTransport' => [
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
         ];
         yield 'FilesystemTransport' => [
-            new FilesystemTransport([
+            new FilesystemTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], $serializer, new SchedulePolicyOrchestrator([
+            ]), $serializer, new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ]), __DIR__ . '/.assets'),
         ];
