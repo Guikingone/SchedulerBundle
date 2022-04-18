@@ -20,10 +20,6 @@ final class FailOverTransport extends AbstractCompoundTransport
      */
     private SplObjectStorage $failedTransports;
 
-    /**
-     * @param TransportInterface[] $transports
-     * @param array<string, mixed> $options
-     */
     public function __construct(
         TransportRegistryInterface $registry,
         ConfigurationInterface $configuration

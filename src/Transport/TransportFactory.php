@@ -23,13 +23,8 @@ final class TransportFactory
     }
 
     /**
-     * @param string                              $dsn
      * @param array<string|int, mixed>            $options
-     * @param ConfigurationInterface              $configuration
-     * @param SerializerInterface                 $serializer
-     * @param SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
      *
-     * @return TransportInterface
      */
     public function createTransport(
         string $dsn,

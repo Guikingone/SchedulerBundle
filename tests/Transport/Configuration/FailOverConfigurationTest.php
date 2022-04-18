@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationRegistry;
 use SchedulerBundle\Transport\Configuration\FailOverConfiguration;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 
@@ -18,7 +19,9 @@ final class FailOverConfigurationTest extends TestCase
 {
     public function testTransportCannotSetAValueWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
+            new InMemoryConfiguration(),
+        ]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -28,9 +31,9 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanSetValue(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $failOverConfiguration->set('foo', 'bar');
 
@@ -39,16 +42,16 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanSetValueWithAFailingConfiguration(): void
     {
-        $failingTransport = $this->createMock(ConfigurationInterface::class);
-        $failingTransport->expects(self::once())->method('set')
+        $failingConfiguration = $this->createMock(ConfigurationInterface::class);
+        $failingConfiguration->expects(self::once())->method('set')
             ->with(self::equalTo('foo'), self::equalTo('bar'))
             ->willThrowException(new InvalidArgumentException('An error occurred'))
         ;
 
-        $failOverConfiguration = new FailOverConfiguration([
-            $failingTransport,
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
+            $failingConfiguration,
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $failOverConfiguration->set('foo', 'bar');
         self::assertSame('bar', $failOverConfiguration->get('foo'));
@@ -56,7 +59,7 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCannotUpdateAValueWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -66,9 +69,9 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanUpdateValue(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $failOverConfiguration->set('foo', 'bar');
         self::assertSame('bar', $failOverConfiguration->get('foo'));
@@ -79,7 +82,7 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCannotRetrieveValueWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -89,9 +92,9 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanRetrieveValue(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         self::assertNull($failOverConfiguration->get('foo'));
 
@@ -102,7 +105,7 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCannotRemoveValueWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -112,9 +115,9 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanRemoveValue(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $failOverConfiguration->set('foo', 'bar');
         self::assertSame('bar', $failOverConfiguration->get('foo'));
@@ -125,7 +128,7 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCannotRetrieveOptionsWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([]);
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -135,9 +138,9 @@ final class FailOverConfigurationTest extends TestCase
 
     public function testTransportCanRetrieveOptions(): void
     {
-        $failOverConfiguration = new FailOverConfiguration([
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $failOverConfiguration->set('foo', 'bar');
         self::assertArrayHasKey('foo', $failOverConfiguration->toArray());

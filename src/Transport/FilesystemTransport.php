@@ -51,7 +51,7 @@ final class FilesystemTransport extends AbstractTransport
             $tasks->add($this->get(strtr($singleFinder->getFilename(), ['.json' => ''])));
         }
 
-        $list = $this->orchestrator->sort($this->getExecutionMode(), $tasks);
+        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $tasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

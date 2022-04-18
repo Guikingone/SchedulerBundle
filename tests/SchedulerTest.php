@@ -129,7 +129,7 @@ final class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -151,7 +151,7 @@ final class SchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -177,7 +177,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -204,7 +204,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -231,7 +231,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -258,7 +258,7 @@ final class SchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ])), new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
@@ -1668,6 +1668,7 @@ final class SchedulerTest extends TestCase
 
     /**
      * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getPoolConfiguration()}
      */
     public function testSchedulerPoolConfigurationIsAvailable(): void
     {
@@ -1720,16 +1721,16 @@ final class SchedulerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         yield 'InMemoryTransport' => [
-            new InMemoryTransport([
+            new InMemoryTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], new SchedulePolicyOrchestrator([
+            ]), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])),
         ];
         yield 'FilesystemTransport' => [
-            new FilesystemTransport([
+            new FilesystemTransport(new InMemoryConfiguration([
                 'execution_mode' => 'first_in_first_out',
-            ], $serializer, new SchedulePolicyOrchestrator([
+            ]), $serializer, new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ]), __DIR__ . '/.assets'),
         ];

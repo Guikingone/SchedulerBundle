@@ -10,7 +10,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
-use function count;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -21,6 +20,7 @@ abstract class AbstractCompoundTransport extends AbstractTransport implements Co
         protected TransportRegistryInterface $registry,
         protected ConfigurationInterface $configuration
     ) {
+        parent::__construct($configuration);
     }
 
     /**
@@ -120,7 +120,7 @@ abstract class AbstractCompoundTransport extends AbstractTransport implements Co
      */
     public function count(): int
     {
-        return count($this->transports);
+        return $this->registry->count();
     }
 
     /**

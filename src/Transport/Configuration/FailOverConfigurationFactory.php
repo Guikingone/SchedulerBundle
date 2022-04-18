@@ -6,7 +6,7 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -14,16 +14,10 @@ use function strpos;
 final class FailOverConfigurationFactory extends AbstractCompoundConfigurationFactory
 {
     /**
-     * @var ConfigurationFactoryInterface[]
-     */
-    private iterable $factories;
-
-    /**
      * @param ConfigurationFactoryInterface[] $factories
      */
-    public function __construct(iterable $factories)
+    public function __construct(private iterable $factories)
     {
-        $this->factories = $factories;
     }
 
     /**
@@ -39,6 +33,6 @@ final class FailOverConfigurationFactory extends AbstractCompoundConfigurationFa
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://fo') || 0 === strpos($dsn, 'configuration://failover');
+        return str_starts_with($dsn, 'configuration://fo') || str_starts_with($dsn, 'configuration://failover');
     }
 }

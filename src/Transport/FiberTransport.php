@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -17,7 +18,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 {
     public function __construct(
         private TransportInterface $transport,
-        ?LoggerInterface $logger = null
+        protected ?LoggerInterface $logger = null
     ) {
         parent::__construct($logger);
     }
@@ -119,8 +120,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function getOptions(): array
+    public function getConfiguration(): ConfigurationInterface
     {
-        return $this->handleOperationViaFiber(fn (): array =>  $this->transport->getOptions());
+        return $this->handleOperationViaFiber(fn (): ConfigurationInterface =>  $this->transport->getConfiguration());
     }
 }

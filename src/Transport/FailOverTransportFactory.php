@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function str_starts_with;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -37,7 +38,7 @@ final class FailOverTransportFactory extends AbstractCompoundTransportFactory
         ]);
 
         return new FailOverTransport(
-            new TransportRegistry($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator)),
+            new TransportRegistry($this->handleTransportDsn(' || ', $dsn, $this->transportFactories, $options, $configuration, $serializer, $schedulePolicyOrchestrator)),
             $configuration
         );
     }

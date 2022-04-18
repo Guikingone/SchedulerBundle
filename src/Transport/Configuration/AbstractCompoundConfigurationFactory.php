@@ -18,10 +18,7 @@ use function sprintf;
 abstract class AbstractCompoundConfigurationFactory implements ConfigurationFactoryInterface
 {
     /**
-     * @param string                          $delimiter
-     * @param Dsn                             $dsn
      * @param ConfigurationFactoryInterface[] $factories
-     * @param SerializerInterface             $serializer
      *
      * @return ConfigurationInterface[]
      */

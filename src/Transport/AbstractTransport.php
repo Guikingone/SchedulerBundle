@@ -19,11 +19,8 @@ abstract class AbstractTransport implements TransportInterface
         'execution_mode' => 'first_in_first_out',
     ];
 
-    protected ConfigurationInterface $configuration;
-
-    public function __construct(ConfigurationInterface $configuration)
+    public function __construct(protected ConfigurationInterface $configuration)
     {
-        $this->configuration = $configuration;
     }
 
     protected function defineOptions(array $options = [], array $additionalOptions = []): void

@@ -8,6 +8,7 @@ use Closure;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
@@ -19,7 +20,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 {
     public function __construct(
         private SchedulerInterface $scheduler,
-        ?LoggerInterface $logger = null
+        protected ?LoggerInterface $logger = null
     ) {
         parent::__construct($logger);
     }
@@ -160,5 +161,15 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
         return $this->handleOperationViaFiber(function (): void {
             $this->scheduler->getTimezone();
         });
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration
+    {
+        return $this->handleOperationViaFiber(fn (): SchedulerConfiguration => $this->scheduler->getPoolConfiguration());
     }
 }

@@ -28,7 +28,7 @@ final class InMemoryConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->options[$key] = $value;
     }

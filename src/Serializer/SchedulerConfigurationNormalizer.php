@@ -19,21 +19,8 @@ use function array_map;
  */
 final class SchedulerConfigurationNormalizer implements NormalizerInterface, DenormalizerInterface
 {
-    private TaskNormalizer $taskNormalizer;
-    private DateTimeZoneNormalizer $dateTimeZoneNormalizer;
-    private DateTimeNormalizer $dateTimeNormalizer;
-    private ObjectNormalizer $objectNormalizer;
-
-    public function __construct(
-        TaskNormalizer $taskNormalizer,
-        DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        DateTimeNormalizer $dateTimeNormalizer,
-        ObjectNormalizer $objectNormalizer
-    ) {
-        $this->taskNormalizer = $taskNormalizer;
-        $this->dateTimeZoneNormalizer = $dateTimeZoneNormalizer;
-        $this->dateTimeNormalizer = $dateTimeNormalizer;
-        $this->objectNormalizer = $objectNormalizer;
+    public function __construct(private TaskNormalizer $taskNormalizer, private DateTimeZoneNormalizer $dateTimeZoneNormalizer, private DateTimeNormalizer $dateTimeNormalizer, private ObjectNormalizer $objectNormalizer)
+    {
     }
 
     /**

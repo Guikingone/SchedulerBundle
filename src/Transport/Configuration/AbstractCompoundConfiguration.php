@@ -18,7 +18,7 @@ abstract class AbstractCompoundConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->execute(static function (ConfigurationInterface $configuration) use ($key, $value): void {
             $configuration->set($key, $value);
@@ -28,7 +28,7 @@ abstract class AbstractCompoundConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function update(string $key, mixed $newValue): void
     {
         $this->execute(static function (ConfigurationInterface $configuration) use ($key, $newValue): void {
             $configuration->update($key, $newValue);
@@ -38,9 +38,9 @@ abstract class AbstractCompoundConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
-        return $this->execute(static fn (ConfigurationInterface $configuration) => $configuration->get($key));
+        return $this->execute(static fn (ConfigurationInterface $configuration): mixed => $configuration->get($key));
     }
 
     /**

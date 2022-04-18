@@ -19,10 +19,11 @@ use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 abstract class AbstractExternalTransport extends AbstractTransport
 {
     public function __construct(
-        ConfigurationInterface $configuration,
+        protected ConfigurationInterface $configuration,
         protected ConnectionInterface $connection,
         private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
+        parent::__construct($configuration);
     }
 
     /**

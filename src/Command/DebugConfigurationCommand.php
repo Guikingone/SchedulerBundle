@@ -17,14 +17,10 @@ use function sprintf;
  */
 final class DebugConfigurationCommand extends Command
 {
-    private ConfigurationInterface $configuration;
-
     protected static $defaultName = 'scheduler:debug:configuration';
 
-    public function __construct(ConfigurationInterface $configuration)
+    public function __construct(private ConfigurationInterface $configuration)
     {
-        $this->configuration = $configuration;
-
         parent::__construct();
     }
 

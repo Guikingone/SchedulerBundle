@@ -37,7 +37,7 @@ final class RoundRobinTransportFactory extends AbstractCompoundTransportFactory
         ]);
 
         return new RoundRobinTransport(
-            new TransportRegistry($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator),
+            new TransportRegistry($this->handleTransportDsn(' && ', $dsn, $this->transportFactories, $options, $configuration, $serializer, $schedulePolicyOrchestrator)),
             $configuration
         );
     }

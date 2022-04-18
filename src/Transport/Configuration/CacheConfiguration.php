@@ -30,7 +30,7 @@ final class CacheConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         if ($this->pool->hasItem($key)) {
             throw new InvalidArgumentException(sprintf('The key "%s" already exist, consider using %s::update()', $key, self::class));

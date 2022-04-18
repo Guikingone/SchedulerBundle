@@ -22,18 +22,18 @@ use function sprintf;
  */
 final class Connection implements ConnectionInterface
 {
-    private Redis $connection;
+    public \Redis $connection;
     private string $list;
 
     public function __construct(
         ConfigurationInterface $configuration,
-        SerializerInterface $serializer,
+        private SerializerInterface $serializer,
         ?Redis $redis = null
     ) {
         $this->connection = $redis ?? new Redis();
         $this->connection->connect($configuration->get('host'), $configuration->get('port'), $configuration->get('timeout'));
 
-        if (0 !== strpos($this->list = $configuration->get('list'), '_')) {
+        if (!str_starts_with($this->list = $configuration->get('list'), '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 

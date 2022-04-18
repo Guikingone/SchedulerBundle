@@ -24,15 +24,10 @@ final class SchedulerDoctrineSchemaSubscriber implements EventSubscriber
      */
     private const PROCESSING_TABLE_FLAG = self::class.':processing';
 
-    private TransportInterface $transport;
-    private ConfigurationInterface $configuration;
-
     public function __construct(
-        TransportInterface $transport,
-        ConfigurationInterface $configuration
+        protected TransportInterface $transport,
+        protected ConfigurationInterface $configuration
     ) {
-        $this->transport = $transport;
-        $this->configuration = $configuration;
     }
 
     public function postGenerateSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void

@@ -30,20 +30,12 @@ use function sprintf;
  */
 final class Connection extends AbstractDoctrineConnection implements ConnectionInterface
 {
-    private ConfigurationInterface $configuration;
-    private SerializerInterface $serializer;
-    private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator;
-
     public function __construct(
-        ConfigurationInterface $configuration,
-        DbalConnection $dbalConnection,
-        SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        private ConfigurationInterface $configuration,
+        private DbalConnection $dbalConnection,
+        private SerializerInterface $serializer,
+        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->configuration = $configuration;
-        $this->serializer = $serializer;
-        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
-
         parent::__construct($dbalConnection);
     }
 
@@ -57,7 +49,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $statement = $this->executeQuery(
-            $existingTasksCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTasksCount->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTasksCount->getParameters(),
             $existingTasksCount->getParameterTypes()
         )->fetchOne();
@@ -67,7 +59,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         }
 
         try {
-            return $this->driverConnection->transactional(function (): TaskListInterface {
+            return $this->dbalConnection->transactional(function (): TaskListInterface {
                 $statement = $this->executeQuery($this->createQueryBuilder($this->configuration->get('table_name'), 't')->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
@@ -92,7 +84,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $statement = $this->executeQuery(
-            $existingTaskCount->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskCount->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskCount->getParameters(),
             $existingTaskCount->getParameterTypes()
         )->fetchOne();
@@ -102,14 +94,14 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         }
 
         try {
-            return $this->driverConnection->transactional(function () use ($taskName): TaskInterface {
+            return $this->dbalConnection->transactional(function () use ($taskName): TaskInterface {
                 $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
                 $queryBuilder->where($queryBuilder->expr()->eq('t.task_name', ':name'))
                     ->setParameter('name', $taskName, ParameterType::STRING)
                 ;
 
                 $statement = $this->executeQuery(
-                    $queryBuilder->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+                    $queryBuilder->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
                     $queryBuilder->getParameters(),
                     $queryBuilder->getParameterTypes()
                 );
@@ -138,7 +130,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $existingTask = $this->executeQuery(
-            $existingTaskQuery->getSQL().' '.$this->driverConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskQuery->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
         )->fetchOne();
@@ -148,7 +140,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         }
 
         try {
-            $this->driverConnection->transactional(function (DBALConnection $connection) use ($task): void {
+            $this->dbalConnection->transactional(function (DBALConnection $connection) use ($task): void {
                 $query = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
                     ->insert($this->configuration->get('table_name'))
                     ->values([
@@ -180,7 +172,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     public function update(string $taskName, TaskInterface $updatedTask): void
     {
         try {
-            $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName, $updatedTask): void {
+            $this->dbalConnection->transactional(function (DBALConnection $connection) use ($taskName, $updatedTask): void {
                 $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
                 $queryBuilder->update($this->configuration->get('table_name'))
                     ->set('body', ':body')
@@ -243,7 +235,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     public function delete(string $taskName): void
     {
         try {
-            $this->driverConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
+            $this->dbalConnection->transactional(function (DBALConnection $connection) use ($taskName): void {
                 $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't');
                 $queryBuilder->delete($this->configuration->get('table_name'))
                     ->where($queryBuilder->expr()->eq('task_name', ':name'))
@@ -271,7 +263,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     public function empty(): void
     {
         try {
-            $this->driverConnection->transactional(function (DBALConnection $connection): void {
+            $this->dbalConnection->transactional(function (DBALConnection $connection): void {
                 $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
                     ->delete($this->configuration->get('table_name'))
                 ;
@@ -288,7 +280,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function setup(): void
     {
-        $configuration = $this->driverConnection->getConfiguration();
+        $configuration = $this->dbalConnection->getConfiguration();
         $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
@@ -299,7 +291,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 
     public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
-        if ($dbalConnection !== $this->driverConnection) {
+        if ($dbalConnection !== $this->dbalConnection) {
             return;
         }
 
@@ -334,9 +326,9 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     protected function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
         try {
-            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
         } catch (Throwable $throwable) {
-            if ($this->driverConnection->isTransactionActive()) {
+            if ($this->dbalConnection->isTransactionActive()) {
                 throw $throwable;
             }
 
@@ -344,7 +336,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                 $this->setup();
             }
 
-            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
         }
     }
 }

@@ -38,7 +38,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->handleOperationViaFiber(function () use ($key, $value): void {
             $this->configuration->set($key, $value);

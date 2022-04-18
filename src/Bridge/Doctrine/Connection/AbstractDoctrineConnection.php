@@ -24,10 +24,8 @@ abstract class AbstractDoctrineConnection
     abstract protected function addTableToSchema(Schema $schema): void;
 
     /**
-     * @param string                                  $sql
      * @param array<int|string, mixed>                $parameters
      * @param array<int|string, int|string|Type|null> $types
-     *
      * @return mixed
      */
     abstract protected function executeQuery(string $sql, array $parameters = [], array $types = []);

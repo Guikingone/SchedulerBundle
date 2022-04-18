@@ -37,6 +37,7 @@ use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
@@ -76,21 +77,19 @@ final class WorkerTest extends TestCase
      */
     public function testTaskCannotBeExecutedWithoutRunner(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
 
         $worker = new Worker(
-            new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+            new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])), new SchedulerMiddlewareStack([]), new EventDispatcher()),
             new RunnerRegistry([]),
             new ExecutionPolicyRegistry([]),
             $watcher,
             new WorkerMiddlewareStack(),
-            $eventDispatcher,
+            new EventDispatcher(),
             new LockFactory(new InMemoryStore()),
-            $logger
+            new NullLogger()
         );
 
         self::expectException(UndefinedRunnerException::class);
@@ -104,22 +103,19 @@ final class WorkerTest extends TestCase
      */
     public function testWorkerCanBeConfigured(): void
     {
-        $runner = $this->createMock(RunnerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher()), new RunnerRegistry([
-            $runner,
+            new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
         ]), $watcher, new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
-        ]), $eventDispatcher, $lockFactory, $logger);
+        ]), new EventDispatcher(), $lockFactory, new NullLogger());
 
         $configuration = WorkerConfiguration::create();
         $configuration->stop();
@@ -152,7 +148,7 @@ final class WorkerTest extends TestCase
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
-        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $worker = new Worker(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), $eventDispatcher), new RunnerRegistry([
             new NullTaskRunner(),
@@ -190,7 +186,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
         $scheduler->schedule(new NullTask('foo'));
@@ -234,7 +230,7 @@ final class WorkerTest extends TestCase
         $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
@@ -283,7 +279,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($secondTask));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($secondTask));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
         $scheduler->schedule($task);
@@ -328,7 +324,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -367,7 +363,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::never())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::never())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -412,7 +408,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($validTask));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($validTask));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -456,7 +452,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -501,7 +497,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::exactly(2))->method('startTracking')->withConsecutive([$task], [$validTask]);
         $tracker->expects(self::exactly(2))->method('endTracking')->withConsecutive([$task], [$validTask]);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -545,7 +541,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -581,7 +577,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
@@ -628,7 +624,7 @@ final class WorkerTest extends TestCase
         $eventDispatcher = new EventDispatcher();
         $eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber(1));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
@@ -669,7 +665,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -712,7 +708,7 @@ final class WorkerTest extends TestCase
         $secondRunner->expects(self::once())->method('support')->willReturn(false);
         $secondRunner->expects(self::never())->method('run')->willReturn(new Output($shellTask, null));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($shellTask);
@@ -753,7 +749,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::never())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -800,7 +796,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -848,7 +844,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -891,7 +887,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -939,7 +935,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -979,7 +975,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking');
         $tracker->expects(self::once())->method('endTracking');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -1019,7 +1015,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -1066,7 +1062,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -1118,7 +1114,7 @@ final class WorkerTest extends TestCase
         $tracker->expects(self::once())->method('startTracking')->with(self::equalTo($task));
         $tracker->expects(self::once())->method('endTracking')->with(self::equalTo($task));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([]), new EventDispatcher());
 
@@ -1159,7 +1155,7 @@ final class WorkerTest extends TestCase
         $runner->expects(self::once())->method('support')->with($task)->willReturn(true);
         $runner->expects(self::once())->method('run')->with($task)->willThrowException(new RuntimeException('An error occurred'));
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1207,7 +1203,7 @@ final class WorkerTest extends TestCase
             ],
         ]);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1253,7 +1249,7 @@ final class WorkerTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($chainedTask);
@@ -1310,7 +1306,7 @@ final class WorkerTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($chainedTask);
@@ -1376,7 +1372,7 @@ final class WorkerTest extends TestCase
         $task->setScheduledAt(new DateTimeImmutable('- 1 month'));
         $task->setSingleRun(true);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -1416,7 +1412,7 @@ final class WorkerTest extends TestCase
             'access_lock_bag' => new AccessLockBag(new Key('foo')),
         ]);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule($task);
@@ -1450,7 +1446,7 @@ final class WorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1484,7 +1480,7 @@ final class WorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule(new NullTask('foo'));
@@ -1517,7 +1513,7 @@ final class WorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule(new NullTask('foo'));
@@ -1558,7 +1554,7 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule(new NullTask('foo'));
@@ -1609,7 +1605,7 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
         $scheduler->schedule(new NullTask('foo'));
@@ -1656,7 +1652,7 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 
@@ -1701,7 +1697,7 @@ final class WorkerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher());
 

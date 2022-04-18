@@ -18,18 +18,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class HttpScheduler implements SchedulerInterface
 {
-    private string $externalSchedulerEndpoint;
-    private HttpClientInterface $httpClient;
-    private SerializerInterface $serializer;
-
     public function __construct(
-        string $externalSchedulerEndpoint,
-        SerializerInterface $serializer,
-        ?HttpClientInterface $httpClient = null
+        private string $externalSchedulerEndpoint,
+        private SerializerInterface $serializer,
+        private ?HttpClientInterface $httpClient = null
     ) {
-        $this->serializer = $serializer;
-        $this->externalSchedulerEndpoint = $externalSchedulerEndpoint;
-
         $this->httpClient = $httpClient ?? HttpClient::create();
     }
 

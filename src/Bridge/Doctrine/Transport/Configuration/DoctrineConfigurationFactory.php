@@ -13,18 +13,14 @@ use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class DoctrineConfigurationFactory implements ConfigurationFactoryInterface
 {
-    private ConnectionRegistry $registry;
-
-    public function __construct(ConnectionRegistry $registry)
+    public function __construct(private ConnectionRegistry $registry)
     {
-        $this->registry = $registry;
     }
 
     /**
@@ -50,6 +46,6 @@ final class DoctrineConfigurationFactory implements ConfigurationFactoryInterfac
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://doctrine') || 0 === strpos($dsn, 'configuration://dbal');
+        return str_starts_with($dsn, 'configuration://doctrine') || str_starts_with($dsn, 'configuration://dbal');
     }
 }

@@ -59,7 +59,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
                     $event = $stopWatch->stop('quantum');
 
                     $duration = $event->getDuration() / 1000;
-                    if ($duration > ($this->registry->count() * $this->options['quantum'])) {
+                    if ($duration > ($this->registry->count() * $this->configuration->get('quantum'))) {
                         $this->sleepingTransports->attach($transport);
                     }
                 }

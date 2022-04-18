@@ -27,7 +27,7 @@ final class InMemoryTransport extends AbstractTransport
     private TaskListInterface $tasks;
 
     public function __construct(
-        private ConfigurationInterface $configuration,
+        protected ConfigurationInterface $configuration,
         private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
         $this->tasks = new TaskList();
@@ -52,7 +52,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface
     {
-        $list = $this->orchestrator->sort($this->getExecutionMode(), $this->tasks);
+        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $this->tasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

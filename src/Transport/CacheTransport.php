@@ -30,15 +30,11 @@ final class CacheTransport extends AbstractTransport
     private const TASK_LIST_ITEM_NAME = '_scheduler_task_list';
 
     public function __construct(
-        ConfigurationInterface $configuration,
-        CacheItemPoolInterface $cacheItemPool,
-        SerializerInterface $serializer,
-        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        protected ConfigurationInterface $configuration,
+        public CacheItemPoolInterface $pool,
+        public SerializerInterface $serializer,
+        public SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->pool = $cacheItemPool;
-        $this->serializer = $serializer;
-        $this->schedulePolicyOrchestrator = $schedulePolicyOrchestrator;
-
         parent::__construct($configuration);
 
         $this->boot();

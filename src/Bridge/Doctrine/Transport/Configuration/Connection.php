@@ -23,14 +23,10 @@ use function array_map;
  */
 final class Connection extends AbstractDoctrineConnection implements ExternalConnectionInterface
 {
-    private bool $autoSetup;
-
     public function __construct(
-        DbalConnection $connection,
-        bool $autoSetup
+        private DbalConnection $connection,
+        private bool $autoSetup
     ) {
-        $this->autoSetup = $autoSetup;
-
         parent::__construct($connection);
     }
 
@@ -71,7 +67,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function remove(string $key): void
     {
         try {
-            $this->driverConnection->transactional(function (DbalConnection $connection) use ($key): void {
+            $this->connection->transactional(function (DbalConnection $connection) use ($key): void {
                 $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc');
                 $queryBuilder->delete('_symfony_scheduler_configuration')
                     ->where($queryBuilder->expr()->eq('key_name', ':key'))
@@ -116,7 +112,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function clear(): void
     {
         try {
-            $this->driverConnection->transactional(function (DbalConnection $connection): void {
+            $this->connection->transactional(function (DbalConnection $connection): void {
                 $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc')
                     ->delete('scc')
                 ;
@@ -134,7 +130,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function toArray(): array
     {
         try {
-            return $this->driverConnection->transactional(function (DbalConnection $connection): int {
+            return $this->connection->transactional(function (DbalConnection $connection): int {
                 $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc');
 
                 $statement = $connection->executeQuery($queryBuilder->getSQL());
@@ -157,7 +153,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function count(): int
     {
         try {
-            return $this->driverConnection->transactional(function (DbalConnection $connection): int {
+            return $this->connection->transactional(function (DbalConnection $connection): int {
                 $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc')
                     ->select('COUNT(scc.key_name) AS keys')
                 ;
@@ -203,9 +199,9 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     protected function executeQuery(string $sql, array $parameters = [], array $types = [])
     {
         try {
-            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->connection->executeQuery($sql, $parameters, $types);
         } catch (Throwable $throwable) {
-            if ($this->driverConnection->isTransactionActive()) {
+            if ($this->connection->isTransactionActive()) {
                 throw $throwable;
             }
 
@@ -213,7 +209,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                 $this->setup();
             }
 
-            return $this->driverConnection->executeQuery($sql, $parameters, $types);
+            return $this->connection->executeQuery($sql, $parameters, $types);
         }
     }
 
@@ -222,7 +218,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function configureSchema(Schema $schema, DBALConnection $dbalConnection): void
     {
-        if ($dbalConnection !== $this->driverConnection) {
+        if ($dbalConnection !== $this->connection) {
             return;
         }
 
@@ -238,7 +234,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     private function setup(): void
     {
-        $configuration = $this->driverConnection->getConfiguration();
+        $configuration = $this->connection->getConfiguration();
         $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();

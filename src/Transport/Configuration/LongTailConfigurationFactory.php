@@ -6,7 +6,6 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
-use function strpos;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -14,16 +13,10 @@ use function strpos;
 final class LongTailConfigurationFactory extends AbstractCompoundConfigurationFactory
 {
     /**
-     * @var ConfigurationFactoryInterface[]
-     */
-    private iterable $factories;
-
-    /**
      * @param ConfigurationFactoryInterface[] $factories
      */
-    public function __construct(iterable $factories)
+    public function __construct(private iterable $factories)
     {
-        $this->factories = $factories;
     }
 
     /**
@@ -39,6 +32,6 @@ final class LongTailConfigurationFactory extends AbstractCompoundConfigurationFa
      */
     public function support(string $dsn): bool
     {
-        return 0 === strpos($dsn, 'configuration://longtail') || 0 === strpos($dsn, 'configuration://lt');
+        return str_starts_with($dsn, 'configuration://longtail') || str_starts_with($dsn, 'configuration://lt');
     }
 }

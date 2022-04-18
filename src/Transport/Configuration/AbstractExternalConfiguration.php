@@ -11,17 +11,14 @@ use Closure;
  */
 abstract class AbstractExternalConfiguration extends AbstractConfiguration implements ConfigurationInterface
 {
-    protected ExternalConnectionInterface $connection;
-
-    public function __construct(ExternalConnectionInterface $connection)
+    public function __construct(protected ExternalConnectionInterface $connection)
     {
-        $this->connection = $connection;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->connection->set($key, $value);
     }
@@ -37,7 +34,7 @@ abstract class AbstractExternalConfiguration extends AbstractConfiguration imple
     /**
      * {@inheritdoc}
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->connection->get($key);
     }

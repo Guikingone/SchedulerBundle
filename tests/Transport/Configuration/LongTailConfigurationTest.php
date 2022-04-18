@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Transport\Configuration;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationRegistry;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Configuration\LongTailConfiguration;
 
@@ -17,7 +18,7 @@ final class LongTailConfigurationTest extends TestCase
 {
     public function testTransportCannotSetAValueWithoutConfigurations(): void
     {
-        $configuration = new LongTailConfiguration([]);
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -27,9 +28,9 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCanSetValue(): void
     {
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $configuration->set('foo', 'bar');
 
@@ -41,10 +42,10 @@ final class LongTailConfigurationTest extends TestCase
         $loadedConfiguration = $this->createMock(ConfigurationInterface::class);
         $loadedConfiguration->expects(self::exactly(2))->method('count')->willReturn(10);
 
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             $loadedConfiguration,
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $configuration->set('foo', 'bar');
         self::assertSame('bar', $configuration->get('foo'));
@@ -52,7 +53,7 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCannotUpdateAValueWithoutConfigurations(): void
     {
-        $configuration = new LongTailConfiguration([]);
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -62,9 +63,9 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCanUpdateValue(): void
     {
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $configuration->set('foo', 'bar');
         self::assertSame('bar', $configuration->get('foo'));
@@ -75,7 +76,7 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCannotRetrieveValueWithoutConfigurations(): void
     {
-        $configuration = new LongTailConfiguration([]);
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -85,9 +86,9 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCanRetrieveValue(): void
     {
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         self::assertNull($configuration->get('foo'));
 
@@ -98,7 +99,7 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCannotRemoveValueWithoutConfigurations(): void
     {
-        $configuration = new LongTailConfiguration([]);
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -108,9 +109,9 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCanRemoveValue(): void
     {
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $configuration->set('foo', 'bar');
         self::assertSame('bar', $configuration->get('foo'));
@@ -121,7 +122,7 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCannotRetrieveOptionsWithoutConfigurations(): void
     {
-        $configuration = new LongTailConfiguration([]);
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');
@@ -131,9 +132,9 @@ final class LongTailConfigurationTest extends TestCase
 
     public function testTransportCanRetrieveOptions(): void
     {
-        $configuration = new LongTailConfiguration([
+        $configuration = new LongTailConfiguration(new ConfigurationRegistry([
             new InMemoryConfiguration(),
-        ]);
+        ]));
 
         $configuration->set('foo', 'bar');
         self::assertArrayHasKey('foo', $configuration->toArray());
