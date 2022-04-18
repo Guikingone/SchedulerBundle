@@ -19,8 +19,10 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
+use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Generator;
+use Throwable;
 
 /**
  * @requires PHP 8.1
@@ -41,6 +43,8 @@ final class FiberTransportFactoryTest extends TestCase
 
     /**
      * @dataProvider provideDsn
+     *
+     * @throws Throwable {@see TransportInterface::list()}
      */
     public function testFactoryReturnTransport(string $dsn): void
     {

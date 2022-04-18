@@ -387,6 +387,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(FiberTransportFactory::class, FiberTransportFactory::class)
             ->setArguments([
                 new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG)
@@ -495,6 +496,7 @@ final class SchedulerBundleExtension extends Extension
                     new Reference('scheduler.scheduler', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 ])
                 ->setPublic(false)
+                ->addTag('container.hot_path')
                 ->addTag('container.preload', [
                     'class' => LazyScheduler::class,
                 ])
@@ -509,6 +511,7 @@ final class SchedulerBundleExtension extends Extension
                     new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 ])
                 ->setPublic(false)
+                ->addTag('container.hot_path')
                 ->addTag('container.preload', [
                     'class' => FiberScheduler::class,
                 ])
@@ -1127,6 +1130,9 @@ final class SchedulerBundleExtension extends Extension
 
         if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
             $container->register(FiberPolicy::class, FiberPolicy::class)
+                ->setArguments([
+                    new Reference(LoggerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                ])
                 ->addTag(self::EXECUTION_POLICY_TAG)
                 ->addTag('container.hot_path')
                 ->addTag('container.preload', [

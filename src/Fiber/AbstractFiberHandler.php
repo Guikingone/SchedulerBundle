@@ -22,8 +22,8 @@ abstract class AbstractFiberHandler
 
     protected function handleOperationViaFiber(Closure $func): mixed
     {
-        $fiber = new Fiber(function (Closure $func): void {
-            $value = $func();
+        $fiber = new Fiber(function (Closure $operation): void {
+            $value = $operation();
 
             Fiber::suspend($value);
         });

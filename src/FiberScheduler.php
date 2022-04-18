@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -25,6 +26,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function schedule(TaskInterface $task): void
     {
@@ -35,6 +38,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function unschedule(string $taskName): void
     {
@@ -45,6 +50,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function yieldTask(string $name, bool $async = false): void
     {
@@ -55,6 +62,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
@@ -65,6 +74,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
@@ -75,6 +86,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function pause(string $taskName, bool $async = false): void
     {
@@ -85,6 +98,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function resume(string $taskName): void
     {
@@ -95,6 +110,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
@@ -103,6 +120,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
     {
@@ -111,6 +130,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function next(bool $lazy = false): TaskInterface
     {
@@ -119,6 +140,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function reboot(): void
     {
@@ -129,6 +152,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
     public function getTimezone(): DateTimeZone
     {
