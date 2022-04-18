@@ -19,9 +19,7 @@ final class FailOverConfigurationTest extends TestCase
 {
     public function testTransportCannotSetAValueWithoutConfigurations(): void
     {
-        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
-            new InMemoryConfiguration(),
-        ]));
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([]));
 
         self::expectException(ConfigurationException::class);
         self::expectExceptionMessage('No configuration found');

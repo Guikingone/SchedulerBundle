@@ -46,6 +46,7 @@ final class FilesystemTransport extends AbstractTransport
         $tasks = new TaskList();
         $finder = new Finder();
 
+        $this->filesystem->mkdir($this->options['path']);
         $finder->files()->in($this->configuration->get('path'))->name('*.json');
         foreach ($finder as $singleFinder) {
             $tasks->add($this->get(strtr($singleFinder->getFilename(), ['.json' => ''])));
