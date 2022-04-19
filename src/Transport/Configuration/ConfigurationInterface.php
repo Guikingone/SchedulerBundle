@@ -17,6 +17,9 @@ interface ConfigurationInterface extends Countable
      */
     public function init(array $options, array $extraOptions = []): void;
 
+    /**
+     * Set a new @param string $value stored via the @param string $key
+     */
     public function set(string $key, mixed $value): void;
 
     /**

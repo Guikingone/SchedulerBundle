@@ -1712,10 +1712,14 @@ final class FiberSchedulerTest extends TestCase
         ];
         yield 'FilesystemTransport' => [
             new FilesystemTransport(new InMemoryConfiguration([
-                'execution_mode' => 'first_in_first_out',
+                'path' => sys_get_temp_dir(),
+                'filename_mask' => '%s/_symfony_scheduler_/%s.json',
+            ], [
+                'path' => 'string',
+                'filename_mask' => 'string',
             ]), $serializer, new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
-            ]), __DIR__ . '/.assets'),
+            ])),
         ];
     }
 }

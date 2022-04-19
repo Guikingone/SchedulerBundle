@@ -16,6 +16,7 @@ use SchedulerBundle\SchedulePolicy\NicePolicy;
 use SchedulerBundle\SchedulePolicy\RoundRobinPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FiberTransportFactory;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
@@ -54,7 +55,7 @@ final class FiberTransportFactoryTest extends TestCase
             new InMemoryTransportFactory(),
         ]);
 
-        $transport = $factory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+        $transport = $factory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
             new BatchPolicy(),
             new DeadlinePolicy(),
             new ExecutionDurationPolicy(),

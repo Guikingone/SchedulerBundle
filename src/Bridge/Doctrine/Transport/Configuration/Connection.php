@@ -130,7 +130,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function toArray(): array
     {
         try {
-            return $this->connection->transactional(function (DbalConnection $connection): int {
+            return $this->connection->transactional(function (DbalConnection $connection): array {
                 $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc');
 
                 $statement = $connection->executeQuery($queryBuilder->getSQL());

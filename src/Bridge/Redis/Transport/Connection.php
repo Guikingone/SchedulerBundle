@@ -22,7 +22,7 @@ use function sprintf;
  */
 final class Connection implements ConnectionInterface
 {
-    public \Redis $connection;
+    public Redis $connection;
     private string $list;
 
     public function __construct(

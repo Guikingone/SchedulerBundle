@@ -18,7 +18,8 @@ use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerDoctrineSchemaSubscr
 use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfiguration;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
-use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -29,10 +30,10 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        $transport = $this->createMock(TransportInterface::class);
-        $configuration = $this->createMock(ConfigurationInterface::class);
-
-        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber($transport, $configuration);
+        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber(
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([])),
+            new InMemoryConfiguration()
+        );
 
         self::assertContains(ToolEvents::postGenerateSchema, $schedulerTransportDoctrineSchemaSubscriber->getSubscribedEvents());
         self::assertContains(Events::onSchemaCreateTable, $schedulerTransportDoctrineSchemaSubscriber->getSubscribedEvents());
@@ -40,9 +41,6 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
 
     public function testPostGenerateSchemaCannotBeCalledWithoutValidTransport(): void
     {
-        $invalidTransport = $this->createMock(TransportInterface::class);
-        $configuration = $this->createMock(ConfigurationInterface::class);
-
         $transport = $this->createMock(DoctrineTransport::class);
         $transport->expects(self::never())->method('configureSchema');
 
@@ -50,23 +48,25 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
         $event->expects(self::never())->method('getEntityManager');
         $event->expects(self::never())->method('getSchema');
 
-        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber($invalidTransport, $configuration);
+        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber(
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([])),
+            new InMemoryConfiguration()
+        );
         $schedulerTransportDoctrineSchemaSubscriber->postGenerateSchema($event);
     }
 
     public function testPostGenerateSchemaCannotBeCalledWithoutValidConfiguration(): void
     {
-        $invalidTransport = $this->createMock(TransportInterface::class);
-        $configuration = $this->createMock(ConfigurationInterface::class);
-
         $transport = $this->createMock(DoctrineTransport::class);
         $transport->expects(self::never())->method('configureSchema');
 
         $event = $this->createMock(GenerateSchemaEventArgs::class);
         $event->expects(self::never())->method('getEntityManager');
         $event->expects(self::never())->method('getSchema');
-
-        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber($invalidTransport, $configuration);
+        $schedulerTransportDoctrineSchemaSubscriber = new SchedulerDoctrineSchemaSubscriber(
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([])),
+            new InMemoryConfiguration()
+        );
         $schedulerTransportDoctrineSchemaSubscriber->postGenerateSchema($event);
     }
 

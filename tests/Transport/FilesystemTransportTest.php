@@ -76,7 +76,7 @@ final class FilesystemTransportTest extends TestCase
             'path' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), null);
+        ]));
     }
 
     public function testTransportCanBeConfigured(): void
@@ -91,7 +91,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         self::assertArrayHasKey('path', $filesystemTransport->getConfiguration()->toArray());
         self::assertSame(getcwd().'/assets', $filesystemTransport->getConfiguration()->get('path'));
@@ -133,7 +133,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $nullTask = new NullTask('foo', [
             'scheduled_at' => new DateTimeImmutable(),
@@ -198,7 +198,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create($nullTask);
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/bar.json'));

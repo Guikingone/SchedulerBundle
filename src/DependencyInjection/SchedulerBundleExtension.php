@@ -1528,11 +1528,7 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    /**
-     * @param ContainerBuilder     $container
-     * @param array<string, mixed> $config
-     */
-    private function registerPoolSupport(ContainerBuilder $container, array $config): void
+    private function registerPoolSupport(ContainerBuilder $container): void
     {
         if (!$container->getParameter('scheduler.pool_support')) {
             return;

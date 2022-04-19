@@ -16,7 +16,7 @@ final class DoctrineConfiguration extends AbstractExternalConfiguration implemen
 {
     public function __construct(
         DbalConnection $connection,
-        bool $autoSetup = false
+        protected bool $autoSetup = false
     ) {
         parent::__construct(new Connection($connection, $autoSetup));
     }
