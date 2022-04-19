@@ -17,24 +17,19 @@ interface ExternalConnectionInterface extends Countable
      */
     public function init(array $options, array $extraOptions = []): void;
 
-    /**
-     * @param mixed $value
-     */
-    public function set(string $key, $value): void;
+    public function set(string $key, mixed $value): void;
 
     /**
      * Update a configuration @param string $key
      *
      * @param mixed $newValue The new value stored in the configuration.
      */
-    public function update(string $key, $newValue): void;
+    public function update(string $key, mixed $newValue): void;
 
     /**
      * Return a configuration value using the @param string $key.
-     *
-     * @return string|bool|array|object|int|null
      */
-    public function get(string $key);
+    public function get(string $key): mixed;
 
     /**
      * Remove the option stored under the @param string $key.
@@ -48,6 +43,8 @@ interface ExternalConnectionInterface extends Countable
 
     /**
      * Apply the @param Closure $func to each option.
+     *
+     * The options are not updated once the Closure has been applied.
      *
      * @return array<string, mixed>
      */

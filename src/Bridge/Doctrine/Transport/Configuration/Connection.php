@@ -10,19 +10,25 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Query\Expr;
 use SchedulerBundle\Bridge\Doctrine\Connection\AbstractDoctrineConnection;
 use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Transport\Configuration\ExternalConnectionInterface;
 use Throwable;
 use function array_map;
+use function array_walk;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class Connection extends AbstractDoctrineConnection implements ExternalConnectionInterface
 {
+    private const TABLE_NAME = '_scheduler_transport_configuration';
+
     public function __construct(
         private DbalConnection $connection,
         private bool $autoSetup
@@ -35,30 +41,124 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function init(array $options, array $extraOptions = []): void
     {
-        // TODO: Implement init() method.
+
+    }
+
+    public function set(string $key, mixed $value): void
+    {
+        $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
+        $existingTaskQuery = $qb->select((new Expr())->countDistinct('stc.id'))
+            ->where($qb->expr()->eq('stc.key_name', ':name'))
+            ->setParameter('name', $key, ParameterType::STRING)
+        ;
+
+        $existingTask = $this->executeQuery(
+            $existingTaskQuery->getSQL(),
+            $existingTaskQuery->getParameters(),
+            $existingTaskQuery->getParameterTypes()
+        )->fetchOne();
+
+        if (0 !== (int) $existingTask) {
+            return;
+        }
+
+        try {
+            $this->connection->transactional(function () use ($key, $value): void {
+                $query = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
+                    ->insert(self::TABLE_NAME)
+                    ->values([
+                        'key_name' => ':key',
+                        'key_value' => ':value',
+                    ])
+                    ->setParameter('key', $key, ParameterType::STRING)
+                    ->setParameter('value', $value)
+                ;
+
+                $statement = $this->executeQuery(
+                    $query->getSQL(),
+                    $query->getParameters(),
+                    $query->getParameterTypes()
+                );
+
+                if (false !== $statement->fetchOne()) {
+                    throw new Exception('The given data is invalid.');
+                }
+            });
+        } catch (Throwable $throwable) {
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function update(string $key, mixed $newValue): void
     {
+        try {
+            $this->connection->transactional(function () use ($key, $newValue): void {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
+                $queryBuilder->update('stc')
+                    ->set('key_value', ':value')
+                    ->where($queryBuilder->expr()->eq('stc.key_name', ':name'))
+                    ->setParameter('name', $key, ParameterType::STRING)
+                    ->setParameter('value', $newValue)
+                ;
+
+                $this->executeQuery(
+                    $queryBuilder->getSQL(),
+                    $queryBuilder->getParameters(),
+                    $queryBuilder->getParameterTypes()
+                );
+            });
+        } catch (Throwable $throwable) {
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function update(string $key, $newValue): void
+    public function get(string $key): mixed
     {
-        // TODO: Implement update() method.
-    }
+        $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
+        $existingTaskCount = $qb->select((new Expr())->countDistinct('stc.id'))
+            ->where($qb->expr()->eq('stc.key_name', ':name'))
+            ->setParameter('name', $key, ParameterType::STRING)
+        ;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function get(string $key): void
-    {
-        // TODO: Implement get() method.
+        $statement = $this->executeQuery(
+            $existingTaskCount->getSQL(),
+            $existingTaskCount->getParameters(),
+            $existingTaskCount->getParameterTypes()
+        )->fetchOne();
+
+        if (0 === (int) $statement) {
+            throw new TransportException(sprintf('The key "%s" cannot be found', $key));
+        }
+
+        try {
+            return $this->connection->transactional(function () use ($key): mixed {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
+                $queryBuilder->where($queryBuilder->expr()->eq('stc.key_name', ':name'))
+                    ->setParameter('name', $key, ParameterType::STRING)
+                ;
+
+                $statement = $this->executeQuery(
+                    $queryBuilder->getSQL(),
+                    $queryBuilder->getParameters(),
+                    $queryBuilder->getParameterTypes()
+                );
+
+                $data = $statement->fetchAssociative();
+                if (false === $data) {
+                    throw new LogicException('The desired task cannot be found.');
+                }
+
+                return $data;
+            });
+        } catch (Throwable $throwable) {
+            throw new TransportException($throwable->getMessage(), 0, $throwable);
+        }
     }
 
     /**
@@ -67,14 +167,14 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function remove(string $key): void
     {
         try {
-            $this->connection->transactional(function (DbalConnection $connection) use ($key): void {
-                $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc');
-                $queryBuilder->delete('_symfony_scheduler_configuration')
+            $this->connection->transactional(function () use ($key): void {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc');
+                $queryBuilder->delete(self::TABLE_NAME)
                     ->where($queryBuilder->expr()->eq('key_name', ':key'))
                     ->setParameter('key', $key, ParameterType::STRING)
                 ;
 
-                $statement = $connection->executeQuery(
+                $statement = $this->executeQuery(
                     $queryBuilder->getSQL(),
                     $queryBuilder->getParameters(),
                     $queryBuilder->getParameterTypes()
@@ -94,6 +194,9 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function walk(Closure $func): void
     {
+        $values = $this->toArray();
+
+        array_walk($values, $func);
     }
 
     /**
@@ -112,12 +215,12 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function clear(): void
     {
         try {
-            $this->connection->transactional(function (DbalConnection $connection): void {
-                $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc')
+            $this->connection->transactional(function (): void {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc')
                     ->delete('scc')
                 ;
 
-                $connection->executeQuery($queryBuilder->getSQL());
+                $this->executeQuery($queryBuilder->getSQL());
             });
         } catch (Throwable $exception) {
             throw new ConfigurationException($exception->getMessage(), 0, $exception);
@@ -129,11 +232,25 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function toArray(): array
     {
-        try {
-            return $this->connection->transactional(function (DbalConnection $connection): array {
-                $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc');
+        $existingTasksCount = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
+            ->select((new Expr())->countDistinct('stc.id'))
+        ;
 
-                $statement = $connection->executeQuery($queryBuilder->getSQL());
+        $statement = $this->executeQuery(
+            $existingTasksCount->getSQL(),
+            $existingTasksCount->getParameters(),
+            $existingTasksCount->getParameterTypes()
+        )->fetchOne();
+
+        if (0 === (int) $statement) {
+            return [];
+        }
+
+        try {
+            return $this->connection->transactional(function (): array {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc');
+
+                $statement = $this->executeQuery($queryBuilder->getSQL());
                 $result = $statement->fetchAssociative();
 
                 if (!$result) {
@@ -153,12 +270,12 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function count(): int
     {
         try {
-            return $this->connection->transactional(function (DbalConnection $connection): int {
-                $queryBuilder = $this->createQueryBuilder('_symfony_scheduler_configuration', 'scc')
+            return $this->connection->transactional(function (): int {
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc')
                     ->select('COUNT(scc.key_name) AS keys')
                 ;
 
-                $statement = $connection->executeQuery($queryBuilder->getSQL());
+                $statement = $this->executeQuery($queryBuilder->getSQL());
                 $result = $statement->fetchAssociative();
 
                 if (!$result) {
@@ -177,7 +294,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     protected function addTableToSchema(Schema $schema): void
     {
-        $table = $schema->createTable('_symfony_scheduler_configuration');
+        $table = $schema->createTable(self::TABLE_NAME);
         $table->addColumn('id', Types::BIGINT)
             ->setAutoincrement(true)
             ->setNotnull(true)
@@ -222,7 +339,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
             return;
         }
 
-        if ($schema->hasTable('_symfony_scheduler_configuration')) {
+        if ($schema->hasTable(self::TABLE_NAME)) {
             return;
         }
 
