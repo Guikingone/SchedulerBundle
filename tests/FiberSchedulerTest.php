@@ -74,6 +74,10 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 use Generator;
+use function getcwd;
+use function in_array;
+use function sprintf;
+use function sys_get_temp_dir;
 
 /**
  * @requires PHP 8.1
@@ -1712,7 +1716,7 @@ final class FiberSchedulerTest extends TestCase
         ];
         yield 'FilesystemTransport' => [
             new FilesystemTransport(new InMemoryConfiguration([
-                'path' => sys_get_temp_dir(),
+                'path' => getcwd().'/.assets',
                 'filename_mask' => '%s/_symfony_scheduler_/%s.json',
             ], [
                 'path' => 'string',
