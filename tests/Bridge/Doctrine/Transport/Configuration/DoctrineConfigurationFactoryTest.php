@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
 use Generator;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @requires extension pdo_sqlite
  */
 final class DoctrineConfigurationFactoryTest extends TestCase
 {
@@ -30,22 +33,26 @@ final class DoctrineConfigurationFactoryTest extends TestCase
 
     /**
      * @dataProvider provideDsn
+     *
+     * @throws Exception {@see DriverManager::getConnection()}
      */
     public function testFactoryCanCreateConfiguration(string $dsn): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
-        $connection = $this->createMock(Connection::class);
+        $connection = DriverManager::getConnection([
+            'url' => sprintf('sqlite:///%s', sys_get_temp_dir().'/_symfony_scheduler_configuration_integration.sqlite'),
+        ]);
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->expects(self::once())->method('getConnection')
             ->with(self::equalTo('default'))
-            ->willReturn($connection)
+            ->willReturn($connection);
         ;
 
         $doctrineTransportFactory = new DoctrineConfigurationFactory($registry);
         $configuration = $doctrineTransportFactory->create(Dsn::fromString($dsn), $serializer);
 
-        self::assertCount(1, $configuration->toArray());
+        self::assertCount(0, $configuration->toArray());
     }
 
     /**
@@ -53,7 +60,7 @@ final class DoctrineConfigurationFactoryTest extends TestCase
      */
     public function provideDsn(): Generator
     {
-        yield 'Long version' => ['configuration://doctrine@default'];
-        yield 'Short version' => ['configuration://dbal@default'];
+        yield 'Long version' => ['configuration://doctrine@default?auto_setup=true'];
+        yield 'Short version' => ['configuration://dbal@default?auto_setup=true'];
     }
 }

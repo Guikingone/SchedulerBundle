@@ -507,7 +507,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertCount(1, $configuration['pool']['schedulers']);
         self::assertArrayHasKey('foo', $configuration['pool']['schedulers']);
         self::assertArrayHasKey('endpoint', $configuration['pool']['schedulers']['foo']);
-        self::assertArrayHasKey('https://127.0.0.1:9090', $configuration['pool']['schedulers']['foo']['endpoint']);
+        self::assertSame('https://127.0.0.1:9090', $configuration['pool']['schedulers']['foo']['endpoint']);
     }
 
     public function testConfigurationCanDefineConfigurationTransport(): void

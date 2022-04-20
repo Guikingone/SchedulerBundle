@@ -16,6 +16,8 @@ use function unlink;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @requires extension pdo_sqlite
  */
 final class DoctrineConfigurationIntegrationTest extends TestCase
 {

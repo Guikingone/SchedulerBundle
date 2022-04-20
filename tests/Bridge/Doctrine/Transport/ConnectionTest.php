@@ -819,19 +819,19 @@ final class ConnectionTest extends TestCase
     {
         $configuration = $this->createMock(Configuration::class);
         $serializer = $this->createMock(SerializerInterface::class);
-        $sequence = $this->createMock(Sequence::class);
 
         $platform = $this->createMock(AbstractPlatform::class);
         $platform->expects(self::once())->method('getCreateTableSQL')->willReturn([]);
 
-        $table = $this->createMock(Table::class);
-        $table->expects(self::once())->method('getForeignKeys')->willReturn([]);
+        $table = new Table('_symfony_scheduler_tasks');
 
         $schema = $this->createMock(Schema::class);
         $schema->expects(self::once())->method('getNamespaces')->willReturn(['foo', 'bar']);
         $schema->expects(self::once())->method('getTables')->willReturn([$table]);
         $schema->expects(self::once())->method('getTable')->willReturn($table);
-        $schema->expects(self::once())->method('getSequences')->willReturn([$sequence]);
+        $schema->expects(self::once())->method('getSequences')->willReturn([
+            new Sequence('foo'),
+        ]);
 
         $schemaManager = $this->createMock(AbstractSchemaManager::class);
         $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
@@ -845,7 +845,7 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->createMock(Connection::class);
         $driverConnection->method('getDatabasePlatform')->willReturn($platform);
         $driverConnection->method('getConfiguration')->willReturn($configuration);
-        $driverConnection->method('getSchemaManager')->willReturn($schemaManager);
+        $driverConnection->method('createSchemaManager')->willReturn($schemaManager);
 
         $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,

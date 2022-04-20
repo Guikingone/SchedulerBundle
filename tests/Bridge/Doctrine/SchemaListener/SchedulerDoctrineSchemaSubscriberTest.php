@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Bridge\Doctrine\SchemaListener;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Event\SchemaCreateTableEventArgs;
 use Doctrine\DBAL\Events;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Table;
@@ -25,6 +27,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @requires extension pdo_sqlite
  */
 final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
 {
@@ -70,17 +74,26 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
         $schedulerTransportDoctrineSchemaSubscriber->postGenerateSchema($event);
     }
 
+    /**
+     * @throws Exception {@see DriverManager::getConnection()}
+     */
     public function testPostGenerateSchema(): void
     {
+        $configurationConnection = DriverManager::getConnection([
+            'url' => sprintf('sqlite:///%s', sys_get_temp_dir().'/_symfony_scheduler_doctrine_subscriber_configuration_integration.sqlite'),
+        ]);
+        $transportConnection = DriverManager::getConnection([
+            'url' => sprintf('sqlite:///%s', sys_get_temp_dir().'/_symfony_scheduler_doctrine_subscriber_transport_integration.sqlite'),
+        ]);
+
         $schema = new Schema();
-        $connection = $this->createMock(Connection::class);
         $serializer = $this->createMock(SerializerInterface::class);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects(self::exactly(2))->method('getConnection')->willReturn($connection);
+        $entityManager->expects(self::exactly(2))->method('getConnection')->willReturnOnConsecutiveCalls($configurationConnection, $transportConnection);
 
-        $doctrineConfiguration = new DoctrineConfiguration($connection);
-        $doctrineTransport = new DoctrineTransport($doctrineConfiguration, $connection, $serializer, new SchedulePolicyOrchestrator([]));
+        $doctrineConfiguration = new DoctrineConfiguration($configurationConnection, true);
+        $doctrineTransport = new DoctrineTransport($doctrineConfiguration, $transportConnection, $serializer, new SchedulePolicyOrchestrator([]));
 
         $generateSchemaEventArgs = new GenerateSchemaEventArgs($entityManager, $schema);
 
@@ -88,6 +101,9 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
         $schedulerTransportDoctrineSchemaSubscriber->postGenerateSchema($generateSchemaEventArgs);
     }
 
+    /**
+     * @throws Exception {@see SchedulerDoctrineSchemaSubscriber::onSchemaCreateTable()}
+     */
     public function testOnSchemaCreateTableCannotBeCalledWithoutValidTransport(): void
     {
         $transport = $this->createMock(TransportInterface::class);
@@ -109,6 +125,9 @@ final class SchedulerDoctrineSchemaSubscriberTest extends TestCase
         $schedulerTransportDoctrineSchemaSubscriber->onSchemaCreateTable($event);
     }
 
+    /**
+     * @throws Exception {@see SchedulerDoctrineSchemaSubscriber::onSchemaCreateTable()}
+     */
     public function testOnSchemaCreateTable(): void
     {
         $platform = $this->createMock(AbstractPlatform::class);

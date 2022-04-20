@@ -71,7 +71,10 @@ final class SchedulerDoctrineSchemaSubscriber implements EventSubscriber
             return;
         }
 
-        $this->transport->configureSchema($generateSchemaEventArgs->getSchema(), $generateSchemaEventArgs->getEntityManager()->getConnection());
+        $this->transport->configureSchema(
+            $generateSchemaEventArgs->getSchema(),
+            $generateSchemaEventArgs->getEntityManager()->getConnection()
+        );
     }
 
     private function generateConfigurationSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void
@@ -80,6 +83,9 @@ final class SchedulerDoctrineSchemaSubscriber implements EventSubscriber
             return;
         }
 
-        $this->configuration->configureSchema($generateSchemaEventArgs->getSchema(), $generateSchemaEventArgs->getEntityManager()->getConnection());
+        $this->configuration->configureSchema(
+            $generateSchemaEventArgs->getSchema(),
+            $generateSchemaEventArgs->getEntityManager()->getConnection()
+        );
     }
 }

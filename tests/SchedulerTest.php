@@ -1729,7 +1729,7 @@ final class SchedulerTest extends TestCase
         ];
         yield 'FilesystemTransport' => [
             new FilesystemTransport(new InMemoryConfiguration([
-                'path' => sys_get_temp_dir(),
+                'path' => getcwd().'/.assets',
                 'filename_mask' => '%s/_symfony_scheduler_/%s.json',
             ], [
                 'path' => 'string',
