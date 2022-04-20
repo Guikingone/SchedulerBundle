@@ -284,7 +284,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                     throw new RuntimeException('No result found');
                 }
 
-                return $result['keys'];
+                return (int) $result['keys'];
             });
         } catch (Throwable $exception) {
             throw new ConfigurationException($exception->getMessage(), 0, $exception);

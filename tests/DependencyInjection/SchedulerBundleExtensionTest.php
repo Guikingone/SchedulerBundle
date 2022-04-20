@@ -64,6 +64,8 @@ use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Pool\SchedulerPool;
+use SchedulerBundle\Pool\SchedulerPoolInterface;
 use SchedulerBundle\Probe\Probe;
 use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -263,6 +265,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertCount(1, $container->getDefinition(ConfigurationFactory::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ConfigurationFactory::class)->getArgument(0));
         self::assertFalse($container->getDefinition(ConfigurationFactory::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(ConfigurationFactory::class)->getTags());
+        self::assertTrue($container->getDefinition(ConfigurationFactory::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(ConfigurationFactory::class)->hasTag('container.preload'));
         self::assertSame(ConfigurationFactory::class, $container->getDefinition(ConfigurationFactory::class)->getTag('container.preload')[0]['class']);
 
@@ -349,6 +353,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->hasDefinition(TransportFactory::class));
         self::assertCount(1, $container->getDefinition(TransportFactory::class)->getArguments());
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(TransportFactory::class)->getArgument(0));
+        self::assertCount(2, $container->getDefinition(TransportFactory::class)->getTags());
+        self::assertTrue($container->getDefinition(TransportFactory::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(TransportFactory::class)->hasTag('container.preload'));
         self::assertSame(TransportFactory::class, $container->getDefinition(TransportFactory::class)->getTag('container.preload')[0]['class']);
         self::assertTrue($container->hasAlias(TransportFactoryInterface::class));
@@ -1290,7 +1296,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(StoreFactory::class, $factory[0]);
         self::assertSame('createStore', (string) $factory[1]);
         self::assertCount(1, $container->getDefinition('scheduler.lock_store.store')->getArguments());
-        self::assertSame('flock', $container->getDefinition('scheduler.lock_store.store')->getArgument('$configuration'));
+        self::assertSame('flock', $container->getDefinition('scheduler.lock_store.store')->getArgument('$connection'));
         self::assertTrue($container->getDefinition('scheduler.lock_store.store')->hasTag('container.preload'));
         self::assertSame(PersistingStoreInterface::class, $container->getDefinition('scheduler.lock_store.store')->getTag('container.preload')[0]['class']);
 
@@ -2074,6 +2080,14 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(SchedulerConfigurationNormalizer::class)->hasTag('serializer.normalizer'));
         self::assertTrue($container->getDefinition(SchedulerConfigurationNormalizer::class)->hasTag('container.preload'));
         self::assertSame(SchedulerConfigurationNormalizer::class, $container->getDefinition(SchedulerConfigurationNormalizer::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(SchedulerPool::class));
+        self::assertTrue($container->hasAlias(SchedulerPoolInterface::class));
+        self::assertCount(0, $container->getDefinition(SchedulerPool::class)->getArguments());
+        self::assertFalse($container->getDefinition(SchedulerPool::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(SchedulerPool::class)->getTags());
+        self::assertTrue($container->getDefinition(SchedulerPool::class)->hasTag('container.preload'));
+        self::assertSame(SchedulerPool::class, $container->getDefinition(SchedulerPool::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testConfiguration(): void

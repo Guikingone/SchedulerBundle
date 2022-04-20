@@ -60,6 +60,8 @@ use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
+use SchedulerBundle\Pool\SchedulerPool;
+use SchedulerBundle\Pool\SchedulerPoolInterface;
 use SchedulerBundle\Probe\Probe;
 use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\Runner\CallbackTaskRunner;
@@ -263,6 +265,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument(self::TRANSPORT_CONFIGURATION_FACTORY_TAG),
             ])
             ->setPublic(false)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => ConfigurationFactory::class,
             ])
@@ -352,6 +355,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new TaggedIteratorArgument(self::SCHEDULER_TRANSPORT_FACTORY_TAG),
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TransportFactory::class,
             ])
@@ -1528,7 +1532,10 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    private function registerPoolSupport(ContainerBuilder $container): void
+    /**
+     * @param array<string, mixed> $configuration
+     */
+    private function registerPoolSupport(ContainerBuilder $container, array $configuration): void
     {
         if (!$container->getParameter('scheduler.pool_support')) {
             return;
@@ -1547,6 +1554,14 @@ final class SchedulerBundleExtension extends Extension
                 'class' => SchedulerConfigurationNormalizer::class,
             ])
         ;
+
+        $container->register(SchedulerPool::class, SchedulerPool::class)
+            ->setPublic(false)
+            ->addTag('container.preload', [
+                'class' => SchedulerPool::class,
+            ])
+        ;
+        $container->setAlias(SchedulerPoolInterface::class, SchedulerPool::class);
     }
 
     private function registerDataCollector(ContainerBuilder $container): void

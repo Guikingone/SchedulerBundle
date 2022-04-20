@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\Connection;
 use function file_exists;
 use function sprintf;
+use function sys_get_temp_dir;
 use function unlink;
 
 /**
@@ -28,7 +29,7 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->sqliteFile = getcwd().'/tests/Bridge/Doctrine/Transport/Configuration/.assets/_symfony_scheduler_connection.sqlite';
+        $this->sqliteFile = sys_get_temp_dir().'/_symfony_scheduler_connection_integration.sqlite';
         $this->driverConnection = DriverManager::getConnection([
             'url' => sprintf('sqlite:///%s', $this->sqliteFile),
         ]);

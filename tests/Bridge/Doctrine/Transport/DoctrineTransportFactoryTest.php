@@ -46,7 +46,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
 
         self::expectException(TransportException::class);
-        self::expectExceptionMessage('Could not find Doctrine configuration from Scheduler DSN "doctrine://test".');
+        self::expectExceptionMessage('Could not find Doctrine connection from Scheduler DSN "doctrine://test".');
         self::expectExceptionCode(0);
         $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://test'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
     }
@@ -62,7 +62,7 @@ final class DoctrineTransportFactoryTest extends TestCase
         $doctrineTransportFactory = new DoctrineTransportFactory($registry);
 
         self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The configuration is not a valid one');
+        self::expectExceptionMessage('The connection is not a valid one');
         self::expectExceptionCode(0);
         $doctrineTransportFactory->createTransport(Dsn::fromString('doctrine://default?execution_mode=nice'), [], new InMemoryConfiguration(), $serializer, $schedulePolicyOrchestrator);
     }

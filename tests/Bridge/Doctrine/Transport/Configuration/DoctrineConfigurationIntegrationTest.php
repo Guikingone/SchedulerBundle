@@ -9,6 +9,10 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfiguration;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use function file_exists;
+use function sprintf;
+use function sys_get_temp_dir;
+use function unlink;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -24,7 +28,7 @@ final class DoctrineConfigurationIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->sqliteFile = getcwd().'/tests/Bridge/Doctrine/Transport/Configuration/.assets/_symfony_scheduler_configuration.sqlite';
+        $this->sqliteFile = sys_get_temp_dir().'/_symfony_scheduler_configuration_integration.sqlite';
         $this->driverConnection = DriverManager::getConnection([
             'url' => sprintf('sqlite:///%s', $this->sqliteFile),
         ]);

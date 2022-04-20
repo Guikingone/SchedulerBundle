@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace SchedulerBundle;
 
+use BadMethodCallException;
 use Closure;
 use DateTimeZone;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,7 +34,16 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
-        // TODO: Implement schedule() method.
+        $response = $this->httpClient->request('POST', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
+            'headers' => [
+                'Content-Type: application/json',
+            ],
+            'body' => $this->serializer->serialize($task, 'json'),
+        ]);
+
+        if (201 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be scheduled', $task->getName()));
+        }
     }
 
     /**
@@ -39,7 +51,15 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function unschedule(string $taskName): void
     {
-        // TODO: Implement unschedule() method.
+        $response = $this->httpClient->request('DELETE', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
+            'query' => [
+                'task' => $taskName,
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be unscheduled', $taskName));
+        }
     }
 
     /**
@@ -47,7 +67,19 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function yieldTask(string $name, bool $async = false): void
     {
-        // TODO: Implement yieldTask() method.
+        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:yield', $this->externalSchedulerEndpoint, $name), [
+            'headers' => [
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ],
+            'body' => [
+                'async' => $async,
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be yielded', $name));
+        }
     }
 
     /**
@@ -55,7 +87,7 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
-        // TODO: Implement preempt() method.
+        throw new BadMethodCallException(sprintf('The %s::class cannot preempt tasks', self::class));
     }
 
     /**
@@ -63,7 +95,20 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
-        // TODO: Implement update() method.
+        $response = $this->httpClient->request('PUT', sprintf('%s/tasks/%s?async=%s', $this->externalSchedulerEndpoint, $taskName, $async), [
+            'headers' => [
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ],
+            'body' => [
+                'task' => $this->serializer->serialize($task, 'json'),
+                'async' => $async,
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be updated', $taskName));
+        }
     }
 
     /**
@@ -71,7 +116,19 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function pause(string $taskName, bool $async = false): void
     {
-        // TODO: Implement pause() method.
+        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:pause', $this->externalSchedulerEndpoint, $taskName), [
+            'headers' => [
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ],
+            'body' => [
+                'async' => $async,
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be paused', $taskName));
+        }
     }
 
     /**
@@ -79,7 +136,16 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function resume(string $taskName): void
     {
-        // TODO: Implement resume() method.
+        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:resume', $this->externalSchedulerEndpoint, $taskName), [
+            'headers' => [
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException(sprintf('The task "%s" cannot be resume', $taskName));
+        }
     }
 
     /**
@@ -87,7 +153,9 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
-        // TODO: Implement getTasks() method.
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks?lazy=%s', $this->externalSchedulerEndpoint, $lazy));
+
+        return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
     }
 
     /**
@@ -95,7 +163,9 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
     {
-        // TODO: Implement getDueTasks() method.
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:due?lazy=%s&strict=%s', $this->externalSchedulerEndpoint, $lazy, $strict));
+
+        return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
     }
 
     /**
@@ -103,7 +173,9 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function next(bool $lazy = false): TaskInterface
     {
-        // TODO: Implement next() method.
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:next?lazy=%s', $this->externalSchedulerEndpoint, $lazy));
+
+        return $this->serializer->deserialize($response->toArray(), TaskInterface::class, 'json');
     }
 
     /**
@@ -111,7 +183,11 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        // TODO: Implement reboot() method.
+        $response = $this->httpClient->request('POST', sprintf('%s/scheduler:reboot', $this->externalSchedulerEndpoint));
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The scheduler cannot be rebooted');
+        }
     }
 
     /**

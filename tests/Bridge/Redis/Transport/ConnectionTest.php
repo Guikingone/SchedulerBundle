@@ -57,7 +57,7 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('getLastError')->willReturn('ERR Error connecting user: wrong credentials');
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('Redis configuration failed: "ERR Error connecting user: wrong credentials".');
+        self::expectExceptionMessage('Redis connection failed: "ERR Error connecting user: wrong credentials".');
         self::expectExceptionCode(0);
         new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
@@ -86,7 +86,7 @@ final class ConnectionTest extends TestCase
         $redis->expects(self::once())->method('getLastError')->willReturn('ERR Error selecting database: wrong database name');
 
         self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('Redis configuration failed: "ERR Error selecting database: wrong database name".');
+        self::expectExceptionMessage('Redis connection failed: "ERR Error selecting database: wrong database name".');
         self::expectExceptionCode(0);
         new Connection(new InMemoryConfiguration([
             'host' => 'localhost',
