@@ -11,6 +11,9 @@ use Psr\Log\NullLogger;
 use Throwable;
 use function sprintf;
 
+/**
+ * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ */
 abstract class AbstractFiberHandler
 {
     private LoggerInterface $logger;

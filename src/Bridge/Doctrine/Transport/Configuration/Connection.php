@@ -41,24 +41,26 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function init(array $options, array $extraOptions = []): void
     {
-
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function set(string $key, mixed $value): void
     {
         $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
         $existingTaskQuery = $qb->select((new Expr())->countDistinct('stc.id'))
-            ->where($qb->expr()->eq('stc.key_name', ':name'))
+            ->where($qb->expr()->eq('stc.configuration_key_name', ':name'))
             ->setParameter('name', $key, ParameterType::STRING)
         ;
 
-        $existingTask = $this->executeQuery(
+        $existingConfigurationKey = $this->executeQuery(
             $existingTaskQuery->getSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
         )->fetchOne();
 
-        if (0 !== (int) $existingTask) {
+        if (0 !== (int) $existingConfigurationKey) {
             return;
         }
 
@@ -67,8 +69,8 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                 $query = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
                     ->insert(self::TABLE_NAME)
                     ->values([
-                        'key_name' => ':key',
-                        'key_value' => ':value',
+                        'configuration_key_name' => ':key',
+                        'configuration_key_value' => ':value',
                     ])
                     ->setParameter('key', $key, ParameterType::STRING)
                     ->setParameter('value', $value)
@@ -97,9 +99,9 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
         try {
             $this->connection->transactional(function () use ($key, $newValue): void {
                 $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
-                $queryBuilder->update('stc')
-                    ->set('key_value', ':value')
-                    ->where($queryBuilder->expr()->eq('stc.key_name', ':name'))
+                $queryBuilder->update(self::TABLE_NAME)
+                    ->set('configuration_key_value', ':value')
+                    ->where($queryBuilder->expr()->eq('configuration_key_name', ':name'))
                     ->setParameter('name', $key, ParameterType::STRING)
                     ->setParameter('value', $newValue)
                 ;
@@ -121,15 +123,15 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function get(string $key): mixed
     {
         $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
-        $existingTaskCount = $qb->select((new Expr())->countDistinct('stc.id'))
-            ->where($qb->expr()->eq('stc.key_name', ':name'))
+        $existingConfigurationKey = $qb->select((new Expr())->countDistinct('stc.id'))
+            ->where($qb->expr()->eq('stc.configuration_key_name', ':name'))
             ->setParameter('name', $key, ParameterType::STRING)
         ;
 
         $statement = $this->executeQuery(
-            $existingTaskCount->getSQL(),
-            $existingTaskCount->getParameters(),
-            $existingTaskCount->getParameterTypes()
+            $existingConfigurationKey->getSQL(),
+            $existingConfigurationKey->getParameters(),
+            $existingConfigurationKey->getParameterTypes()
         )->fetchOne();
 
         if (0 === (int) $statement) {
@@ -139,7 +141,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
         try {
             return $this->connection->transactional(function () use ($key): mixed {
                 $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
-                $queryBuilder->where($queryBuilder->expr()->eq('stc.key_name', ':name'))
+                $queryBuilder->where($queryBuilder->expr()->eq('stc.configuration_key_name', ':name'))
                     ->setParameter('name', $key, ParameterType::STRING)
                 ;
 
@@ -149,12 +151,12 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                     $queryBuilder->getParameterTypes()
                 );
 
-                $data = $statement->fetchAssociative();
-                if (false === $data) {
-                    throw new LogicException('The desired task cannot be found.');
+                $keyRow = $statement->fetchAssociative();
+                if (false === $keyRow) {
+                    throw new LogicException('The desired configuration key cannot be found.');
                 }
 
-                return $data;
+                return $keyRow['configuration_key_value'];
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);
@@ -170,7 +172,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
             $this->connection->transactional(function () use ($key): void {
                 $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc');
                 $queryBuilder->delete(self::TABLE_NAME)
-                    ->where($queryBuilder->expr()->eq('key_name', ':key'))
+                    ->where($queryBuilder->expr()->eq('configuration_key_name', ':key'))
                     ->setParameter('key', $key, ParameterType::STRING)
                 ;
 
@@ -216,8 +218,8 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     {
         try {
             $this->connection->transactional(function (): void {
-                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc')
-                    ->delete('scc')
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
+                    ->delete(self::TABLE_NAME)
                 ;
 
                 $this->executeQuery($queryBuilder->getSQL());
@@ -232,14 +234,14 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function toArray(): array
     {
-        $existingTasksCount = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
+        $existingKeysCount = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
             ->select((new Expr())->countDistinct('stc.id'))
         ;
 
         $statement = $this->executeQuery(
-            $existingTasksCount->getSQL(),
-            $existingTasksCount->getParameters(),
-            $existingTasksCount->getParameterTypes()
+            $existingKeysCount->getSQL(),
+            $existingKeysCount->getParameters(),
+            $existingKeysCount->getParameterTypes()
         )->fetchOne();
 
         if (0 === (int) $statement) {
@@ -248,16 +250,16 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
 
         try {
             return $this->connection->transactional(function (): array {
-                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc');
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
 
                 $statement = $this->executeQuery($queryBuilder->getSQL());
-                $result = $statement->fetchAssociative();
 
-                if (!$result) {
+                $keys = $statement->fetchAllAssociative();
+                if (!$keys) {
                     throw new RuntimeException('No result found');
                 }
 
-                return $result;
+                return $keys;
             });
         } catch (Throwable $exception) {
             throw new ConfigurationException($exception->getMessage(), 0, $exception);
@@ -271,8 +273,8 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     {
         try {
             return $this->connection->transactional(function (): int {
-                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'scc')
-                    ->select('COUNT(scc.key_name) AS keys')
+                $queryBuilder = $this->createQueryBuilder(self::TABLE_NAME, 'stc')
+                    ->select('COUNT(stc.configuration_key_name) AS keys')
                 ;
 
                 $statement = $this->executeQuery($queryBuilder->getSQL());
@@ -299,15 +301,15 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
             ->setAutoincrement(true)
             ->setNotnull(true)
         ;
-        $table->addColumn('key_name', Types::STRING)
+        $table->addColumn('configuration_key_name', Types::STRING)
             ->setNotnull(true)
         ;
-        $table->addColumn('key_value', Types::BLOB)
+        $table->addColumn('configuration_key_value', Types::BLOB)
             ->setNotnull(true)
         ;
 
         $table->setPrimaryKey(['id']);
-        $table->addIndex(['key_name'], '_symfony_scheduler_configuration_key');
+        $table->addIndex(['configuration_key_name'], '_symfony_scheduler_configuration_key');
     }
 
     /**

@@ -1290,7 +1290,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(StoreFactory::class, $factory[0]);
         self::assertSame('createStore', (string) $factory[1]);
         self::assertCount(1, $container->getDefinition('scheduler.lock_store.store')->getArguments());
-        self::assertSame('flock', $container->getDefinition('scheduler.lock_store.store')->getArgument('$connection'));
+        self::assertSame('flock', $container->getDefinition('scheduler.lock_store.store')->getArgument('$configuration'));
         self::assertTrue($container->getDefinition('scheduler.lock_store.store')->hasTag('container.preload'));
         self::assertSame(PersistingStoreInterface::class, $container->getDefinition('scheduler.lock_store.store')->getTag('container.preload')[0]['class']);
 

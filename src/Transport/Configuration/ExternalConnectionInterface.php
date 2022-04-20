@@ -17,6 +17,9 @@ interface ExternalConnectionInterface extends Countable
      */
     public function init(array $options, array $extraOptions = []): void;
 
+    /**
+     * Define a new @param string $key.
+     */
     public function set(string $key, mixed $value): void;
 
     /**
@@ -55,5 +58,8 @@ interface ExternalConnectionInterface extends Countable
      */
     public function toArray(): array;
 
+    /**
+     * Remove each keys and values stored.
+     */
     public function clear(): void;
 }

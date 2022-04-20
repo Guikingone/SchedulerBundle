@@ -21,6 +21,9 @@ abstract class AbstractDoctrineConnection
     {
     }
 
+    /**
+     * Determine the table that should be added to the current @param Schema $schema.
+     */
     abstract protected function addTableToSchema(Schema $schema): void;
 
     /**

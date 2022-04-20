@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\Connection;
 use function file_exists;
 use function sprintf;
-use function sys_get_temp_dir;
 use function unlink;
 
 /**
@@ -29,7 +28,7 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->sqliteFile = sys_get_temp_dir().'/symfony_scheduler_configuration.sqlite';
+        $this->sqliteFile = getcwd().'/tests/Bridge/Doctrine/Transport/Configuration/.assets/_symfony_scheduler_connection.sqlite';
         $this->driverConnection = DriverManager::getConnection([
             'url' => sprintf('sqlite:///%s', $this->sqliteFile),
         ]);
@@ -46,7 +45,7 @@ final class ConnectionIntegrationTest extends TestCase
         }
     }
 
-    public function testConnectionCanReturnArray(): void
+    public function testConfigurationCanReturnArray(): void
     {
         $list = $this->connection->toArray();
 
@@ -54,7 +53,7 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame(0, $this->connection->count());
     }
 
-    public function testConnectionCanSetANewKey(): void
+    public function testConfigurationCanSetANewKey(): void
     {
         $list = $this->connection->toArray();
 
@@ -86,5 +85,43 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertCount(1, $this->connection->toArray());
         self::assertSame(1, $this->connection->count());
         self::assertSame('random', $this->connection->get('foo'));
+    }
+
+    public function testConnectionCanRemoveAKey(): void
+    {
+        $list = $this->connection->toArray();
+
+        self::assertCount(0, $list);
+        self::assertSame(0, $this->connection->count());
+
+        $this->connection->set('foo', 'bar');
+
+        self::assertCount(1, $this->connection->toArray());
+        self::assertSame(1, $this->connection->count());
+        self::assertSame('bar', $this->connection->get('foo'));
+
+        $this->connection->remove('foo');
+
+        self::assertCount(0, $this->connection->toArray());
+        self::assertSame(0, $this->connection->count());
+    }
+
+    public function testConnectionCanClear(): void
+    {
+        $list = $this->connection->toArray();
+
+        self::assertCount(0, $list);
+        self::assertSame(0, $this->connection->count());
+
+        $this->connection->set('foo', 'bar');
+
+        self::assertCount(1, $this->connection->toArray());
+        self::assertSame(1, $this->connection->count());
+        self::assertSame('bar', $this->connection->get('foo'));
+
+        $this->connection->clear();
+
+        self::assertCount(0, $this->connection->toArray());
+        self::assertSame(0, $this->connection->count());
     }
 }
