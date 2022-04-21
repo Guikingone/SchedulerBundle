@@ -1680,6 +1680,7 @@ final class SchedulerTest extends TestCase
         $poolConfiguration = $scheduler->getPoolConfiguration();
 
         self::assertSame('UTC', $poolConfiguration->getTimezone()->getName());
+        self::assertArrayNotHasKey(0, $poolConfiguration->getDueTasks());
         self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 

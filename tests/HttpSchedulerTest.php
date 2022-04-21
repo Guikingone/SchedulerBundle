@@ -11,6 +11,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
+use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -40,7 +41,21 @@ final class HttpSchedulerTest extends TestCase
         self::expectException(BadMethodCallException::class);
         self::expectExceptionMessage(sprintf('The %s::class cannot preempt tasks', HttpScheduler::class));
         self::expectExceptionCode(0);
-        $scheduler->preempt('foo', fn (): bool => true);
+        $scheduler->preempt('foo', static fn (): bool => true);
+    }
+
+    /**
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     * @throws BadMethodCallException {@see HttpScheduler::preempt()}
+     */
+    public function testSchedulerCannotPreemptWithCustomHttpClient(): void
+    {
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), new MockHttpClient());
+
+        self::expectException(BadMethodCallException::class);
+        self::expectExceptionMessage(sprintf('The %s::class cannot preempt tasks', HttpScheduler::class));
+        self::expectExceptionCode(0);
+        $scheduler->preempt('foo', static fn (): bool => true);
     }
 
     private function getSerializer(): SerializerInterface

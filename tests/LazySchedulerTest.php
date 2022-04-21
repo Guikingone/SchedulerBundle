@@ -36,7 +36,6 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
-use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\Worker;
@@ -745,27 +744,28 @@ final class LazySchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedAsynchronously(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
-        $transport->expects(self::never())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
+        $task = new NullTask('foo');
+        $updatedTask = new NullTask('bar');
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')
-            ->with(new TaskToUpdateMessage('foo', $task))
+            ->with(new TaskToUpdateMessage('foo', $updatedTask))
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
+        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $task, true);
+        $scheduler->update($task->getName(), $updatedTask, true);
+
+        self::assertSame($task, $scheduler->getTasks()->get('foo'));
     }
 
     /**
      * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerPoolConfigurationIsAvailable(): void
     {
