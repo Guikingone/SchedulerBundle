@@ -201,7 +201,6 @@ final class SchedulerBundleConfigurationTest extends TestCase
                 'last_execution' => 'foo',
             ],
         ], $configuration['tasks']);
-        self::assertSame('foo', $configuration['tasks']['foo']['last_execution']);
     }
 
     public function testConfigurationCanDefineProbeClients(): void
