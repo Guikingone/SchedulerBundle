@@ -855,17 +855,19 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdated(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
+        $updatedTask = new NullTask('bar');
 
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
-
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $task);
+        self::assertCount(1, $scheduler->getTasks());
+
+        $scheduler->update($task->getName(), $updatedTask);
+        self::assertCount(2, $scheduler->getTasks());
+        self::assertSame($updatedTask, $scheduler->getTasks()->get('bar'));
     }
 
     /**
@@ -873,12 +875,7 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedAsynchronously(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
-        $transport->expects(self::never())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
+        $task = new NullTask('foo');
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')
@@ -886,7 +883,9 @@ final class SchedulerTest extends TestCase
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
         $scheduler->schedule($task);
         $scheduler->update($task->getName(), $task, true);
@@ -1387,19 +1386,18 @@ final class SchedulerTest extends TestCase
         $task->expects(self::never())->method('setScheduledAt');
         $task->expects(self::never())->method('setTimezone');
 
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::never())->method('get');
-        $transport->expects(self::never())->method('create');
-        $transport->expects(self::never())->method('delete');
-
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')
             ->with(new TaskToYieldMessage('foo'))
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+
         $scheduler->yieldTask('foo', true);
+        self::assertCount(0, $scheduler->getDueTasks());
     }
 
     /**

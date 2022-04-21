@@ -364,14 +364,11 @@ final class FiberSchedulerTest extends TestCase
             ->willReturn(new Envelope(new stdClass()))
         ;
 
-        $eventDispatcher = $this->createMock(EventDispatcher::class);
-        $eventDispatcher->expects(self::once())->method('dispatch')->with(self::equalTo(new TaskScheduledEvent($task)));
-
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher, $bus));
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
 
         $task->setQueued(true);
         $scheduler->schedule($task);
@@ -1320,27 +1317,20 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCanYieldTask(): void
     {
-        $dateTimeZone = new DateTimeZone('UTC');
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getName')->willReturn('foo');
-        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($dateTimeZone);
-        $task->expects(self::exactly(2))->method('setScheduledAt');
-        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($dateTimeZone));
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
-        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+        $task = new NullTask('foo');
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
         $scheduler->schedule($task);
 
         $scheduler->yieldTask('foo');
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**

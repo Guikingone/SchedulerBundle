@@ -196,6 +196,9 @@ final class HttpScheduler implements SchedulerInterface
     public function getTimezone(): DateTimeZone
     {
         $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint));
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The scheduler timezone cannot be retrieved');
+        }
 
         $configuration = $this->serializer->deserialize($response->toArray(), SchedulerConfiguration::class, 'json');
 
@@ -208,6 +211,9 @@ final class HttpScheduler implements SchedulerInterface
     public function getPoolConfiguration(): SchedulerConfiguration
     {
         $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint));
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The scheduler configuration cannot be retrieved');
+        }
 
         return $this->serializer->deserialize($response->toArray(), SchedulerConfiguration::class, 'json');
     }
