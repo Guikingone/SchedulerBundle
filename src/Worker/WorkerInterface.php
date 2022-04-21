@@ -18,7 +18,6 @@ use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyInterface;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
 use Throwable;
 
@@ -30,7 +29,7 @@ interface WorkerInterface
     /**
      * Execute the given task, if the task cannot be executed, the worker SHOULD exit.
      *
-     * An exception can be throw during the execution of the task, if so, it SHOULD be handled.
+     * An exception can be thrown during the execution of the task, if so, it SHOULD be handled.
      *
      * A worker COULD dispatch the following events:
      *
@@ -124,8 +123,6 @@ interface WorkerInterface
 
     /**
      * Return the available execution policies.
-     *
-     * @return ExecutionPolicyRegistryInterface<int, ExecutionPolicyInterface>
      */
     public function getExecutionPolicyRegistry(): ExecutionPolicyRegistryInterface;
 

@@ -199,7 +199,7 @@ final class HttpScheduler implements SchedulerInterface
 
         $configuration = $this->serializer->deserialize($response->toArray(), SchedulerConfiguration::class, 'json');
 
-        return $configuration->getTimeZone();
+        return $configuration->getTimezone();
     }
 
     /**

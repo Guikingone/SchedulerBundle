@@ -238,7 +238,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The "bar" task does not exist');
@@ -271,7 +271,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -308,7 +308,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -349,7 +349,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -381,7 +381,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->update('foo', new NullTask('foo'));
 
@@ -417,7 +417,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new ShellTask('foo', ['echo', 'Symfony']));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -459,7 +459,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -494,7 +494,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -535,7 +535,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -572,7 +572,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -615,7 +615,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         self::assertTrue($this->filesystem->exists(getcwd().'/assets/_symfony_scheduler_/foo.json'));
@@ -657,7 +657,7 @@ final class FilesystemTransportTest extends TestCase
             'filename_mask' => 'string',
         ]), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ]), getcwd().'/assets');
+        ]));
 
         $filesystemTransport->create(new NullTask('foo'));
         $filesystemTransport->create(new NullTask('bar'));
