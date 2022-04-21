@@ -29,6 +29,8 @@ final class FiberConfigurationFactory implements ConfigurationFactoryInterface
                 continue;
             }
 
+            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+
             return new FiberConfiguration($factory->create($dsn, $serializer));
         }
 

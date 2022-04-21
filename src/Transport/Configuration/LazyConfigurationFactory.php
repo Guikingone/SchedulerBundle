@@ -32,6 +32,8 @@ final class LazyConfigurationFactory implements ConfigurationFactoryInterface
                 continue;
             }
 
+            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+
             return new LazyConfiguration($factory->create($dsn, $serializer));
         }
 

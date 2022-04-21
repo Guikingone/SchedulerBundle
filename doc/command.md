@@ -2,7 +2,18 @@
 
 This bundle provides a set of commands to interact with your tasks
 
+- [Listing tasks](#listing-the-tasks)
+- [Listing failed tasks](#listing-the-failed-tasks)
+- [Consuming tasks](#consuming-the-tasks)
+- [Executing tasks](#executing-tasks)
+- [Rebooting the scheduler](#rebooting-the-scheduler)
+- [Retrying a failed task](#retrying-a-failed-task)
+- [Removing a failed task](#removing-failed-task)
+- [Yielding a task](#yielding-a-task)
 - [Probe](#probe)
+- [Executing external probe](#executing-external-probe)
+- [Debugging the middleware list](#debugging-middleware-list)
+- [Debugging the transport configuration](#debugging-the-transport-configuration)
 
 ## Listing the tasks
 
@@ -257,3 +268,7 @@ $ bin/console scheduler:debug:middleware
 | SingleRunTaskMiddleware | No           | Yes           | 15       | Yes      |
 +-------------------------+--------------+---------------+----------+----------+
 ```
+
+## Debugging the transport configuration
+
+// TODO

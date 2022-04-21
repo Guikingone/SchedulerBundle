@@ -11,6 +11,8 @@ use SchedulerBundle\Exception\RuntimeException;
 use function count;
 use function array_map;
 use function array_walk;
+use function in_array;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

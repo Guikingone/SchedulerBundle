@@ -1,5 +1,10 @@
 # Transport
 
+- [Introduction](#introduction)
+- [Creating a custom transport](#creating-a-custom-transport)
+
+## Introduction
+
 Transports are the foundations behind the storage of tasks: once tasks are defined in the configuration
 or scheduled via the [Scheduler](../src/Scheduler.php), every task is stored via transports.
 
@@ -294,3 +299,10 @@ thanks to this one and when using `bin/console doctrine:migrations:diff`, the sc
 
 _**Note**_: An important thing to keep in mind is that if you don't use the DoctrineMigrationsBundle bundle 
 and the `auto_setup` option is set to `true`, the schema is generated when scheduling the tasks.
+
+## Creating a custom transport
+
+If desired, you can create your own transport thanks to [TransportInterface](../src/Transport/TransportInterface.php),
+it requires that you create your own transport factory via [TransportFactoryInterface](../src/Transport/TransportFactoryInterface.php).
+
+Once created, both classes will be autoconfigured and autowired into the related classes.

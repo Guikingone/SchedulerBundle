@@ -13,6 +13,7 @@ use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 use Generator;
+use Throwable;
 
 /**
  * @requires PHP 8.1
@@ -45,6 +46,8 @@ final class FiberConfigurationFactoryTest extends TestCase
 
     /**
      * @dataProvider provideDsn
+     *
+     * @throws Throwable {@see FiberConfiguration::set()}
      */
     public function testConfigurationCanCreateConfiguration(string $dsn): void
     {
@@ -66,8 +69,8 @@ final class FiberConfigurationFactoryTest extends TestCase
      */
     public function provideDsn(): Generator
     {
-        yield 'Full memory' => ['configuration://lazy(configuration://memory)'];
-        yield 'Short memory' => ['configuration://lazy(configuration://array)'];
-        yield 'Full cache' => ['configuration://lazy(configuration://cache)'];
+        yield 'Full memory' => ['configuration://fiber(configuration://memory)'];
+        yield 'Short memory' => ['configuration://fiber(configuration://array)'];
+        yield 'Full cache' => ['configuration://fiber(configuration://cache)'];
     }
 }
