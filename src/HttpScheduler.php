@@ -57,7 +57,7 @@ final class HttpScheduler implements SchedulerInterface
             ],
         ]);
 
-        if (200 !== $response->getStatusCode()) {
+        if (204 !== $response->getStatusCode()) {
             throw new RuntimeException(sprintf('The task "%s" cannot be unscheduled', $taskName));
         }
     }
@@ -106,7 +106,7 @@ final class HttpScheduler implements SchedulerInterface
             ],
         ]);
 
-        if (200 !== $response->getStatusCode()) {
+        if (204 !== $response->getStatusCode()) {
             throw new RuntimeException(sprintf('The task "%s" cannot be updated', $taskName));
         }
     }
@@ -144,7 +144,7 @@ final class HttpScheduler implements SchedulerInterface
         ]);
 
         if (200 !== $response->getStatusCode()) {
-            throw new RuntimeException(sprintf('The task "%s" cannot be resume', $taskName));
+            throw new RuntimeException(sprintf('The task "%s" cannot be resumed', $taskName));
         }
     }
 
@@ -153,7 +153,15 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks?lazy=%s', $this->externalSchedulerEndpoint, $lazy));
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
+            'headers' => [
+                'Accept: application/json',
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The tasks cannot be retrieved');
+        }
 
         return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
     }
@@ -163,7 +171,15 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks:due?lazy=%s&strict=%s', $this->externalSchedulerEndpoint, $lazy, $strict));
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:due?lazy=%s&strict=%s', $this->externalSchedulerEndpoint, $lazy, $strict), [
+            'headers' => [
+                'Accept: application/json',
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The due tasks cannot be retrieved');
+        }
 
         return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
     }
@@ -173,7 +189,15 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function next(bool $lazy = false): TaskInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks:next?lazy=%s', $this->externalSchedulerEndpoint, $lazy));
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:next?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
+            'headers' => [
+                'Accept: application/json',
+            ],
+        ]);
+
+        if (200 !== $response->getStatusCode()) {
+            throw new RuntimeException('The next task cannot be retrieved');
+        }
 
         return $this->serializer->deserialize($response->toArray(), TaskInterface::class, 'json');
     }
@@ -195,7 +219,12 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getTimezone(): DateTimeZone
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint));
+        $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint), [
+            'headers' => [
+                'Accept: application/json',
+            ],
+        ]);
+
         if (200 !== $response->getStatusCode()) {
             throw new RuntimeException('The scheduler timezone cannot be retrieved');
         }
@@ -210,7 +239,12 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getPoolConfiguration(): SchedulerConfiguration
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint));
+        $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint), [
+            'headers' => [
+                'Accept: application/json',
+            ],
+        ]);
+
         if (200 !== $response->getStatusCode()) {
             throw new RuntimeException('The scheduler configuration cannot be retrieved');
         }

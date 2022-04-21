@@ -64,6 +64,108 @@ final class HttpSchedulerTest extends TestCase
         self::assertSame(1, $httpClientMock->getRequestsCount());
     }
 
+    public function testSchedulerCannotUnscheduleWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be unscheduled');
+        self::expectExceptionCode(0);
+        $scheduler->unschedule('foo');
+    }
+
+    public function testSchedulerCanUnschedule(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 204,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->unschedule('foo');
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::yieldTask()}
+     */
+    public function testSchedulerCannotYieldWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be yielded');
+        self::expectExceptionCode(0);
+        $scheduler->yieldTask('foo');
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::yieldTask()}
+     */
+    public function testSchedulerCannotYieldAsynchronouslyWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be yielded');
+        self::expectExceptionCode(0);
+        $scheduler->yieldTask('foo', true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::yieldTask()}
+     */
+    public function testSchedulerCanYield(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->yieldTask('foo');
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::yieldTask()}
+     */
+    public function testSchedulerCanYieldAsynchronously(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->yieldTask('foo', true);
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
     /**
      * @throws Throwable {@see SchedulerInterface::getTasks()}
      * @throws BadMethodCallException {@see HttpScheduler::preempt()}
@@ -90,6 +192,164 @@ final class HttpSchedulerTest extends TestCase
         self::expectExceptionMessage(sprintf('The %s::class cannot preempt tasks', HttpScheduler::class));
         self::expectExceptionCode(0);
         $scheduler->preempt('foo', static fn (): bool => true);
+    }
+
+    public function testSchedulerCannotUpdateWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be updated');
+        self::expectExceptionCode(0);
+        $scheduler->update('foo', new NullTask('foo'));
+    }
+
+    public function testSchedulerCanUpdate(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 204,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->update('foo', new NullTask('foo'));
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    public function testSchedulerCannotPauseWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be paused');
+        self::expectExceptionCode(0);
+        $scheduler->pause('foo');
+    }
+
+    public function testSchedulerCannotPauseAsynchronouslyWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be paused');
+        self::expectExceptionCode(0);
+        $scheduler->pause('foo', true);
+    }
+
+    public function testSchedulerCanPause(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->pause('foo');
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    public function testSchedulerCanPauseAsynchronously(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->pause('foo', true);
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    public function testSchedulerCannotResumeWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The task "foo" cannot be resumed');
+        self::expectExceptionCode(0);
+        $scheduler->resume('foo');
+    }
+
+    public function testSchedulerCanResume(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler->resume('foo');
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
+    public function testSchedulerCannotGetTasksWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTasks();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
+    public function testSchedulerCannotGetTasksLazilyWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTasks(true);
     }
 
     /**
