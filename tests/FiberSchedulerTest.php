@@ -854,15 +854,16 @@ final class FiberSchedulerTest extends TestCase
     public function testTaskCanBeUpdated(): void
     {
         $task = new NullTask('foo');
+        $updatedTask = new NullTask('bar');
 
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
-
-        $scheduler = new FiberScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher()));
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $task);
+        $scheduler->update($task->getName(), $updatedTask);
+
+        self::assertSame($updatedTask, $scheduler->getTasks()->get('bar'));
     }
 
     /**
