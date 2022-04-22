@@ -10,6 +10,7 @@ use DateTimeZone;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -150,9 +151,12 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
             'headers' => [
                 'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => $lazy,
             ],
         ]);
 
@@ -160,7 +164,9 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The tasks cannot be retrieved');
         }
 
-        return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
+        $list = $this->serializer->deserialize($response->toArray(), TaskInterface::class.'[]', 'json');
+
+        return new TaskList($list);
     }
 
     /**
@@ -168,9 +174,13 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks:due?lazy=%s&strict=%s', $this->externalSchedulerEndpoint, $lazy, $strict), [
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:due', $this->externalSchedulerEndpoint), [
             'headers' => [
                 'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => $lazy,
+                'strict' => $strict,
             ],
         ]);
 
@@ -178,7 +188,9 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The due tasks cannot be retrieved');
         }
 
-        return $this->serializer->deserialize($response->toArray(), TaskListInterface::class, 'json');
+        $list = $this->serializer->deserialize($response->toArray(), TaskInterface::class.'[]', 'json');
+
+        return new TaskList($list);
     }
 
     /**
@@ -186,9 +198,12 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function next(bool $lazy = false): TaskInterface
     {
-        $response = $this->httpClient->request('GET', sprintf('%s/tasks:next?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
+        $response = $this->httpClient->request('GET', sprintf('%s/tasks:next', $this->externalSchedulerEndpoint), [
             'headers' => [
                 'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => $lazy,
             ],
         ]);
 

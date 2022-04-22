@@ -14,15 +14,18 @@ use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\SchedulerConfigurationNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskList;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
+use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -493,11 +496,6 @@ final class HttpSchedulerTest extends TestCase
 
     public function testSchedulerCanResumeWithCustomHttpClient(): void
     {
-        $updatedTask = new NullTask('foo');
-
-        $serializer = $this->getSerializer();
-        $payload = $serializer->serialize($updatedTask, 'json');
-
         $httpClientMock = $this->createMock(HttpClientInterface::class);
         $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:resume'), self::equalTo([
             'headers' => [
@@ -508,7 +506,7 @@ final class HttpSchedulerTest extends TestCase
             'http_code' => 200,
         ]));
 
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
         $scheduler->resume('foo');
     }
 
@@ -548,6 +546,48 @@ final class HttpSchedulerTest extends TestCase
         self::expectExceptionMessage('The tasks cannot be retrieved');
         self::expectExceptionCode(0);
         $scheduler->getTasks(true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
+    public function testSchedulerCanGetTasks(): void
+    {
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize(new TaskList([]), 'json');
+
+        $httpClientMock = new MockHttpClient([
+            new MockResponse($payload, [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $list = $scheduler->getTasks();
+
+        self::assertCount(0, $list);
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
+    public function testSchedulerCanGetTasksLazily(): void
+    {
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize(new TaskList([]), 'json');
+
+        $httpClientMock = new MockHttpClient([
+            new MockResponse($payload, [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $list = $scheduler->getTasks(true);
+
+        self::assertCount(0, $list);
+        self::assertSame(1, $httpClientMock->getRequestsCount());
     }
 
     /**
@@ -612,6 +652,8 @@ final class HttpSchedulerTest extends TestCase
             new DateIntervalNormalizer(),
             new JsonSerializableNormalizer(),
             $objectNormalizer,
+            new GetSetMethodNormalizer(),
+            new ArrayDenormalizer(),
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
