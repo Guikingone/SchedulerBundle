@@ -861,6 +861,13 @@ final class FiberSchedulerTest extends TestCase
         $scheduler->update($task->getName(), $updatedTask);
 
         self::assertSame($updatedTask, $scheduler->getTasks()->get('bar'));
+        self::assertSame($task, $scheduler->getTasks()->get('foo'));
+        self::assertSame('* * * * *', $scheduler->getTasks()->get('foo')->getExpression());
+
+        $task->setExpression('0 * * * *');
+        $scheduler->update('foo', $task);
+
+        self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
     }
 
     /**

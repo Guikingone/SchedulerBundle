@@ -36,7 +36,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('POST', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
             'headers' => [
-                'Content-Type: application/json',
+                'Content-Type' => 'application/json',
             ],
             'body' => $this->serializer->serialize($task, 'json'),
         ]);
@@ -51,11 +51,7 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function unschedule(string $taskName): void
     {
-        $response = $this->httpClient->request('DELETE', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
-            'query' => [
-                'task' => $taskName,
-            ],
-        ]);
+        $response = $this->httpClient->request('DELETE', sprintf('%s/task/%s', $this->externalSchedulerEndpoint, $taskName));
 
         if (204 !== $response->getStatusCode()) {
             throw new RuntimeException(sprintf('The task "%s" cannot be unscheduled', $taskName));
@@ -67,12 +63,13 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function yieldTask(string $name, bool $async = false): void
     {
-        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:yield', $this->externalSchedulerEndpoint, $name), [
+        $response = $this->httpClient->request('POST', sprintf('%s/tasks:yield', $this->externalSchedulerEndpoint), [
             'headers' => [
-                'Accept: application/json',
-                'Content-Type: application/json',
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
             ],
             'body' => [
+                'task' => $name,
                 'async' => $async,
             ],
         ]);
@@ -95,10 +92,10 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
-        $response = $this->httpClient->request('PUT', sprintf('%s/tasks/%s?async=%s', $this->externalSchedulerEndpoint, $taskName, $async), [
+        $response = $this->httpClient->request('PUT', sprintf('%s/task/%s', $this->externalSchedulerEndpoint, $taskName), [
             'headers' => [
-                'Accept: application/json',
-                'Content-Type: application/json',
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
             ],
             'body' => [
                 'task' => $this->serializer->serialize($task, 'json'),
@@ -118,8 +115,8 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:pause', $this->externalSchedulerEndpoint, $taskName), [
             'headers' => [
-                'Accept: application/json',
-                'Content-Type: application/json',
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
             ],
             'body' => [
                 'async' => $async,
@@ -138,8 +135,8 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:resume', $this->externalSchedulerEndpoint, $taskName), [
             'headers' => [
-                'Accept: application/json',
-                'Content-Type: application/json',
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
             ],
         ]);
 
@@ -155,7 +152,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
             'headers' => [
-                'Accept: application/json',
+                'Accept' => 'application/json',
             ],
         ]);
 
@@ -173,7 +170,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks:due?lazy=%s&strict=%s', $this->externalSchedulerEndpoint, $lazy, $strict), [
             'headers' => [
-                'Accept: application/json',
+                'Accept' => 'application/json',
             ],
         ]);
 
@@ -191,7 +188,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks:next?lazy=%s', $this->externalSchedulerEndpoint, $lazy), [
             'headers' => [
-                'Accept: application/json',
+                'Accept' => 'application/json',
             ],
         ]);
 
@@ -221,7 +218,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint), [
             'headers' => [
-                'Accept: application/json',
+                'Accept' => 'application/json',
             ],
         ]);
 
@@ -241,7 +238,7 @@ final class HttpScheduler implements SchedulerInterface
     {
         $response = $this->httpClient->request('GET', sprintf('%s/configuration', $this->externalSchedulerEndpoint), [
             'headers' => [
-                'Accept: application/json',
+                'Accept' => 'application/json',
             ],
         ]);
 
