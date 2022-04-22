@@ -413,6 +413,54 @@ final class HttpSchedulerTest extends TestCase
         self::assertSame(1, $httpClientMock->getRequestsCount());
     }
 
+    public function testSchedulerCanPauseWithCustomHttpClient(): void
+    {
+        $updatedTask = new NullTask('foo');
+
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize($updatedTask, 'json');
+
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:pause'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => [
+                'async' => false,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 200,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $scheduler->pause('foo');
+    }
+
+    public function testSchedulerCanPauseAsynchronouslyWithCustomHttpClient(): void
+    {
+        $updatedTask = new NullTask('foo');
+
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize($updatedTask, 'json');
+
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:pause'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => [
+                'async' => true,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 200,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $scheduler->pause('foo', true);
+    }
+
     public function testSchedulerCannotResumeWithInvalidResponse(): void
     {
         $httpClientMock = new MockHttpClient([
@@ -441,6 +489,27 @@ final class HttpSchedulerTest extends TestCase
         $scheduler->resume('foo');
 
         self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    public function testSchedulerCanResumeWithCustomHttpClient(): void
+    {
+        $updatedTask = new NullTask('foo');
+
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize($updatedTask, 'json');
+
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:resume'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 200,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $scheduler->resume('foo');
     }
 
     /**

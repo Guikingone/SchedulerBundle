@@ -113,7 +113,7 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function pause(string $taskName, bool $async = false): void
     {
-        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:pause', $this->externalSchedulerEndpoint, $taskName), [
+        $response = $this->httpClient->request('POST', sprintf('%s/task/%s:pause', $this->externalSchedulerEndpoint, $taskName), [
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
@@ -133,7 +133,7 @@ final class HttpScheduler implements SchedulerInterface
      */
     public function resume(string $taskName): void
     {
-        $response = $this->httpClient->request('POST', sprintf('%s/tasks/%s/:resume', $this->externalSchedulerEndpoint, $taskName), [
+        $response = $this->httpClient->request('POST', sprintf('%s/task/%s:resume', $this->externalSchedulerEndpoint, $taskName), [
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
