@@ -164,7 +164,7 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The tasks cannot be retrieved');
         }
 
-        $list = $this->serializer->deserialize($response->toArray(), TaskInterface::class.'[]', 'json');
+        $list = $this->serializer->deserialize($response->getContent(), TaskInterface::class.'[]', 'json');
 
         return new TaskList($list);
     }
@@ -188,7 +188,7 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The due tasks cannot be retrieved');
         }
 
-        $list = $this->serializer->deserialize($response->toArray(), TaskInterface::class.'[]', 'json');
+        $list = $this->serializer->deserialize($response->getContent(), TaskInterface::class.'[]', 'json');
 
         return new TaskList($list);
     }
@@ -211,7 +211,7 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The next task cannot be retrieved');
         }
 
-        return $this->serializer->deserialize($response->toArray(), TaskInterface::class, 'json');
+        return $this->serializer->deserialize($response->getContent(), TaskInterface::class, 'json');
     }
 
     /**
@@ -241,7 +241,7 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException('The scheduler timezone cannot be retrieved');
         }
 
-        $configuration = $this->serializer->deserialize($response->toArray(), SchedulerConfiguration::class, 'json');
+        $configuration = $this->serializer->deserialize($response->getContent(), SchedulerConfiguration::class, 'json');
 
         return $configuration->getTimezone();
     }
