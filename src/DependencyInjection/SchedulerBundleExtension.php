@@ -43,6 +43,8 @@ use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
+use SchedulerBundle\Middleware\FiberAwareSchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\MiddlewareRegistryInterface;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -1306,6 +1308,21 @@ final class SchedulerBundleExtension extends Extension
         ;
         $container->setAlias(SchedulerMiddlewareStackInterface::class, SchedulerMiddlewareStack::class);
 
+        if ('fiber' === $container->getParameter('scheduler.middleware_mode')) {
+            $container->register(FiberAwareSchedulerMiddlewareStack::class, FiberAwareSchedulerMiddlewareStack::class)
+                ->setDecoratedService(SchedulerMiddlewareStack::class, 'scheduler.scheduler_middleware_stack')
+                ->setArguments([
+                    new Reference('scheduler.scheduler_middleware_stack', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('container.hot_path')
+                ->addTag('container.preload', [
+                    'class' => FiberAwareSchedulerMiddlewareStack::class,
+                ])
+            ;
+        }
+
         $container->register(WorkerMiddlewareStack::class, WorkerMiddlewareStack::class)
             ->setArguments([
                 new Reference(MiddlewareRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
@@ -1318,6 +1335,21 @@ final class SchedulerBundleExtension extends Extension
             ])
         ;
         $container->setAlias(WorkerMiddlewareStackInterface::class, WorkerMiddlewareStack::class);
+
+        if ('fiber' === $container->getParameter('scheduler.middleware_mode')) {
+            $container->register(FiberAwareWorkerMiddlewareStack::class, FiberAwareWorkerMiddlewareStack::class)
+                ->setDecoratedService(WorkerMiddlewareStack::class, 'scheduler.worker_middleware_stack')
+                ->setArguments([
+                    new Reference('scheduler.worker_middleware_stack', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                ])
+                ->setPublic(false)
+                ->addTag('container.hot_path')
+                ->addTag('container.preload', [
+                    'class' => FiberAwareWorkerMiddlewareStack::class,
+                ])
+            ;
+        }
 
         $container->register(NotifierMiddleware::class, NotifierMiddleware::class)
             ->setArguments([

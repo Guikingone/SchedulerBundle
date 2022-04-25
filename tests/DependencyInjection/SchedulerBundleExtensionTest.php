@@ -47,6 +47,8 @@ use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
+use SchedulerBundle\Middleware\FiberAwareSchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\MiddlewareRegistryInterface;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
@@ -1789,6 +1791,120 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(TaskExecutionMiddleware::class, $container->getDefinition(TaskExecutionMiddleware::class)->getTag('container.preload')[0]['class']);
 
         self::assertFalse($container->hasDefinition(MaxExecutionMiddleware::class));
+    }
+
+    public function testFiberSchedulerMiddlewareStackIsRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+            'middleware' => [
+                'mode' => 'fiber',
+            ],
+        ]);
+
+        self::assertTrue($container->hasParameter('scheduler.middleware_mode'));
+        self::assertSame('fiber', $container->getParameter('scheduler.middleware_mode'));
+
+        self::assertTrue($container->hasAlias(SchedulerMiddlewareStackInterface::class));
+        self::assertTrue($container->hasDefinition(SchedulerMiddlewareStack::class));
+        self::assertFalse($container->getDefinition(SchedulerMiddlewareStack::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(SchedulerMiddlewareStack::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(SchedulerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(MiddlewareRegistryInterface::class, (string) $container->getDefinition(SchedulerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SchedulerMiddlewareStack::class)->getArgument(0)->getInvalidBehavior());
+        self::assertCount(3, $container->getDefinition(SchedulerMiddlewareStack::class)->getTags());
+        self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
+        self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(SchedulerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(SchedulerMiddlewareStack::class, $container->getDefinition(SchedulerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FiberAwareSchedulerMiddlewareStack::class));
+        self::assertTrue($container->hasAlias(SchedulerMiddlewareStackInterface::class));
+        self::assertSame(SchedulerMiddlewareStack::class, (string) $container->getAlias(SchedulerMiddlewareStackInterface::class));
+
+        $decoratedService = $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getDecoratedService();
+        self::assertIsArray($decoratedService);
+        self::assertArrayHasKey(0, $decoratedService);
+        self::assertArrayHasKey(1, $decoratedService);
+        self::assertArrayHasKey(2, $decoratedService);
+        self::assertSame(SchedulerMiddlewareStack::class, $decoratedService[0]);
+        self::assertSame('scheduler.scheduler_middleware_stack', $decoratedService[1]);
+        self::assertSame(0, $decoratedService[2]);
+
+        self::assertCount(2, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(0));
+        self::assertSame('scheduler.scheduler_middleware_stack', (string) $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getArgument(1)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->isPublic());
+        self::assertTrue($container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(FiberAwareSchedulerMiddlewareStack::class, $container->getDefinition(FiberAwareSchedulerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testFiberWorkerMiddlewareStackIsRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+            'middleware' => [
+                'mode' => 'fiber',
+            ],
+        ]);
+
+        self::assertTrue($container->hasParameter('scheduler.middleware_mode'));
+        self::assertSame('fiber', $container->getParameter('scheduler.middleware_mode'));
+
+        self::assertTrue($container->hasAlias(WorkerMiddlewareStackInterface::class));
+        self::assertTrue($container->hasDefinition(WorkerMiddlewareStack::class));
+        self::assertFalse($container->getDefinition(WorkerMiddlewareStack::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(WorkerMiddlewareStack::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(WorkerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(MiddlewareRegistryInterface::class, (string) $container->getDefinition(WorkerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(WorkerMiddlewareStack::class)->getArgument(0)->getInvalidBehavior());
+        self::assertCount(3, $container->getDefinition(WorkerMiddlewareStack::class)->getTags());
+        self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('scheduler.middleware_hub'));
+        self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(WorkerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(WorkerMiddlewareStack::class, $container->getDefinition(WorkerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(FiberAwareWorkerMiddlewareStack::class));
+        self::assertTrue($container->hasAlias(WorkerMiddlewareStackInterface::class));
+        self::assertSame(WorkerMiddlewareStack::class, (string) $container->getAlias(WorkerMiddlewareStackInterface::class));
+
+        $decoratedService = $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getDecoratedService();
+        self::assertIsArray($decoratedService);
+        self::assertArrayHasKey(0, $decoratedService);
+        self::assertArrayHasKey(1, $decoratedService);
+        self::assertArrayHasKey(2, $decoratedService);
+        self::assertSame(WorkerMiddlewareStack::class, $decoratedService[0]);
+        self::assertSame('scheduler.worker_middleware_stack', $decoratedService[1]);
+        self::assertSame(0, $decoratedService[2]);
+
+        self::assertCount(2, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(0));
+        self::assertSame('scheduler.worker_middleware_stack', (string) $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getArgument(1)->getInvalidBehavior());
+        self::assertFalse($container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->isPublic());
+        self::assertTrue($container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->hasTag('container.hot_path'));
+        self::assertTrue($container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->hasTag('container.preload'));
+        self::assertSame(FiberAwareWorkerMiddlewareStack::class, $container->getDefinition(FiberAwareWorkerMiddlewareStack::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testRateLimiterMiddlewareCanBeConfigured(): void

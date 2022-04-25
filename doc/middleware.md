@@ -7,7 +7,7 @@ _Introduced in `0.3`_
 - [Order](#Order)
 - [Required middleware](#required-middleware)
 - [Extending](#implementing-a-custom-middleware)
-- [Using fibers]()
+- [Using fibers](#using-fibers)
 
 This bundle defines middleware related to execution and scheduling phases.
 
@@ -156,4 +156,17 @@ depending on your needs, to do so, your middleware must implement one or many of
 
 ## Using fibers
 
-// TODO
+_Requires `PHP >= 8.1`_
+
+If desired, [fibers](https://www.php.net/manual/en/language.fibers.php) can be used to execute middlewares, to do so, just enable the fibers support in the configuration:
+
+```yaml
+scheduler_bundle:
+    # ...
+
+    middleware:
+        mode: 'fiber'
+```
+
+Even when using fibers, both `WorkerMiddlewareStack` and `SchedulerMiddlewareStack` are available via [WorkerMiddlewareStackInterface](../src/Middleware/WorkerMiddlewareStackInterface.php)
+and [SchedulerMiddlewareStackInterface](../src/Middleware/SchedulerMiddlewareStackInterface.php) respectively.
