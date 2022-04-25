@@ -596,7 +596,15 @@ final class LazySchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
         self::assertFalse($lazyScheduler->isInitialized());
 
+        $lazyScheduler->schedule(new NullTask('foo', [
+            'expression' => '@reboot',
+        ]));
+        $lazyScheduler->schedule(new NullTask('bar'));
+        self::assertCount(2, $lazyScheduler->getTasks());
+        self::assertTrue($lazyScheduler->isInitialized());
+
         $lazyScheduler->reboot();
+        self::assertCount(1, $lazyScheduler->getTasks());
         self::assertTrue($lazyScheduler->isInitialized());
     }
 

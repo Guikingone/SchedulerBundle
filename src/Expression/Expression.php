@@ -48,13 +48,13 @@ final class Expression implements Stringable
      */
     public const MONTHLY_MACRO = '@monthly';
 
-    private const ALLOWED_MACROS = [
+    public const ALLOWED_MACROS = [
         self::ANNUALLY_MACRO => '0 0 1 1 *',
         self::YEARLY_MACRO => '0 0 1 1 *',
         self::DAILY_MACRO => '0 0 * * *',
         self::WEEKLY_MACRO => '0 0 * * 0',
         self::MONTHLY_MACRO => '0 0 1 * *',
-        self::REBOOT_MACRO => 'reboot',
+        self::REBOOT_MACRO => '@reboot',
     ];
 
     private string $expression = '* * * * *';

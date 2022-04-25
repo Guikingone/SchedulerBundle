@@ -18,6 +18,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use function array_key_exists;
+use function array_values;
 use function in_array;
 use function is_array;
 use function is_bool;
@@ -144,7 +145,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedValues('state', fn (string $state): bool => $this->validateState($state));
         $optionsResolver->setAllowedValues('execution_state', fn (string $executionState = null): bool => $this->validateExecutionState($executionState));
 
-        $optionsResolver->setNormalizer('expression', fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
+        $optionsResolver->setNormalizer('expression', static fn (Options $options, string $value): string => Expression::createFromString($value)->getExpression());
         $optionsResolver->setNormalizer('execution_end_date', fn (Options $options, ?string $value): ?DateTimeImmutable => null !== $value ? new DateTimeImmutable($value, $options['timezone'] ?? $this->getTimezone() ?? new DateTimeZone('UTC')) : null);
         $optionsResolver->setNormalizer('execution_start_date', fn (Options $options, ?string $value): ?DateTimeImmutable => null !== $value ? new DateTimeImmutable($value, $options['timezone'] ?? $this->getTimezone() ?? new DateTimeZone('UTC')) : null);
 
@@ -784,7 +785,7 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateExpression(string $expression): bool
     {
-        return CronExpression::isValidExpression($expression);
+        return CronExpression::isValidExpression($expression) || in_array($expression, array_values(Expression::ALLOWED_MACROS), true);
     }
 
     private function validateNice(int $nice = null): bool
