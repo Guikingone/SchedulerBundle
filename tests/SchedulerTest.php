@@ -1667,6 +1667,21 @@ final class SchedulerTest extends TestCase
 
     /**
      * @throws Exception {@see Scheduler::__construct()}
+     */
+    public function testSchedulerCanReturnTheTimezone(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+
+        $timezone = $scheduler->getTimezone();
+        self::assertSame('UTC', $timezone->getName());
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getPoolConfiguration()}
      */
     public function testSchedulerPoolConfigurationIsAvailable(): void

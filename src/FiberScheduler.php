@@ -158,9 +158,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getTimezone(): DateTimeZone
     {
-        return $this->handleOperationViaFiber(function (): void {
-            $this->scheduler->getTimezone();
-        });
+        return $this->handleOperationViaFiber(fn (): DateTimeZone => $this->scheduler->getTimezone());
     }
 
     /**
