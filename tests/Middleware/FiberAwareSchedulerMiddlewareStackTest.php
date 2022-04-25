@@ -286,7 +286,7 @@ final class FiberAwareSchedulerMiddlewareStackTest extends TestCase
         };
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('critical');
+        $logger->expects(self::never())->method('critical');
 
         $schedulerMiddlewareStack = new FiberAwareSchedulerMiddlewareStack(new SchedulerMiddlewareStack(new MiddlewareRegistry([
             $erroredMiddleware,
