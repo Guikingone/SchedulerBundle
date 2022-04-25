@@ -589,6 +589,42 @@ final class LazySchedulerTest extends TestCase
      * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::reboot()}
      */
+    public function testSchedulerCanRebootAndInitializeItselfWithEmptyTasks(): void
+    {
+        $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $lazyScheduler->reboot();
+        self::assertCount(0, $lazyScheduler->getTasks());
+        self::assertTrue($lazyScheduler->isInitialized());
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::reboot()}
+     */
+    public function testSchedulerCanRebootWithEmptyTasks(): void
+    {
+        $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        self::assertFalse($lazyScheduler->isInitialized());
+
+        $lazyScheduler->schedule(new NullTask('bar'));
+        self::assertCount(1, $lazyScheduler->getTasks());
+        self::assertTrue($lazyScheduler->isInitialized());
+
+        $lazyScheduler->reboot();
+        self::assertCount(0, $lazyScheduler->getTasks());
+        self::assertTrue($lazyScheduler->isInitialized());
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::reboot()}
+     */
     public function testSchedulerCanReboot(): void
     {
         $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([

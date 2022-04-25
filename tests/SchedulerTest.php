@@ -1578,6 +1578,22 @@ final class SchedulerTest extends TestCase
     /**
      * @throws Throwable {@see Scheduler::__construct()}
      */
+    public function testSchedulerCanRebootWithEmptyTasks(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+
+        $scheduler->schedule(new NullTask('bar'));
+        self::assertCount(1, $scheduler->getTasks());
+
+        $scheduler->reboot();
+        self::assertCount(0, $scheduler->getTasks());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testSchedulerCanReboot(): void
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
