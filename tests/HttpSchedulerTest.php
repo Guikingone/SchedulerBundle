@@ -423,7 +423,7 @@ final class HttpSchedulerTest extends TestCase
         $updatedTask = new NullTask('foo');
 
         $serializer = $this->getSerializer();
-        $payload = $serializer->serialize($updatedTask, 'json');
+        $serializer->serialize($updatedTask, 'json');
 
         $httpClientMock = $this->createMock(HttpClientInterface::class);
         $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:pause'), self::equalTo([
@@ -447,7 +447,7 @@ final class HttpSchedulerTest extends TestCase
         $updatedTask = new NullTask('foo');
 
         $serializer = $this->getSerializer();
-        $payload = $serializer->serialize($updatedTask, 'json');
+        $serializer->serialize($updatedTask, 'json');
 
         $httpClientMock = $this->createMock(HttpClientInterface::class);
         $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/task/foo:pause'), self::equalTo([

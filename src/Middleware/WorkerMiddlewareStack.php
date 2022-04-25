@@ -6,7 +6,6 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
-use Throwable;
 use function array_merge;
 use function array_unique;
 use const SORT_REGULAR;
@@ -14,11 +13,10 @@ use const SORT_REGULAR;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerMiddlewareStack extends AbstractMiddlewareStack
+final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements WorkerMiddlewareStackInterface
 {
     /**
-     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
-     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
+     * {@inheritdoc}
      */
     public function runPreExecutionMiddleware(TaskInterface $task): void
     {
@@ -28,8 +26,7 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack
     }
 
     /**
-     * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
-     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
+     * {@inheritdoc}
      */
     public function runPostExecutionMiddleware(TaskInterface $task, WorkerInterface $worker): void
     {

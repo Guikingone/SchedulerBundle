@@ -5,32 +5,35 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
 /**
+ * @requires PHP 8.1
+ *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerMiddlewareStackTest extends TestCase
+final class FiberAwareWorkerMiddlewareStackTest extends TestCase
 {
     /**
      * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
      */
     public function testStackCanRunEmptyPreMiddlewareList(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
 
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
+        $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ]));
+        ])));
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -40,7 +43,7 @@ final class WorkerMiddlewareStackTest extends TestCase
      */
     public function testStackCanRunPreMiddlewareList(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
 
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::once())->method('preExecute')->with($task);
@@ -48,10 +51,10 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
+        $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]));
+        ])));
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -62,14 +65,14 @@ final class WorkerMiddlewareStackTest extends TestCase
     public function testStackCanRunEmptyPostMiddlewareList(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
 
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('preExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
+        $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ]));
+        ])));
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }
@@ -80,7 +83,7 @@ final class WorkerMiddlewareStackTest extends TestCase
     public function testStackCanRunPostMiddlewareList(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask('foo');
 
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::once())->method('postExecute')->with($task);
@@ -88,10 +91,10 @@ final class WorkerMiddlewareStackTest extends TestCase
         $secondMiddleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('preExecute')->with($task);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
+        $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]));
+        ])));
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }
@@ -104,10 +107,10 @@ final class WorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware = $this->createMock(PreExecutionMiddlewareInterface::class);
 
-        $workerMiddlewareStack = new WorkerMiddlewareStack(new MiddlewareRegistry([
+        $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ]));
+        ])));
 
         self::assertCount(2, $workerMiddlewareStack->getMiddlewareList());
     }
