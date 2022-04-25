@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle;
 
 use BadMethodCallException;
+use DateTimeImmutable;
+use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SchedulerBundle\HttpScheduler;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
@@ -550,6 +553,56 @@ final class HttpSchedulerTest extends TestCase
     /**
      * @throws Throwable {@see HttpScheduler::getTasks()}
      */
+    public function testSchedulerCannotGetTasksWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => false,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTasks();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
+    public function testSchedulerCannotGetTasksLazilyWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => true,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTasks(true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTasks()}
+     */
     public function testSchedulerCanGetTasks(): void
     {
         $serializer = $this->getSerializer();
@@ -643,6 +696,84 @@ final class HttpSchedulerTest extends TestCase
                 'http_code' => 500,
             ]),
         ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The due tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getDueTasks(true, true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getDueTasks()}
+     */
+    public function testSchedulerCannotGetDueTasksWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks:due'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => false,
+                'strict' => false,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The due tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getDueTasks();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getDueTasks()}
+     */
+    public function testSchedulerCannotGetDueTasksLazilyWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks:due'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => true,
+                'strict' => false,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The due tasks cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getDueTasks(true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getDueTasks()}
+     */
+    public function testSchedulerCannotGetDueTasksLazilyAndStrictlyWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks:due'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => true,
+                'strict' => true,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
 
         $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
 
@@ -765,6 +896,56 @@ final class HttpSchedulerTest extends TestCase
     /**
      * @throws Throwable {@see HttpScheduler::next()}
      */
+    public function testSchedulerCannotGetNextTasksWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks:next'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => false,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The next task cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->next();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::next()}
+     */
+    public function testSchedulerCannotGetNextTasksLazilyWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/tasks:next'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'query' => [
+                'lazy' => true,
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The next task cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->next(true);
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::next()}
+     */
     public function testSchedulerCanGetNextTask(): void
     {
         $serializer = $this->getSerializer();
@@ -824,6 +1005,24 @@ final class HttpSchedulerTest extends TestCase
     /**
      * @throws Throwable {@see HttpScheduler::reboot()}
      */
+    public function testSchedulerCannotRebootWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('POST'), self::equalTo('https://127.0.0.1:9090/scheduler:reboot'))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The scheduler cannot be rebooted');
+        self::expectExceptionCode(0);
+        $scheduler->reboot();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::reboot()}
+     */
     public function testSchedulerCanReboot(): void
     {
         $httpClientMock = new MockHttpClient([
@@ -836,6 +1035,131 @@ final class HttpSchedulerTest extends TestCase
         $scheduler->reboot();
 
         self::assertSame(1, $httpClientMock->getRequestsCount());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCannotReturnTheTimezoneWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The scheduler timezone cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTimezone();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCannotReturnTheTimezoneWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/scheduler:timezone'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The scheduler timezone cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getTimezone();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCanReturnTheTimezone(): void
+    {
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize(new SchedulerConfiguration(new DateTimeZone('Europe/Paris'), new DateTimeImmutable('now')), 'json');
+
+        $httpClientMock = new MockHttpClient([
+            new MockResponse($payload, [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $timezone = $scheduler->getTimezone();
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+        self::assertSame('Europe/Paris', $timezone->getName());
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCannotReturnThePoolConfigurationWithInvalidResponse(): void
+    {
+        $httpClientMock = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 500,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The scheduler configuration cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getPoolConfiguration();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCannotReturnThePoolConfigurationWithInvalidResponseAndMockedClient(): void
+    {
+        $httpClientMock = $this->createMock(HttpClientInterface::class);
+        $httpClientMock->expects(self::once())->method('request')->with(self::equalTo('GET'), self::equalTo('https://127.0.0.1:9090/scheduler:configuration'), self::equalTo([
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+        ]))->willReturn(new MockResponse('', [
+            'http_code' => 500,
+        ]));
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('The scheduler configuration cannot be retrieved');
+        self::expectExceptionCode(0);
+        $scheduler->getPoolConfiguration();
+    }
+
+    /**
+     * @throws Throwable {@see HttpScheduler::getTimezone()}
+     */
+    public function testSchedulerCanReturnThePoolConfiguration(): void
+    {
+        $serializer = $this->getSerializer();
+        $payload = $serializer->serialize(new SchedulerConfiguration(new DateTimeZone('Europe/Paris'), new DateTimeImmutable('now')), 'json');
+
+        $httpClientMock = new MockHttpClient([
+            new MockResponse($payload, [
+                'http_code' => 200,
+            ]),
+        ], 'https://127.0.0.1:9090');
+
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $poolConfiguration = $scheduler->getPoolConfiguration();
+
+        self::assertSame(1, $httpClientMock->getRequestsCount());
+        self::assertSame('Europe/Paris', $poolConfiguration->getTimezone()->getName());
+        self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 
     private function getSerializer(): SerializerInterface

@@ -762,6 +762,11 @@ final class LazySchedulerTest extends TestCase
         $scheduler->update($task->getName(), $updatedTask, true);
 
         self::assertSame($task, $scheduler->getTasks()->get('foo'));
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The task "bar" does not exist or is invalid');
+        self::expectExceptionCode(0);
+        $scheduler->getTasks()->get('bar');
     }
 
     /**
