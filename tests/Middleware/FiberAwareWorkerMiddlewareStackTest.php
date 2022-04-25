@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
@@ -28,12 +29,15 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
     {
         $task = new NullTask('foo');
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postExecute')->with($task);
 
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ])));
+        ])), $logger);
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -45,6 +49,9 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
     {
         $task = new NullTask('foo');
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::once())->method('preExecute')->with($task);
 
@@ -54,7 +61,7 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ])));
+        ])), $logger);
 
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
@@ -67,12 +74,15 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $task = new NullTask('foo');
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('preExecute')->with($task);
 
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
-        ])));
+        ])), $logger);
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }
@@ -85,6 +95,9 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $task = new NullTask('foo');
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::once())->method('postExecute')->with($task);
 
@@ -94,7 +107,7 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ])));
+        ])), $logger);
 
         $workerMiddlewareStack->runPostExecutionMiddleware($task, $worker);
     }
@@ -107,10 +120,13 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware = $this->createMock(PreExecutionMiddlewareInterface::class);
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
-        ])));
+        ])), $logger);
 
         self::assertCount(2, $workerMiddlewareStack->getMiddlewareList());
     }

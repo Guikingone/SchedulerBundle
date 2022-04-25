@@ -52,6 +52,7 @@ use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStackInterface;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskExecutionMiddleware;
@@ -60,6 +61,7 @@ use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
+use SchedulerBundle\Middleware\WorkerMiddlewareStackInterface;
 use SchedulerBundle\Pool\SchedulerPool;
 use SchedulerBundle\Pool\SchedulerPoolInterface;
 use SchedulerBundle\Probe\Probe;
@@ -234,6 +236,7 @@ final class SchedulerBundleExtension extends Extension
         $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
         $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
         $container->setParameter('scheduler.worker_registry', $configuration['worker']['registry']);
+        $container->setParameter('scheduler.middleware_mode', $configuration['middleware']['mode']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
@@ -513,7 +516,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 $container->getParameter('scheduler.timezone'),
                 new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerMiddlewareStackInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(MessageBusInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
@@ -667,8 +670,8 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(DebugMiddlewareCommand::class, DebugMiddlewareCommand::class)
             ->setArguments([
-                new Reference(SchedulerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerMiddlewareStackInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerMiddlewareStackInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->addTag('console.command')
             ->addTag('container.preload', [
@@ -1119,7 +1122,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(RunnerRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(ExecutionPolicyRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(TaskExecutionTrackerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(WorkerMiddlewareStack::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(WorkerMiddlewareStackInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(EventDispatcherInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
@@ -1296,10 +1299,12 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->setPublic(false)
             ->addTag('scheduler.middleware_hub')
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => SchedulerMiddlewareStack::class,
             ])
         ;
+        $container->setAlias(SchedulerMiddlewareStackInterface::class, SchedulerMiddlewareStack::class);
 
         $container->register(WorkerMiddlewareStack::class, WorkerMiddlewareStack::class)
             ->setArguments([
@@ -1307,10 +1312,12 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->setPublic(false)
             ->addTag('scheduler.middleware_hub')
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => WorkerMiddlewareStack::class,
             ])
         ;
+        $container->setAlias(WorkerMiddlewareStackInterface::class, WorkerMiddlewareStack::class);
 
         $container->register(NotifierMiddleware::class, NotifierMiddleware::class)
             ->setArguments([

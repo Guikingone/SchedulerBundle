@@ -7,6 +7,7 @@ _Introduced in `0.3`_
 - [Order](#Order)
 - [Required middleware](#required-middleware)
 - [Extending](#implementing-a-custom-middleware)
+- [Using fibers]()
 
 This bundle defines middleware related to execution and scheduling phases.
 
@@ -152,3 +153,7 @@ depending on your needs, to do so, your middleware must implement one or many of
 | [`OrderedMiddlewareInterface`](../src/Middleware/OrderedMiddlewareInterface.php)               | Allows you to define an order for the middleware execution                  |
 
 **Note**: Interfaces can be combined to handle specific use-cases.
+
+## Using fibers
+
+// TODO

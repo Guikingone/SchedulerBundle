@@ -6,18 +6,16 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use Throwable;
 use function array_merge;
 use const SORT_REGULAR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
+final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements SchedulerMiddlewareStackInterface
 {
     /**
-     * @throws Throwable {@see PreSchedulingMiddlewareInterface::preScheduling()}
-     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
+     * {@inheritdoc}
      */
     public function runPreSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
@@ -27,8 +25,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack
     }
 
     /**
-     * @throws Throwable {@see PostSchedulingMiddlewareInterface::postScheduling()}
-     * @throws Throwable {@see AbstractMiddlewareStack::runMiddleware()}
+     * {@inheritdoc}
      */
     public function runPostSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {

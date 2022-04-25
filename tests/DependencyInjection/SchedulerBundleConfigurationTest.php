@@ -29,6 +29,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('worker', $configuration);
         self::assertArrayHasKey('mode', $configuration['worker']);
         self::assertArrayHasKey('registry', $configuration['worker']);
+        self::assertArrayHasKey('middleware', $configuration);
     }
 
     public function testConfigurationCannotDefineTasksWithoutTransport(): void
@@ -640,5 +641,40 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
         self::assertArrayHasKey('registry', $configuration['worker']);
         self::assertTrue($configuration['worker']['registry']);
+    }
+
+    public function testMiddlewareModeIsEnabled(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('middleware', $configuration);
+        self::assertNotNull($configuration['middleware']);
+        self::assertArrayHasKey('mode', $configuration['middleware']);
+        self::assertSame('default', $configuration['middleware']['mode']);
+    }
+
+    public function testMiddlewareModeCanBeChangedToFiber(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'middleware' => [
+                    'mode' => 'fiber',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('middleware', $configuration);
+        self::assertNotNull($configuration['middleware']);
+        self::assertArrayHasKey('mode', $configuration['middleware']);
+        self::assertSame('fiber', $configuration['middleware']['mode']);
     }
 }
