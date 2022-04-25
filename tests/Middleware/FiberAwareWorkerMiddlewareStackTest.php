@@ -6,12 +6,15 @@ namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
+use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
@@ -50,19 +53,41 @@ final class FiberAwareWorkerMiddlewareStackTest extends TestCase
         $task = new NullTask('foo');
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('critical');
+        $logger->expects(self::once())->method('critical');
 
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
-        $middleware->expects(self::once())->method('preExecute')->with($task);
+        $middleware->expects(self::never())->method('preExecute')->with($task);
 
         $secondMiddleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $secondMiddleware->expects(self::never())->method('postExecute')->with($task);
 
+        $erroredMiddleware = new class () implements PreExecutionMiddlewareInterface, OrderedMiddlewareInterface {
+            /**
+             * {@inheritdoc}
+             */
+            public function preExecute(TaskInterface $task): void
+            {
+                throw new RuntimeException('An error occurred');
+            }
+
+            /**
+             * {@inheritdoc}
+             */
+            public function getPriority(): int
+            {
+                return 1;
+            }
+        };
+
         $workerMiddlewareStack = new FiberAwareWorkerMiddlewareStack(new WorkerMiddlewareStack(new MiddlewareRegistry([
             $middleware,
             $secondMiddleware,
+            $erroredMiddleware,
         ])), $logger);
 
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('An error occurred');
+        self::expectExceptionCode(0);
         $workerMiddlewareStack->runPreExecutionMiddleware($task);
     }
 
