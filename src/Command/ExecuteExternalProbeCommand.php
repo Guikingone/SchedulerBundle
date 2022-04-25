@@ -78,7 +78,7 @@ final class ExecuteExternalProbeCommand extends Command
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Path', 'Delay', 'Execution state']);
-        $table->addRows(array_map(static fn (ProbeTask $task): array => [
+        $table->addRows(array_map(static fn (ProbeTask|TaskInterface $task): array => [
             $task->getName(),
             $task->getExternalProbePath(),
             $task->getDelay(),

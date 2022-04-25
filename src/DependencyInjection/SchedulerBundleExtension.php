@@ -1446,7 +1446,7 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
-        if (!$configuration['probe']['enabled']) {
+        if (!$container->getParameter('scheduler.probe_enabled')) {
             return;
         }
 
