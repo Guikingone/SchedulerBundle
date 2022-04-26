@@ -15,6 +15,7 @@ use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaConfig;
 use Doctrine\DBAL\Schema\Sequence;
@@ -835,6 +836,7 @@ final class ConnectionTest extends TestCase
 
         $schemaManager = $this->createMock(AbstractSchemaManager::class);
         $schemaManager->expects(self::once())->method('createSchema')->willReturn($schema);
+        $schemaManager->expects(self::once())->method('createComparator')->willReturn(new Comparator($platform));
 
         $configuration->expects(self::once())->method('getSchemaAssetsFilter')->willReturn(null);
         $configuration->expects(self::exactly(2))
