@@ -1,5 +1,50 @@
 # Changelog
 
+0.9.0
+-----
+
+### Features
+
+##### Core
+
+* Fibers support (#235) ([de0f3b](https://github.com/Guikingone/SchedulerBundle/commit/de0f3b496a25718de25f26270ed91570f76427cb))
+
+##### Expression
+
+* Add ExactExpressionBuilder (#224) ([865265](https://github.com/Guikingone/SchedulerBundle/commit/86526518b59b40bf7b5db183f29ce8528ba3b645))
+
+##### Tasks
+
+* Add option deleteAfterExecute (#227) ([af1b2d](https://github.com/Guikingone/SchedulerBundle/commit/af1b2dfa230c148ae67ef1c5049f812dda2b33df))
+
+### Code Refactoring
+
+##### Bridge
+
+* Postgres support improved (#233) ([7dfa93](https://github.com/Guikingone/SchedulerBundle/commit/7dfa93f198a4f17b973ed74e177ef53ac4a5df1d))
+
+##### Core
+
+* Fibers improvement (#238) ([62419c](https://github.com/Guikingone/SchedulerBundle/commit/62419c7a99e994e053245d7714a32ed24430a857))
+* Static analysis fixed (#239) ([20d737](https://github.com/Guikingone/SchedulerBundle/commit/20d7373a79b05a8ec5b232a6e47ff30cc89dc264))
+* Transport configuration support (#202) ([e58fc1](https://github.com/Guikingone/SchedulerBundle/commit/e58fc15fa27cd943bc71a25961b82f1a69e75e0a))
+
+##### Dic
+
+* SchedulerAwareInterface started (#221) ([059c74](https://github.com/Guikingone/SchedulerBundle/commit/059c74276e2616625ec4db1e1142c599cf034cdd))
+
+##### Worker
+
+* ExecutionPolicy introduced (#237) ([da8111](https://github.com/Guikingone/SchedulerBundle/commit/da8111b56bf8ad040578f78ae75ae4bb7cc1c88e))
+
+### Continuous Integrations
+
+##### Php
+
+* 8.2 support started (#236) ([81a4ac](https://github.com/Guikingone/SchedulerBundle/commit/81a4ac3a3aa134d81ca66d5e76e594ee8c6c8d80))
+
+---
+
 0.8.1
 -----
 
