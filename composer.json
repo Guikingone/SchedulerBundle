@@ -126,7 +126,7 @@
         "ext-pcntl": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
-        "doctrine/dbal": "^3.1.4",
+        "doctrine/dbal": "^3.3.1",
         "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^3.5",
         "infection/infection": "^0.26.2",
