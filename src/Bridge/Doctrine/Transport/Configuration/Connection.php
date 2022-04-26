@@ -41,6 +41,35 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
      */
     public function init(array $options, array $extraOptions = []): void
     {
+        $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
+        $existingKeysQuery = $qb->select('stc.configuration_key_name')
+            ->where($qb->expr()->in('stc.configuration_key_name', ':keys'))
+            ->setParameter('keys', array_keys($options), DbalConnection::PARAM_STR_ARRAY)
+        ;
+
+        $existingConfigurationKeys = $this->executeQuery(
+            $existingKeysQuery->getSQL(),
+            $existingKeysQuery->getParameters(),
+            $existingKeysQuery->getParameterTypes()
+        )->fetchAllAssociative();
+
+        if ([] !== $existingConfigurationKeys) {
+            $existingConfigurationKeys = array_values($existingConfigurationKeys[0]);
+            $alreadyStoredKeys = array_uintersect($existingConfigurationKeys, array_keys($options), 'strcasecmp');
+            $nonStoredKeys = array_diff(array_keys($options), $alreadyStoredKeys);
+
+            array_walk($nonStoredKeys, function (string $key) use ($options): void {
+                if (array_key_exists($key, $options)) {
+                    $this->set($key, $options[$key]);
+                }
+            });
+
+            return;
+        }
+
+        array_walk($options, function (mixed $option, string $key): void {
+            $this->set($key, $option);
+        });
     }
 
     /**
@@ -49,15 +78,15 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     public function set(string $key, mixed $value): void
     {
         $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
-        $existingTaskQuery = $qb->select((new Expr())->countDistinct('stc.id'))
+        $existingConfigurationKeyQuery = $qb->select((new Expr())->countDistinct('stc.id'))
             ->where($qb->expr()->eq('stc.configuration_key_name', ':name'))
             ->setParameter('name', $key, ParameterType::STRING)
         ;
 
         $existingConfigurationKey = $this->executeQuery(
-            $existingTaskQuery->getSQL(),
-            $existingTaskQuery->getParameters(),
-            $existingTaskQuery->getParameterTypes()
+            $existingConfigurationKeyQuery->getSQL(),
+            $existingConfigurationKeyQuery->getParameters(),
+            $existingConfigurationKeyQuery->getParameterTypes()
         )->fetchOne();
 
         if (0 !== (int) $existingConfigurationKey) {

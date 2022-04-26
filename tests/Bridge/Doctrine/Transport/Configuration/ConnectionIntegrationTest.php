@@ -46,6 +46,38 @@ final class ConnectionIntegrationTest extends TestCase
         }
     }
 
+    public function testConfigurationCannotInitTwiceTheSameKey(): void
+    {
+        $this->connection->init([
+            'execution_mode' => 'batch',
+        ]);
+
+        self::assertCount(1, $this->connection->toArray());
+
+        $this->connection->init([
+            'execution_mode' => 'batch',
+            'foo' => 'bar',
+        ]);
+
+        self::assertCount(2, $this->connection->toArray());
+    }
+
+    public function testConfigurationCanInit(): void
+    {
+        $this->connection->init([
+            'execution_mode' => 'batch',
+        ]);
+
+        self::assertCount(1, $this->connection->toArray());
+    }
+
+    public function testConfigurationCanInitEmptyArray(): void
+    {
+        $this->connection->init([]);
+
+        self::assertCount(0, $this->connection->toArray());
+    }
+
     public function testConfigurationCanReturnArray(): void
     {
         $list = $this->connection->toArray();

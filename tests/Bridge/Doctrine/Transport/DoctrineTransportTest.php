@@ -144,17 +144,13 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id)');
 
-        $abstractPlatform = $this->createMock(AbstractPlatform::class);
-        $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
-
         $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
         $connection->expects(self::once())->method('executeQuery')->with(
-            self::equalTo('COUNT(DISTINCT t.id) FOR UPDATE'),
+            self::equalTo('COUNT(DISTINCT t.id)'),
             self::equalTo([]),
             self::equalTo([])
         )->willReturn($statement);
@@ -197,17 +193,13 @@ final class DoctrineTransportTest extends TestCase
         $queryBuilder->expects(self::once())->method('getParameterTypes')->willReturn([]);
         $queryBuilder->expects(self::once())->method('getSQL')->willReturn('COUNT(DISTINCT t.id)');
 
-        $abstractPlatform = $this->createMock(AbstractPlatform::class);
-        $abstractPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('FOR UPDATE');
-
         $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($abstractPlatform);
         $connection->expects(self::once())->method('executeQuery')->with(
-            self::equalTo('COUNT(DISTINCT t.id) FOR UPDATE'),
+            self::equalTo('COUNT(DISTINCT t.id)'),
             self::equalTo([]),
             self::equalTo([])
         )->willReturn($statement);
@@ -416,15 +408,11 @@ final class DoctrineTransportTest extends TestCase
             ])
         ;
 
-        $dbalPlatform = $this->createMock(AbstractPlatform::class);
-        $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
-
         $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('1');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($dbalPlatform);
         $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $connection->expects(self::never())->method('transactional');
 
@@ -487,15 +475,11 @@ final class DoctrineTransportTest extends TestCase
             ])
         ;
 
-        $dbalPlatform = $this->createMock(AbstractPlatform::class);
-        $dbalPlatform->expects(self::once())->method('getReadLockSQL')->willReturn('LOCK IN SHARE MODE');
-
         $statement = $this->createMock(class_exists(NextResult::class) ? NextResult::class : Result::class);
         $statement->expects(self::once())->method('fetchOne')->willReturn('0');
 
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $connection->expects(self::once())->method('getDatabasePlatform')->willReturn($dbalPlatform);
         $connection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $connection->expects(self::once())->method('transactional');
 

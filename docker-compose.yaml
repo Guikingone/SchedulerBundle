@@ -9,5 +9,11 @@ services:
     depends_on:
       - redis
 
+  postgres:
+    image: postgres:11.5-alpine
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: toor
+
   redis:
     image: redis:6.2-alpine

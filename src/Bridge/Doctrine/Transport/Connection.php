@@ -49,7 +49,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $statement = $this->executeQuery(
-            $existingTasksCount->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTasksCount->getSQL(),
             $existingTasksCount->getParameters(),
             $existingTasksCount->getParameterTypes()
         )->fetchOne();
@@ -84,7 +84,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $statement = $this->executeQuery(
-            $existingTaskCount->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskCount->getSQL(),
             $existingTaskCount->getParameters(),
             $existingTaskCount->getParameterTypes()
         )->fetchOne();
@@ -130,7 +130,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $existingTask = $this->executeQuery(
-            $existingTaskQuery->getSQL().' '.$this->dbalConnection->getDatabasePlatform()->getReadLockSQL(),
+            $existingTaskQuery->getSQL(),
             $existingTaskQuery->getParameters(),
             $existingTaskQuery->getParameterTypes()
         )->fetchOne();
