@@ -19,11 +19,10 @@ This bundle defines a set of configuration storage:
 - [InMemory](#inmemory)
 - [Cache](#cache)
 - [FailOver](#failover)
-- [LongTail](#longtail) // TODO
+- [LongTail](#longtail)
 - [Lazy](#lazy)
 - [Fiber](#fiber)
-- [Redis](#redis) // TODO
-- [Doctrine](#doctrine) // TODO
+- [Doctrine](#doctrine)
 
 ## Informations
 
@@ -109,6 +108,24 @@ scheduler_bundle:
 
 **configuration**: This configuration requires at least 2 configuration to be used (each one can be configured as usual).
 
+## LongTail
+
+The [LongTail](../src/Transport/Configuration/LongTailConfiguration.php) allows to use multiple configuration. It's specifically designed
+to maximize the configuration ressources usage by always trying to use the configuration with the lowest amount of key / work to do.
+This approach can help when you're handling configuration keys in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    # ...
+
+    configuration:
+        dsn: 'configuration://longtail(configuration://memory <> configuration://fs)' # Or 'configuration://lt(configuration://memory <> configuration://fs)'
+```
+
+**configuration**: This transport requires at least 2 configuration to be used (each one can be configured as usual).
+
 ## Lazy
 
 The [LazyConfiguration](../src/Transport/Configuration/LazyConfiguration.php) act as a wrapper around a configuration,
@@ -126,7 +143,7 @@ scheduler_bundle:
 
 ## Fiber
 
-_Requires PHP `>=8.1`_
+_Requires PHP `>= 8.1`_
 
 The [FiberConfiguration](../src/Transport/Configuration/FiberConfiguration.php) act as a wrapper around a configuration,
 it uses [Fibers](https://www.php.net/manual/en/language.fibers.php) in a way that each action is performed using a separated fiber.
@@ -140,6 +157,26 @@ scheduler_bundle:
     configuration:
         dsn: 'configuration://fiber(configuration://memory)'
 ```
+
+## Doctrine
+
+The [DoctrineConfiguration](../src/Bridge/Doctrine/Transport/Configuration/DoctrineConfiguration.php) allows to use Doctrine connections
+as configuration storage.
+This transport is useful if you need to share configuration between multiple projects/instances.
+
+### Usage
+
+```yaml
+scheduler_bundle:
+    # ...
+
+    configuration:
+        dsn: 'configuration://doctrine@default' # Or 'configuration://dbal@default'
+```
+
+**Configuration**: This configuration can be configured using the following extra configuration key:
+
+- The optional `auto_setup` to define if the connection should configure the table if it does not exist
 
 ## Extending the transport configuration
 

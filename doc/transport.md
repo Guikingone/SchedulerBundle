@@ -22,6 +22,7 @@ This bundle defines a set of transports, each transport has its own configuratio
 - [Filesystem](#filesystem)
 - [Cache](#cache)
 - [FailOver](#failover)
+- [LongTail](#longtail)
 - [RoundRobin](#roundrobin)
 - [Lazy](#lazy)
 - [Fiber](#fiber)
