@@ -43,7 +43,7 @@ abstract class AbstractDoctrineConnection
         $schemaManager = $this->driverConnection->createSchemaManager();
         $comparator = $schemaManager->createComparator();
 
-        $schemaDiff = $comparator::compareSchemas($schemaManager->createSchema(), $this->getSchema($schemaManager));
+        $schemaDiff = $comparator->compareSchemas($schemaManager->createSchema(), $this->getSchema($schemaManager));
 
         foreach ($schemaDiff->toSaveSql($this->driverConnection->getDatabasePlatform()) as $sql) {
             $this->driverConnection->executeStatement($sql);
