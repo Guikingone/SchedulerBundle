@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface SchedulerMiddlewareStackInterface
+interface SchedulerMiddlewareStackInterface extends MiddlewareStackInterface
 {
     /**
      * @throws Throwable {@see PreSchedulingMiddlewareInterface::preScheduling()}

@@ -12,12 +12,12 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
-use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\NotifierMiddleware;
@@ -58,8 +58,10 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -855,21 +857,19 @@ final class FiberSchedulerTest extends TestCase
         $task = new NullTask('foo');
         $updatedTask = new NullTask('bar');
 
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
 
         $scheduler->schedule($task);
+        self::assertCount(1, $scheduler->getTasks());
+
         $scheduler->update($task->getName(), $updatedTask);
-
+        self::assertCount(2, $scheduler->getTasks());
         self::assertSame($updatedTask, $scheduler->getTasks()->get('bar'));
-        self::assertSame($task, $scheduler->getTasks()->get('foo'));
-        self::assertSame('* * * * *', $scheduler->getTasks()->get('foo')->getExpression());
-
-        $task->setExpression('0 * * * *');
-        $scheduler->update('foo', $task);
-
-        self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
     }
 
     /**
@@ -878,27 +878,30 @@ final class FiberSchedulerTest extends TestCase
     public function testTaskCanBeUpdatedAsynchronously(): void
     {
         $task = new NullTask('foo');
-        $updatedTask = new NullTask('bar');
 
-        $bus = $this->createMock(MessageBusInterface::class);
-        $bus->expects(self::once())->method('dispatch')
-            ->with(new TaskToUpdateMessage('foo', $updatedTask))
-            ->willReturn(new Envelope(new stdClass()))
-        ;
-
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
+        ]));
+
+        $bus = new MessageBus([
+            new HandleMessageMiddleware(new HandlersLocator([
+                TaskToUpdateMessage::class => [
+                    new TaskToUpdateMessageHandler($transport),
+                ],
+            ])),
+        ]);
+
+        $scheduler = new FiberScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $updatedTask, true);
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('* * * * *', $scheduler->getTasks()->get('foo')->getExpression());
 
-        self::assertSame($task, $scheduler->getTasks()->get('foo'));
-
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "bar" does not exist or is invalid');
-        self::expectExceptionCode(0);
-        $scheduler->getTasks()->get('bar');
+        $scheduler->update($task->getName(), new NullTask('foo', [
+            'expression' => '0 * * * *',
+        ]), true);
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
     }
 
     /**
@@ -908,11 +911,14 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenRetrieved(TaskInterface $task): void
     {
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
 
         $scheduler->schedule($task);
         self::assertCount(1, $scheduler->getTasks()->toArray());
@@ -931,11 +937,14 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenLazilyRetrieved(TaskInterface $task): void
     {
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
 
         $scheduler->schedule($task);
         self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));
@@ -944,7 +953,7 @@ final class FiberSchedulerTest extends TestCase
         $task->addTag('new_tag');
         $scheduler->update($task->getName(), $task);
 
-        $updatedTask = $scheduler->getTasks(true)->filter(static fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
+        $updatedTask = $scheduler->getTasks(true)->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
         self::assertInstanceOf(LazyTaskList::class, $updatedTask);
         self::assertCount(1, $updatedTask);
     }

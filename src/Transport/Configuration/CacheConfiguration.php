@@ -21,6 +21,9 @@ final class CacheConfiguration extends AbstractConfiguration
 {
     private const CONFIGURATION_LIST_KEY = '_symfony_configuration';
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function __construct(
         private CacheItemPoolInterface $pool,
         array $options = []

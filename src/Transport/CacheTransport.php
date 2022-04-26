@@ -43,7 +43,7 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
             return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
@@ -72,7 +72,7 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $listItem = $this->pool->getItem(self::TASK_LIST_ITEM_NAME);
         if (!$listItem->isHit()) {

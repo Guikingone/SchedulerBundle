@@ -11,7 +11,7 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-interface WorkerMiddlewareStackInterface
+interface WorkerMiddlewareStackInterface extends MiddlewareStackInterface
 {
     /**
      * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}

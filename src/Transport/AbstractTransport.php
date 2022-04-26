@@ -23,6 +23,10 @@ abstract class AbstractTransport implements TransportInterface
     {
     }
 
+    /**
+     * @param array<string, mixed> $options
+     * @param array<string, mixed> $additionalOptions
+     */
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
         $optionsResolver = new OptionsResolver();

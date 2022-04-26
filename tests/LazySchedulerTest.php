@@ -14,6 +14,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -45,7 +46,10 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Handler\HandlersLocator;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 
@@ -763,11 +767,14 @@ final class LazySchedulerTest extends TestCase
     {
         $updatedTask = new NullTask('bar');
 
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule($task);
@@ -790,27 +797,34 @@ final class LazySchedulerTest extends TestCase
     public function testTaskCanBeUpdatedAsynchronously(): void
     {
         $task = new NullTask('foo');
-        $updatedTask = new NullTask('bar');
 
-        $bus = $this->createMock(MessageBusInterface::class);
-        $bus->expects(self::once())->method('dispatch')
-            ->with(new TaskToUpdateMessage('foo', $updatedTask))
-            ->willReturn(new Envelope(new stdClass()))
-        ;
-
-        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
+        ]));
+
+        $bus = new MessageBus([
+            new HandleMessageMiddleware(new HandlersLocator([
+                TaskToUpdateMessage::class => [
+                    new TaskToUpdateMessageHandler($transport),
+                ],
+            ])),
+        ]);
+
+        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
+        self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $updatedTask, true);
+        self::assertTrue($scheduler->isInitialized());
 
-        self::assertSame($task, $scheduler->getTasks()->get('foo'));
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('* * * * *', $scheduler->getTasks()->get('foo')->getExpression());
 
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The task "bar" does not exist or is invalid');
-        self::expectExceptionCode(0);
-        $scheduler->getTasks()->get('bar');
+        $scheduler->update($task->getName(), new NullTask('foo', [
+            'expression' => '0 * * * *',
+        ]), true);
+        self::assertTrue($scheduler->isInitialized());
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
     }
 
     /**

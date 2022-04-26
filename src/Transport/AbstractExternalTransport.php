@@ -29,7 +29,7 @@ abstract class AbstractExternalTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $storedTasks = new TaskList($this->connection->list()->toArray());
 
@@ -41,7 +41,7 @@ abstract class AbstractExternalTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         return $lazy
             ? new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->connection->get($name), $this))

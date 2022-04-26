@@ -41,7 +41,7 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $tasks = new TaskList();
         $finder = new Finder();
@@ -60,7 +60,7 @@ final class FilesystemTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
             return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));

@@ -13,6 +13,11 @@ use IteratorAggregate;
  */
 interface TransportRegistryInterface extends Countable, IteratorAggregate
 {
+    /**
+     * Return the sorted transports using @param Closure $func.
+     *
+     * @return TransportRegistryInterface<int, TransportInterface>
+     */
     public function usort(Closure $func): TransportRegistryInterface;
 
     public function reset(): TransportInterface;

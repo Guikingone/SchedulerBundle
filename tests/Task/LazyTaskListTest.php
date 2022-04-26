@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\LazyInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\NullTask;
@@ -86,6 +87,7 @@ final class LazyTaskListTest extends TestCase
         $list->add(new NullTask('foo'));
         $filteredLazyList = $list->findByName(['foo']);
 
+        self::assertInstanceOf(LazyInterface::class, $filteredLazyList);
         self::assertTrue($filteredLazyList->isInitialized());
         self::assertCount(1, $filteredLazyList);
     }
@@ -95,11 +97,12 @@ final class LazyTaskListTest extends TestCase
         $lazyList = new LazyTaskList(new TaskList());
 
         self::assertFalse($lazyList->isInitialized());
-        self::assertCount(0, $lazyList->filter(fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
+        self::assertCount(0, $lazyList->filter(static fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
 
         $lazyList->add(new NullTask('foo'));
-        $filteredLazyList = $lazyList->filter(fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *');
+        $filteredLazyList = $lazyList->filter(static fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *');
 
+        self::assertInstanceOf(LazyInterface::class, $filteredLazyList);
         self::assertTrue($filteredLazyList->isInitialized());
         self::assertCount(1, $filteredLazyList);
     }
@@ -329,7 +332,7 @@ final class LazyTaskListTest extends TestCase
         self::assertFalse($taskList->isInitialized());
         self::assertCount(2, $taskList);
 
-        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
+        $taskList->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getScheduledAt() <=> $nextTask->getScheduledAt());
 
         self::assertTrue($taskList->isInitialized());
         self::assertCount(2, $taskList);
@@ -338,7 +341,7 @@ final class LazyTaskListTest extends TestCase
             'bar' => $barTask,
         ], $taskList->toArray());
 
-        $taskList->uasort(fn (TaskInterface $task, TaskInterface $nextTask): int => $nextTask->getScheduledAt() <=> $task->getScheduledAt());
+        $taskList->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $nextTask->getScheduledAt() <=> $task->getScheduledAt());
 
         self::assertTrue($taskList->isInitialized());
         self::assertCount(2, $taskList);

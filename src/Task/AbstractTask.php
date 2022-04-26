@@ -18,7 +18,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use function array_key_exists;
-use function array_values;
 use function in_array;
 use function is_array;
 use function is_bool;
@@ -785,7 +784,11 @@ abstract class AbstractTask implements TaskInterface
 
     private function validateExpression(string $expression): bool
     {
-        return CronExpression::isValidExpression($expression) || in_array($expression, array_values(Expression::ALLOWED_MACROS), true);
+        if (CronExpression::isValidExpression($expression)) {
+            return true;
+        }
+
+        return in_array($expression, Expression::ALLOWED_MACROS, true);
     }
 
     private function validateNice(int $nice = null): bool

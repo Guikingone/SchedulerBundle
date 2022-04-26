@@ -9,6 +9,8 @@ use Closure;
 use DateTimeZone;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -149,7 +151,7 @@ final class HttpScheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks', $this->externalSchedulerEndpoint), [
             'headers' => [
@@ -172,7 +174,7 @@ final class HttpScheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks:due', $this->externalSchedulerEndpoint), [
             'headers' => [
@@ -196,7 +198,7 @@ final class HttpScheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function next(bool $lazy = false): TaskInterface
+    public function next(bool $lazy = false): TaskInterface|LazyTask
     {
         $response = $this->httpClient->request('GET', sprintf('%s/tasks:next', $this->externalSchedulerEndpoint), [
             'headers' => [

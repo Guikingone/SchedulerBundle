@@ -74,11 +74,11 @@ interface SchedulerInterface
      *
      * Can return a {@see LazyTaskList} if @param bool $lazy is used
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface;
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList;
 
     /**
      * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
@@ -86,11 +86,11 @@ interface SchedulerInterface
      * If the @param bool $lazy is used, the tasks are lazy-loaded.
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
      *
-     * @return TaskListInterface<string|int, TaskInterface>
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface;
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})
@@ -99,7 +99,7 @@ interface SchedulerInterface
      *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
-    public function next(bool $lazy = false): TaskInterface;
+    public function next(bool $lazy = false): TaskInterface|LazyTask;
 
     /**
      * Remove every task except the ones that use the '@reboot' expression.

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use function array_merge;
+use function array_unique;
 use const SORT_REGULAR;
 
 /**
@@ -35,7 +36,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
     }
 
     /**
-     * @return PreSchedulingMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]
+     * {@inheritdoc}
      */
     public function getMiddlewareList(): array
     {

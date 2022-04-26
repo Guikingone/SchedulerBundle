@@ -9,5 +9,8 @@ namespace SchedulerBundle\Task;
  */
 interface TaskBuilderInterface
 {
+    /**
+     * @param array<string, mixed> $options
+     */
     public function create(array $options = []): TaskInterface;
 }

@@ -36,7 +36,7 @@ class DoctrineTransport extends AbstractExternalTransport implements SchemaAware
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $list = $this->connection->list();
 

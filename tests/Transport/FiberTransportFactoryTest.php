@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
 use SchedulerBundle\SchedulePolicy\ExecutionDurationPolicy;
@@ -54,6 +55,38 @@ final class FiberTransportFactoryTest extends TestCase
         $factory = new FiberTransportFactory([
             new InMemoryTransportFactory(),
         ]);
+
+        $transport = $factory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
+            new BatchPolicy(),
+            new DeadlinePolicy(),
+            new ExecutionDurationPolicy(),
+            new FirstInFirstOutPolicy(),
+            new FirstInLastOutPolicy(),
+            new IdlePolicy(),
+            new MemoryUsagePolicy(),
+            new NicePolicy(),
+            new RoundRobinPolicy(),
+        ]));
+
+        $transport->create(new NullTask('foo'));
+        self::assertCount(1, $transport->list());
+    }
+
+    /**
+     * @dataProvider provideDsn
+     *
+     * @throws Throwable {@see TransportInterface::list()}
+     */
+    public function testFactoryReturnTransportWithCustomLogger(string $dsn): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('critical');
+
+        $factory = new FiberTransportFactory([
+            new InMemoryTransportFactory(),
+        ], $logger);
 
         $transport = $factory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
             new BatchPolicy(),

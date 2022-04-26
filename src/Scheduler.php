@@ -175,7 +175,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         return $this->transport->list($lazy);
     }
@@ -183,7 +183,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
@@ -241,7 +241,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function next(bool $lazy = false): TaskInterface
+    public function next(bool $lazy = false): TaskInterface|LazyTask
     {
         $dueTasks = $this->getDueTasks($lazy);
         if (0 === $dueTasks->count()) {

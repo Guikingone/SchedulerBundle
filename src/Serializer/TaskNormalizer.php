@@ -6,7 +6,7 @@ namespace SchedulerBundle\Serializer;
 
 use Closure;
 use DateInterval;
-use DatetimeInterface;
+use DateTimeImmutable;
 use DateTimeZone;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
@@ -68,7 +68,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
-        $dateAttributesCallback = fn (?DatetimeInterface $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DatetimeInterface ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
+        $dateAttributesCallback = fn (?DateTimeImmutable $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
             DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u",
         ]) : null;
         $dateIntervalAttributesCallback = fn (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;

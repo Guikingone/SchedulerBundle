@@ -11,6 +11,8 @@ interface MiddlewareStackInterface
 {
     /**
      * Return the middleware used by a specific middleware stack.
+     *
+     * @return array<int, PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|OrderedMiddlewareInterface|RequiredMiddlewareInterface>
      */
     public function getMiddlewareList(): array;
 }

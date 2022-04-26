@@ -36,7 +36,7 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
     }
 
     /**
-     * @return PreExecutionMiddlewareInterface[]|PostExecutionMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]
+     * {@inheritdoc}
      */
     public function getMiddlewareList(): array
     {

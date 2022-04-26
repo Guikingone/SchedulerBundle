@@ -17,6 +17,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
+use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\NotifierMiddleware;
@@ -53,12 +54,14 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\InMemoryTransport;
+use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -858,9 +861,12 @@ final class SchedulerTest extends TestCase
         $task = new NullTask('foo');
         $updatedTask = new NullTask('bar');
 
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
         $scheduler->schedule($task);
         self::assertCount(1, $scheduler->getTasks());
@@ -877,18 +883,29 @@ final class SchedulerTest extends TestCase
     {
         $task = new NullTask('foo');
 
-        $bus = $this->createMock(MessageBusInterface::class);
-        $bus->expects(self::once())->method('dispatch')
-            ->with(new TaskToUpdateMessage('foo', $task))
-            ->willReturn(new Envelope(new stdClass()))
-        ;
-
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ]));
+
+        $bus = new MessageBus([
+            new HandleMessageMiddleware(new HandlersLocator([
+                TaskToUpdateMessage::class => [
+                    new TaskToUpdateMessageHandler($transport),
+                ],
+            ])),
+        ]);
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
         $scheduler->schedule($task);
-        $scheduler->update($task->getName(), $task, true);
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('* * * * *', $scheduler->getTasks()->get('foo')->getExpression());
+
+        $scheduler->update($task->getName(), new NullTask('foo', [
+            'expression' => '0 * * * *',
+        ]), true);
+        self::assertCount(1, $scheduler->getTasks());
+        self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
     }
 
     /**
@@ -898,11 +915,14 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenRetrieved(TaskInterface $task): void
     {
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
         $scheduler->schedule($task);
         self::assertCount(1, $scheduler->getTasks()->toArray());
@@ -921,11 +941,14 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCanBeUpdatedThenLazilyRetrieved(TaskInterface $task): void
     {
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
         $scheduler->schedule($task);
         self::assertInstanceOf(LazyTaskList::class, $scheduler->getTasks(true));

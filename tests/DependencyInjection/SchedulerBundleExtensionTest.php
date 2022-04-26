@@ -46,6 +46,7 @@ use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
+use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\FiberAwareSchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
@@ -1158,6 +1159,15 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(TaskToPauseMessageHandler::class)->hasTag('messenger.message_handler'));
         self::assertTrue($container->getDefinition(TaskToPauseMessageHandler::class)->hasTag('container.preload'));
         self::assertSame(TaskToPauseMessageHandler::class, $container->getDefinition(TaskToPauseMessageHandler::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(TaskToUpdateMessageHandler::class));
+        self::assertCount(1, $container->getDefinition(TaskToUpdateMessageHandler::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(TaskToUpdateMessageHandler::class)->getArgument(0));
+        self::assertSame(TransportInterface::class, (string) $container->getDefinition(TaskToUpdateMessageHandler::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(TaskToUpdateMessageHandler::class)->getArgument(0)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(TaskToUpdateMessageHandler::class)->hasTag('messenger.message_handler'));
+        self::assertTrue($container->getDefinition(TaskToUpdateMessageHandler::class)->hasTag('container.preload'));
+        self::assertSame(TaskToUpdateMessageHandler::class, $container->getDefinition(TaskToUpdateMessageHandler::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testSubscribersAreRegistered(): void

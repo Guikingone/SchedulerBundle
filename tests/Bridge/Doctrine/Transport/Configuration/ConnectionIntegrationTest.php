@@ -68,6 +68,26 @@ final class ConnectionIntegrationTest extends TestCase
         self::assertSame('bar', $this->connection->get('foo'));
     }
 
+    public function testConfigurationCannotSetTheSameKeyTwice(): void
+    {
+        $list = $this->connection->toArray();
+
+        self::assertCount(0, $list);
+        self::assertSame(0, $this->connection->count());
+
+        $this->connection->set('foo', 'bar');
+
+        self::assertCount(1, $this->connection->toArray());
+        self::assertSame(1, $this->connection->count());
+        self::assertSame('bar', $this->connection->get('foo'));
+
+        $this->connection->set('foo', 'random');
+
+        self::assertCount(1, $this->connection->toArray());
+        self::assertSame(1, $this->connection->count());
+        self::assertSame('bar', $this->connection->get('foo'));
+    }
+
     public function testConnectionCanUpdateAKey(): void
     {
         $list = $this->connection->toArray();

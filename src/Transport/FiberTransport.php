@@ -6,6 +6,8 @@ namespace SchedulerBundle\Transport;
 
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
@@ -28,9 +30,9 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
-        return $this->handleOperationViaFiber(fn (): TaskInterface =>  $this->transport->get($name, $lazy));
+        return $this->handleOperationViaFiber(fn (): TaskInterface|LazyTask =>  $this->transport->get($name, $lazy));
     }
 
     /**
@@ -38,9 +40,9 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface =>  $this->transport->list($lazy));
+        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList =>  $this->transport->list($lazy));
     }
 
     /**

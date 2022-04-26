@@ -82,10 +82,7 @@ final class Dsn
         return $this->port ?? $default;
     }
 
-    /**
-     * @param array|bool|int|null|string $default
-     */
-    public function getOption(string $key, $default = null)
+    public function getOption(string $key, mixed $default = null): mixed
     {
         return $this->options[$key] ?? $default;
     }
@@ -104,6 +101,9 @@ final class Dsn
         return (int) $this->getOption($key, $default);
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getOptions(): array
     {
         return $this->options;

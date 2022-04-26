@@ -18,6 +18,9 @@ final class WorkerRegistry implements WorkerRegistryInterface
      */
     private array $workers;
 
+    /**
+     * @param WorkerInterface[] $workers
+     */
     public function __construct(iterable $workers)
     {
         $this->workers = is_array($workers) ? $workers : iterator_to_array($workers);

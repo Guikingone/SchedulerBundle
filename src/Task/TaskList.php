@@ -69,7 +69,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName, bool $lazy = false): TaskInterface
+    public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
             return new LazyTask($taskName, Closure::bind(fn (): TaskInterface => $this->get($taskName), $this));
@@ -86,7 +86,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): TaskListInterface
+    public function findByName(array $names): TaskListInterface|LazyTaskList
     {
         $filteredTasks = $this->filter(static fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
 
@@ -96,7 +96,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): TaskListInterface
+    public function filter(Closure $filter): TaskListInterface|LazyTaskList
     {
         return new TaskList(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
     }
@@ -116,7 +116,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function walk(Closure $func): TaskListInterface
+    public function walk(Closure $func): TaskListInterface|LazyTaskList
     {
         array_walk($this->tasks, $func);
 
@@ -149,7 +149,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function uasort(Closure $func): TaskListInterface
+    public function uasort(Closure $func): TaskListInterface|LazyTaskList
     {
         uasort($this->tasks, $func);
 
@@ -173,7 +173,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function slice(string ...$tasks): TaskListInterface
+    public function slice(string ...$tasks): TaskListInterface|LazyTaskList
     {
         $toRetrieveTasks = $this->findByName($tasks);
         if (0 === $toRetrieveTasks->count()) {

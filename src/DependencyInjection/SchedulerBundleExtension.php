@@ -42,6 +42,7 @@ use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
 use SchedulerBundle\Messenger\TaskToPauseMessageHandler;
+use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\FiberAwareSchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
@@ -1025,6 +1026,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('messenger.message_handler')
             ->addTag('container.preload', [
                 'class' => TaskToPauseMessageHandler::class,
+            ])
+        ;
+
+        $container->register(TaskToUpdateMessageHandler::class, TaskToUpdateMessageHandler::class)
+            ->setArguments([
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('messenger.message_handler')
+            ->addTag('container.preload', [
+                'class' => TaskToUpdateMessageHandler::class,
             ])
         ;
 

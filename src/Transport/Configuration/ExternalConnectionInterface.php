@@ -13,7 +13,9 @@ use Countable;
 interface ExternalConnectionInterface extends Countable
 {
     /**
-     * Init the configuration using both @param array $options and @param array $extraOptions
+     * Init the configuration using both @param array<string, mixed> $options.
+     *
+     * A set of @param array<string, mixed> $extraOptions can be passed if required.
      */
     public function init(array $options, array $extraOptions = []): void;
 

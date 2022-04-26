@@ -6,9 +6,9 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\Persistence\ConnectionRegistry;
+use InvalidArgumentException as InternalInvalidArgumentException;
+use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -30,12 +30,12 @@ final class DoctrineConfigurationFactory implements ConfigurationFactoryInterfac
     {
         try {
             $doctrineConnection = $this->registry->getConnection($dsn->getHost());
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            throw new TransportException(sprintf('Could not find Doctrine connection from Scheduler configuration DSN "doctrine://%s".', $dsn->getHost()), 0, $invalidArgumentException);
+        } catch (InternalInvalidArgumentException $invalidArgumentException) {
+            throw new ConfigurationException(sprintf('Could not find Doctrine connection from Scheduler configuration DSN "doctrine://%s".', $dsn->getHost()), 0, $invalidArgumentException);
         }
 
         if (!$doctrineConnection instanceof DoctrineConnection) {
-            throw new RuntimeException('The connection is not a valid one');
+            throw new InvalidArgumentException('The connection is not a valid one');
         }
 
         return new DoctrineConfiguration($doctrineConnection, $dsn->getOptionAsBool('auto_setup', false));

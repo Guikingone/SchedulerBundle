@@ -13,10 +13,10 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler implements SchedulerMiddlewareStackInterface, MiddlewareStackInterface
+final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler implements SchedulerMiddlewareStackInterface
 {
     public function __construct(
-        private SchedulerMiddlewareStackInterface|MiddlewareStackInterface $middlewareStack,
+        private SchedulerMiddlewareStackInterface $middlewareStack,
         ?LoggerInterface $logger = null
     ) {
         parent::__construct($logger);
