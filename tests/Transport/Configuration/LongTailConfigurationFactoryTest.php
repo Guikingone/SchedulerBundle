@@ -55,6 +55,21 @@ final class LongTailConfigurationFactoryTest extends TestCase
         $factory->create(Dsn::fromString('configuration://lt(configuration://foo <> configuration://foo)'), $serializer);
     }
 
+    public function testFactoryCannotCreateConfigurationWithoutSupportingFactory(): void
+    {
+        $serializer = $this->createMock(SerializerInterface::class);
+
+        $factory = new LongTailConfigurationFactory([
+            new InMemoryConfigurationFactory(),
+            new InMemoryConfigurationFactory(),
+        ]);
+
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('The given dsn cannot be used to create a configuration');
+        self::expectExceptionCode(0);
+        $factory->create(Dsn::fromString('configuration://lt(configuration://memory <> configuration://foo)'), $serializer);
+    }
+
     public function testFactoryCanCreateConfiguration(): void
     {
         $serializer = $this->createMock(SerializerInterface::class);
