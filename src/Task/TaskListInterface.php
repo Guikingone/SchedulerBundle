@@ -33,17 +33,21 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      *
      * @throws InvalidArgumentException If the task cannot be found or is not an instance of {@see TaskInterface}.
      */
-    public function get(string $taskName, bool $lazy = false): TaskInterface;
+    public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask;
 
     /**
      * @param array<int, string> $names
+     *
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */
-    public function findByName(array $names): self;
+    public function findByName(array $names): TaskListInterface|LazyTaskList;
 
     /**
      * Allow to filter the list using a custom filter, the @param Closure $filter receive the task name and the TaskInterface object (in this order).
+     *
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */
-    public function filter(Closure $filter): self;
+    public function filter(Closure $filter): TaskListInterface|LazyTaskList;
 
     /**
      * Remove the task in the actual list if the @param string $taskName is a valid one.
@@ -51,9 +55,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function remove(string $taskName): void;
 
     /**
-     * Return the current list after applying the @param Closure $func to each tasks
+     * Return the current list after applying the @param Closure $func to each task.
+     *
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */
-    public function walk(Closure $func): self;
+    public function walk(Closure $func): TaskListInterface|LazyTaskList;
 
     /**
      * Return an array containing the results of applying @param Closure $func to each tasks
@@ -72,11 +78,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function last(): TaskInterface;
 
     /**
-     * Allow to sort the tasks using @param Closure $func.
+     * Allow to sort the tasks using @param Closure $func, the current list is returned with the sorted tasks.
      *
-     * The current list is returned with the sorted tasks.
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */
-    public function uasort(Closure $func): TaskListInterface;
+    public function uasort(Closure $func): TaskListInterface|LazyTaskList;
 
     /**
      * Allow to split the list into chunks of size @param int $size.
@@ -84,6 +90,8 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      * If @param bool $preserveKeys is used, the task name as keys are preserved.
      *
      * For more information, see @link https://php.net/manual/en/function.array-chunk.php
+     *
+     * @return array<int, array<string|int, TaskInterface>>
      */
     public function chunk(int $size, bool $preserveKeys = false): array;
 
@@ -92,9 +100,11 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
      *
      * For an equivalent, see @link https://php.net/manual/en/function.array-slice.php
      *
+     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
+     *
      * @throws RuntimeException If the tasks cannot be found.
      */
-    public function slice(string ...$tasks): TaskListInterface;
+    public function slice(string ...$tasks): TaskListInterface|LazyTaskList;
 
     /**
      * Return the list as an array (using tasks name's as keys), if @param bool $keepKeys is false, the array is returned with indexed keys.

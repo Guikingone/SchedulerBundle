@@ -29,6 +29,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('worker', $configuration);
         self::assertArrayHasKey('mode', $configuration['worker']);
         self::assertArrayHasKey('registry', $configuration['worker']);
+        self::assertArrayHasKey('middleware', $configuration);
     }
 
     public function testConfigurationCannotDefineTasksWithoutTransport(): void
@@ -201,7 +202,6 @@ final class SchedulerBundleConfigurationTest extends TestCase
                 'last_execution' => 'foo',
             ],
         ], $configuration['tasks']);
-        self::assertSame('foo', $configuration['tasks']['foo']['last_execution']);
     }
 
     public function testConfigurationCanDefineProbeClients(): void
@@ -475,7 +475,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertNull($configuration['mercure']['jwt_token']);
     }
 
-    public function testPoolConfigurationCanDefineName(): void
+    public function testPoolConfigurationCanBeConfigured(): void
     {
         $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
             'scheduler_bundle' => [
@@ -485,16 +485,29 @@ final class SchedulerBundleConfigurationTest extends TestCase
                 'pool' => [
                     'enabled' => true,
                     'name' => 'foo',
+                    'path' => '/_foo',
+                    'schedulers' => [
+                        'foo' => [
+                            'endpoint' => 'https://127.0.0.1:9090',
+                        ],
+                    ],
                 ],
             ],
         ]);
 
         self::assertArrayHasKey('pool', $configuration);
-        self::assertCount(2, $configuration['pool']);
+        self::assertCount(4, $configuration['pool']);
         self::assertArrayHasKey('enabled', $configuration['pool']);
         self::assertTrue($configuration['pool']['enabled']);
         self::assertArrayHasKey('name', $configuration['pool']);
         self::assertSame('foo', $configuration['pool']['name']);
+        self::assertArrayHasKey('path', $configuration['pool']);
+        self::assertSame('/_foo', $configuration['pool']['path']);
+        self::assertArrayHasKey('schedulers', $configuration['pool']);
+        self::assertCount(1, $configuration['pool']['schedulers']);
+        self::assertArrayHasKey('foo', $configuration['pool']['schedulers']);
+        self::assertArrayHasKey('endpoint', $configuration['pool']['schedulers']['foo']);
+        self::assertSame('https://127.0.0.1:9090', $configuration['pool']['schedulers']['foo']['endpoint']);
     }
 
     public function testConfigurationCanDefineConfigurationTransport(): void
@@ -628,5 +641,40 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertSame('memory://first_in_first_out', $configuration['transport']['dsn']);
         self::assertArrayHasKey('registry', $configuration['worker']);
         self::assertTrue($configuration['worker']['registry']);
+    }
+
+    public function testMiddlewareModeIsEnabled(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('middleware', $configuration);
+        self::assertNotNull($configuration['middleware']);
+        self::assertArrayHasKey('mode', $configuration['middleware']);
+        self::assertSame('default', $configuration['middleware']['mode']);
+    }
+
+    public function testMiddlewareModeCanBeChangedToFiber(): void
+    {
+        $configuration = (new Processor())->processConfiguration(new SchedulerBundleConfiguration(), [
+            'scheduler_bundle' => [
+                'transport' => [
+                    'dsn' => 'memory://first_in_first_out',
+                ],
+                'middleware' => [
+                    'mode' => 'fiber',
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('middleware', $configuration);
+        self::assertNotNull($configuration['middleware']);
+        self::assertArrayHasKey('mode', $configuration['middleware']);
+        self::assertSame('fiber', $configuration['middleware']['mode']);
     }
 }

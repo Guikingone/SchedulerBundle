@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use Closure;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SplObjectStorage;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
@@ -22,21 +23,15 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
     public function __construct(
         TransportRegistryInterface $registry,
-        array $options = []
+        ConfigurationInterface $configuration
     ) {
-        $this->defineOptions([
-            'quantum' => $options['quantum'],
-        ], [
-            'quantum' => 'int',
-        ]);
-
         $this->sleepingTransports = new SplObjectStorage();
 
-        parent::__construct($registry);
+        parent::__construct($registry, $configuration);
     }
 
     /**
-     * @return mixed
+     * {@inheritdoc}
      */
     protected function execute(Closure $func)
     {
@@ -64,7 +59,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
                     $event = $stopWatch->stop('quantum');
 
                     $duration = $event->getDuration() / 1000;
-                    if ($duration > ($this->registry->count() * $this->options['quantum'])) {
+                    if ($duration > ($this->registry->count() * $this->configuration->get('quantum'))) {
                         $this->sleepingTransports->attach($transport);
                     }
                 }

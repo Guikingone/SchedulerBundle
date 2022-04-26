@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use function str_starts_with;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -22,9 +24,17 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
-    {
-        return new LongTailTransport(new TransportRegistry($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $options, $serializer, $schedulePolicyOrchestrator)));
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): LongTailTransport {
+        return new LongTailTransport(
+            new TransportRegistry($this->handleTransportDsn(' <> ', $dsn, $this->transportFactories, $options, $configuration, $serializer, $schedulePolicyOrchestrator)),
+            $configuration
+        );
     }
 
     /**

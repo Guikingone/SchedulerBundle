@@ -20,6 +20,7 @@ use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\CacheTransport;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -44,9 +45,9 @@ final class CacheTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $cacheTransport = new CacheTransport([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration([
             'execution_mode' => 'nice',
-        ], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        ]), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -74,7 +75,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -104,7 +105,7 @@ final class CacheTransportTest extends TestCase
             $objectNormalizer,
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -135,7 +136,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -166,7 +167,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -206,7 +207,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -255,7 +256,7 @@ final class CacheTransportTest extends TestCase
             ->willReturnOnConsecutiveCalls([true], [false], [true])
         ;
 
-        $cacheTransport = new CacheTransport([], $pool, $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), $pool, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -284,7 +285,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -315,7 +316,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -346,7 +347,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -380,7 +381,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -410,7 +411,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -442,7 +443,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));
@@ -477,7 +478,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -518,7 +519,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
@@ -559,7 +560,7 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $cacheTransport = new CacheTransport([], new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
         $cacheTransport->create(new NullTask('foo'));

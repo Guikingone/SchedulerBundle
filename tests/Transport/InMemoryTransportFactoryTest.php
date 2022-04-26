@@ -8,8 +8,8 @@ use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
-use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\InMemoryTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -36,13 +36,12 @@ final class InMemoryTransportFactoryTest extends TestCase
         $finalDsn = Dsn::fromString($dsn);
 
         $inMemoryTransportFactory = new InMemoryTransportFactory();
-        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], $serializer, new SchedulePolicyOrchestrator([
+        $transport = $inMemoryTransportFactory->createTransport(Dsn::fromString($dsn), [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertInstanceOf(InMemoryTransport::class, $transport);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame($finalDsn->getHost(), $transport->getOptions()['execution_mode']);
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame($finalDsn->getHost(), $transport->getConfiguration()->get('execution_mode'));
     }
 
     /**

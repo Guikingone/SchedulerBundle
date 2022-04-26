@@ -14,6 +14,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function array_map;
 use function array_search;
@@ -29,12 +30,12 @@ final class CacheTransport extends AbstractTransport
     private const TASK_LIST_ITEM_NAME = '_scheduler_task_list';
 
     public function __construct(
-        array $options,
-        private CacheItemPoolInterface $pool,
-        private SerializerInterface $serializer,
-        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+        protected ConfigurationInterface $configuration,
+        public CacheItemPoolInterface $pool,
+        public SerializerInterface $serializer,
+        public SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions($options);
+        parent::__construct($configuration);
 
         $this->boot();
     }
@@ -42,7 +43,7 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
             return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
@@ -71,7 +72,7 @@ final class CacheTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $listItem = $this->pool->getItem(self::TASK_LIST_ITEM_NAME);
         if (!$listItem->isHit()) {

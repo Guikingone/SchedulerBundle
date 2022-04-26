@@ -11,20 +11,25 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 abstract class AbstractExternalTransport extends AbstractTransport
 {
-    public function __construct(protected ConnectionInterface $connection, private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator)
-    {
+    public function __construct(
+        protected ConfigurationInterface $configuration,
+        protected ConnectionInterface $connection,
+        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ) {
+        parent::__construct($configuration);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $storedTasks = new TaskList($this->connection->list()->toArray());
 
@@ -36,7 +41,7 @@ abstract class AbstractExternalTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         return $lazy
             ? new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->connection->get($name), $this))

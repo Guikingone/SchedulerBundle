@@ -13,6 +13,8 @@ interface WorkerRegistryInterface extends Countable
 {
     /**
      * Return the workers.
+     *
+     * @return array<int, WorkerInterface>
      */
     public function getWorkers(): iterable;
 }

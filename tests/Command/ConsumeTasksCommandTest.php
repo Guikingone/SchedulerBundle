@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
+use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerRegistry;
@@ -21,6 +22,7 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
@@ -180,9 +182,9 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -207,9 +209,9 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -440,7 +442,7 @@ final class ConsumeTasksCommandTest extends TestCase
             $runner,
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
-        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
+        ]), $tracker, new WorkerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -484,7 +486,7 @@ final class ConsumeTasksCommandTest extends TestCase
             $runner,
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
-        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
+        ]), $tracker, new WorkerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -527,7 +529,7 @@ final class ConsumeTasksCommandTest extends TestCase
             $runner,
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
-        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new InMemoryStore()));
+        ]), $tracker, new WorkerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -571,7 +573,7 @@ final class ConsumeTasksCommandTest extends TestCase
             $runner,
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
-        ]), $tracker, new WorkerMiddlewareStack(), $eventDispatcher, new LockFactory(new FlockStore()));
+        ]), $tracker, new WorkerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new FlockStore()));
 
         $commandTester = new CommandTester(new ConsumeTasksCommand($scheduler, $worker, $eventDispatcher));
         $commandTester->execute([
@@ -617,9 +619,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -648,9 +650,9 @@ final class ConsumeTasksCommandTest extends TestCase
     {
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport([], new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
 

@@ -13,19 +13,23 @@ use Countable;
 interface ConfigurationInterface extends Countable
 {
     /**
-     * Init the configuration using both @param array $options and @param array $extraOptions
+     * Init the configuration using both @param array<string, mixed> $options.
+     *
+     * A set of @param array<string, mixed> $extraOptions can be passed if required.
      */
     public function init(array $options, array $extraOptions = []): void;
 
     /**
-     * @param mixed $value
+     * Set a new @param string $value stored via the @param string $key
      */
-    public function set(string $key, $value): void;
+    public function set(string $key, mixed $value): void;
 
     /**
-     * Update a configuration @param string $key using the @param mixed $newValue.
+     * Update a configuration @param string $key
+     *
+     * @param mixed $newValue The new value stored in the configuration.
      */
-    public function update(string $key, $newValue): void;
+    public function update(string $key, mixed $newValue): void;
 
     /**
      * Return a configuration value using the @param string $key.
@@ -44,6 +48,8 @@ interface ConfigurationInterface extends Countable
 
     /**
      * Apply the @param Closure $func to each configuration and return an array after applying the closure.
+     *
+     * @return array<string, mixed>
      */
     public function map(Closure $func): array;
 

@@ -11,6 +11,8 @@ use SchedulerBundle\Exception\RuntimeException;
 use function count;
 use function array_map;
 use function array_walk;
+use function in_array;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -19,6 +21,9 @@ final class CacheConfiguration extends AbstractConfiguration
 {
     private const CONFIGURATION_LIST_KEY = '_symfony_configuration';
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function __construct(
         private CacheItemPoolInterface $pool,
         array $options = []
@@ -30,7 +35,7 @@ final class CacheConfiguration extends AbstractConfiguration
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         if ($this->pool->hasItem($key)) {
             throw new InvalidArgumentException(sprintf('The key "%s" already exist, consider using %s::update()', $key, self::class));

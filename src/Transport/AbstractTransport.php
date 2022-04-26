@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -18,6 +19,14 @@ abstract class AbstractTransport implements TransportInterface
         'execution_mode' => 'first_in_first_out',
     ];
 
+    public function __construct(protected ConfigurationInterface $configuration)
+    {
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @param array<string, mixed> $additionalOptions
+     */
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
         $optionsResolver = new OptionsResolver();
@@ -41,12 +50,12 @@ abstract class AbstractTransport implements TransportInterface
 
     public function getExecutionMode(): string
     {
-        return $this->options['execution_mode'];
+        return $this->configuration->get('execution_mode');
     }
 
     public function setExecutionMode(string $executionMode): self
     {
-        $this->options['execution_mode'] = $executionMode;
+        $this->configuration->set('execution_mode', $executionMode);
 
         return $this;
     }
@@ -54,8 +63,8 @@ abstract class AbstractTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getConfiguration(): ConfigurationInterface
     {
-        return $this->options;
+        return $this->configuration;
     }
 }

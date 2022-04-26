@@ -6,8 +6,11 @@ namespace SchedulerBundle\Transport;
 
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 /**
@@ -17,7 +20,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
 {
     public function __construct(
         private TransportInterface $transport,
-        ?LoggerInterface $logger = null
+        protected ?LoggerInterface $logger = null
     ) {
         parent::__construct($logger);
     }
@@ -27,9 +30,9 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
-        return $this->handleOperationViaFiber(fn (): TaskInterface =>  $this->transport->get($name, $lazy));
+        return $this->handleOperationViaFiber(fn (): TaskInterface|LazyTask =>  $this->transport->get($name, $lazy));
     }
 
     /**
@@ -37,9 +40,9 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface =>  $this->transport->list($lazy));
+        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList =>  $this->transport->list($lazy));
     }
 
     /**
@@ -119,8 +122,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function getOptions(): array
+    public function getConfiguration(): ConfigurationInterface
     {
-        return $this->handleOperationViaFiber(fn (): array =>  $this->transport->getOptions());
+        return $this->handleOperationViaFiber(fn (): ConfigurationInterface =>  $this->transport->getConfiguration());
     }
 }

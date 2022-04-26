@@ -8,6 +8,9 @@ use Closure;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Fiber\AbstractFiberHandler;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
@@ -19,7 +22,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
 {
     public function __construct(
         private SchedulerInterface $scheduler,
-        ?LoggerInterface $logger = null
+        protected ?LoggerInterface $logger = null
     ) {
         parent::__construct($logger);
     }
@@ -113,9 +116,9 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface => $this->scheduler->getTasks($lazy));
+        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList => $this->scheduler->getTasks($lazy));
     }
 
     /**
@@ -123,9 +126,9 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface => $this->scheduler->getDueTasks($lazy, $strict));
+        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks($lazy, $strict));
     }
 
     /**
@@ -133,9 +136,9 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function next(bool $lazy = false): TaskInterface
+    public function next(bool $lazy = false): TaskInterface|LazyTask
     {
-        return $this->handleOperationViaFiber(fn (): TaskInterface => $this->scheduler->next($lazy));
+        return $this->handleOperationViaFiber(fn (): TaskInterface|LazyTask => $this->scheduler->next($lazy));
     }
 
     /**
@@ -157,8 +160,16 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getTimezone(): DateTimeZone
     {
-        return $this->handleOperationViaFiber(function (): void {
-            $this->scheduler->getTimezone();
-        });
+        return $this->handleOperationViaFiber(fn (): DateTimeZone => $this->scheduler->getTimezone());
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration
+    {
+        return $this->handleOperationViaFiber(fn (): SchedulerConfiguration => $this->scheduler->getPoolConfiguration());
     }
 }

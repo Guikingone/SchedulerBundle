@@ -10,30 +10,30 @@ use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Tools\Event\GenerateSchemaEventArgs;
 use Doctrine\ORM\Tools\ToolEvents;
-use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
+use SchedulerBundle\Bridge\Doctrine\SchemaAwareInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\TransportInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscriber
+final class SchedulerDoctrineSchemaSubscriber implements EventSubscriber
 {
     /**
      * @var string
      */
     private const PROCESSING_TABLE_FLAG = self::class.':processing';
 
-    public function __construct(private TransportInterface $transport)
-    {
+    public function __construct(
+        protected TransportInterface $transport,
+        protected ConfigurationInterface $configuration
+    ) {
     }
 
     public function postGenerateSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void
     {
-        if (!$this->transport instanceof DoctrineTransport) {
-            return;
-        }
-
-        $this->transport->configureSchema($generateSchemaEventArgs->getSchema(), $generateSchemaEventArgs->getEntityManager()->getConnection());
+        $this->generateTransportSchema($generateSchemaEventArgs);
+        $this->generateConfigurationSchema($generateSchemaEventArgs);
     }
 
     /**
@@ -63,5 +63,29 @@ final class SchedulerTransportDoctrineSchemaSubscriber implements EventSubscribe
             ToolEvents::postGenerateSchema,
             Events::onSchemaCreateTable,
         ];
+    }
+
+    private function generateTransportSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void
+    {
+        if (!$this->transport instanceof SchemaAwareInterface) {
+            return;
+        }
+
+        $this->transport->configureSchema(
+            $generateSchemaEventArgs->getSchema(),
+            $generateSchemaEventArgs->getEntityManager()->getConnection()
+        );
+    }
+
+    private function generateConfigurationSchema(GenerateSchemaEventArgs $generateSchemaEventArgs): void
+    {
+        if (!$this->configuration instanceof SchemaAwareInterface) {
+            return;
+        }
+
+        $this->configuration->configureSchema(
+            $generateSchemaEventArgs->getSchema(),
+            $generateSchemaEventArgs->getEntityManager()->getConnection()
+        );
     }
 }

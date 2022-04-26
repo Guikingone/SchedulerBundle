@@ -16,6 +16,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\FiberTransport;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
@@ -31,9 +32,9 @@ final class FiberTransportTest extends TestCase
 {
     public function testTransportCannotReturnUndefinedTask(): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -48,9 +49,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -67,9 +68,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanReturnValidTaskLazily(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -91,9 +92,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanStoreAndSortTasks(): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -113,9 +114,9 @@ final class FiberTransportTest extends TestCase
 
     public function testTransportCannotReturnInvalidTaskLazily(): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -138,9 +139,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanCreateATask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -158,9 +159,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanCreateATaskAndReturnItAsLazy(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -174,9 +175,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCannotCreateATaskTwice(): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -198,9 +199,9 @@ final class FiberTransportTest extends TestCase
             'scheduled_at' => new DateTimeImmutable('+ 1 minute'),
         ]);
 
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -221,9 +222,9 @@ final class FiberTransportTest extends TestCase
 
     public function testTransportCannotCreateATaskIfInvalidDuringUpdate(): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -240,9 +241,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanUpdateATask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 
@@ -270,9 +271,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCannotDeleteUndefinedTask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -292,9 +293,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanDeleteATask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -312,9 +313,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCannotPauseUndefinedTask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -331,9 +332,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCannotPausePausedTask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -356,9 +357,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanPauseATask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -381,9 +382,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanResumeAPausedTask(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -407,9 +408,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanEmptyAList(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])));
 
@@ -427,9 +428,9 @@ final class FiberTransportTest extends TestCase
      */
     public function testTransportCanEmptyALazyList(TaskInterface $task): void
     {
-        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport([
+        $transport = new FiberTransport(new FiberTransport(new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
-        ], new SchedulePolicyOrchestrator([
+        ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]))));
 

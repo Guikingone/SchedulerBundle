@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use ArrayIterator;
 use Closure;
 use SchedulerBundle\LazyInterface;
 use Traversable;
@@ -43,7 +44,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $taskName, bool $lazy = false): TaskInterface
+    public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($this->initialized) {
             return $this->list->get($taskName, $lazy);
@@ -55,7 +56,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function findByName(array $names): LazyTaskList
+    public function findByName(array $names): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -68,7 +69,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(Closure $filter): LazyTaskList
+    public function filter(Closure $filter): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -91,7 +92,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function walk(Closure $func): TaskListInterface
+    public function walk(Closure $func): TaskListInterface|LazyTaskList
     {
         if ($this->initialized) {
             return $this->list->walk($func);
@@ -129,7 +130,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function uasort(Closure $func): TaskListInterface
+    public function uasort(Closure $func): TaskListInterface|LazyTaskList
     {
         if ($this->initialized) {
             return $this->list->uasort($func);
@@ -151,7 +152,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function slice(string ...$tasks): TaskListInterface
+    public function slice(string ...$tasks): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -227,7 +228,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): Traversable
+    public function getIterator(): ArrayIterator|Traversable
     {
         $this->initialize();
 

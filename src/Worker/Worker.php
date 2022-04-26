@@ -236,7 +236,7 @@ final class Worker implements WorkerInterface
     }
 
     /**
-     * @param array<int, TaskInterface> $tasks
+     * @param array<int|string, TaskInterface> $tasks
      *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */

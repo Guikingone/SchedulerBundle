@@ -114,6 +114,8 @@ final class ChainedBuilderTest extends TestCase
         self::assertSame('foo', $task->getTask($configuration['tasks'][0]['name'])->getName());
         self::assertInstanceOf(NullTask::class, $task->getTask($configuration['tasks'][1]['name']));
         self::assertSame('bar', $task->getTask($configuration['tasks'][1]['name'])->getName());
+        self::assertInstanceOf(NullTask::class, $task->getTask($configuration['tasks'][2]['name']));
+        self::assertSame('third', $task->getTask($configuration['tasks'][2]['name'])->getName());
         self::assertNotSame('# * * * *', $task->getTask($configuration['tasks'][2]['name'])->getExpression());
     }
 

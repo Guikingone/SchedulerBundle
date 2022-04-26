@@ -10,9 +10,9 @@ use InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
-use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
 
@@ -28,8 +28,13 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): TransportInterface
-    {
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): DoctrineTransport {
         try {
             $doctrineConnection = $this->registry->getConnection($dsn->getHost());
         } catch (InvalidArgumentException $invalidArgumentException) {
@@ -40,11 +45,17 @@ final class DoctrineTransportFactory implements TransportFactoryInterface
             throw new RuntimeException('The connection is not a valid one');
         }
 
-        return new DoctrineTransport([
+        $configuration->init([
             'auto_setup' => $dsn->getOptionAsBool('auto_setup', true),
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'table_name' => $dsn->getOption('table_name', '_symfony_scheduler_tasks'),
-        ], $doctrineConnection, $serializer, $schedulePolicyOrchestrator);
+        ], [
+            'auto_setup' => 'bool',
+            'execution_mode' => 'string',
+            'table_name' => 'string',
+        ]);
+
+        return new DoctrineTransport($configuration, $doctrineConnection, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

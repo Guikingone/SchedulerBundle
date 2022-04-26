@@ -13,6 +13,7 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use function sprintf;
 
 /**
@@ -20,20 +21,24 @@ use function sprintf;
  */
 final class InMemoryTransport extends AbstractTransport
 {
+    /**
+     * @var TaskListInterface<string|int, TaskInterface>
+     */
     private TaskListInterface $tasks;
 
     public function __construct(
-        array $options,
-        private SchedulePolicyOrchestratorInterface $orchestrator
+        protected ConfigurationInterface $configuration,
+        private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        $this->defineOptions($options);
         $this->tasks = new TaskList();
+
+        parent::__construct($configuration);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
             return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
@@ -45,9 +50,9 @@ final class InMemoryTransport extends AbstractTransport
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        $list = $this->orchestrator->sort($this->getExecutionMode(), $this->tasks);
+        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $this->tasks);
 
         return $lazy ? new LazyTaskList($list) : $list;
     }

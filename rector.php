@@ -16,7 +16,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_80);
     $parameters->set(Option::AUTO_IMPORT_NAMES, true);
     $parameters->set(Option::IMPORT_SHORT_CLASSES, true);
-    $parameters->set(Option::IMPORT_DOC_BLOCKS, true);
+    $parameters->set(Option::PARALLEL, true);
 
     $parameters->set(Option::AUTOLOAD_PATHS, [
         __DIR__ . '/vendor/autoload.php',
@@ -31,6 +31,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
         __DIR__ . '/src/Fiber/AbstractFiberHandler.php',
+        __DIR__ . '/src/Middleware/FiberAwareWorkerMiddlewareStack.php',
         __DIR__ . '/src/Transport/Configuration/FiberConfiguration.php',
         __DIR__ . '/src/Transport/FiberTransport.php',
         __DIR__ . '/src/Worker/ExecutionPolicy/FiberPolicy.php',
@@ -38,6 +39,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         __DIR__ . '/src/FiberScheduler.php',
         __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
         __DIR__ . '/tests/FiberSchedulerTest.php',
+        __DIR__ . '/tests/Middleware/FiberAwareWorkerMiddlewareStackTest.php',
         __DIR__ . '/tests/Transport/Configuration/FiberConfigurationTest.php',
         __DIR__ . '/tests/Transport/FiberTransportTest.php',
         __DIR__ . '/tests/Worker/ExecutionPolicy/FiberPolicyTest.php',

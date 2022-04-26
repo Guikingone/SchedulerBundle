@@ -15,6 +15,7 @@ use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskList;
@@ -140,7 +141,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
-        if ($async) {
+        if ($async && $this->bus instanceof MessageBusInterface) {
             $this->bus->dispatch(new TaskToUpdateMessage($taskName, $task));
 
             return;
@@ -174,7 +175,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         return $this->transport->list($lazy);
     }
@@ -182,7 +183,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
@@ -240,7 +241,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function next(bool $lazy = false): TaskInterface
+    public function next(bool $lazy = false): TaskInterface|LazyTask
     {
         $dueTasks = $this->getDueTasks($lazy);
         if (0 === $dueTasks->count()) {
@@ -282,6 +283,16 @@ final class Scheduler implements SchedulerInterface
     public function getTimezone(): DateTimeZone
     {
         return $this->timezone;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration
+    {
+        $dueTasks = $this->getDueTasks();
+
+        return new SchedulerConfiguration($this->timezone, $this->getSynchronizedCurrentDate(), ...$dueTasks->toArray(false));
     }
 
     /**

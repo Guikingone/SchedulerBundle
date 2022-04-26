@@ -32,7 +32,7 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->initialize();
 

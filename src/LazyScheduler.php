@@ -6,6 +6,9 @@ namespace SchedulerBundle;
 
 use Closure;
 use DateTimeZone;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 
@@ -100,7 +103,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getTasks(bool $lazy = false): TaskListInterface
+    public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -110,7 +113,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
         $this->initialize();
 
@@ -120,7 +123,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function next(bool $lazy = false): TaskInterface
+    public function next(bool $lazy = false): TaskInterface|LazyTask
     {
         $this->initialize();
 
@@ -145,6 +148,16 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
         $this->initialize();
 
         return $this->scheduler->getTimezone();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPoolConfiguration(): SchedulerConfiguration
+    {
+        $this->initialize();
+
+        return $this->scheduler->getPoolConfiguration();
     }
 
     /**

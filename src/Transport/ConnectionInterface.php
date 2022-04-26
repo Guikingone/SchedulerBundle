@@ -22,6 +22,8 @@ interface ConnectionInterface
 
     /**
      * {@internal The task retrieving approach is not described as every connection defines a specific solution}
+     *
+     * @return TaskListInterface<string|int, TaskInterface>
      */
     public function list(): TaskListInterface;
 

@@ -29,6 +29,8 @@ It executes the tasks one by one in the order they are received.
 
 ## FiberPolicy
 
+_Requires PHP `>= 8.1`_
+
 The [FiberPolicy](../src/Worker/ExecutionPolicy/FiberPolicy.php) uses [Fibers](https://www.php.net/manual/en/language.fibers.php) to execute tasks,
 a fiber is created for each task.
 

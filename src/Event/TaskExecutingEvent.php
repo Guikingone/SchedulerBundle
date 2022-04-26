@@ -31,6 +31,9 @@ final class TaskExecutingEvent extends Event implements TaskEventInterface, Work
         return $this->worker;
     }
 
+    /**
+     * @return TaskListInterface<string|int, TaskInterface>
+     */
     public function getCurrentTasks(): TaskListInterface
     {
         return $this->currentTasks;

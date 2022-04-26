@@ -26,7 +26,7 @@ final class FooController
     {
         $messageBus->dispatch(new TaskToExecuteMessage(new ShellTask('foo', ['ls', '-al']), 2)); // The message handler will sleep during 2 seconds 
     }
-    
+
     // ...
 }
 ```
@@ -50,7 +50,7 @@ final class FooController
     {
         $messageBus->dispatch(new TaskToYieldMessage('foo'));
     }
-    
+
     // ...
 }
 ```
@@ -71,7 +71,7 @@ final class FooController
     {
         $messageBus->dispatch(new TaskToPauseMessage('foo');
     }
-    
+
     // ...
 }
 ```
@@ -93,7 +93,7 @@ final class FooController
     {
         $messageBus->dispatch(new TaskToUpdateMessage('foo', new NullTask('bar'));
     }
-    
+
     // ...
 }
 ```

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Bridge\Redis\Transport;
 use Redis;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -22,8 +23,13 @@ final class RedisTransportFactory implements TransportFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function createTransport(Dsn $dsn, array $options, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): RedisTransport
-    {
+    public function createTransport(
+        Dsn $dsn,
+        array $options,
+        ConfigurationInterface $configuration,
+        SerializerInterface $serializer,
+        SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
+    ): RedisTransport {
         if (!class_exists(Redis::class)) {
             throw new LogicException('The Redis extension must be installed.');
         }
@@ -32,7 +38,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             throw new LogicException('The redis transport requires php-redis 4.3.0 or higher.');
         }
 
-        $connectionOptions = [
+        $configuration->init([
             'host' => $dsn->getHost(),
             'password' => $dsn->getPassword(),
             'port' => $dsn->getPort() ?? 6379,
@@ -43,9 +49,20 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'transaction_mode' => $dsn->getOption('transaction_mode'),
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
             'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
-        ];
+        ], [
+            'host' => 'string',
+            'password' => ['string', 'null'],
+            'port' => 'int',
+            'scheme' => 'string',
+            'timeout' => 'int',
+            'auth' => ['string', 'null'],
+            'dbindex' => ['int', 'null'],
+            'transaction_mode' => ['string', 'null'],
+            'execution_mode' => 'string',
+            'list' => 'string',
+        ]);
 
-        return new RedisTransport($connectionOptions + $options, $serializer, $schedulePolicyOrchestrator);
+        return new RedisTransport($configuration, $serializer, $schedulePolicyOrchestrator);
     }
 
     /**

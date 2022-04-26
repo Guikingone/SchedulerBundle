@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\LazyInterface;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,7 +26,7 @@ final class LazyTransport implements TransportInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function get(string $name, bool $lazy = false): TaskInterface
+    public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         $this->initialize();
 
@@ -33,7 +36,7 @@ final class LazyTransport implements TransportInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function list(bool $lazy = false): TaskListInterface
+    public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
         if ($this->initialized) {
             return $this->transport->list($lazy);
@@ -121,11 +124,11 @@ final class LazyTransport implements TransportInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getConfiguration(): ConfigurationInterface
     {
         $this->initialize();
 
-        return $this->transport->getOptions();
+        return $this->transport->getConfiguration();
     }
 
     /**

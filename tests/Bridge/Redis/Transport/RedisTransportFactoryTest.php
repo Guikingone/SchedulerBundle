@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 use function getenv;
@@ -38,18 +39,18 @@ final class RedisTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $factory = new RedisTransportFactory();
-        $transport = $factory->createTransport($dsn, [], $serializer, new SchedulePolicyOrchestrator([
+        $transport = $factory->createTransport($dsn, [], new InMemoryConfiguration(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        self::assertSame($dsn->getHost(), $transport->getOptions()['host']);
-        self::assertSame($dsn->getPassword(), $transport->getOptions()['password']);
-        self::assertSame($dsn->getPort(), $transport->getOptions()['port']);
-        self::assertSame($dsn->getScheme(), $transport->getOptions()['scheme']);
-        self::assertSame($dsn->getOption('timeout', 30), $transport->getOptions()['timeout']);
-        self::assertArrayHasKey('execution_mode', $transport->getOptions());
-        self::assertSame('first_in_first_out', $transport->getOptions()['execution_mode']);
-        self::assertArrayHasKey('list', $transport->getOptions());
-        self::assertSame('_symfony_scheduler_tasks', $transport->getOptions()['list']);
+        self::assertSame($dsn->getHost(), $transport->getConfiguration()->get('host'));
+        self::assertSame($dsn->getPassword(), $transport->getConfiguration()->get('password'));
+        self::assertSame($dsn->getPort(), $transport->getConfiguration()->get('port'));
+        self::assertSame($dsn->getScheme(), $transport->getConfiguration()->get('scheme'));
+        self::assertSame($dsn->getOption('timeout', 30), $transport->getConfiguration()->get('timeout'));
+        self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
+        self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
+        self::assertArrayHasKey('list', $transport->getConfiguration()->toArray());
+        self::assertSame('_symfony_scheduler_tasks', $transport->getConfiguration()->get('list'));
     }
 }

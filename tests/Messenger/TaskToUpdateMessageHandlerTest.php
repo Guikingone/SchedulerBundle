@@ -7,24 +7,36 @@ namespace Tests\SchedulerBundle\Messenger;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
-use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class TaskToUpdateMessageHandlerTest extends TestCase
 {
-    public function testHandlerCanYieldTask(): void
+    public function testHandlerCanUpdateTask(): void
     {
         $task = new NullTask('foo');
 
-        $taskToUpdateMessage = new TaskToUpdateMessage('foo', $task);
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create($task);
+        self::assertSame('* * * * *', $transport->list()->get('foo')->getExpression());
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('update')->with(self::equalTo('foo'), self::equalTo($task));
+        $taskToUpdateMessage = new TaskToUpdateMessage('foo', new NullTask('foo', [
+            'expression' => '0 * * * *',
+        ]));
 
-        $taskToPauseMessageHandler = new TaskToUpdateMessageHandler($scheduler);
+        $taskToPauseMessageHandler = new TaskToUpdateMessageHandler($transport);
+
         ($taskToPauseMessageHandler)($taskToUpdateMessage);
+
+        self::assertCount(1, $transport->list());
+        self::assertSame('0 * * * *', $transport->list()->get('foo')->getExpression());
     }
 }

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\CacheTransportFactory;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -36,7 +37,7 @@ final class CacheTransportFactoryTest extends TestCase
 
         $cacheTransportFactory = new CacheTransportFactory($pool);
 
-        $transport = $cacheTransportFactory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), [], $serializer, $orchestrator);
-        self::assertSame('normal', $transport->getOptions()['execution_mode']);
+        $transport = $cacheTransportFactory->createTransport(Dsn::fromString('cache://app?execution_mode=normal'), [], new InMemoryConfiguration(), $serializer, $orchestrator);
+        self::assertSame('normal', $transport->getConfiguration()->get('execution_mode'));
     }
 }

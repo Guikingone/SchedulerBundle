@@ -14,7 +14,7 @@ use Throwable;
 final class LongTailTransport extends AbstractCompoundTransport
 {
     /**
-     * @throws Throwable {@see TransportInterface::list()}
+     * {@inheritdoc}
      */
     protected function execute(Closure $func)
     {

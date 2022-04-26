@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use function sprintf;
 use function str_starts_with;
@@ -33,6 +34,7 @@ final class FiberTransportFactory implements TransportFactoryInterface
     public function createTransport(
         Dsn $dsn,
         array $options,
+        ConfigurationInterface $configuration,
         SerializerInterface $serializer,
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ): FiberTransport {
@@ -44,7 +46,7 @@ final class FiberTransportFactory implements TransportFactoryInterface
             $dsn = Dsn::fromString($dsn->getOptions()[0]);
 
             return new FiberTransport(
-                $factory->createTransport($dsn, $options, $serializer, $schedulePolicyOrchestrator),
+                $factory->createTransport($dsn, $options, $configuration, $serializer, $schedulePolicyOrchestrator),
                 $this->logger
             );
         }
