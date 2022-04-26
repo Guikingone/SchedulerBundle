@@ -128,7 +128,7 @@ abstract class AbstractCompoundTransport extends AbstractTransport implements Co
     /**
      * @param Closure $func The closure used to perform the desired action.
      *
-     * @return TaskListInterface<string|int, TaskInterface>|TaskInterface
+     * @return mixed
      *
      * @throws Throwable {@see TransportInterface::list()}
      */

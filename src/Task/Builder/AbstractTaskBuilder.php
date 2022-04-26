@@ -25,13 +25,13 @@ abstract class AbstractTaskBuilder
                 continue;
             }
 
-            if ('timezone' === $option && $propertyAccessor->isWritable($task, $option)) {
+            if ('timezone' === $option) {
                 $propertyAccessor->setValue($task, $option, new DateTimeZone($value));
 
                 continue;
             }
 
-            if ('expression' === $option && $propertyAccessor->isWritable($task, $option)) {
+            if ('expression' === $option) {
                 $propertyAccessor->setValue($task, $option, $this->expressionBuilder->build($value, $options['timezone'] ?? null)->getExpression());
 
                 continue;

@@ -15,7 +15,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
-use function array_map;
 use function sprintf;
 
 /**
@@ -78,12 +77,14 @@ final class ExecuteExternalProbeCommand extends Command
 
         $table = new Table($output);
         $table->setHeaders(['Name', 'Path', 'Delay', 'Execution state']);
-        $table->addRows(array_map(static fn (ProbeTask|TaskInterface $task): array => [
-            $task->getName(),
-            $task->getExternalProbePath(),
-            $task->getDelay(),
-            $task->getExecutionState() ?? 'Not executed',
-        ], $probeTasks->toArray()));
+        $probeTasks->walk(static function (ProbeTask $task) use ($table): void {
+            $table->addRow([
+                $task->getName(),
+                $task->getExternalProbePath(),
+                $task->getDelay(),
+                $task->getExecutionState() ?? 'Not executed',
+            ]);
+        });
 
         $table->render();
 
