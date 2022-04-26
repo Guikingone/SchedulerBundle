@@ -1754,7 +1754,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertFalse($container->getDefinition(SingleRunTaskMiddleware::class)->isPublic());
         self::assertCount(2, $container->getDefinition(SingleRunTaskMiddleware::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0));
-        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0));
+        self::assertSame(TransportInterface::class, (string) $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(0)->getInvalidBehavior());
         self::assertInstanceOf(Reference::class, $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(1));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(SingleRunTaskMiddleware::class)->getArgument(1));
@@ -1769,7 +1769,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertFalse($container->getDefinition(TaskUpdateMiddleware::class)->isPublic());
         self::assertCount(1, $container->getDefinition(TaskUpdateMiddleware::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskUpdateMiddleware::class)->getArgument(0));
-        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(TaskUpdateMiddleware::class)->getArgument(0));
+        self::assertSame(TransportInterface::class, (string) $container->getDefinition(TaskUpdateMiddleware::class)->getArgument(0));
         self::assertCount(3, $container->getDefinition(TaskUpdateMiddleware::class)->getTags());
         self::assertTrue($container->getDefinition(TaskUpdateMiddleware::class)->hasTag('scheduler.middleware'));
         self::assertTrue($container->getDefinition(TaskUpdateMiddleware::class)->hasTag('scheduler.worker_middleware'));

@@ -13,7 +13,10 @@ use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
@@ -92,12 +95,12 @@ final class DebugMiddlewareCommandTest extends TestCase
 
     public function testCommandCanDisplayExecutionPhaseMiddlewareList(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-
         $command = new DebugMiddlewareCommand(new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new WorkerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
-            new SingleRunTaskMiddleware($scheduler),
+            new SingleRunTaskMiddleware(new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ]))),
             new PostExecutionMiddleware(),
             new PreExecutionMiddleware(),
         ])));

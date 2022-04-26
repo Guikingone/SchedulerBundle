@@ -1672,9 +1672,11 @@ final class FiberSchedulerTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), $eventDispatcher));
+        ]));
+
+        $scheduler = new FiberScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), $eventDispatcher));
 
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
@@ -1688,8 +1690,8 @@ final class FiberSchedulerTest extends TestCase
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
         ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
-            new SingleRunTaskMiddleware($scheduler),
-            new TaskUpdateMiddleware($scheduler),
+            new SingleRunTaskMiddleware($transport),
+            new TaskUpdateMiddleware($transport),
             new TaskLockBagMiddleware($lockFactory),
         ]), $eventDispatcher, $lockFactory, $logger);
 
