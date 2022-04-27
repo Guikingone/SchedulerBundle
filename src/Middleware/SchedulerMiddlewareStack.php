@@ -6,7 +6,6 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use function array_merge;
 use function array_unique;
 use const SORT_REGULAR;
 
@@ -40,6 +39,6 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array: array_merge($this->getPreSchedulingMiddleware()->toArray(), $this->getPostSchedulingMiddleware()->toArray()), flags: SORT_REGULAR);
+        return array_unique(array: [...$this->getPreSchedulingMiddleware()->toArray(), ...$this->getPostSchedulingMiddleware()->toArray()], flags: SORT_REGULAR);
     }
 }
