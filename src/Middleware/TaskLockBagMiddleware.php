@@ -41,6 +41,10 @@ final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, O
             throw new RuntimeException(sprintf('The task "%s" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', $task->getName(), WorkerInterface::class, SchedulerInterface::class));
         }
 
+        if (!$accessLockBag->getKey() instanceof Key) {
+            return;
+        }
+
         $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey());
         $lock->release();
 

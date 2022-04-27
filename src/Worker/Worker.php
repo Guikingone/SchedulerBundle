@@ -32,6 +32,7 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
+use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
@@ -115,7 +116,7 @@ final class Worker implements WorkerInterface
             $accessLockBag = $task->getAccessLockBag();
 
             $lock = $this->lockFactory->createLockFromKey(
-                $accessLockBag instanceof AccessLockBag
+                $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
                 ? $accessLockBag->getKey()
                 : TaskLockBagMiddleware::createKey($task)
             );

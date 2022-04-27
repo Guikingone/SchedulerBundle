@@ -39,7 +39,7 @@ interface TaskListInterface extends ArrayAccess, Countable, IteratorAggregate
     public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask;
 
     /**
-     * @param array<int, string> $names
+     * @param array<int|string, string> $names
      *
      * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */

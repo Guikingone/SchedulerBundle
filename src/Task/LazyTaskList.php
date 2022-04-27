@@ -38,7 +38,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->list->has($taskName);
+        return $this->list->has(taskName: $taskName);
     }
 
     /**
@@ -47,10 +47,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($this->initialized) {
-            return $this->list->get($taskName, $lazy);
+            return $this->list->get(taskName: $taskName, lazy: $lazy);
         }
 
-        return $this->sourceList->get($taskName, $lazy);
+        return $this->sourceList->get(taskName: $taskName, lazy: $lazy);
     }
 
     /**
@@ -60,7 +60,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $self = new self($this->list->findByName($names));
+        $self = new self($this->list->findByName(names: $names));
         $self->initialize();
 
         return $self;
@@ -73,7 +73,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $self = new self($this->list->filter($filter));
+        $self = new self($this->list->filter(filter: $filter));
         $self->initialize();
 
         return $self;
@@ -86,7 +86,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->list->remove($taskName);
+        $this->list->remove(taskName: $taskName);
     }
 
     /**
@@ -95,10 +95,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function walk(Closure $func): TaskListInterface|LazyTaskList
     {
         if ($this->initialized) {
-            return $this->list->walk($func);
+            return $this->list->walk(func: $func);
         }
 
-        return $this->sourceList->walk($func);
+        return $this->sourceList->walk(func: $func);
     }
 
     /**
@@ -107,10 +107,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function map(Closure $func, bool $keepKeys = true): array
     {
         if ($this->initialized) {
-            return $this->list->map($func, $keepKeys);
+            return $this->list->map(func: $func, keepKeys: $keepKeys);
         }
 
-        $results = $this->sourceList->map($func, $keepKeys);
+        $results = $this->sourceList->map(func: $func, keepKeys: $keepKeys);
 
         $this->initialize();
 
@@ -133,10 +133,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function uasort(Closure $func): TaskListInterface|LazyTaskList
     {
         if ($this->initialized) {
-            return $this->list->uasort($func);
+            return $this->list->uasort(func: $func);
         }
 
-        return $this->sourceList->uasort($func);
+        return $this->sourceList->uasort(func: $func);
     }
 
     /**
@@ -146,7 +146,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->list->chunk($size, $preserveKeys);
+        return $this->list->chunk(size: $size, preserveKeys: $preserveKeys);
     }
 
     /**
@@ -166,7 +166,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->list->toArray($keepKeys);
+        return $this->list->toArray(keepKeys: $keepKeys);
     }
 
     /**
@@ -176,7 +176,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->list->offsetExists($offset);
+        return $this->list->offsetExists(offset: $offset);
     }
 
     /**
@@ -185,10 +185,10 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function offsetGet($offset): ?TaskInterface
     {
         if ($this->initialized) {
-            return $this->list->offsetGet($offset);
+            return $this->list->offsetGet(offset: $offset);
         }
 
-        return $this->sourceList->offsetGet($offset);
+        return $this->sourceList->offsetGet(offset: $offset);
     }
 
     /**
@@ -197,12 +197,12 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     public function offsetSet($offset, $value): void
     {
         if ($this->initialized) {
-            $this->list->offsetSet($offset, $value);
+            $this->list->offsetSet(offset: $offset, value: $value);
 
             return;
         }
 
-        $this->sourceList->offsetSet($offset, $value);
+        $this->sourceList->offsetSet(offset: $offset, value: $value);
     }
 
     /**
@@ -212,7 +212,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->list->offsetUnset($offset);
+        $this->list->offsetUnset(offset: $offset);
     }
 
     /**
@@ -249,7 +249,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
             return;
         }
 
-        $this->list = new TaskList($this->sourceList->toArray());
+        $this->list = new TaskList(tasks: $this->sourceList->toArray());
         $this->initialized = true;
     }
 }

@@ -77,6 +77,7 @@ final class SchedulerConfigurationNormalizerTest extends TestCase
 
         $data = $serializer->normalize(new SchedulerConfiguration(new DateTimeZone('UTC'), new DateTimeImmutable(), new NullTask('foo')), 'json');
 
+        self::assertIsArray($data);
         self::assertArrayHasKey('timezone', $data);
         self::assertSame('UTC', $data['timezone']);
         self::assertArrayHasKey('synchronizedDate', $data);

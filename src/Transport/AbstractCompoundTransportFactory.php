@@ -20,7 +20,7 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
 {
     /**
      * @param TransportFactoryInterface[] $transportFactories
-     * @param array<string, mixed>        $options
+     * @param array<string|int, mixed>    $options
      *
      * @return TransportInterface[]
      */

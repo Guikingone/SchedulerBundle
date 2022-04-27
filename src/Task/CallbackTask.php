@@ -14,8 +14,8 @@ final class CallbackTask extends AbstractTask
 {
     /**
      * @param callable|Closure|string|array<string, mixed> $callback
-     * @param array<string|int, mixed>                     $arguments
-     * @param array<string|int, mixed>                     $options
+     * @param array<string, mixed>                     $arguments
+     * @param array<string, mixed>                     $options
      */
     public function __construct(
         string $name,

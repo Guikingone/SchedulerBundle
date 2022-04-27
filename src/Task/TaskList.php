@@ -40,7 +40,7 @@ final class TaskList implements TaskListInterface
     public function __construct(array $tasks = [])
     {
         foreach ($tasks as $task) {
-            $this->add($task);
+            $this->add(task: $task);
         }
     }
 
@@ -53,7 +53,7 @@ final class TaskList implements TaskListInterface
             return;
         }
 
-        array_walk($task, function (TaskInterface $task): void {
+        array_walk(array: $task, callback: function (TaskInterface $task): void {
             $this->tasks[$task->getName()] = $task;
         });
     }
@@ -63,7 +63,7 @@ final class TaskList implements TaskListInterface
      */
     public function has(string $taskName): bool
     {
-        return array_key_exists($taskName, $this->tasks);
+        return array_key_exists(key: $taskName, array: $this->tasks);
     }
 
     /**
@@ -72,7 +72,7 @@ final class TaskList implements TaskListInterface
     public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
-            return new LazyTask($taskName, Closure::bind(fn (): TaskInterface => $this->get($taskName), $this));
+            return new LazyTask(name: $taskName, sourceTaskClosure: Closure::bind(closure: fn (): TaskInterface => $this->get(taskName: $taskName), newThis: $this));
         }
 
         $task = $this->tasks[$taskName] ?? null;
@@ -88,9 +88,9 @@ final class TaskList implements TaskListInterface
      */
     public function findByName(array $names): TaskListInterface|LazyTaskList
     {
-        $filteredTasks = $this->filter(static fn (TaskInterface $task): bool => in_array($task->getName(), $names, true));
+        $filteredTasks = $this->filter(filter: static fn (TaskInterface $task): bool => in_array(needle: $task->getName(), haystack: $names, strict: true));
 
-        return new TaskList($filteredTasks->toArray());
+        return new TaskList(tasks: $filteredTasks->toArray());
     }
 
     /**
@@ -98,7 +98,7 @@ final class TaskList implements TaskListInterface
      */
     public function filter(Closure $filter): TaskListInterface|LazyTaskList
     {
-        return new TaskList(array_filter($this->tasks, $filter, ARRAY_FILTER_USE_BOTH));
+        return new TaskList(tasks: array_filter(array: $this->tasks, callback: $filter, mode: ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -106,7 +106,7 @@ final class TaskList implements TaskListInterface
      */
     public function remove(string $taskName): void
     {
-        if (!$this->has($taskName)) {
+        if (!$this->has(taskName: $taskName)) {
             return;
         }
 
@@ -118,7 +118,7 @@ final class TaskList implements TaskListInterface
      */
     public function walk(Closure $func): TaskListInterface|LazyTaskList
     {
-        array_walk($this->tasks, $func);
+        array_walk(array: $this->tasks, callback: $func);
 
         return $this;
     }
@@ -128,9 +128,9 @@ final class TaskList implements TaskListInterface
      */
     public function map(Closure $func, bool $keepKeys = true): array
     {
-        $results = array_map($func, $this->tasks);
+        $results = array_map(callback: $func, array: $this->tasks);
 
-        return $keepKeys ? $results : array_values($results);
+        return $keepKeys ? $results : array_values(array: $results);
     }
 
     /**
@@ -138,9 +138,9 @@ final class TaskList implements TaskListInterface
      */
     public function last(): TaskInterface
     {
-        $lastIndex = array_key_last($this->tasks);
+        $lastIndex = array_key_last(array: $this->tasks);
         if (null === $lastIndex) {
-            throw new RuntimeException('The current list is empty');
+            throw new RuntimeException(message: 'The current list is empty');
         }
 
         return $this->tasks[$lastIndex];
@@ -151,7 +151,7 @@ final class TaskList implements TaskListInterface
      */
     public function uasort(Closure $func): TaskListInterface|LazyTaskList
     {
-        uasort($this->tasks, $func);
+        uasort(array: $this->tasks, callback: $func);
 
         return $this;
     }
@@ -162,7 +162,7 @@ final class TaskList implements TaskListInterface
     public function chunk(int $size, bool $preserveKeys = false): array
     {
         try {
-            $chunks = array_chunk($this->tasks, $size, $preserveKeys);
+            $chunks = array_chunk(array: $this->tasks, length: $size, preserve_keys: $preserveKeys);
         } catch (Throwable) {
             throw new InvalidArgumentException(sprintf('The given size "%d" cannot be used to split the list', $size));
         }
@@ -175,13 +175,13 @@ final class TaskList implements TaskListInterface
      */
     public function slice(string ...$tasks): TaskListInterface|LazyTaskList
     {
-        $toRetrieveTasks = $this->findByName($tasks);
+        $toRetrieveTasks = $this->findByName(names: $tasks);
         if (0 === $toRetrieveTasks->count()) {
-            throw new RuntimeException('The tasks cannot be found');
+            throw new RuntimeException(message:'The tasks cannot be found');
         }
 
-        return $toRetrieveTasks->walk(function (TaskInterface $task): void {
-            $this->remove($task->getName());
+        return $toRetrieveTasks->walk(func: function (TaskInterface $task): void {
+            $this->remove(taskName: $task->getName());
         });
     }
 
@@ -190,7 +190,7 @@ final class TaskList implements TaskListInterface
      */
     public function toArray(bool $keepKeys = true): array
     {
-        return $keepKeys ? $this->tasks : array_values($this->tasks);
+        return $keepKeys ? $this->tasks : array_values(array: $this->tasks);
     }
 
     /**
@@ -198,7 +198,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetExists($offset): bool
     {
-        return $this->has($offset);
+        return $this->has(taskName: $offset);
     }
 
     /**
@@ -206,7 +206,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetGet($offset): ?TaskInterface
     {
-        return $this->get($offset);
+        return $this->get(taskName: $offset);
     }
 
     /**
@@ -223,7 +223,7 @@ final class TaskList implements TaskListInterface
             throw new InvalidArgumentException(sprintf('A task must be given, received "%s"', gettype($value)));
         }
 
-        null === $offset ? $this->add($value) : $this->tasks[$offset] = $value;
+        null === $offset ? $this->add(task: $value) : $this->tasks[$offset] = $value;
     }
 
     /**
@@ -231,7 +231,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetUnset($offset): void
     {
-        $this->remove($offset);
+        $this->remove(taskName: $offset);
     }
 
     /**
@@ -239,7 +239,7 @@ final class TaskList implements TaskListInterface
      */
     public function count(): int
     {
-        return count($this->tasks);
+        return count(value: $this->tasks);
     }
 
     /**
@@ -247,6 +247,6 @@ final class TaskList implements TaskListInterface
      */
     public function getIterator(): Traversable
     {
-        return new ArrayIterator($this->tasks);
+        return new ArrayIterator(array: $this->tasks);
     }
 }
