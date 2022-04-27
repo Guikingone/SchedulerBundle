@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -121,13 +122,25 @@ interface TaskInterface
      */
     public function getArrivalTime(): ?DateTimeImmutable;
 
+    /**
+     * Set if the task must be executed in background, for more information {@see TaskInterface::mustRunInBackground()}.
+     */
     public function setBackground(bool $background): self;
 
+    /**
+     * Determine if the task must be executed in background, mostly used by {@see CommandTask} and {@see ShellTask}
+     */
     public function mustRunInBackground(): bool;
 
-    public function beforeScheduling($beforeSchedulingCallable = null): TaskInterface;
+    /**
+     * @param callable|Closure|array<string|int, mixed>|null $beforeSchedulingCallable
+     */
+    public function beforeScheduling(callable|Closure|array|null $beforeSchedulingCallable = null): TaskInterface;
 
-    public function getBeforeScheduling();
+    /**
+     * @return callable|Closure|array<string|int, mixed>|null
+     */
+    public function getBeforeScheduling(): callable|Closure|array|null;
 
     public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
@@ -146,28 +159,34 @@ interface TaskInterface
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
     /**
-     * @param null|callable|array $afterSchedulingCallable
+     * @param callable|Closure|array<string|int, mixed>|null $afterSchedulingCallable
      */
-    public function afterScheduling($afterSchedulingCallable = null): TaskInterface;
+    public function afterScheduling(callable|Closure|array|null $afterSchedulingCallable = null): TaskInterface;
 
     /**
-     * @return null|callable|array
+     * @return callable|Closure|array<string|int, mixed>|null
      */
-    public function getAfterScheduling();
+    public function getAfterScheduling(): callable|Closure|array|null;
 
     /**
-     * @param null|callable|array $beforeExecutingCallable
+     * @param callable|Closure|array<string|int, mixed>|null $beforeExecutingCallable
      */
-    public function beforeExecuting($beforeExecutingCallable = null): TaskInterface;
+    public function beforeExecuting(callable|Closure|array|null $beforeExecutingCallable = null): TaskInterface;
 
     /**
-     * @return null|callable|array
+     * @return callable|Closure|array<string|int, mixed>|null
      */
-    public function getBeforeExecuting();
+    public function getBeforeExecuting(): callable|Closure|array|null;
 
-    public function afterExecuting($afterExecutingCallable = null): TaskInterface;
+    /**
+     * @param callable|Closure|array<string|int, mixed>|null $afterExecutingCallable
+     */
+    public function afterExecuting(callable|Closure|array|null $afterExecutingCallable = null): TaskInterface;
 
-    public function getAfterExecuting();
+    /**
+     * @return callable|Closure|array<string|int, mixed>|null
+     */
+    public function getAfterExecuting(): callable|Closure|array|null;
 
     public function setDescription(string $description = null): self;
 
@@ -261,11 +280,7 @@ interface TaskInterface
 
     public function setNice(int $nice = null): self;
 
-    /**
-     * @param mixed|null $default
-     * @return mixed
-     */
-    public function get(string $key, $default = null);
+    public function get(string $key, mixed $default = null): mixed;
 
     public function getState(): string;
 
