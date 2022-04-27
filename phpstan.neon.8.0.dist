@@ -16,4 +16,3 @@ parameters:
         - '#Instantiated class Fiber not found#'
         - '#Call to method start\(\) on an unknown class Fiber#'
         - '#Call to static method suspend\(\) on an unknown class Fiber#'
-    checkGenericClassInNonGenericObjectType: false

@@ -15,8 +15,6 @@ use function is_string;
 final class CommandTask extends AbstractTask
 {
     /**
-     * @param string                   $name
-     * @param string                   $command
      * @param array<string|int, mixed> $arguments
      * @param array<string|int, mixed> $options
      */

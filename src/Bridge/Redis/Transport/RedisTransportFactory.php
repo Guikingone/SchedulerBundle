@@ -6,6 +6,7 @@ namespace SchedulerBundle\Bridge\Redis\Transport;
 
 use Redis;
 use SchedulerBundle\Exception\LogicException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Dsn;
@@ -34,7 +35,12 @@ final class RedisTransportFactory implements TransportFactoryInterface
             throw new LogicException('The Redis extension must be installed.');
         }
 
-        if (version_compare(phpversion('redis'), '4.3.0', '<')) {
+        $redisEnabled = phpversion('redis');
+        if (false === $redisEnabled) {
+            throw new RuntimeException('The Redis extension must be enabled.');
+        }
+
+        if (version_compare($redisEnabled, '4.3.0', '<')) {
             throw new LogicException('The redis transport requires php-redis 4.3.0 or higher.');
         }
 

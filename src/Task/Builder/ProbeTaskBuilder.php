@@ -14,7 +14,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 final class ProbeTaskBuilder extends AbstractTaskBuilder
 {
     /**
-     * @param array<string|int, mixed> $options
+     * @param array<string, mixed> $options
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {

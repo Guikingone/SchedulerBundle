@@ -20,12 +20,12 @@ use const ARRAY_FILTER_USE_BOTH;
 final class MiddlewareRegistry implements MiddlewareRegistryInterface
 {
     /**
-     * @var PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[]
+     * @var array<int, mixed>
      */
     private array $middlewareList;
 
     /**
-     * @param iterable|PostExecutionMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[]|RequiredMiddlewareInterface[] $middlewareList
+     * @param iterable|PostExecutionMiddlewareInterface[]|PreExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|RequiredMiddlewareInterface[]|OrderedMiddlewareInterface[] $middlewareList
      */
     public function __construct(iterable $middlewareList)
     {
@@ -80,7 +80,7 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return ArrayIterator<int, mixed>
      */
     public function getIterator(): ArrayIterator
     {

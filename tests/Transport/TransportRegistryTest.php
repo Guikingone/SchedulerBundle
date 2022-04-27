@@ -19,7 +19,7 @@ final class TransportRegistryTest extends TestCase
 {
     public function testRegistryCannotReturnFirstTransportWhenEmpty(): void
     {
-        $registry = new TransportRegistry([]);
+        $registry = new TransportRegistry(transports: []);
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The transport registry is empty');
@@ -29,11 +29,11 @@ final class TransportRegistryTest extends TestCase
 
     public function testRegistryCanReturnFirstTransport(): void
     {
-        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ]));
 
-        $registry = new TransportRegistry([
+        $registry = new TransportRegistry(transports: [
             $transport,
         ]);
 

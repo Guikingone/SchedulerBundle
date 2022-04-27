@@ -1161,7 +1161,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorkerRegistry(ContainerBuilder $container): void
     {
-        if (!$container->getParameter('scheduler.worker_registry')) {
+        if (false === $container->getParameter('scheduler.worker_registry')) {
             return;
         }
 
@@ -1464,7 +1464,7 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
-        if (!$container->getParameter('scheduler.probe_enabled')) {
+        if (false === $container->getParameter('scheduler.probe_enabled')) {
             return;
         }
 
@@ -1551,7 +1551,7 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerMercureSupport(ContainerBuilder $container, array $config): void
     {
-        if (!$container->getParameter('scheduler.mercure_support')) {
+        if (false === $container->getParameter('scheduler.mercure_support')) {
             return;
         }
 
@@ -1595,7 +1595,7 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerPoolSupport(ContainerBuilder $container, array $configuration): void
     {
-        if (!$container->getParameter('scheduler.pool_support')) {
+        if (false === $container->getParameter('scheduler.pool_support')) {
             return;
         }
 
