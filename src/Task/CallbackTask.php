@@ -12,8 +12,17 @@ use function is_array;
  */
 final class CallbackTask extends AbstractTask
 {
-    public function __construct(string $name, $callback, array $arguments = [], array $options = [])
-    {
+    /**
+     * @param callable|Closure|string|array<string, mixed> $callback
+     * @param array<string, mixed>                         $arguments
+     * @param array<string, mixed>                         $options
+     */
+    public function __construct(
+        string $name,
+        callable|Closure|string|array $callback,
+        array $arguments = [],
+        array $options = []
+    ) {
         $this->defineOptions($options + [
             'callback' => $callback,
             'arguments' => $arguments,
@@ -25,7 +34,10 @@ final class CallbackTask extends AbstractTask
         parent::__construct($name);
     }
 
-    public function getCallback()
+    /**
+     * @return callable|Closure|string|array<string, mixed>
+     */
+    public function getCallback(): callable|Closure|string|array
     {
         return $this->options['callback'];
     }
