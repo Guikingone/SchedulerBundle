@@ -29,6 +29,8 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
 
     /**
      * {@inheritdoc}
+     *
+     * @return array<string, mixed>
      */
     public function normalize($object, string $format = null, array $context = []): array
     {

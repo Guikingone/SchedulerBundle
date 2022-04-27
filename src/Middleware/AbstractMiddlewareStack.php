@@ -18,7 +18,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
     private MiddlewareRegistryInterface $middlewareRegistry;
 
     /**
-     * @var SplObjectStorage<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
+     * @var SplObjectStorage<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface, null>
      */
     private SplObjectStorage $executedMiddleware;
 

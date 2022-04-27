@@ -26,7 +26,7 @@ This bundle defines a set of configuration storage:
 
 ## Informations
 
-Once created, the transport is injected into the current transport,
+Once created, the configuration is injected into the current transport,
 you will probably never need to interact with it without using the transport, otherwise,
 the transport is injected using the [ConfigurationInterface](../src/Transport/Configuration/ConfigurationInterface.php)
 and the `scheduler.configuration` identifier.
@@ -48,12 +48,12 @@ final class FooController
 }
 ```
 
-_**Note**: Using the transport without the scheduler can lead to edge issues as the transport is synchronized with it._
+_**Note**: Using the configuration without the transport can lead to edge issues as the transport is synchronized with it._
 
 ## InMemory
 
 The [InMemoryConfiguration](../src/Transport/Configuration/InMemoryConfiguration.php) stores every key / value in memory,
-this configuration is perfect for `test` environnement or/and for POC applications.
+this configuration is perfect for `test` environnement or / and for POC applications.
 
 ### Usage
 
@@ -69,7 +69,7 @@ scheduler_bundle:
 
 ## Cache
 
-The [CacheConfiguration](../src/Transport/Configuration/CacheConfiguration.php) stores every task in a PSR compliant
+The [CacheConfiguration](../src/Transport/Configuration/CacheConfiguration.php) stores every key / value in a PSR compliant
 `CacheItemPoolInterface`, every cache adapter that implement this interface can be used.
 
 By default, this bundle use the ones defined in the `cache` configuration key of the `framework`:
@@ -110,8 +110,9 @@ scheduler_bundle:
 
 ## LongTail
 
-The [LongTail](../src/Transport/Configuration/LongTailConfiguration.php) allows to use multiple configuration. It's specifically designed
-to maximize the configuration ressources usage by always trying to use the configuration with the lowest amount of key / work to do.
+The [LongTail](../src/Transport/Configuration/LongTailConfiguration.php) allows to use multiple configuration.
+It's specifically designed  to maximize the configuration ressources usage by always trying 
+to use the configuration with the lowest amount of key / work to do.
 This approach can help when you're handling configuration keys in a [high-stress environment](https://en.wikipedia.org/wiki/Long_tail).
 
 ### Usage
@@ -177,6 +178,8 @@ scheduler_bundle:
 **Configuration**: This configuration can be configured using the following extra configuration key:
 
 - The optional `auto_setup` to define if the connection should configure the table if it does not exist
+
+**Note**: This configuration does not allow to customize the table name (for now).
 
 ## Extending the transport configuration
 

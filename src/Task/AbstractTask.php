@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use Closure;
 use Cron\CronExpression;
 use DateInterval;
 use DateTimeImmutable;
@@ -46,8 +45,8 @@ abstract class AbstractTask implements TaskInterface
     }
 
     /**
-     * @param array $options           The default $options allowed in every task
-     * @param array $additionalOptions An array of key => types that define extra allowed $options (ex: ['timezone' => 'string'])
+     * @param array<string, mixed> $options           The default $options allowed in every task
+     * @param array<string, mixed> $additionalOptions An array of key => types that define extra allowed $options (ex: ['timezone' => 'string'])
      */
     protected function defineOptions(array $options = [], array $additionalOptions = []): void
     {
@@ -252,7 +251,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function beforeScheduling(callable|Closure|array|null $beforeSchedulingCallable = null): TaskInterface
+    public function beforeScheduling(callable|array|null $beforeSchedulingCallable = null): TaskInterface
     {
         $this->options['before_scheduling'] = $beforeSchedulingCallable;
 
@@ -262,7 +261,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getBeforeScheduling(): callable|Closure|array|null
+    public function getBeforeScheduling(): callable|array|null
     {
         return $this->options['before_scheduling'];
     }
@@ -318,7 +317,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function afterScheduling(callable|Closure|array|null $afterSchedulingCallable = null): TaskInterface
+    public function afterScheduling(callable|array|null $afterSchedulingCallable = null): TaskInterface
     {
         $this->options['after_scheduling'] = $afterSchedulingCallable;
 
@@ -328,7 +327,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getAfterScheduling(): callable|Closure|array|null
+    public function getAfterScheduling(): callable|array|null
     {
         return $this->options['after_scheduling'];
     }
@@ -336,7 +335,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function beforeExecuting(callable|Closure|array|null $beforeExecutingCallable = null): TaskInterface
+    public function beforeExecuting(callable|array|null $beforeExecutingCallable = null): TaskInterface
     {
         $this->options['before_executing'] = $beforeExecutingCallable;
 
@@ -346,7 +345,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getBeforeExecuting(): callable|Closure|array|null
+    public function getBeforeExecuting(): callable|array|null
     {
         return $this->options['before_executing'];
     }
@@ -354,7 +353,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function afterExecuting(callable|Closure|array|null $afterExecutingCallable = null): TaskInterface
+    public function afterExecuting(callable|array|null $afterExecutingCallable = null): TaskInterface
     {
         $this->options['after_executing'] = $afterExecutingCallable;
 
@@ -364,7 +363,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getAfterExecuting(): callable|Closure|array|null
+    public function getAfterExecuting(): callable|array|null
     {
         return $this->options['after_executing'];
     }

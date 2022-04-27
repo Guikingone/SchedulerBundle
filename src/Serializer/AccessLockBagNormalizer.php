@@ -30,6 +30,8 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
 
     /**
      * {@inheritdoc}
+     *
+     * @return array<string, mixed>
      */
     public function normalize($object, string $format = null, array $context = []): array
     {

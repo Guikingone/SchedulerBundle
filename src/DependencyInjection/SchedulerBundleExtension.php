@@ -814,6 +814,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG),
                 new Reference('property_accessor'),
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskBuilder::class,
             ])
@@ -1476,6 +1477,7 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_PROBE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => Probe::class,
             ])
@@ -1639,8 +1641,8 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param array<string, mixed> $config
-     * @param ContainerBuilder     $container
+     * @param array            $config
+     * @param ContainerBuilder $container
      *
      * @return ConfigurationInterface
      */

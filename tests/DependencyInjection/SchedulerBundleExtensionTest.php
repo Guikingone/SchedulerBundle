@@ -911,6 +911,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(TaskBuilder::class)->getArgument(0));
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskBuilder::class)->getArgument(1));
         self::assertSame('property_accessor', (string) $container->getDefinition(TaskBuilder::class)->getArgument(1));
+        self::assertCount(2, $container->getDefinition(TaskBuilder::class)->getTags());
+        self::assertTrue($container->getDefinition(TaskBuilder::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(TaskBuilder::class)->hasTag('container.preload'));
         self::assertSame(TaskBuilder::class, $container->getDefinition(TaskBuilder::class)->getTag('container.preload')[0]['class']);
 
@@ -1988,6 +1990,9 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(Probe::class)->getArgument(1));
         self::assertSame(WorkerInterface::class, (string) $container->getDefinition(Probe::class)->getArgument(1));
         self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(Probe::class)->getArgument(1)->getInvalidBehavior());
+        self::assertCount(3, $container->getDefinition(Probe::class)->getTags());
+        self::assertTrue($container->getDefinition(Probe::class)->hasTag('scheduler.probe'));
+        self::assertTrue($container->getDefinition(Probe::class)->hasTag('container.hot_path'));
         self::assertTrue($container->getDefinition(Probe::class)->hasTag('container.preload'));
         self::assertSame(Probe::class, $container->getDefinition(Probe::class)->getTag('container.preload')[0]['class']);
 

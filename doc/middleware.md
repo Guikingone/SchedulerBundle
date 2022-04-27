@@ -158,7 +158,8 @@ depending on your needs, to do so, your middleware must implement one or many of
 
 _Requires `PHP >= 8.1`_
 
-If desired, [fibers](https://www.php.net/manual/en/language.fibers.php) can be used to execute middlewares, to do so, just enable the fibers support in the configuration:
+If desired, [fibers](https://www.php.net/manual/en/language.fibers.php) can be used to execute middlewares, 
+to do so, just enable the fibers support in the configuration:
 
 ```yaml
 scheduler_bundle:
@@ -168,5 +169,6 @@ scheduler_bundle:
         mode: 'fiber'
 ```
 
-Even when using fibers, both `WorkerMiddlewareStack` and `SchedulerMiddlewareStack` are available via [WorkerMiddlewareStackInterface](../src/Middleware/WorkerMiddlewareStackInterface.php)
+Even when using fibers, both `WorkerMiddlewareStack` and `SchedulerMiddlewareStack` are available 
+via [WorkerMiddlewareStackInterface](../src/Middleware/WorkerMiddlewareStackInterface.php)
 and [SchedulerMiddlewareStackInterface](../src/Middleware/SchedulerMiddlewareStackInterface.php) respectively.
