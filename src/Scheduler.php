@@ -188,7 +188,7 @@ final class Scheduler implements SchedulerInterface
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
         if ($synchronizedCurrentDate->format(format: 's') !== '00' && $strict) {
-            return $lazy ? new LazyTaskList(new TaskList()) : new TaskList();
+            return $lazy ? new LazyTaskList(sourceList: new TaskList()) : new TaskList();
         }
 
         $dueTasks = $this->getTasks(lazy: $lazy)->filter(filter: static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {

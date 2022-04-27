@@ -15,7 +15,7 @@ final class CallbackTaskTest extends TestCase
 {
     public function testTaskCanBeCreatedWithValidCallable(): void
     {
-        $callbackTask = new CallbackTask('foo', function (): void {
+        $callbackTask = new CallbackTask(name: 'foo', callback: function (): void {
             (new FooService())->echo();
         });
 
@@ -25,7 +25,7 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithValidCallback(): void
     {
-        $callbackTask = new CallbackTask('foo', function (): void {
+        $callbackTask = new CallbackTask(name: 'foo', callback: function (): void {
             echo 'test';
         });
 
@@ -34,32 +34,32 @@ final class CallbackTaskTest extends TestCase
 
     public function testTaskCanBeCreatedWithCallbackAndChangeCallbackLater(): void
     {
-        $callbackTask = new CallbackTask('foo', function (): void {
+        $callbackTask = new CallbackTask(name: 'foo', callback: function (): void {
             echo 'test';
         });
 
         self::assertEmpty($callbackTask->getArguments());
 
-        $callbackTask->setCallback(function (): void {
+        $callbackTask->setCallback(callback: function (): void {
             echo 'Symfony';
         });
     }
 
     public function testTaskCanBeCreatedWithValidCallbackAndArguments(): void
     {
-        $callbackTask = new CallbackTask('foo', function (string $value): void {
+        $callbackTask = new CallbackTask(name: 'foo', callback: function (string $value): void {
             echo $value;
-        }, ['value' => 'test']);
+        }, arguments: ['value' => 'test']);
 
         self::assertNotEmpty($callbackTask->getArguments());
     }
 
     public function testTaskCanBeCreatedWithValidCallbackAndSetArgumentsLater(): void
     {
-        $callbackTask = new CallbackTask('foo', function (string $value): void {
+        $callbackTask = new CallbackTask(name: 'foo', callback: function (string $value): void {
             echo $value;
         });
-        $callbackTask->setArguments(['value' => 'test']);
+        $callbackTask->setArguments(arguments: ['value' => 'test']);
 
         self::assertNotEmpty($callbackTask->getArguments());
     }

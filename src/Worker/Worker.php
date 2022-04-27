@@ -68,15 +68,15 @@ final class Worker implements WorkerInterface
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void
     {
         if (0 === $this->runnerRegistry->count()) {
-            throw new UndefinedRunnerException('No runner found');
+            throw new UndefinedRunnerException(message: 'No runner found');
         }
 
         $this->configuration = $configuration;
-        $this->configuration->setExecutedTasksCount(0);
-        $this->eventDispatcher->dispatch(new WorkerStartedEvent($this));
+        $this->configuration->setExecutedTasksCount(executedTasksCount: 0);
+        $this->eventDispatcher->dispatch(event: new WorkerStartedEvent(worker: $this));
 
         try {
-            $executionPolicy = $this->executionPolicyRegistry->find($configuration->getExecutionPolicy());
+            $executionPolicy = $this->executionPolicyRegistry->find(policy: $configuration->getExecutionPolicy());
         } catch (Throwable $throwable) {
             $this->logger->critical(sprintf('The tasks cannot be executed, an error occurred while retrieving the execution policy: %s', $throwable->getMessage()));
 
@@ -84,16 +84,16 @@ final class Worker implements WorkerInterface
         }
 
         while (!$this->configuration->shouldStop()) {
-            $toExecuteTasks = $this->getTasks($tasks);
+            $toExecuteTasks = $this->getTasks(tasks: $tasks);
             if (0 === $toExecuteTasks->count() && !$this->configuration->isSleepingUntilNextMinute()) {
                 $this->stop();
             }
 
-            $executionPolicy->execute($toExecuteTasks, function (TaskInterface $task, TaskListInterface $taskList): void {
-                $this->handleTask($task, $taskList);
+            $executionPolicy->execute(toExecuteTasks: $toExecuteTasks, handleTaskFunc: function (TaskInterface $task, TaskListInterface $taskList): void {
+                $this->handleTask(task: $task, taskList: $taskList);
             });
 
-            if ($this->shouldStop($toExecuteTasks)) {
+            if ($this->shouldStop(taskList: $toExecuteTasks)) {
                 break;
             }
 
@@ -103,7 +103,7 @@ final class Worker implements WorkerInterface
             }
         }
 
-        $this->eventDispatcher->dispatch(new WorkerStoppedEvent($this));
+        $this->eventDispatcher->dispatch(event: new WorkerStoppedEvent(worker: $this));
     }
 
     /**
@@ -111,12 +111,12 @@ final class Worker implements WorkerInterface
      */
     public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
     {
-        $nonExecutedTasks = $toPreemptTasksList->slice(...$preemptTaskList->map(static fn (TaskInterface $task): string => $task->getName(), false));
-        $nonExecutedTasks->walk(function (TaskInterface $task): void {
+        $nonExecutedTasks = $toPreemptTasksList->slice(...$preemptTaskList->map(func: static fn (TaskInterface $task): string => $task->getName(), keepKeys: false));
+        $nonExecutedTasks->walk(func: function (TaskInterface $task): void {
             $accessLockBag = $task->getAccessLockBag();
 
             $lock = $this->lockFactory->createLockFromKey(
-                $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
+                key: $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
                 ? $accessLockBag->getKey()
                 : TaskLockBagMiddleware::createKey($task)
             );
@@ -125,7 +125,7 @@ final class Worker implements WorkerInterface
         });
 
         $forkWorker = $this->fork();
-        $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(false));
+        $forkWorker->execute($forkWorker->getConfiguration(), ...$nonExecutedTasks->toArray(keepKeys: false));
 
         $forkWorker->stop();
     }
@@ -138,9 +138,9 @@ final class Worker implements WorkerInterface
         $fork = clone $this;
         $fork->configuration = WorkerConfiguration::create();
         $fork->configuration->fork();
-        $fork->configuration->setForkedFrom($this);
+        $fork->configuration->setForkedFrom(forkedFrom: $this);
 
-        $this->eventDispatcher->dispatch(new WorkerForkedEvent($this, $fork));
+        $this->eventDispatcher->dispatch(event: new WorkerForkedEvent(forkedWorker: $this, newWorker: $fork));
 
         return $fork;
     }
@@ -150,8 +150,8 @@ final class Worker implements WorkerInterface
      */
     public function pause(): WorkerInterface
     {
-        $this->configuration->run(false);
-        $this->eventDispatcher->dispatch(new WorkerPausedEvent($this));
+        $this->configuration->run(isRunning: false);
+        $this->eventDispatcher->dispatch(event: new WorkerPausedEvent(worker: $this));
 
         return $this;
     }
@@ -162,10 +162,10 @@ final class Worker implements WorkerInterface
     public function restart(): void
     {
         $this->configuration->stop();
-        $this->configuration->run(false);
+        $this->configuration->run(isRunning: false);
         $this->failedTasks = new TaskList();
 
-        $this->eventDispatcher->dispatch(new WorkerRestartedEvent($this));
+        $this->eventDispatcher->dispatch(event: new WorkerRestartedEvent(worker: $this));
     }
 
     /**
@@ -175,9 +175,9 @@ final class Worker implements WorkerInterface
     {
         $sleepDuration = $this->getSleepDuration();
 
-        $this->eventDispatcher->dispatch(new WorkerSleepingEvent($sleepDuration, $this));
+        $this->eventDispatcher->dispatch(event: new WorkerSleepingEvent(sleepDuration: $sleepDuration, worker: $this));
 
-        sleep($sleepDuration);
+        sleep(seconds: $sleepDuration);
     }
 
     /**
@@ -243,16 +243,16 @@ final class Worker implements WorkerInterface
      */
     protected function getTasks(array $tasks): TaskListInterface
     {
-        $tasks = [] !== $tasks ? new TaskList($tasks) : $this->scheduler->getDueTasks(
-            $this->configuration->shouldRetrieveTasksLazily(),
-            $this->configuration->isStrictlyCheckingDate()
+        $tasks = [] !== $tasks ? new TaskList(tasks: $tasks) : $this->scheduler->getDueTasks(
+            lazy: $this->configuration->shouldRetrieveTasksLazily(),
+            strict:  $this->configuration->isStrictlyCheckingDate()
         );
 
-        $lockedTasks = $tasks->filter(function (TaskInterface $task): bool {
-            $key = TaskLockBagMiddleware::createKey($task);
-            $task->setAccessLockBag(new AccessLockBag($key));
+        $lockedTasks = $tasks->filter(filter: function (TaskInterface $task): bool {
+            $key = TaskLockBagMiddleware::createKey(task: $task);
+            $task->setAccessLockBag(bag: new AccessLockBag(key: $key));
 
-            $lock = $this->lockFactory->createLockFromKey($key, null, false);
+            $lock = $this->lockFactory->createLockFromKey(key: $key, ttl: null, autoRelease: false);
             if (!$lock->acquire()) {
                 $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
 
@@ -262,7 +262,7 @@ final class Worker implements WorkerInterface
             return true;
         });
 
-        return $lockedTasks->filter(fn (TaskInterface $task): bool => $this->checkTaskState($task));
+        return $lockedTasks->filter(filter: fn (TaskInterface $task): bool => $this->checkTaskState(task: $task));
     }
 
     protected function handleTask(TaskInterface $task, TaskListInterface $taskList): void
@@ -271,46 +271,46 @@ final class Worker implements WorkerInterface
             return;
         }
 
-        $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
+        $this->eventDispatcher->dispatch(event: new WorkerRunningEvent(worker: $this));
 
         try {
-            $runner = $this->runnerRegistry->find($task);
+            $runner = $this->runnerRegistry->find(task: $task);
 
             if (!$this->configuration->isRunning()) {
-                $this->configuration->run(true);
-                $this->middlewareStack->runPreExecutionMiddleware($task);
+                $this->configuration->run(isRunning: true);
+                $this->middlewareStack->runPreExecutionMiddleware(task: $task);
 
-                $this->configuration->setCurrentlyExecutedTask($task);
-                $this->eventDispatcher->dispatch(new WorkerRunningEvent($this));
-                $this->eventDispatcher->dispatch(new TaskExecutingEvent($task, $this, $taskList));
-                $task->setArrivalTime(new DateTimeImmutable());
-                $task->setExecutionStartTime(new DateTimeImmutable());
-                $this->taskExecutionTracker->startTracking($task);
+                $this->configuration->setCurrentlyExecutedTask(task: $task);
+                $this->eventDispatcher->dispatch(event: new WorkerRunningEvent(worker: $this));
+                $this->eventDispatcher->dispatch(event: new TaskExecutingEvent(task: $task, worker: $this, currentTasks: $taskList));
+                $task->setArrivalTime(dateTimeImmutable: new DateTimeImmutable());
+                $task->setExecutionStartTime(dateTimeImmutable: new DateTimeImmutable());
+                $this->taskExecutionTracker->startTracking(task: $task);
 
-                $output = $runner->run($task, $this);
+                $output = $runner->run(task: $task, worker: $this);
 
-                $this->taskExecutionTracker->endTracking($task);
-                $task->setExecutionEndTime(new DateTimeImmutable());
-                $task->setLastExecution(new DateTimeImmutable());
+                $this->taskExecutionTracker->endTracking(task: $task);
+                $task->setExecutionEndTime(dateTimeImmutable: new DateTimeImmutable());
+                $task->setLastExecution(dateTimeImmutable: new DateTimeImmutable());
 
-                $this->defineTaskExecutionState($task, $output);
+                $this->defineTaskExecutionState(task: $task, output: $output);
 
-                $this->middlewareStack->runPostExecutionMiddleware($task, $this);
-                $this->eventDispatcher->dispatch(new TaskExecutedEvent($task, $output));
+                $this->middlewareStack->runPostExecutionMiddleware(task: $task, worker: $this);
+                $this->eventDispatcher->dispatch(new TaskExecutedEvent(task: $task, output: $output));
 
-                $this->configuration->setLastExecutedTask($task);
+                $this->configuration->setLastExecutedTask(lastExecutedTask: $task);
 
                 $executedTasksCount = $this->configuration->getExecutedTasksCount();
-                $this->configuration->setExecutedTasksCount(++$executedTasksCount);
+                $this->configuration->setExecutedTasksCount(executedTasksCount: ++$executedTasksCount);
             }
         } catch (Throwable $throwable) {
-            $failedTask = new FailedTask($task, $throwable->getMessage());
-            $this->getFailedTasks()->add($failedTask);
-            $this->eventDispatcher->dispatch(new TaskFailedEvent($failedTask));
+            $failedTask = new FailedTask(task: $task, reason: $throwable->getMessage());
+            $this->getFailedTasks()->add(task: $failedTask);
+            $this->eventDispatcher->dispatch(event: new TaskFailedEvent(task: $failedTask));
         } finally {
-            $this->configuration->setCurrentlyExecutedTask(null);
-            $this->configuration->run(false);
-            $this->eventDispatcher->dispatch(new WorkerRunningEvent($this, true));
+            $this->configuration->setCurrentlyExecutedTask(task: null);
+            $this->configuration->run(isRunning: false);
+            $this->eventDispatcher->dispatch(event: new WorkerRunningEvent(worker: $this, isIdle: true));
         }
     }
 
@@ -334,10 +334,10 @@ final class Worker implements WorkerInterface
     private function checkTaskState(TaskInterface $task): bool
     {
         if (TaskInterface::UNDEFINED === $task->getState()) {
-            throw new LogicException('The task state must be defined in order to be executed!');
+            throw new LogicException(message: 'The task state must be defined in order to be executed!');
         }
 
-        if (in_array($task->getState(), [TaskInterface::PAUSED, TaskInterface::DISABLED], true)) {
+        if (in_array(needle: $task->getState(), haystack: [TaskInterface::PAUSED, TaskInterface::DISABLED], strict: true)) {
             $this->logger->info(sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), [
                 'name' => $task->getName(),
                 'expression' => $task->getExpression(),
@@ -355,18 +355,18 @@ final class Worker implements WorkerInterface
      */
     private function getSleepDuration(): int
     {
-        $dateTimeImmutable = new DateTimeImmutable('+ 1 minute', $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $dateTimeImmutable->setTime((int) $dateTimeImmutable->format('H'), (int) $dateTimeImmutable->format('i'));
+        $dateTimeImmutable = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
+        $updatedNextExecutionDate = $dateTimeImmutable->setTime(hour: (int) $dateTimeImmutable->format('H'), minute: (int) $dateTimeImmutable->format('i'));
 
-        return (new DateTimeImmutable('now', $this->scheduler->getTimezone()))->diff($updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
+        return (new DateTimeImmutable(datetime: 'now', timezone: $this->scheduler->getTimezone()))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }
 
     private function defineTaskExecutionState(TaskInterface $task, Output $output): void
     {
-        if (in_array($task->getExecutionState(), [TaskInterface::INCOMPLETE, TaskInterface::TO_RETRY], true)) {
+        if (in_array(needle: $task->getExecutionState(), haystack: [TaskInterface::INCOMPLETE, TaskInterface::TO_RETRY], strict: true)) {
             return;
         }
 
-        $task->setExecutionState(Output::ERROR === $output->getType() ? TaskInterface::ERRORED : TaskInterface::SUCCEED);
+        $task->setExecutionState(executionState: Output::ERROR === $output->getType() ? TaskInterface::ERRORED : TaskInterface::SUCCEED);
     }
 }

@@ -23,7 +23,7 @@ final class WorkerRegistry implements WorkerRegistryInterface
      */
     public function __construct(iterable $workers)
     {
-        $this->workers = is_array($workers) ? $workers : iterator_to_array($workers);
+        $this->workers = is_array(value: $workers) ? $workers : iterator_to_array(iterator: $workers);
     }
 
     /**
@@ -39,6 +39,6 @@ final class WorkerRegistry implements WorkerRegistryInterface
      */
     public function count(): int
     {
-        return count($this->workers);
+        return count(value: $this->workers);
     }
 }

@@ -22,7 +22,7 @@ final class SchedulerConfiguration
         private DateTimeImmutable $synchronizedDate,
         TaskInterface ...$dueTasks
     ) {
-        $this->dueTasks = new TaskList($dueTasks);
+        $this->dueTasks = new TaskList(tasks: $dueTasks);
     }
 
     public function getTimezone(): DateTimeZone

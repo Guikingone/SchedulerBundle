@@ -31,7 +31,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->schedule($task);
+        $this->scheduler->schedule(task: $task);
     }
 
     /**
@@ -41,7 +41,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->unschedule($taskName);
+        $this->scheduler->unschedule(taskName: $taskName);
     }
 
     /**
@@ -51,7 +51,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->yieldTask($name, $async);
+        $this->scheduler->yieldTask(name: $name, async: $async);
     }
 
     /**
@@ -61,7 +61,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->preempt($taskToPreempt, $filter);
+        $this->scheduler->preempt(taskToPreempt: $taskToPreempt, filter: $filter);
     }
 
     /**
@@ -70,12 +70,12 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
         if ($this->initialized) {
-            $this->scheduler->update($taskName, $task, $async);
+            $this->scheduler->update(taskName: $taskName, task: $task, async: $async);
 
             return;
         }
 
-        $this->sourceScheduler->update($taskName, $task, $async);
+        $this->sourceScheduler->update(taskName: $taskName, task: $task, async: $async);
 
         $this->initialize();
     }
@@ -87,7 +87,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->pause($taskName, $async);
+        $this->scheduler->pause(taskName: $taskName, async: $async);
     }
 
     /**
@@ -97,7 +97,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        $this->scheduler->resume($taskName);
+        $this->scheduler->resume(taskName: $taskName);
     }
 
     /**
@@ -107,7 +107,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->scheduler->getTasks($lazy);
+        return $this->scheduler->getTasks(lazy: $lazy);
     }
 
     /**
@@ -117,7 +117,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->scheduler->getDueTasks($lazy, $strict);
+        return $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict);
     }
 
     /**
@@ -127,7 +127,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     {
         $this->initialize();
 
-        return $this->scheduler->next($lazy);
+        return $this->scheduler->next(lazy: $lazy);
     }
 
     /**

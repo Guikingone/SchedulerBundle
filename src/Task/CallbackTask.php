@@ -14,8 +14,8 @@ final class CallbackTask extends AbstractTask
 {
     /**
      * @param callable|Closure|string|array<string, mixed> $callback
-     * @param array<string, mixed>                     $arguments
-     * @param array<string, mixed>                     $options
+     * @param array<string|int, mixed>                     $arguments
+     * @param array<string|int, mixed>                     $options
      */
     public function __construct(
         string $name,
@@ -23,10 +23,10 @@ final class CallbackTask extends AbstractTask
         array $arguments = [],
         array $options = []
     ) {
-        $this->defineOptions($options + [
+        $this->defineOptions(options: $options + [
             'callback' => $callback,
             'arguments' => $arguments,
-        ], [
+        ], additionalOptions: [
             'callback' => ['callable', 'string', 'array'],
             'arguments' => ['array', 'string[]'],
         ]);
