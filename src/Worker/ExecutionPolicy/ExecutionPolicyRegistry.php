@@ -27,7 +27,7 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
      */
     public function __construct(iterable $policies)
     {
-        $this->policies = is_array($policies) ? $policies : iterator_to_array($policies);
+        $this->policies = is_array(value: $policies) ? $policies : iterator_to_array(iterator: $policies);
     }
 
     /**
@@ -35,13 +35,13 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
      */
     public function find(string $policy): ExecutionPolicyInterface
     {
-        $list = $this->filter(static fn (ExecutionPolicyInterface $executionPolicy): bool => $executionPolicy->support($policy));
+        $list = $this->filter(func: static fn (ExecutionPolicyInterface $executionPolicy): bool => $executionPolicy->support(policy: $policy));
         if (0 === $list->count()) {
-            throw new InvalidArgumentException(sprintf('No policy found for "%s"', $policy));
+            throw new InvalidArgumentException(message: sprintf('No policy found for "%s"', $policy));
         }
 
         if (1 < $list->count()) {
-            throw new InvalidArgumentException('More than one policy found, consider improving the policy(es)');
+            throw new InvalidArgumentException(message: 'More than one policy found, consider improving the policy(es)');
         }
 
         return $list->current();
@@ -52,7 +52,7 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
      */
     public function filter(Closure $func): ExecutionPolicyRegistryInterface
     {
-        return new self(array_filter($this->policies, $func, ARRAY_FILTER_USE_BOTH));
+        return new self(policies: array_filter(array: $this->policies, callback: $func, mode: ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -60,9 +60,9 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
      */
     public function current(): ExecutionPolicyInterface
     {
-        $currentPolicy = current($this->policies);
+        $currentPolicy = current(array: $this->policies);
         if (false === $currentPolicy) {
-            throw new RuntimeException('The current policy cannot be found');
+            throw new RuntimeException(message:'The current policy cannot be found');
         }
 
         return $currentPolicy;
@@ -73,6 +73,6 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
      */
     public function count(): int
     {
-        return count($this->policies);
+        return count(value: $this->policies);
     }
 }

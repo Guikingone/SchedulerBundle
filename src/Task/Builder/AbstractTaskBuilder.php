@@ -18,6 +18,9 @@ abstract class AbstractTaskBuilder
     {
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     protected function handleTaskAttributes(TaskInterface $task, array $options, PropertyAccessorInterface $propertyAccessor): TaskInterface
     {
         foreach ($options as $option => $value) {

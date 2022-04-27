@@ -12,15 +12,24 @@ use function array_walk;
  */
 abstract class AbstractConfiguration implements ConfigurationInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function init(array $options, array $extraOptions = []): void
     {
         $finalOptions = $this->defineOptions($options, $extraOptions);
 
-        array_walk($finalOptions, function ($option, string $key): void {
+        array_walk($finalOptions, function (mixed $option, string $key): void {
             $this->set($key, $option);
         });
     }
 
+    /**
+     * @param array<string, mixed> $options The default options required to make the configuration work.
+     * @param array<string, mixed> $extraOptions A set of extra options that can be passed if required.
+     *
+     * @return array<string, mixed>
+     */
     private function defineOptions(array $options = [], array $extraOptions = []): array
     {
         $resolver = new OptionsResolver();

@@ -22,7 +22,7 @@ final class TaskUpdateMiddleware implements PostExecutionMiddlewareInterface, Or
      */
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
-        $this->transport->update($task->getName(), $task);
+        $this->transport->update(name: $task->getName(), updatedTask: $task);
     }
 
     /**

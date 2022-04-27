@@ -19,8 +19,19 @@ use function urldecode;
  */
 final class Dsn
 {
-    public function __construct(private string $scheme, private string $host, private ?string $path = null, private ?string $user = null, private ?string $password = null, private ?int $port = null, private array $options = [], private ?string $root = null)
-    {
+    /**
+     * @param array<string|int, mixed> $options
+     */
+    public function __construct(
+        private string $scheme,
+        private string $host,
+        private ?string $path = null,
+        private ?string $user = null,
+        private ?string $password = null,
+        private ?int $port = null,
+        private array $options = [],
+        private ?string $root = null
+    ) {
     }
 
     public static function fromString(string $dsn): self

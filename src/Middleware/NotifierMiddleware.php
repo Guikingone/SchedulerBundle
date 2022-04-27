@@ -31,7 +31,7 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
             return;
         }
 
-        $this->notify($bag->getNotification(), $bag->getRecipients());
+        $this->notify(notification: $bag->getNotification(), recipients: $bag->getRecipients());
     }
 
     /**
@@ -44,7 +44,7 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
             return;
         }
 
-        $this->notify($bag->getNotification(), $bag->getRecipients());
+        $this->notify(notification: $bag->getNotification(), recipients: $bag->getRecipients());
     }
 
     public function preExecute(TaskInterface $task): void
@@ -54,7 +54,7 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
             return;
         }
 
-        $this->notify($bag->getNotification(), $bag->getRecipients());
+        $this->notify(notification: $bag->getNotification(), recipients: $bag->getRecipients());
     }
 
     /**
@@ -67,7 +67,7 @@ final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, Post
             return;
         }
 
-        $this->notify($bag->getNotification(), $bag->getRecipients());
+        $this->notify(notification: $bag->getNotification(), recipients: $bag->getRecipients());
     }
 
     /**

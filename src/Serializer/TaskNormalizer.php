@@ -61,6 +61,8 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return array<string, mixed>
      */
     public function normalize($object, string $format = null, array $context = []): array
     {

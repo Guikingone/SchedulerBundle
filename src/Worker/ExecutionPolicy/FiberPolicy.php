@@ -24,8 +24,8 @@ final class FiberPolicy extends AbstractFiberHandler implements ExecutionPolicyI
         TaskListInterface $toExecuteTasks,
         Closure $handleTaskFunc
     ): void {
-        $toExecuteTasks->walk(function (TaskInterface $toExecuteTask) use ($toExecuteTasks, $handleTaskFunc): void {
-            $this->handleOperationViaFiber(static function () use ($toExecuteTask, $toExecuteTasks, $handleTaskFunc): void {
+        $toExecuteTasks->walk(func: function (TaskInterface $toExecuteTask) use ($toExecuteTasks, $handleTaskFunc): void {
+            $this->handleOperationViaFiber(func: static function () use ($toExecuteTask, $toExecuteTasks, $handleTaskFunc): void {
                 $handleTaskFunc($toExecuteTask, $toExecuteTasks);
             });
         });

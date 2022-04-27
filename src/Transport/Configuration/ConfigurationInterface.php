@@ -13,9 +13,8 @@ use Countable;
 interface ConfigurationInterface extends Countable
 {
     /**
-     * Init the configuration using both @param array<string, mixed> $options.
-     *
-     * A set of @param array<string, mixed> $extraOptions can be passed if required.
+     * @param array<string, mixed> $options The default options required to make the configuration work.
+     * @param array<string, mixed> $extraOptions A set of extra options that can be passed if required.
      */
     public function init(array $options, array $extraOptions = []): void;
 

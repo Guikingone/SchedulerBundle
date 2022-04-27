@@ -17,7 +17,7 @@ final class DefaultPolicy implements ExecutionPolicyInterface
         TaskListInterface $toExecuteTasks,
         Closure $handleTaskFunc
     ): void {
-        $toExecuteTasks->walk(static function (TaskInterface $task) use ($handleTaskFunc, $toExecuteTasks): void {
+        $toExecuteTasks->walk(func: static function (TaskInterface $task) use ($handleTaskFunc, $toExecuteTasks): void {
             $handleTaskFunc($task, $toExecuteTasks);
         });
     }

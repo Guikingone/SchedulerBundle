@@ -165,7 +165,7 @@ final class Connection implements ConnectionInterface
             return;
         }
 
-        if (!$this->connection->hDel($this->list, ...$keys)) {
+        if (false === $this->connection->hDel($this->list, ...$keys)) {
             throw new TransportException('The list cannot be emptied');
         }
     }

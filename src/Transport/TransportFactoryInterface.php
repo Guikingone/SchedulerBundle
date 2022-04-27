@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 interface TransportFactoryInterface
 {
     /**
-     * @param array<string, mixed> $options
+     * @param array<string|int, mixed> $options
      */
     public function createTransport(
         Dsn $dsn,
@@ -25,7 +25,7 @@ interface TransportFactoryInterface
     ): TransportInterface;
 
     /**
-     * @param array<string, mixed> $options
+     * @param array<string|int, mixed> $options
      */
     public function support(string $dsn, array $options = []): bool;
 }

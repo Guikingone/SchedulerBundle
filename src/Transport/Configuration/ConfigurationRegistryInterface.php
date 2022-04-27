@@ -10,6 +10,8 @@ use IteratorAggregate;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @extends IteratorAggregate<int, ConfigurationInterface>
  */
 interface ConfigurationRegistryInterface extends Countable, IteratorAggregate
 {

@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use ArrayIterator;
 use Closure;
+use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
 use function is_array;
 use function iterator_to_array;
@@ -27,19 +28,24 @@ final class ConfigurationRegistry implements ConfigurationRegistryInterface
      */
     public function __construct(iterable $configurations)
     {
-        $this->configurations = is_array($configurations) ? $configurations : iterator_to_array($configurations);
+        $this->configurations = is_array(value: $configurations) ? $configurations : iterator_to_array(iterator: $configurations);
     }
 
     public function usort(Closure $func): ConfigurationRegistryInterface
     {
-        usort($this->configurations, $func);
+        usort(array: $this->configurations, callback: $func);
 
         return $this;
     }
 
     public function reset(): ConfigurationInterface
     {
-        return reset($this->configurations);
+        $firstConfiguration = reset(array:$this->configurations);
+        if (!$firstConfiguration instanceof ConfigurationInterface) {
+            throw new RuntimeException(message: 'The configuration registry is empty');
+        }
+
+        return $firstConfiguration;
     }
 
     /**
@@ -47,7 +53,7 @@ final class ConfigurationRegistry implements ConfigurationRegistryInterface
      */
     public function getIterator(): Traversable
     {
-        return new ArrayIterator($this->configurations);
+        return new ArrayIterator(array: $this->configurations);
     }
 
     /**
@@ -55,6 +61,6 @@ final class ConfigurationRegistry implements ConfigurationRegistryInterface
      */
     public function count(): int
     {
-        return count($this->configurations);
+        return count(value: $this->configurations);
     }
 }

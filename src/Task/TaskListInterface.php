@@ -13,8 +13,11 @@ use SchedulerBundle\Exception\RuntimeException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @extends ArrayAccess<int|string, TaskInterface>
+ * @extends IteratorAggregate<int|string, TaskInterface>
  */
-interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
+interface TaskListInterface extends ArrayAccess, Countable, IteratorAggregate
 {
     /**
      * Add a new task|a set of @param TaskInterface ...$task in the list, by default, the name of the task is used as the key.
@@ -36,7 +39,7 @@ interface TaskListInterface extends Countable, ArrayAccess, IteratorAggregate
     public function get(string $taskName, bool $lazy = false): TaskInterface|LazyTask;
 
     /**
-     * @param array<int, string> $names
+     * @param array<int|string, string> $names
      *
      * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
      */

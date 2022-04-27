@@ -16,6 +16,10 @@ use function array_values;
 abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 {
     private MiddlewareRegistryInterface $middlewareRegistry;
+
+    /**
+     * @var SplObjectStorage<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface, null>
+     */
     private SplObjectStorage $executedMiddleware;
 
     /**
@@ -23,43 +27,43 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
      */
     public function __construct(iterable $stack = [])
     {
-        $this->middlewareRegistry = new MiddlewareRegistry($stack);
+        $this->middlewareRegistry = new MiddlewareRegistry(middlewareList: $stack);
         $this->executedMiddleware = new SplObjectStorage();
     }
 
     protected function getPreSchedulingMiddleware(): MiddlewareRegistryInterface
     {
-        return $this->orderMiddleware($this->middlewareRegistry->filter(static fn (object $middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface));
+        return $this->orderMiddleware(registry: $this->middlewareRegistry->filter(func: static fn (object $middleware): bool => $middleware instanceof PreSchedulingMiddlewareInterface));
     }
 
     protected function getPostSchedulingMiddleware(): MiddlewareRegistryInterface
     {
-        return $this->orderMiddleware($this->middlewareRegistry->filter(static fn (object $middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface));
+        return $this->orderMiddleware(registry: $this->middlewareRegistry->filter(func: static fn (object $middleware): bool => $middleware instanceof PostSchedulingMiddlewareInterface));
     }
 
     protected function getPreExecutionMiddleware(): MiddlewareRegistryInterface
     {
-        return $this->orderMiddleware($this->middlewareRegistry->filter(static fn (object $middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface));
+        return $this->orderMiddleware(registry: $this->middlewareRegistry->filter(func: static fn (object $middleware): bool => $middleware instanceof PreExecutionMiddlewareInterface));
     }
 
     protected function getPostExecutionMiddleware(): MiddlewareRegistryInterface
     {
-        return $this->orderMiddleware($this->middlewareRegistry->filter(static fn (object $middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface));
+        return $this->orderMiddleware(registry: $this->middlewareRegistry->filter(func: static fn (object $middleware): bool => $middleware instanceof PostExecutionMiddlewareInterface));
     }
 
     protected function runMiddleware(MiddlewareRegistryInterface $middlewareList, Closure $func): void
     {
-        $requiredMiddlewareList = $middlewareList->filter(static fn (object $middleware): bool => $middleware instanceof RequiredMiddlewareInterface);
+        $requiredMiddlewareList = $middlewareList->filter(func: static fn (object $middleware): bool => $middleware instanceof RequiredMiddlewareInterface);
 
         try {
-            $middlewareList->walk(function (object $middleware) use ($func): void {
+            $middlewareList->walk(func: function (object $middleware) use ($func): void {
                 $func($middleware);
 
-                $this->executedMiddleware->attach($middleware);
+                $this->executedMiddleware->attach(object: $middleware);
             });
         } catch (Throwable $throwable) {
             foreach ($requiredMiddlewareList as $singleRequiredMiddlewareList) {
-                if ($this->executedMiddleware->contains($singleRequiredMiddlewareList)) {
+                if ($this->executedMiddleware->contains(object: $singleRequiredMiddlewareList)) {
                     continue;
                 }
 
@@ -72,14 +76,14 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
     private function orderMiddleware(MiddlewareRegistryInterface $registry): MiddlewareRegistryInterface
     {
-        $orderedMiddleware = $registry->filter(static fn (object $middleware): bool => $middleware instanceof OrderedMiddlewareInterface);
+        $orderedMiddleware = $registry->filter(func: static fn (object $middleware): bool => $middleware instanceof OrderedMiddlewareInterface);
 
         if (0 === $orderedMiddleware->count()) {
             return $registry;
         }
 
-        $orderedMiddleware->uasort(static fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() <=> $nextMiddleware->getPriority());
+        $orderedMiddleware->uasort(func: static fn (OrderedMiddlewareInterface $middleware, OrderedMiddlewareInterface $nextMiddleware): int => $middleware->getPriority() <=> $nextMiddleware->getPriority());
 
-        return new MiddlewareRegistry(array_values(array_replace($orderedMiddleware->toArray(), $registry->toArray())));
+        return new MiddlewareRegistry(middlewareList: array_values(array: array_replace($orderedMiddleware->toArray(), $registry->toArray())));
     }
 }

@@ -6,7 +6,6 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
-use function array_merge;
 use function array_unique;
 use const SORT_REGULAR;
 
@@ -20,8 +19,8 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
      */
     public function runPreSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->runMiddleware($this->getPreSchedulingMiddleware(), static function (PreSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
-            $middleware->preScheduling($task, $scheduler);
+        $this->runMiddleware(middlewareList: $this->getPreSchedulingMiddleware(), func: static function (PreSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
+            $middleware->preScheduling(task: $task, scheduler: $scheduler);
         });
     }
 
@@ -30,8 +29,8 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
      */
     public function runPostSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->runMiddleware($this->getPostSchedulingMiddleware(), static function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
-            $middleware->postScheduling($task, $scheduler);
+        $this->runMiddleware(middlewareList: $this->getPostSchedulingMiddleware(), func: static function (PostSchedulingMiddlewareInterface $middleware) use ($task, $scheduler): void {
+            $middleware->postScheduling(task: $task, scheduler: $scheduler);
         });
     }
 
@@ -40,6 +39,6 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array_merge($this->getPreSchedulingMiddleware()->toArray(), $this->getPostSchedulingMiddleware()->toArray()), SORT_REGULAR);
+        return array_unique(array: [...$this->getPreSchedulingMiddleware()->toArray(), ...$this->getPostSchedulingMiddleware()->toArray()], flags: SORT_REGULAR);
     }
 }

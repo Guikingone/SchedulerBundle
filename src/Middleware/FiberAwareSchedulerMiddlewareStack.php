@@ -19,7 +19,7 @@ final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler impl
         private SchedulerMiddlewareStackInterface $middlewareStack,
         ?LoggerInterface $logger = null
     ) {
-        parent::__construct($logger);
+        parent::__construct(logger: $logger);
     }
 
     /**
@@ -27,8 +27,8 @@ final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler impl
      */
     public function runPreSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->handleOperationViaFiber(function () use ($task, $scheduler): void {
-            $this->middlewareStack->runPreSchedulingMiddleware($task, $scheduler);
+        $this->handleOperationViaFiber(func: function () use ($task, $scheduler): void {
+            $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $scheduler);
         });
     }
 
@@ -37,8 +37,8 @@ final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler impl
      */
     public function runPostSchedulingMiddleware(TaskInterface $task, SchedulerInterface $scheduler): void
     {
-        $this->handleOperationViaFiber(function () use ($task, $scheduler): void {
-            $this->middlewareStack->runPostSchedulingMiddleware($task, $scheduler);
+        $this->handleOperationViaFiber(func: function () use ($task, $scheduler): void {
+            $this->middlewareStack->runPostSchedulingMiddleware(task: $task, scheduler: $scheduler);
         });
     }
 
@@ -49,6 +49,6 @@ final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler impl
      */
     public function getMiddlewareList(): array
     {
-        return $this->handleOperationViaFiber(fn (): array => $this->middlewareStack->getMiddlewareList());
+        return $this->handleOperationViaFiber(func: fn (): array => $this->middlewareStack->getMiddlewareList());
     }
 }

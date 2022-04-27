@@ -20,6 +20,10 @@ final class InMemoryConfiguration extends AbstractConfiguration
      */
     private array $options = [];
 
+    /**
+     * @param array<string, mixed> $options
+     * @param array<string, mixed> $extraOptions
+     */
     public function __construct(array $options = [], array $extraOptions = [])
     {
         $this->init($options, $extraOptions);

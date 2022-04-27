@@ -34,8 +34,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function schedule(TaskInterface $task): void
     {
-        $this->handleOperationViaFiber(function () use ($task): void {
-            $this->scheduler->schedule($task);
+        $this->handleOperationViaFiber(func: function () use ($task): void {
+            $this->scheduler->schedule(task: $task);
         });
     }
 
@@ -46,8 +46,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function unschedule(string $taskName): void
     {
-        $this->handleOperationViaFiber(function () use ($taskName): void {
-            $this->scheduler->unschedule($taskName);
+        $this->handleOperationViaFiber(func: function () use ($taskName): void {
+            $this->scheduler->unschedule(taskName: $taskName);
         });
     }
 
@@ -58,8 +58,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function yieldTask(string $name, bool $async = false): void
     {
-        $this->handleOperationViaFiber(function () use ($name, $async): void {
-            $this->scheduler->yieldTask($name, $async);
+        $this->handleOperationViaFiber(func: function () use ($name, $async): void {
+            $this->scheduler->yieldTask(name: $name, async: $async);
         });
     }
 
@@ -70,8 +70,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
-        $this->handleOperationViaFiber(function () use ($taskToPreempt, $filter): void {
-            $this->scheduler->preempt($taskToPreempt, $filter);
+        $this->handleOperationViaFiber(func: function () use ($taskToPreempt, $filter): void {
+            $this->scheduler->preempt(taskToPreempt: $taskToPreempt, filter: $filter);
         });
     }
 
@@ -82,8 +82,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
-        $this->handleOperationViaFiber(function () use ($taskName, $task, $async): void {
-            $this->scheduler->update($taskName, $task, $async);
+        $this->handleOperationViaFiber(func: function () use ($taskName, $task, $async): void {
+            $this->scheduler->update(taskName: $taskName, task: $task, async: $async);
         });
     }
 
@@ -94,8 +94,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function pause(string $taskName, bool $async = false): void
     {
-        $this->handleOperationViaFiber(function () use ($taskName, $async): void {
-            $this->scheduler->pause($taskName, $async);
+        $this->handleOperationViaFiber(func: function () use ($taskName, $async): void {
+            $this->scheduler->pause(taskName: $taskName, async: $async);
         });
     }
 
@@ -106,8 +106,8 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function resume(string $taskName): void
     {
-        $this->handleOperationViaFiber(function () use ($taskName): void {
-            $this->scheduler->resume($taskName);
+        $this->handleOperationViaFiber(func: function () use ($taskName): void {
+            $this->scheduler->resume(taskName: $taskName);
         });
     }
 
@@ -118,7 +118,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList => $this->scheduler->getTasks($lazy));
+        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList => $this->scheduler->getTasks(lazy: $lazy));
     }
 
     /**
@@ -128,7 +128,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks($lazy, $strict));
+        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict));
     }
 
     /**
@@ -138,7 +138,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function next(bool $lazy = false): TaskInterface|LazyTask
     {
-        return $this->handleOperationViaFiber(fn (): TaskInterface|LazyTask => $this->scheduler->next($lazy));
+        return $this->handleOperationViaFiber(func: fn (): TaskInterface|LazyTask => $this->scheduler->next(lazy: $lazy));
     }
 
     /**
@@ -148,7 +148,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function reboot(): void
     {
-        $this->handleOperationViaFiber(function (): void {
+        $this->handleOperationViaFiber(func: function (): void {
             $this->scheduler->reboot();
         });
     }
@@ -160,7 +160,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getTimezone(): DateTimeZone
     {
-        return $this->handleOperationViaFiber(fn (): DateTimeZone => $this->scheduler->getTimezone());
+        return $this->handleOperationViaFiber(func: fn (): DateTimeZone => $this->scheduler->getTimezone());
     }
 
     /**
@@ -170,6 +170,6 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getPoolConfiguration(): SchedulerConfiguration
     {
-        return $this->handleOperationViaFiber(fn (): SchedulerConfiguration => $this->scheduler->getPoolConfiguration());
+        return $this->handleOperationViaFiber(func: fn (): SchedulerConfiguration => $this->scheduler->getPoolConfiguration());
     }
 }

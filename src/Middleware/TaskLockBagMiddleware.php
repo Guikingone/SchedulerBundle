@@ -38,13 +38,17 @@ final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, O
     {
         $accessLockBag = $task->getAccessLockBag();
         if (!$accessLockBag instanceof AccessLockBag) {
-            throw new RuntimeException(sprintf('The task "%s" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', $task->getName(), WorkerInterface::class, SchedulerInterface::class));
+            throw new RuntimeException(message: sprintf('The task "%s" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', $task->getName(), WorkerInterface::class, SchedulerInterface::class));
         }
 
-        $lock = $this->lockFactory->createLockFromKey($accessLockBag->getKey());
+        if (!$accessLockBag->getKey() instanceof Key) {
+            return;
+        }
+
+        $lock = $this->lockFactory->createLockFromKey(key: $accessLockBag->getKey());
         $lock->release();
 
-        $this->logger->info(sprintf('The lock for task "%s" has been released', $task->getName()));
+        $this->logger->info(message: sprintf('The lock for task "%s" has been released', $task->getName()));
 
         $task->setAccessLockBag();
     }
@@ -59,6 +63,6 @@ final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, O
 
     public static function createKey(TaskInterface $task): Key
     {
-        return new Key(sprintf('%s_%s', self::TASK_LOCK_MASK, $task->getName()));
+        return new Key(resource: sprintf('%s_%s', self::TASK_LOCK_MASK, $task->getName()));
     }
 }

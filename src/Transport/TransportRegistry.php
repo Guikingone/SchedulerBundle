@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use ArrayIterator;
 use Closure;
+use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
 use function count;
 use function reset;
@@ -26,19 +27,27 @@ final class TransportRegistry implements TransportRegistryInterface
      */
     public function __construct(iterable $transports)
     {
-        $this->transports = is_array($transports) ? $transports : iterator_to_array($transports);
+        $this->transports = is_array(value: $transports) ? $transports : iterator_to_array(iterator: $transports);
     }
 
     public function usort(Closure $func): TransportRegistryInterface
     {
-        usort($this->transports, $func);
+        usort(array: $this->transports, callback: $func);
 
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reset(): TransportInterface
     {
-        return reset($this->transports);
+        $firstTransport = reset(array: $this->transports);
+        if (!$firstTransport instanceof TransportInterface) {
+            throw new RuntimeException(message: 'The transport registry is empty');
+        }
+
+        return $firstTransport;
     }
 
     /**
@@ -46,7 +55,7 @@ final class TransportRegistry implements TransportRegistryInterface
      */
     public function count(): int
     {
-        return count($this->transports);
+        return count(value: $this->transports);
     }
 
     /**
@@ -54,6 +63,6 @@ final class TransportRegistry implements TransportRegistryInterface
      */
     public function getIterator(): Traversable
     {
-        return new ArrayIterator($this->transports);
+        return new ArrayIterator(array: $this->transports);
     }
 }

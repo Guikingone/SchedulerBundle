@@ -19,6 +19,9 @@ use function sprintf;
 abstract class AbstractCompoundTransportFactory implements TransportFactoryInterface
 {
     /**
+     * @param TransportFactoryInterface[] $transportFactories
+     * @param array<string|int, mixed>    $options
+     *
      * @return TransportInterface[]
      */
     protected function handleTransportDsn(string $delimiter, Dsn $dsn, iterable $transportFactories, array $options, ConfigurationInterface $configuration, SerializerInterface $serializer, SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator): array

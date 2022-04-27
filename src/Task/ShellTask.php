@@ -50,6 +50,9 @@ final class ShellTask extends AbstractTask
         return is_array($this->options['command']) ? $this->options['command'] : [];
     }
 
+    /**
+     * @param array<int, string> $command
+     */
     public function setCommand(array $command): self
     {
         $this->options['command'] = $command;
@@ -69,11 +72,17 @@ final class ShellTask extends AbstractTask
         return $this;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getEnvironmentVariables(): array
     {
         return is_array($this->options['environment_variables']) ? $this->options['environment_variables'] : [];
     }
 
+    /**
+     * @param array<string, string> $environmentVariables
+     */
     public function setEnvironmentVariables(array $environmentVariables): self
     {
         $this->options['environment_variables'] = $environmentVariables;

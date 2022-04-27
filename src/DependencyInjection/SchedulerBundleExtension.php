@@ -701,6 +701,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new TaggedIteratorArgument(self::SCHEDULER_EXPRESSION_BUILDER_TAG),
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => ExpressionBuilder::class,
             ])
@@ -735,6 +736,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new TaggedIteratorArgument(self::SCHEDULER_SCHEDULE_POLICY),
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => SchedulePolicyOrchestrator::class,
             ])
@@ -812,6 +814,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument(self::SCHEDULER_TASK_BUILDER_TAG),
                 new Reference('property_accessor'),
             ])
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskBuilder::class,
             ])
@@ -884,6 +887,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument(self::SCHEDULER_RUNNER_TAG),
             ])
             ->setPublic(false)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => RunnerRegistry::class,
             ])
@@ -1120,6 +1124,8 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference('scheduler.stop_watch', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskExecutionTracker::class,
             ])
@@ -1140,6 +1146,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference('scheduler.lock_store.factory', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
             ->addTag(self::WORKER_TAG)
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
@@ -1154,7 +1161,7 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorkerRegistry(ContainerBuilder $container): void
     {
-        if (!$container->getParameter('scheduler.worker_registry')) {
+        if (false === $container->getParameter('scheduler.worker_registry')) {
             return;
         }
 
@@ -1457,7 +1464,7 @@ final class SchedulerBundleExtension extends Extension
             return;
         }
 
-        if (!$container->getParameter('scheduler.probe_enabled')) {
+        if (false === $container->getParameter('scheduler.probe_enabled')) {
             return;
         }
 
@@ -1470,6 +1477,7 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_PROBE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => Probe::class,
             ])
@@ -1543,7 +1551,7 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerMercureSupport(ContainerBuilder $container, array $config): void
     {
-        if (!$container->getParameter('scheduler.mercure_support')) {
+        if (false === $container->getParameter('scheduler.mercure_support')) {
             return;
         }
 
@@ -1587,7 +1595,7 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerPoolSupport(ContainerBuilder $container, array $configuration): void
     {
-        if (!$container->getParameter('scheduler.pool_support')) {
+        if (false === $container->getParameter('scheduler.pool_support')) {
             return;
         }
 
@@ -1633,7 +1641,10 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<mixed>     $config
+     * @param ContainerBuilder $container
+     *
+     * @return ConfigurationInterface
      */
     public function getConfiguration(array $config, ContainerBuilder $container): ConfigurationInterface
     {

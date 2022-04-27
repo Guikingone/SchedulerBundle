@@ -55,11 +55,11 @@ final class Scheduler implements SchedulerInterface
         private EventDispatcherInterface $eventDispatcher,
         private ?MessageBusInterface $bus = null
     ) {
-        $this->timezone = new DateTimeZone($timezone);
-        $this->initializationDate = new DateTimeImmutable('now', $this->timezone);
+        $this->timezone = new DateTimeZone(timezone: $timezone);
+        $this->initializationDate = new DateTimeImmutable(datetime: 'now', timezone: $this->timezone);
 
-        $this->minSynchronizationDelay = new DateInterval('PT1S');
-        $this->maxSynchronizationDelay = new DateInterval('P1D');
+        $this->minSynchronizationDelay = new DateInterval(duration: 'PT1S');
+        $this->maxSynchronizationDelay = new DateInterval(duration: 'P1D');
     }
 
     /**
@@ -69,22 +69,22 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
-        $this->middlewareStack->runPreSchedulingMiddleware($task, $this);
+        $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
-        $task->setScheduledAt($this->getSynchronizedCurrentDate());
-        $task->setTimezone($task->getTimezone() ?? $this->timezone);
+        $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
+        $task->setTimezone(dateTimeZone: $task->getTimezone() ?? $this->timezone);
 
         if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
-            $this->bus->dispatch(new TaskToExecuteMessage($task));
-            $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
+            $this->bus->dispatch(message: new TaskToExecuteMessage(task: $task));
+            $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
 
             return;
         }
 
-        $this->transport->create($task);
-        $this->eventDispatcher->dispatch(new TaskScheduledEvent($task));
+        $this->transport->create(task: $task);
+        $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
 
-        $this->middlewareStack->runPostSchedulingMiddleware($task, $this);
+        $this->middlewareStack->runPostSchedulingMiddleware(task: $task, scheduler: $this);
     }
 
     /**
@@ -92,8 +92,8 @@ final class Scheduler implements SchedulerInterface
      */
     public function unschedule(string $taskName): void
     {
-        $this->transport->delete($taskName);
-        $this->eventDispatcher->dispatch(new TaskUnscheduledEvent($taskName));
+        $this->transport->delete(name: $taskName);
+        $this->eventDispatcher->dispatch(event: new TaskUnscheduledEvent(task: $taskName));
     }
 
     /**
@@ -102,15 +102,15 @@ final class Scheduler implements SchedulerInterface
     public function yieldTask(string $name, bool $async = false): void
     {
         if ($async && $this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(new TaskToYieldMessage($name));
+            $this->bus->dispatch(message: new TaskToYieldMessage(name: $name));
 
             return;
         }
 
-        $task = $this->transport->get($name);
+        $task = $this->transport->get(name: $name);
 
-        $this->unschedule($name);
-        $this->schedule($task);
+        $this->unschedule(taskName: $name);
+        $this->schedule(task: $task);
     }
 
     /**
@@ -118,12 +118,12 @@ final class Scheduler implements SchedulerInterface
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
-        $preemptTasks = $this->getDueTasks()->filter($filter);
+        $preemptTasks = $this->getDueTasks()->filter(filter: $filter);
         if (0 === $preemptTasks->count()) {
             return;
         }
 
-        $this->eventDispatcher->addListener(TaskExecutingEvent::class, static function (TaskExecutingEvent $event) use ($taskToPreempt, $preemptTasks): void {
+        $this->eventDispatcher->addListener(eventName: TaskExecutingEvent::class, listener: static function (TaskExecutingEvent $event) use ($taskToPreempt, $preemptTasks): void {
             $task = $event->getTask();
             if ($taskToPreempt !== $task->getName()) {
                 return;
@@ -132,7 +132,7 @@ final class Scheduler implements SchedulerInterface
             $currentTasks = $event->getCurrentTasks();
             $worker = $event->getWorker();
 
-            $worker->preempt($preemptTasks, $currentTasks);
+            $worker->preempt(preemptTaskList: $preemptTasks, toPreemptTasksList: $currentTasks);
         });
     }
 
@@ -142,12 +142,12 @@ final class Scheduler implements SchedulerInterface
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
         if ($async && $this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(new TaskToUpdateMessage($taskName, $task));
+            $this->bus->dispatch(message: new TaskToUpdateMessage(taskName: $taskName, task: $task));
 
             return;
         }
 
-        $this->transport->update($taskName, $task);
+        $this->transport->update(name: $taskName, updatedTask: $task);
     }
 
     /**
@@ -156,12 +156,12 @@ final class Scheduler implements SchedulerInterface
     public function pause(string $taskName, bool $async = false): void
     {
         if ($async && $this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(new TaskToPauseMessage($taskName));
+            $this->bus->dispatch(message: new TaskToPauseMessage(task: $taskName));
 
             return;
         }
 
-        $this->transport->pause($taskName);
+        $this->transport->pause(name: $taskName);
     }
 
     /**
@@ -169,7 +169,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function resume(string $taskName): void
     {
-        $this->transport->resume($taskName);
+        $this->transport->resume(name: $taskName);
     }
 
     /**
@@ -177,7 +177,7 @@ final class Scheduler implements SchedulerInterface
      */
     public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->transport->list($lazy);
+        return $this->transport->list(lazy: $lazy);
     }
 
     /**
@@ -187,26 +187,26 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        if ($synchronizedCurrentDate->format('s') !== '00' && $strict) {
-            return $lazy ? new LazyTaskList(new TaskList()) : new TaskList();
+        if ($synchronizedCurrentDate->format(format: 's') !== '00' && $strict) {
+            return $lazy ? new LazyTaskList(sourceList: new TaskList()) : new TaskList();
         }
 
-        $dueTasks = $this->getTasks($lazy)->filter(static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        $dueTasks = $this->getTasks(lazy: $lazy)->filter(filter: static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $timezone = $task->getTimezone();
             $lastExecution = $task->getLastExecution();
 
             if (!$lastExecution instanceof DateTimeImmutable) {
-                return (new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName());
+                return (new CronExpression(expression: $task->getExpression()))->isDue(currentTime: $synchronizedCurrentDate, timeZone: $timezone?->getName());
             }
 
-            if (!(new CronExpression($task->getExpression()))->isDue($synchronizedCurrentDate, $timezone->getName())) {
+            if (!(new CronExpression(expression: $task->getExpression()))->isDue(currentTime: $synchronizedCurrentDate, timeZone: $timezone?->getName())) {
                 return false;
             }
 
-            return $lastExecution->format('Y-m-d h:i') !== $synchronizedCurrentDate->format('Y-m-d h:i');
+            return $lastExecution->format(format: 'Y-m-d h:i') !== $synchronizedCurrentDate->format(format: 'Y-m-d h:i');
         });
 
-        return $dueTasks->filter(static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        return $dueTasks->filter(filter: static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $executionStartDate = $task->getExecutionStartDate();
             $executionEndDate = $task->getExecutionEndDate();
 
@@ -243,20 +243,20 @@ final class Scheduler implements SchedulerInterface
      */
     public function next(bool $lazy = false): TaskInterface|LazyTask
     {
-        $dueTasks = $this->getDueTasks($lazy);
+        $dueTasks = $this->getDueTasks(lazy: $lazy);
         if (0 === $dueTasks->count()) {
-            throw new RuntimeException('The current due tasks is empty');
+            throw new RuntimeException(message: 'The current due tasks is empty');
         }
 
         $dueTasks = $dueTasks->toArray();
 
-        $nextTask = next($dueTasks);
-        if (is_bool($nextTask)) {
-            throw new RuntimeException('The next due task cannot be found');
+        $nextTask = next(array: $dueTasks);
+        if (is_bool(value: $nextTask)) {
+            throw new RuntimeException(message: 'The next due task cannot be found');
         }
 
         return $lazy
-            ? new LazyTask($nextTask->getName(), Closure::bind(fn (): TaskInterface => $nextTask, $this))
+            ? new LazyTask(name: $nextTask->getName(), sourceTaskClosure: Closure::bind(fn (): TaskInterface => $nextTask, $this))
             : $nextTask
         ;
     }
@@ -266,15 +266,15 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $rebootTasks = $this->getTasks()->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 
-        $rebootTasks->walk(function (TaskInterface $task): void {
-            $this->transport->create($task);
+        $rebootTasks->walk(func: function (TaskInterface $task): void {
+            $this->transport->create(task: $task);
         });
 
-        $this->eventDispatcher->dispatch(new SchedulerRebootedEvent($this));
+        $this->eventDispatcher->dispatch(event: new SchedulerRebootedEvent(scheduler: $this));
     }
 
     /**
@@ -300,19 +300,19 @@ final class Scheduler implements SchedulerInterface
      */
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
-        $currentDate = new DateTimeImmutable('now', $this->timezone);
-        $currentDateIntervalWithInitialization = $this->initializationDate->diff($currentDate);
+        $currentDate = new DateTimeImmutable(datetime: 'now', timezone: $this->timezone);
+        $currentDateIntervalWithInitialization = $this->initializationDate->diff(targetObject: $currentDate);
 
-        $currentDateWithMinInterval = $currentDate->add($this->minSynchronizationDelay);
-        $currentDateWithMaxInterval = $currentDate->add($this->maxSynchronizationDelay);
+        $currentDateWithMinInterval = $currentDate->add(interval: $this->minSynchronizationDelay);
+        $currentDateWithMaxInterval = $currentDate->add(interval: $this->maxSynchronizationDelay);
 
-        $initializationDateMinInterval = $this->initializationDate->diff($currentDateWithMinInterval);
-        $initializationDateMaxInterval = $this->initializationDate->diff($currentDateWithMaxInterval);
+        $initializationDateMinInterval = $this->initializationDate->diff(targetObject: $currentDateWithMinInterval);
+        $initializationDateMaxInterval = $this->initializationDate->diff(targetObject: $currentDateWithMaxInterval);
 
         if ($currentDateIntervalWithInitialization->f - $initializationDateMinInterval->f < 0.0 || $currentDateIntervalWithInitialization->f - $initializationDateMaxInterval->f > 0.0) {
             throw new RuntimeException(sprintf('The scheduler is not synchronized with the current clock, current delay: %f microseconds, allowed range: [%f, %f]', $currentDateIntervalWithInitialization->f, $this->minSynchronizationDelay->f, $this->maxSynchronizationDelay->f));
         }
 
-        return $this->initializationDate->add($currentDateIntervalWithInitialization);
+        return $this->initializationDate->add(interval: $currentDateIntervalWithInitialization);
     }
 }

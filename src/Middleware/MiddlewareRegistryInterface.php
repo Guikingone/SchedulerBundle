@@ -12,6 +12,8 @@ use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
+ *
+ * @extends IteratorAggregate<int, PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
  */
 interface MiddlewareRegistryInterface extends Countable, IteratorAggregate
 {
@@ -41,7 +43,7 @@ interface MiddlewareRegistryInterface extends Countable, IteratorAggregate
     public function uasort(Closure $func): MiddlewareRegistryInterface;
 
     /**
-     * @return array<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface>
+     * @return array<int, PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
      */
     public function toArray(): array;
 }
