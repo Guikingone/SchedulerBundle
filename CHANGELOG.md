@@ -1,5 +1,16 @@
 # Changelog
 
+0.9.1
+-----
+
+### Code Refactoring
+
+##### Dic
+
+* Fix on scheduler injection (#242) ([4fd50b](https://github.com/Guikingone/SchedulerBundle/commit/4fd50b1bee10c228c86e0f871cbd786441e105d2))
+
+---
+
 0.9.0
 -----
 
