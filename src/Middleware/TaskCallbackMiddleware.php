@@ -27,7 +27,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            throw new MiddlewareException('The task cannot be scheduled as an error occurred on the before scheduling callback');
+            throw new MiddlewareException(message: 'The task cannot be scheduled as an error occurred on the before scheduling callback');
         }
     }
 
@@ -42,9 +42,9 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            $scheduler->unschedule($task->getName());
+            $scheduler->unschedule(taskName: $task->getName());
 
-            throw new MiddlewareException('The task has encountered an error after scheduling, it has been unscheduled');
+            throw new MiddlewareException(message: 'The task has encountered an error after scheduling, it has been unscheduled');
         }
     }
 
@@ -59,7 +59,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), $task::class, ));
+            throw new MiddlewareException(message: sprintf('The task "%s" has encountered an error when executing the %s::getBeforeExecuting() callback.', $task->getName(), $task::class, ));
         }
     }
 
@@ -74,7 +74,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
         }
 
         if (false === call_user_func($callback, $task)) {
-            throw new MiddlewareException(sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), $task::class, ));
+            throw new MiddlewareException(message: sprintf('The task "%s" has encountered an error when executing the %s::getAfterExecuting() callback.', $task->getName(), $task::class, ));
         }
     }
 

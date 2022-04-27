@@ -1641,7 +1641,7 @@ final class SchedulerBundleExtension extends Extension
     }
 
     /**
-     * @param array            $config
+     * @param array<mixed>     $config
      * @param ContainerBuilder $container
      *
      * @return ConfigurationInterface

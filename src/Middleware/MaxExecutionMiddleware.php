@@ -39,17 +39,17 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
             return;
         }
 
-        $limiter = $this->rateLimiter->create($task->getName());
+        $limiter = $this->rateLimiter->create(key: $task->getName());
 
         try {
-            $limiter->reserve($maxExecutions);
+            $limiter->reserve(tokens: $maxExecutions);
         } catch (ReserveNotSupportedException $exception) {
-            $this->logger->critical(sprintf(
+            $this->logger->critical(message: sprintf(
                 'A reservation cannot be created for task "%s", please ensure that the policy used supports it.',
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), 0, $exception);
+            throw new MiddlewareException(message: $exception->getMessage(), code: 0, previous: $exception);
         }
     }
 
@@ -67,17 +67,17 @@ final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, P
             return;
         }
 
-        $limiter = $this->rateLimiter->create($task->getName());
+        $limiter = $this->rateLimiter->create(key: $task->getName());
 
         try {
             $limiter->consume()->ensureAccepted();
         } catch (RateLimitExceededException $exception) {
-            $this->logger->critical(sprintf(
+            $this->logger->critical(message: sprintf(
                 'The execution limit for task "%s" has been exceeded',
                 $task->getName()
             ));
 
-            throw new MiddlewareException($exception->getMessage(), 0, $exception);
+            throw new MiddlewareException(message: $exception->getMessage(), code: 0, previous: $exception);
         }
     }
 }

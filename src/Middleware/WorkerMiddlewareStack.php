@@ -20,8 +20,8 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
      */
     public function runPreExecutionMiddleware(TaskInterface $task): void
     {
-        $this->runMiddleware($this->getPreExecutionMiddleware(), static function (PreExecutionMiddlewareInterface $middleware) use ($task): void {
-            $middleware->preExecute($task);
+        $this->runMiddleware(middlewareList: $this->getPreExecutionMiddleware(), func: static function (PreExecutionMiddlewareInterface $middleware) use ($task): void {
+            $middleware->preExecute(task: $task);
         });
     }
 
@@ -30,8 +30,8 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
      */
     public function runPostExecutionMiddleware(TaskInterface $task, WorkerInterface $worker): void
     {
-        $this->runMiddleware($this->getPostExecutionMiddleware(), static function (PostExecutionMiddlewareInterface $middleware) use ($task, $worker): void {
-            $middleware->postExecute($task, $worker);
+        $this->runMiddleware(middlewareList: $this->getPostExecutionMiddleware(), func: static function (PostExecutionMiddlewareInterface $middleware) use ($task, $worker): void {
+            $middleware->postExecute(task: $task, worker: $worker);
         });
     }
 
@@ -40,6 +40,6 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array_merge($this->getPreExecutionMiddleware()->toArray(), $this->getPostExecutionMiddleware()->toArray()), SORT_REGULAR);
+        return array_unique(array: array_merge($this->getPreExecutionMiddleware()->toArray(), $this->getPostExecutionMiddleware()->toArray()), flags: SORT_REGULAR);
     }
 }

@@ -71,18 +71,18 @@ final class Scheduler implements SchedulerInterface
     {
         $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
-        $task->setScheduledAt($this->getSynchronizedCurrentDate());
+        $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
         $task->setTimezone(dateTimeZone: $task->getTimezone() ?? $this->timezone);
 
         if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
-            $this->bus->dispatch(new TaskToExecuteMessage(task: $task));
-            $this->eventDispatcher->dispatch(new TaskScheduledEvent(task: $task));
+            $this->bus->dispatch(message: new TaskToExecuteMessage(task: $task));
+            $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
 
             return;
         }
 
         $this->transport->create(task: $task);
-        $this->eventDispatcher->dispatch(new TaskScheduledEvent(task: $task));
+        $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
 
         $this->middlewareStack->runPostSchedulingMiddleware(task: $task, scheduler: $this);
     }
@@ -93,7 +93,7 @@ final class Scheduler implements SchedulerInterface
     public function unschedule(string $taskName): void
     {
         $this->transport->delete(name: $taskName);
-        $this->eventDispatcher->dispatch(event: new TaskUnscheduledEvent($taskName));
+        $this->eventDispatcher->dispatch(event: new TaskUnscheduledEvent(task: $taskName));
     }
 
     /**
@@ -142,7 +142,7 @@ final class Scheduler implements SchedulerInterface
     public function update(string $taskName, TaskInterface $task, bool $async = false): void
     {
         if ($async && $this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(message: new TaskToUpdateMessage($taskName, $task));
+            $this->bus->dispatch(message: new TaskToUpdateMessage(taskName: $taskName, task: $task));
 
             return;
         }
@@ -156,7 +156,7 @@ final class Scheduler implements SchedulerInterface
     public function pause(string $taskName, bool $async = false): void
     {
         if ($async && $this->bus instanceof MessageBusInterface) {
-            $this->bus->dispatch(message: new TaskToPauseMessage($taskName));
+            $this->bus->dispatch(message: new TaskToPauseMessage(task: $taskName));
 
             return;
         }

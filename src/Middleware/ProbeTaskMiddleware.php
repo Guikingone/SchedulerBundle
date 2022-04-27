@@ -25,6 +25,6 @@ final class ProbeTaskMiddleware implements PreExecutionMiddlewareInterface
             return;
         }
 
-        usleep($task->getDelay());
+        usleep(microseconds: $task->getDelay());
     }
 }

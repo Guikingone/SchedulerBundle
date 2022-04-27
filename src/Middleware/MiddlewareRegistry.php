@@ -29,7 +29,10 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function __construct(iterable $middlewareList)
     {
-        $this->middlewareList = is_array($middlewareList) ? $middlewareList : iterator_to_array($middlewareList, true);
+        $this->middlewareList = is_array(value: $middlewareList)
+            ? $middlewareList
+            : iterator_to_array(iterator: $middlewareList, preserve_keys: true)
+        ;
     }
 
     /**
@@ -37,7 +40,7 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function filter(Closure $func): MiddlewareRegistryInterface
     {
-        return new self(array_filter($this->middlewareList, $func, ARRAY_FILTER_USE_BOTH));
+        return new self(middlewareList: array_filter(array: $this->middlewareList, callback: $func, mode: ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -45,7 +48,7 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function walk(Closure $func): MiddlewareRegistryInterface
     {
-        array_walk($this->middlewareList, $func);
+        array_walk(array: $this->middlewareList, callback: $func);
 
         return $this;
     }
@@ -55,7 +58,7 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function uasort(Closure $func): MiddlewareRegistryInterface
     {
-        uasort($this->middlewareList, $func);
+        uasort(array: $this->middlewareList, callback: $func);
 
         return $this;
     }
@@ -73,7 +76,7 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function count(): int
     {
-        return count($this->middlewareList);
+        return count(value: $this->middlewareList);
     }
 
     /**
@@ -81,6 +84,6 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
      */
     public function getIterator(): ArrayIterator
     {
-        return new ArrayIterator($this->middlewareList);
+        return new ArrayIterator(array: $this->middlewareList);
     }
 }

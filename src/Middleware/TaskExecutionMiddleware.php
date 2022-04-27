@@ -20,7 +20,7 @@ final class TaskExecutionMiddleware implements PreExecutionMiddlewareInterface, 
         $executionDelay = $task->getExecutionDelay();
 
         if (null !== $executionDelay) {
-            usleep($executionDelay);
+            usleep(microseconds: $executionDelay);
         }
     }
 

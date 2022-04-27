@@ -12,3 +12,4 @@ parameters:
         - tests
     excludePaths:
         - vendor
+    checkGenericClassInNonGenericObjectType: false

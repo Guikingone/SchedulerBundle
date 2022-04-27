@@ -31,8 +31,8 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
      */
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
-        if (in_array($task->getExecutionState(), [TaskInterface::INCOMPLETE, TaskInterface::TO_RETRY], true)) {
-            $this->logger->warning(sprintf('The task "%s" is marked as incomplete or to retry, the "is_single" option is not used', $task->getName()));
+        if (in_array(needle: $task->getExecutionState(), haystack: [TaskInterface::INCOMPLETE, TaskInterface::TO_RETRY], strict: true)) {
+            $this->logger->warning(message: sprintf('The task "%s" is marked as incomplete or to retry, the "is_single" option is not used', $task->getName()));
 
             return;
         }
@@ -42,12 +42,12 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
         }
 
         if ($task->isDeleteAfterExecute()) {
-            $this->transport->delete($task->getName());
+            $this->transport->delete(name: $task->getName());
 
             return;
         }
 
-        $this->transport->pause($task->getName());
+        $this->transport->pause(name: $task->getName());
     }
 
     /**
