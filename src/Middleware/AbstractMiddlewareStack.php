@@ -16,6 +16,10 @@ use function array_values;
 abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 {
     private MiddlewareRegistryInterface $middlewareRegistry;
+
+    /**
+     * @var SplObjectStorage<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
+     */
     private SplObjectStorage $executedMiddleware;
 
     /**

@@ -22,7 +22,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $callbackTaskRunner = new CallbackTaskRunner();
 
         self::assertFalse($callbackTaskRunner->support(new ShellTask('foo', ['echo', 'Symfony!'])));
-        self::assertTrue($callbackTaskRunner->support(new CallbackTask('foo', fn (): int => 1 + 1)));
+        self::assertTrue($callbackTaskRunner->support(new CallbackTask('foo', static fn (): int => 1 + 1)));
     }
 
     public function testRunnerCannotExecuteInvalidTask(): void
@@ -45,7 +45,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (): string => '   hello');
+        $callbackTask = new CallbackTask('foo', static fn (): string => '   hello');
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -75,7 +75,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (): string => (new FooCallable())->echo());
+        $callbackTask = new CallbackTask('foo', static fn (): string => (new FooCallable())->echo());
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -90,7 +90,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (int $a, int $b): int => $a * $b, [1, 2]);
+        $callbackTask = new CallbackTask('foo', static fn (int $a, int $b): int => $a * $b, [1, 2]);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -105,7 +105,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (int $a, $b): int => $a * $b, [1]);
+        $callbackTask = new CallbackTask('foo', static fn (int $a, $b): int => $a * $b, [1]);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -120,7 +120,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (): bool => false);
+        $callbackTask = new CallbackTask('foo', static fn (): bool => false);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 
@@ -135,7 +135,7 @@ final class CallBackTaskRunnerTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $callbackTaskRunner = new CallbackTaskRunner();
-        $callbackTask = new CallbackTask('foo', fn (): bool => true);
+        $callbackTask = new CallbackTask('foo', static fn (): bool => true);
 
         $output = $callbackTaskRunner->run($callbackTask, $worker);
 

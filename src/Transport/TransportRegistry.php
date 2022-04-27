@@ -6,6 +6,7 @@ namespace SchedulerBundle\Transport;
 
 use ArrayIterator;
 use Closure;
+use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
 use function count;
 use function reset;
@@ -36,9 +37,17 @@ final class TransportRegistry implements TransportRegistryInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reset(): TransportInterface
     {
-        return reset($this->transports);
+        $firstTransport = reset($this->transports);
+        if (!$firstTransport instanceof TransportInterface) {
+            throw new RuntimeException('The transport registry is empty');
+        }
+
+        return $firstTransport;
     }
 
     /**

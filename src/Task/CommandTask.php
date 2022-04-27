@@ -14,6 +14,12 @@ use function is_string;
  */
 final class CommandTask extends AbstractTask
 {
+    /**
+     * @param string                   $name
+     * @param string                   $command
+     * @param array<string|int, mixed> $arguments
+     * @param array<string|int, mixed> $options
+     */
     public function __construct(
         string $name,
         string $command,
@@ -53,11 +59,17 @@ final class CommandTask extends AbstractTask
         return $this;
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getArguments(): array
     {
         return is_array($this->options['arguments']) ? $this->options['arguments'] : [];
     }
 
+    /**
+     * @param array<string|int, mixed> $arguments
+     */
     public function setArguments(array $arguments): self
     {
         $this->options['arguments'] = $arguments;
@@ -65,11 +77,17 @@ final class CommandTask extends AbstractTask
         return $this;
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getOptions(): array
     {
         return is_array($this->options['options']) ? $this->options['options'] : [];
     }
 
+    /**
+     * @param array<string|int, mixed> $options
+     */
     public function setOptions(array $options): self
     {
         $this->options['options'] = $options;

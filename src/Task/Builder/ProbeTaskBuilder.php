@@ -14,7 +14,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 final class ProbeTaskBuilder extends AbstractTaskBuilder
 {
     /**
-     * {@inheritdoc}
+     * @param array<string|int, mixed> $options
      */
     public function build(PropertyAccessorInterface $propertyAccessor, array $options = []): TaskInterface
     {
@@ -33,9 +33,6 @@ final class ProbeTaskBuilder extends AbstractTaskBuilder
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function support(?string $type = null): bool
     {
         return 'probe' === $type;
