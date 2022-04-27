@@ -6,9 +6,13 @@ namespace Tests\SchedulerBundle\Middleware;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\WorkerInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -17,26 +21,30 @@ final class TaskUpdateMiddlewareTest extends TestCase
 {
     public function testMiddlewareIsConfigured(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-
-        $middleware = new TaskUpdateMiddleware($scheduler);
+        $middleware = new TaskUpdateMiddleware(new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])));
 
         self::assertSame(10, $middleware->getPriority());
     }
 
+    /**
+     * @throws Throwable {@see PostExecutionMiddlewareInterface::postExecute()}
+     */
     public function testMiddlewareCanUpdate(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('update')
-            ->with(self::equalTo('foo'), self::equalTo($task))
-        ;
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create($task);
 
-        $taskUpdateMiddleware = new TaskUpdateMiddleware($scheduler);
+        $taskUpdateMiddleware = new TaskUpdateMiddleware($transport);
         $taskUpdateMiddleware->postExecute($task, $worker);
+
+        self::assertSame('foo', $task->getName());
     }
 }

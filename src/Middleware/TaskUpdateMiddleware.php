@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
-use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 /**
@@ -13,7 +13,7 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class TaskUpdateMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface, RequiredMiddlewareInterface
 {
-    public function __construct(private SchedulerInterface $scheduler)
+    public function __construct(private TransportInterface $transport)
     {
     }
 
@@ -22,7 +22,7 @@ final class TaskUpdateMiddleware implements PostExecutionMiddlewareInterface, Or
      */
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
-        $this->scheduler->update($task->getName(), $task);
+        $this->transport->update($task->getName(), $task);
     }
 
     /**

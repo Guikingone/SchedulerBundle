@@ -8,9 +8,12 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
-use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
@@ -21,9 +24,9 @@ final class SingleRunTaskMiddlewareTest extends TestCase
 {
     public function testMiddlewareIsConfigured(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware(new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])));
 
         self::assertSame(15, $singleRunTaskMiddleware->getPriority());
     }
@@ -38,11 +41,10 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning')->with(self::equalTo('The task "foo" is marked as incomplete or to retry, the "is_single" option is not used'));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::never())->method('unschedule');
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware(new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), $logger);
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler, $logger);
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'execution_state' => TaskInterface::INCOMPLETE,
         ]), $worker);
@@ -58,11 +60,10 @@ final class SingleRunTaskMiddlewareTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning')->with(self::equalTo('The task "foo" is marked as incomplete or to retry, the "is_single" option is not used'));
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::never())->method('unschedule');
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware(new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), $logger);
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler, $logger);
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'execution_state' => TaskInterface::TO_RETRY,
         ]), $worker);
@@ -75,14 +76,17 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::never())->method('unschedule');
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create(new NullTask('foo'));
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($transport);
+
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'single_run' => false,
         ]), $worker);
+        self::assertCount(1, $transport->list());
     }
 
     /**
@@ -92,14 +96,17 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('pause')->with(self::equalTo('foo'));
-        $scheduler->expects(self::never())->method('unschedule');
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create(new NullTask('foo'));
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($transport);
+
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'single_run' => true,
         ]), $worker);
+        self::assertSame(TaskInterface::PAUSED, $transport->get('foo')->getState());
     }
 
     /**
@@ -109,15 +116,18 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::once())->method('unschedule')->with(self::equalTo('foo'));
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create(new NullTask('foo'));
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($transport);
+
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'single_run' => true,
             'delete_after_execute' => true,
         ]), $worker);
+        self::assertCount(0, $transport->list());
     }
 
     /**
@@ -127,15 +137,18 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::never())->method('unschedule');
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create(new NullTask('foo'));
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($transport);
+
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'single_run' => false,
             'delete_after_execute' => false,
         ]), $worker);
+        self::assertCount(1, $transport->list());
     }
 
     /**
@@ -145,14 +158,17 @@ final class SingleRunTaskMiddlewareTest extends TestCase
     {
         $worker = $this->createMock(WorkerInterface::class);
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('pause');
-        $scheduler->expects(self::never())->method('unschedule');
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $transport->create(new NullTask('foo'));
 
-        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($scheduler);
+        $singleRunTaskMiddleware = new SingleRunTaskMiddleware($transport);
+
         $singleRunTaskMiddleware->postExecute(new NullTask('foo', [
             'single_run' => false,
             'delete_after_execute' => true,
         ]), $worker);
+        self::assertCount(1, $transport->list());
     }
 }

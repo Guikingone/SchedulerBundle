@@ -6,8 +6,8 @@ namespace SchedulerBundle\Middleware;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use function in_array;
 use function sprintf;
@@ -20,7 +20,7 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
     private LoggerInterface $logger;
 
     public function __construct(
-        private SchedulerInterface $scheduler,
+        private TransportInterface $transport,
         ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
@@ -42,12 +42,12 @@ final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface,
         }
 
         if ($task->isDeleteAfterExecute()) {
-            $this->scheduler->unschedule($task->getName());
+            $this->transport->delete($task->getName());
 
             return;
         }
 
-        $this->scheduler->pause($task->getName());
+        $this->transport->pause($task->getName());
     }
 
     /**

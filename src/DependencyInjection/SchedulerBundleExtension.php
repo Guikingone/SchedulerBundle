@@ -1387,7 +1387,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(SingleRunTaskMiddleware::class, SingleRunTaskMiddleware::class)
             ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -1400,7 +1400,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register(TaskUpdateMiddleware::class, TaskUpdateMiddleware::class)
             ->setArguments([
-                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(TransportInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)

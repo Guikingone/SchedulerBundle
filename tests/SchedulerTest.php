@@ -1676,9 +1676,11 @@ final class SchedulerTest extends TestCase
 
         $eventDispatcher = new EventDispatcher();
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
+        ]));
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
@@ -1692,8 +1694,8 @@ final class SchedulerTest extends TestCase
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
         ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack(new MiddlewareRegistry([
-            new SingleRunTaskMiddleware($scheduler),
-            new TaskUpdateMiddleware($scheduler),
+            new SingleRunTaskMiddleware($transport),
+            new TaskUpdateMiddleware($transport),
             new TaskLockBagMiddleware($lockFactory),
         ])), $eventDispatcher, $lockFactory, $logger);
 
