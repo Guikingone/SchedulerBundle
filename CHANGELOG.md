@@ -2,6 +2,29 @@
 
 0.9.1
 -----
+### Bug Fixes
+
+##### Tests
+
+* Improvements (#247) ([8af5db](https://github.com/Guikingone/SchedulerBundle/commit/8af5dbe6b7614182f86768f35add2550734e758a))
+
+### Code Refactoring
+
+##### Core
+
+* Static analysis improved (#244) ([96d157](https://github.com/Guikingone/SchedulerBundle/commit/96d1579192f79493a4a41638d998598bf1f894de))
+* Static analysis improved + named arguments improved (#246) ([a602fb](https://github.com/Guikingone/SchedulerBundle/commit/a602fba758fe455be541d9244ff128c568577b74))
+
+### Builds
+
+##### Rector
+
+* Version fixed (#250) ([026602](https://github.com/Guikingone/SchedulerBundle/commit/0266026e284939b388a9e41a214e7b2cfeb27a9a))
+
+---
+
+0.9.1
+-----
 
 ### Code Refactoring
 
