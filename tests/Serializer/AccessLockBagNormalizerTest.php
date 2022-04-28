@@ -122,6 +122,5 @@ final class AccessLockBagNormalizerTest extends TestCase
         $bag = $serializer->denormalize($data, AccessLockBag::class);
 
         self::assertNotNull($bag->getKey());
-        self::assertInstanceOf(Key::class, $bag->getKey());
     }
 }
