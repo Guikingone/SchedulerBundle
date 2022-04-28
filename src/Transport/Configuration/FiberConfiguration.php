@@ -18,7 +18,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
         private ConfigurationInterface $configuration,
         ?LoggerInterface $logger = null
     ) {
-        parent::__construct($logger);
+        parent::__construct(logger: $logger);
     }
 
     /**
@@ -28,8 +28,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function init(array $options, array $extraOptions = []): void
     {
-        $this->handleOperationViaFiber(function () use ($options, $extraOptions): void {
-            $this->configuration->init($options, $extraOptions);
+        $this->handleOperationViaFiber(func: function () use ($options, $extraOptions): void {
+            $this->configuration->init(options: $options, extraOptions: $extraOptions);
         });
     }
 
@@ -40,8 +40,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function set(string $key, mixed $value): void
     {
-        $this->handleOperationViaFiber(function () use ($key, $value): void {
-            $this->configuration->set($key, $value);
+        $this->handleOperationViaFiber(func: function () use ($key, $value): void {
+            $this->configuration->set(key: $key, value: $value);
         });
     }
 
@@ -52,8 +52,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function update(string $key, $newValue): void
     {
-        $this->handleOperationViaFiber(function () use ($key, $newValue): void {
-            $this->configuration->update($key, $newValue);
+        $this->handleOperationViaFiber(func: function () use ($key, $newValue): void {
+            $this->configuration->update(key: $key, newValue: $newValue);
         });
     }
 
@@ -64,7 +64,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function get(string $key): mixed
     {
-        return $this->handleOperationViaFiber(fn (): mixed => $this->configuration->get($key));
+        return $this->handleOperationViaFiber(func: fn (): mixed => $this->configuration->get(key: $key));
     }
 
     /**
@@ -74,8 +74,8 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function remove(string $key): void
     {
-        $this->handleOperationViaFiber(function () use ($key): void {
-            $this->configuration->remove($key);
+        $this->handleOperationViaFiber(func: function () use ($key): void {
+            $this->configuration->remove(key: $key);
         });
     }
 
@@ -86,7 +86,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function walk(Closure $func): ConfigurationInterface
     {
-        return $this->handleOperationViaFiber(fn (): ConfigurationInterface => $this->configuration->walk($func));
+        return $this->handleOperationViaFiber(func: fn (): ConfigurationInterface => $this->configuration->walk(func: $func));
     }
 
     /**
@@ -96,7 +96,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function map(Closure $func): array
     {
-        return $this->handleOperationViaFiber(fn (): array => $this->configuration->map($func));
+        return $this->handleOperationViaFiber(func: fn (): array => $this->configuration->map(func: $func));
     }
 
     /**
@@ -106,7 +106,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function toArray(): array
     {
-        return $this->handleOperationViaFiber(fn (): array => $this->configuration->toArray());
+        return $this->handleOperationViaFiber(func: fn (): array => $this->configuration->toArray());
     }
 
     /**
@@ -116,7 +116,7 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function clear(): void
     {
-        $this->handleOperationViaFiber(function (): void {
+        $this->handleOperationViaFiber(func: function (): void {
             $this->configuration->clear();
         });
     }
@@ -128,6 +128,6 @@ final class FiberConfiguration extends AbstractFiberHandler implements Configura
      */
     public function count(): int
     {
-        return $this->handleOperationViaFiber(fn (): int => $this->configuration->count());
+        return $this->handleOperationViaFiber(func: fn (): int => $this->configuration->count());
     }
 }

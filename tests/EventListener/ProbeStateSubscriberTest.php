@@ -96,6 +96,7 @@ final class ProbeStateSubscriberTest extends TestCase
         self::assertIsString($content);
 
         $body = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($body);
         self::assertArrayHasKey('scheduledTasks', $body);
         self::assertSame(0, $body['scheduledTasks']);
         self::assertArrayHasKey('executedTasks', $body);
