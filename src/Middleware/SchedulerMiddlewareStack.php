@@ -41,7 +41,7 @@ final class SchedulerMiddlewareStack extends AbstractMiddlewareStack implements 
     {
         return array_unique(array: [
             ...$this->getPreSchedulingMiddleware()->toArray(),
-            ...$this->getPostSchedulingMiddleware()->toArray()
+            ...$this->getPostSchedulingMiddleware()->toArray(),
         ], flags: SORT_REGULAR);
     }
 }

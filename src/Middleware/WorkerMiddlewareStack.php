@@ -41,7 +41,7 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
     {
         return array_unique(array: [
             ...$this->getPreExecutionMiddleware()->toArray(),
-            ...$this->getPostExecutionMiddleware()->toArray()
+            ...$this->getPostExecutionMiddleware()->toArray(),
         ], flags: SORT_REGULAR);
     }
 }
