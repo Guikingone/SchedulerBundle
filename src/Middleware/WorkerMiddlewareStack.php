@@ -39,6 +39,9 @@ final class WorkerMiddlewareStack extends AbstractMiddlewareStack implements Wor
      */
     public function getMiddlewareList(): array
     {
-        return array_unique(array: [...$this->getPreExecutionMiddleware()->toArray(), ...$this->getPostExecutionMiddleware()->toArray()], flags: SORT_REGULAR);
+        return array_unique(array: [
+            ...$this->getPreExecutionMiddleware()->toArray(),
+            ...$this->getPostExecutionMiddleware()->toArray()
+        ], flags: SORT_REGULAR);
     }
 }

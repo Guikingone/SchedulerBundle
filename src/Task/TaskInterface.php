@@ -131,15 +131,9 @@ interface TaskInterface
      */
     public function mustRunInBackground(): bool;
 
-    /**
-     * @param callable|array<string|int, mixed>|null $beforeSchedulingCallable
-     */
-    public function beforeScheduling(callable|array|null $beforeSchedulingCallable = null): TaskInterface;
+    public function beforeScheduling(?callable $beforeSchedulingCallable = null): TaskInterface;
 
-    /**
-     * @return callable|array<string|int, mixed>|null
-     */
-    public function getBeforeScheduling(): callable|array|null;
+    public function getBeforeScheduling(): ?callable;
 
     public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
@@ -162,30 +156,15 @@ interface TaskInterface
      */
     public function afterScheduling(callable|array|null $afterSchedulingCallable = null): TaskInterface;
 
-    /**
-     * @return callable|array<string|int, mixed>|null
-     */
-    public function getAfterScheduling(): callable|array|null;
+    public function getAfterScheduling(): ?callable;
 
-    /**
-     * @param callable|array<string|int, mixed>|null $beforeExecutingCallable
-     */
-    public function beforeExecuting(callable|array|null $beforeExecutingCallable = null): TaskInterface;
+    public function beforeExecuting(?callable $beforeExecutingCallable = null): TaskInterface;
 
-    /**
-     * @return callable|array<string|int, mixed>|null
-     */
-    public function getBeforeExecuting(): callable|array|null;
+    public function getBeforeExecuting(): ?callable;
 
-    /**
-     * @param callable|array<string|int, mixed>|null $afterExecutingCallable
-     */
-    public function afterExecuting(callable|array|null $afterExecutingCallable = null): TaskInterface;
+    public function afterExecuting(?callable $afterExecutingCallable = null): TaskInterface;
 
-    /**
-     * @return callable|array<string|int, mixed>|null
-     */
-    public function getAfterExecuting(): callable|array|null;
+    public function getAfterExecuting(): ?callable;
 
     public function setDescription(string $description = null): self;
 

@@ -29,13 +29,13 @@ final class TaskBuilder implements TaskBuilderInterface
     public function create(array $options = []): TaskInterface
     {
         foreach ($this->builders as $builder) {
-            if (!$builder->support($options['type'])) {
+            if (!$builder->support(type: $options['type'])) {
                 continue;
             }
 
-            return $builder->build($this->propertyAccessor, $options);
+            return $builder->build(propertyAccessor: $this->propertyAccessor, options: $options);
         }
 
-        throw new InvalidArgumentException(sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
+        throw new InvalidArgumentException(message: sprintf('The task cannot be created as no builder has been defined for "%s"', $options['type']));
     }
 }

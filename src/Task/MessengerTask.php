@@ -13,7 +13,7 @@ final class MessengerTask extends AbstractTask
     {
         $this->defineOptions();
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     public function getMessage(): object

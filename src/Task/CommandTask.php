@@ -24,25 +24,25 @@ final class CommandTask extends AbstractTask
         array $arguments = [],
         array $options = []
     ) {
-        $this->validateCommand($command);
+        $this->validateCommand(command: $command);
 
-        $this->defineOptions([
+        $this->defineOptions(options: [
             'command' => $command,
             'arguments' => $arguments,
             'options' => $options,
-        ], [
+        ], additionalOptions: [
             'command' => 'string',
             'arguments' => 'string[]',
             'options' => 'string[]',
         ]);
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     public function getCommand(): string
     {
-        if (!is_string($this->options['command'])) {
-            throw new RuntimeException('The command is not a string');
+        if (!is_string(value: $this->options['command'])) {
+            throw new RuntimeException(message: 'The command is not a string');
         }
 
         return $this->options['command'];
@@ -50,7 +50,7 @@ final class CommandTask extends AbstractTask
 
     public function setCommand(string $command): self
     {
-        $this->validateCommand($command);
+        $this->validateCommand(command: $command);
 
         $this->options['command'] = $command;
 
@@ -62,7 +62,7 @@ final class CommandTask extends AbstractTask
      */
     public function getArguments(): array
     {
-        return is_array($this->options['arguments']) ? $this->options['arguments'] : [];
+        return is_array(value: $this->options['arguments']) ? $this->options['arguments'] : [];
     }
 
     /**
@@ -80,7 +80,7 @@ final class CommandTask extends AbstractTask
      */
     public function getOptions(): array
     {
-        return is_array($this->options['options']) ? $this->options['options'] : [];
+        return is_array(value: $this->options['options']) ? $this->options['options'] : [];
     }
 
     /**
@@ -96,7 +96,7 @@ final class CommandTask extends AbstractTask
     private function validateCommand(string $command): void
     {
         if ('' === $command) {
-            throw new InvalidArgumentException('The command argument must be a valid command FQCN|string, empty string given');
+            throw new InvalidArgumentException(message: 'The command argument must be a valid command FQCN|string, empty string given');
         }
     }
 }

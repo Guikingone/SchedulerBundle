@@ -14,8 +14,8 @@ final class NullTask extends AbstractTask
      */
     public function __construct(string $name, array $options = [])
     {
-        $this->defineOptions($options);
+        $this->defineOptions(options: $options);
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 }

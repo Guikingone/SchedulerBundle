@@ -21,6 +21,7 @@ use function uasort;
 use function count;
 use function gettype;
 use function in_array;
+use function is_string;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 
@@ -77,7 +78,7 @@ final class TaskList implements TaskListInterface
 
         $task = $this->tasks[$taskName] ?? null;
         if (!$task instanceof TaskInterface) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist or is invalid', $taskName));
+            throw new InvalidArgumentException(message: sprintf('The task "%s" does not exist or is invalid', $taskName));
         }
 
         return $task;
@@ -164,7 +165,7 @@ final class TaskList implements TaskListInterface
         try {
             $chunks = array_chunk(array: $this->tasks, length: $size, preserve_keys: $preserveKeys);
         } catch (Throwable) {
-            throw new InvalidArgumentException(sprintf('The given size "%d" cannot be used to split the list', $size));
+            throw new InvalidArgumentException(message: sprintf('The given size "%d" cannot be used to split the list', $size));
         }
 
         return $chunks;
@@ -198,6 +199,10 @@ final class TaskList implements TaskListInterface
      */
     public function offsetExists($offset): bool
     {
+        if (!is_string($offset)) {
+            throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
+        }
+
         return $this->has(taskName: $offset);
     }
 
@@ -206,6 +211,10 @@ final class TaskList implements TaskListInterface
      */
     public function offsetGet($offset): ?TaskInterface
     {
+        if (!is_string($offset)) {
+            throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
+        }
+
         return $this->get(taskName: $offset);
     }
 
@@ -220,7 +229,7 @@ final class TaskList implements TaskListInterface
     public function offsetSet($offset, $value): void
     {
         if (!$value instanceof TaskInterface) {
-            throw new InvalidArgumentException(sprintf('A task must be given, received "%s"', gettype($value)));
+            throw new InvalidArgumentException(message: sprintf('A task must be given, received "%s"', gettype($value)));
         }
 
         null === $offset ? $this->add(task: $value) : $this->tasks[$offset] = $value;
@@ -231,6 +240,10 @@ final class TaskList implements TaskListInterface
      */
     public function offsetUnset($offset): void
     {
+        if (!is_string($offset)) {
+            throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
+        }
+
         $this->remove(taskName: $offset);
     }
 

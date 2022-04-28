@@ -17,13 +17,16 @@ final class NotificationTask extends AbstractTask
      */
     private array $recipients;
 
-    public function __construct(string $name, private Notification $notification, Recipient ...$recipients)
-    {
+    public function __construct(
+        string $name,
+        private Notification $notification,
+        Recipient ...$recipients
+    ) {
         $this->recipients = $recipients;
 
         $this->defineOptions();
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     public function getNotification(): Notification

@@ -32,6 +32,6 @@ final class SchedulerPool implements SchedulerPoolInterface
      */
     public function count(): int
     {
-        return count($this->schedulers);
+        return count(value: $this->schedulers);
     }
 }

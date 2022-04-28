@@ -16,7 +16,7 @@ final class LazyTask extends AbstractTask implements LazyInterface
 
     public function __construct(string $name, private Closure $sourceTaskClosure)
     {
-        parent::__construct(sprintf('%s.lazy', $name));
+        parent::__construct(name: sprintf('%s.lazy', $name));
     }
 
     public function getTask(): TaskInterface
