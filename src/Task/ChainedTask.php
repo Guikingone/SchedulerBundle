@@ -16,16 +16,16 @@ final class ChainedTask extends AbstractTask
 
     public function __construct(string $name, TaskInterface ...$tasks)
     {
-        $this->tasks = new TaskList($tasks);
+        $this->tasks = new TaskList(tasks: $tasks);
 
         $this->defineOptions();
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     public function addTask(TaskInterface $task): self
     {
-        $this->getTasks()->add($task);
+        $this->getTasks()->add(task: $task);
 
         return $this;
     }
@@ -42,7 +42,7 @@ final class ChainedTask extends AbstractTask
 
     public function getTask(string $name): ?TaskInterface
     {
-        return $this->getTasks()->get($name);
+        return $this->getTasks()->get(taskName: $name);
     }
 
     /**

@@ -132,12 +132,12 @@ interface TaskInterface
     public function mustRunInBackground(): bool;
 
     /**
-     * @param callable|array<string|int, mixed>|null $beforeSchedulingCallable
+     * @param callable|array<object|string, string>|null $beforeSchedulingCallable
      */
     public function beforeScheduling(callable|array|null $beforeSchedulingCallable = null): TaskInterface;
 
     /**
-     * @return callable|array<string|int, mixed>|null
+     * @return callable|array<object|string, string>|null
      */
     public function getBeforeScheduling(): callable|array|null;
 
@@ -158,32 +158,32 @@ interface TaskInterface
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
     /**
-     * @param callable|array<string|int, mixed>|null $afterSchedulingCallable
+     * @param callable|array<object|string, mixed>|null $afterSchedulingCallable
      */
     public function afterScheduling(callable|array|null $afterSchedulingCallable = null): TaskInterface;
 
     /**
-     * @return callable|array<string|int, mixed>|null
+     * @return callable|array<object|string, string>|null
      */
     public function getAfterScheduling(): callable|array|null;
 
     /**
-     * @param callable|array<string|int, mixed>|null $beforeExecutingCallable
+     * @param callable|array<object|string, mixed>|null $beforeExecutingCallable
      */
     public function beforeExecuting(callable|array|null $beforeExecutingCallable = null): TaskInterface;
 
     /**
-     * @return callable|array<string|int, mixed>|null
+     * @return callable|array<object|string, string>|null
      */
     public function getBeforeExecuting(): callable|array|null;
 
     /**
-     * @param callable|array<string|int, mixed>|null $afterExecutingCallable
+     * @param callable|array<object|string, mixed>|null $afterExecutingCallable
      */
     public function afterExecuting(callable|array|null $afterExecutingCallable = null): TaskInterface;
 
     /**
-     * @return callable|array<string|int, mixed>|null
+     * @return callable|array<object|string, string>|null
      */
     public function getAfterExecuting(): callable|array|null;
 

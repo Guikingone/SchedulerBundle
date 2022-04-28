@@ -21,26 +21,36 @@ final class DeadlinePolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        $tasks->walk(static function (TaskInterface $task): void {
+        $tasks->walk(func: static function (TaskInterface $task): void {
             $arrivalTime = $task->getArrivalTime();
             if (!$arrivalTime instanceof DateTimeImmutable) {
-                throw new RuntimeException(sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
+                throw new RuntimeException(message: sprintf('The arrival time must be defined, consider executing the task "%s" first', $task->getName()));
             }
 
             $executionRelativeDeadline = $task->getExecutionRelativeDeadline();
             if (!$executionRelativeDeadline instanceof DateInterval) {
-                throw new RuntimeException(sprintf('The execution relative deadline must be defined, consider using %s::setExecutionRelativeDeadline()', TaskInterface::class));
+                throw new RuntimeException(message: sprintf('The execution relative deadline must be defined, consider using %s::setExecutionRelativeDeadline()', TaskInterface::class));
             }
 
-            $absoluteDeadlineDate = $arrivalTime->add($executionRelativeDeadline);
+            $absoluteDeadlineDate = $arrivalTime->add(interval: $executionRelativeDeadline);
 
-            $task->setExecutionAbsoluteDeadline($absoluteDeadlineDate->diff($arrivalTime));
+            $task->setExecutionAbsoluteDeadline(dateInterval: $absoluteDeadlineDate->diff(targetObject: $arrivalTime));
         });
 
-        return $tasks->uasort(static function (TaskInterface $task, TaskInterface $nextTask): int {
+        return $tasks->uasort(func: static function (TaskInterface $task, TaskInterface $nextTask): int {
             $dateTimeImmutable = new DateTimeImmutable();
 
-            return $dateTimeImmutable->add($nextTask->getExecutionAbsoluteDeadline()) <=> $dateTimeImmutable->add($task->getExecutionAbsoluteDeadline());
+            $currentTaskExecutionAbsoluteDeadline = $task->getExecutionAbsoluteDeadline();
+            if (!$currentTaskExecutionAbsoluteDeadline instanceof DateInterval) {
+                throw new RuntimeException(message: sprintf('The execution absolute deadline must be defined, consider using %s::setExecutionAbsoluteDeadline()', TaskInterface::class));
+            }
+
+            $nextTaskExecutionAbsoluteDeadline = $nextTask->getExecutionAbsoluteDeadline();
+            if (!$nextTaskExecutionAbsoluteDeadline instanceof DateInterval) {
+                throw new RuntimeException(message: sprintf('The execution absolute deadline must be defined, consider using %s::setExecutionAbsoluteDeadline()', TaskInterface::class));
+            }
+
+            return $dateTimeImmutable->add(interval: $nextTaskExecutionAbsoluteDeadline) <=> $dateTimeImmutable->add(interval: $currentTaskExecutionAbsoluteDeadline);
         });
     }
 

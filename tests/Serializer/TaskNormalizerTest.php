@@ -90,6 +90,7 @@ final class TaskNormalizerTest extends TestCase
 
         self::assertNotNull($data);
         self::assertIsArray($data);
+        self::assertIsArray($data['body']);
         self::assertContainsEquals('name', $data['body']);
         self::assertContainsEquals('arrivalTime', $data['body']);
         self::assertContainsEquals('description', $data['body']);
@@ -739,6 +740,7 @@ final class TaskNormalizerTest extends TestCase
         self::assertArrayHasKey('taskInternalType', $data);
         self::assertSame(MessengerTask::class, $data['taskInternalType']);
         self::assertArrayHasKey('body', $data);
+        self::assertIsArray($data['body']);
         self::assertArrayHasKey('message', $data['body']);
         self::assertArrayHasKey('class', $data['body']['message']);
         self::assertArrayHasKey('payload', $data['body']['message']);

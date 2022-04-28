@@ -68,7 +68,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
      */
     public function getProbeInformations(): array
     {
-        return (is_array($this->data) && array_key_exists('probe', $this->data)) ? $this->data['probe'] : [];
+        return (is_array(value: $this->data) && array_key_exists(key: 'probe', array: $this->data)) ? $this->data['probe'] : [];
     }
 
     public function reset(): void

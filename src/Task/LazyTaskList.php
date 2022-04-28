@@ -60,7 +60,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $self = new self($this->list->findByName(names: $names));
+        $self = new self(sourceList: $this->list->findByName(names: $names));
         $self->initialize();
 
         return $self;
@@ -73,7 +73,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     {
         $this->initialize();
 
-        $self = new self($this->list->filter(filter: $filter));
+        $self = new self(sourceList: $this->list->filter(filter: $filter));
         $self->initialize();
 
         return $self;

@@ -17,12 +17,12 @@ final class BatchPolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        $tasks->walk(static function (TaskInterface $task): void {
+        $tasks->walk(func: static function (TaskInterface $task): void {
             $priority = $task->getPriority();
-            $task->setPriority(--$priority);
+            $task->setPriority(priority: --$priority);
         });
 
-        return $tasks->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <=> $nextTask->getPriority());
+        return $tasks->uasort(func: static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <=> $nextTask->getPriority());
     }
 
     /**

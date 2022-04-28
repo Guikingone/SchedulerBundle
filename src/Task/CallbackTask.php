@@ -13,9 +13,9 @@ use function is_array;
 final class CallbackTask extends AbstractTask
 {
     /**
-     * @param callable|Closure|string|array<string, mixed> $callback
-     * @param array<string|int, mixed>                     $arguments
-     * @param array<string|int, mixed>                     $options
+     * @param callable|Closure|string|array<int|string, mixed> $callback
+     * @param array<int|string, mixed>                         $arguments
+     * @param array<string, mixed>                             $options
      */
     public function __construct(
         string $name,
@@ -28,21 +28,18 @@ final class CallbackTask extends AbstractTask
             'arguments' => $arguments,
         ], additionalOptions: [
             'callback' => ['callable', 'string', 'array'],
-            'arguments' => ['array', 'string[]'],
+            'arguments' => ['array', 'string[]', 'int[]'],
         ]);
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
-    /**
-     * @return callable|Closure|string|array<string, mixed>
-     */
-    public function getCallback(): callable|Closure|string|array
+    public function getCallback(): callable
     {
         return $this->options['callback'];
     }
 
-    public function setCallback(Closure $callback): self
+    public function setCallback(callable $callback): self
     {
         $this->options['callback'] = $callback;
 
@@ -50,15 +47,15 @@ final class CallbackTask extends AbstractTask
     }
 
     /**
-     * @return array<string|int, mixed>
+     * @return array<int|string, mixed>
      */
     public function getArguments(): array
     {
-        return is_array($this->options['arguments']) ? $this->options['arguments'] : [];
+        return is_array(value: $this->options['arguments']) ? $this->options['arguments'] : [];
     }
 
     /**
-     * @param array<string|int, mixed> $arguments
+     * @param array<int|string, mixed> $arguments
      */
     public function setArguments(array $arguments): self
     {

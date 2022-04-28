@@ -25,16 +25,16 @@ abstract class AbstractFiberHandler
 
     protected function handleOperationViaFiber(Closure $func): mixed
     {
-        $fiber = new Fiber(function (Closure $operation): void {
+        $fiber = new Fiber(callback: function (Closure $operation): void {
             $value = $operation();
 
-            Fiber::suspend($value);
+            Fiber::suspend(value: $value);
         });
 
         try {
             $return = $fiber->start($func);
         } catch (Throwable $throwable) {
-            $this->logger->critical(sprintf('An error occurred while performing the action: %s', $throwable->getMessage()));
+            $this->logger->critical(message: sprintf('An error occurred while performing the action: %s', $throwable->getMessage()));
 
             throw $throwable;
         }

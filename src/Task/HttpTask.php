@@ -23,24 +23,24 @@ final class HttpTask extends AbstractTask
      */
     public function __construct(string $name, string $url, string $method = 'GET', array $clientOptions = [])
     {
-        $this->validateClientOptions($clientOptions);
-        $this->defineOptions([
+        $this->validateClientOptions(clientOptions: $clientOptions);
+        $this->defineOptions(options: [
             'url' => $url,
             'method' => $method,
             'client_options' => $clientOptions,
-        ], [
+        ], additionalOptions: [
             'url' => 'string',
             'method' => 'string',
             'client_options' => ['array', 'string[]'],
         ]);
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     public function getUrl(): string
     {
-        if (!is_string($this->options['url'])) {
-            throw new RuntimeException('The url is not defined');
+        if (!is_string(value: $this->options['url'])) {
+            throw new RuntimeException(message: 'The url is not defined');
         }
 
         return $this->options['url'];
@@ -70,7 +70,7 @@ final class HttpTask extends AbstractTask
      */
     public function getClientOptions(): array
     {
-        return is_array($this->options['client_options']) ? $this->options['client_options'] : [];
+        return is_array(value: $this->options['client_options']) ? $this->options['client_options'] : [];
     }
 
     /**
@@ -92,9 +92,9 @@ final class HttpTask extends AbstractTask
             return;
         }
 
-        array_walk($clientOptions, function ($_, $key): void {
-            if (!array_key_exists($key, HttpClientInterface::OPTIONS_DEFAULTS)) {
-                throw new InvalidArgumentException(sprintf('The following option: "%s" is not supported', $key));
+        array_walk(array: $clientOptions, callback: function ($_, $key): void {
+            if (!array_key_exists(key: $key, array: HttpClientInterface::OPTIONS_DEFAULTS)) {
+                throw new InvalidArgumentException(message: sprintf('The following option: "%s" is not supported', $key));
             }
         });
     }

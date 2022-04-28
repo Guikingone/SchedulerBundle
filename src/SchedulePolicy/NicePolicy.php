@@ -17,7 +17,7 @@ final class NicePolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        return $tasks->uasort(static function (TaskInterface $task, TaskInterface $nextTask): int {
+        return $tasks->uasort(func: static function (TaskInterface $task, TaskInterface $nextTask): int {
             if ($task->getPriority() > 0) {
                 return 1;
             }

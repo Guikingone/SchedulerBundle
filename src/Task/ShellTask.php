@@ -27,19 +27,19 @@ final class ShellTask extends AbstractTask
         float $timeout = 60.0,
         array $options = []
     ) {
-        $this->defineOptions(array_merge([
+        $this->defineOptions(options: array_merge([
             'command' => $command,
             'cwd' => $cwd,
             'environment_variables' => $environmentVariables,
             'timeout' => $timeout,
-        ], $options), [
+        ], $options), additionalOptions: [
             'command' => 'string[]',
             'cwd' => ['string', 'null'],
             'environment_variables' => 'string[]',
             'timeout' => 'float',
         ]);
 
-        parent::__construct($name);
+        parent::__construct(name: $name);
     }
 
     /**
@@ -47,7 +47,7 @@ final class ShellTask extends AbstractTask
      */
     public function getCommand(): array
     {
-        return is_array($this->options['command']) ? $this->options['command'] : [];
+        return is_array(value: $this->options['command']) ? $this->options['command'] : [];
     }
 
     /**
@@ -62,7 +62,7 @@ final class ShellTask extends AbstractTask
 
     public function getCwd(): ?string
     {
-        return is_string($this->options['cwd']) ? $this->options['cwd'] : null;
+        return is_string(value: $this->options['cwd']) ? $this->options['cwd'] : null;
     }
 
     public function setCwd(?string $cwd): self
@@ -77,7 +77,7 @@ final class ShellTask extends AbstractTask
      */
     public function getEnvironmentVariables(): array
     {
-        return is_array($this->options['environment_variables']) ? $this->options['environment_variables'] : [];
+        return is_array(value: $this->options['environment_variables']) ? $this->options['environment_variables'] : [];
     }
 
     /**
@@ -92,7 +92,7 @@ final class ShellTask extends AbstractTask
 
     public function getTimeout(): ?float
     {
-        return is_float($this->options['timeout']) ? $this->options['timeout'] : null;
+        return is_float(value: $this->options['timeout']) ? $this->options['timeout'] : null;
     }
 
     public function setTimeout(float $timeout): self

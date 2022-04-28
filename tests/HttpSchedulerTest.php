@@ -256,7 +256,7 @@ final class HttpSchedulerTest extends TestCase
      */
     public function testSchedulerCannotPreempt(): void
     {
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer());
+        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), new MockHttpClient());
 
         self::expectException(BadMethodCallException::class);
         self::expectExceptionMessage(sprintf('The %s::class cannot preempt tasks', HttpScheduler::class));
