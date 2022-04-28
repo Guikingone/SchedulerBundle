@@ -99,7 +99,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setAllowedTypes(option: 'arrival_time', allowedTypes: [DateTimeImmutable::class, 'null']);
         $optionsResolver->setAllowedTypes(option: 'access_lock_bag', allowedTypes: [AccessLockBag::class, 'null']);
         $optionsResolver->setAllowedTypes(option: 'background', allowedTypes: 'bool');
-        $optionsResolver->setAllowedTypes(option: 'before_scheduling', allowedTypes: ['callable', 'null']);
+        $optionsResolver->setAllowedTypes(option: 'before_scheduling', allowedTypes: ['callable', 'array', 'null']);
         $optionsResolver->setAllowedTypes(option: 'before_scheduling_notification', allowedTypes: [NotificationTaskBag::class, 'null']);
         $optionsResolver->setAllowedTypes(option: 'after_scheduling_notification', allowedTypes: [NotificationTaskBag::class, 'null']);
         $optionsResolver->setAllowedTypes(option: 'before_executing_notification', allowedTypes: [NotificationTaskBag::class, 'null']);
@@ -248,14 +248,20 @@ abstract class AbstractTask implements TaskInterface
         return is_bool(value: $this->options['background']) && $this->options['background'];
     }
 
-    public function beforeScheduling(?callable $beforeSchedulingCallable = null): TaskInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeScheduling(callable|array|null $beforeSchedulingCallable = null): TaskInterface
     {
         $this->options['before_scheduling'] = $beforeSchedulingCallable;
 
         return $this;
     }
 
-    public function getBeforeScheduling(): ?callable
+    /**
+     * {@inheritdoc}
+     */
+    public function getBeforeScheduling(): callable|array|null
     {
         return $this->options['before_scheduling'];
     }
@@ -318,31 +324,46 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
-    public function getAfterScheduling(): ?callable
+    /**
+     * {@inheritdoc}
+     */
+    public function getAfterScheduling(): callable|array|null
     {
         return $this->options['after_scheduling'];
     }
 
-    public function beforeExecuting(?callable $beforeExecutingCallable = null): TaskInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeExecuting(callable|array|null $beforeExecutingCallable = null): TaskInterface
     {
         $this->options['before_executing'] = $beforeExecutingCallable;
 
         return $this;
     }
 
-    public function getBeforeExecuting(): ?callable
+    /**
+     * {@inheritdoc}
+     */
+    public function getBeforeExecuting(): callable|array|null
     {
         return $this->options['before_executing'];
     }
 
-    public function afterExecuting(?callable $afterExecutingCallable = null): TaskInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function afterExecuting(callable|array|null $afterExecutingCallable = null): TaskInterface
     {
         $this->options['after_executing'] = $afterExecutingCallable;
 
         return $this;
     }
 
-    public function getAfterExecuting(): ?callable
+    /**
+     * {@inheritdoc}
+     */
+    public function getAfterExecuting(): callable|array|null
     {
         return $this->options['after_executing'];
     }
@@ -741,11 +762,17 @@ abstract class AbstractTask implements TaskInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTags(): array
     {
         return is_array(value: $this->options['tags']) ? $this->options['tags'] : [];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setTags(array $tags): TaskInterface
     {
         $this->options['tags'] = $tags;

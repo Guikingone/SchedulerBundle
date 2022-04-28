@@ -69,7 +69,7 @@ final class NullTaskTest extends TestCase
     public function testTaskCannotBeCreatedWithInvalidBeforeScheduling(): void
     {
         self::expectException(InvalidOptionsException::class);
-        self::expectExceptionMessage('The option "before_scheduling" with value "foo" is expected to be of type "callable" or "null", but is of type "string"');
+        self::expectExceptionMessage('The option "before_scheduling" with value "foo" is expected to be of type "callable" or "array" or "null", but is of type "string"');
         self::expectExceptionCode(0);
         new NullTask('foo', [
             'before_scheduling' => 'foo',

@@ -9,6 +9,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use function call_user_func;
+use function is_callable;
 use function sprintf;
 
 /**
@@ -22,7 +23,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
         $callback = $task->getBeforeScheduling();
-        if (null === $callback) {
+        if (null === $callback || !is_callable($callback)) {
             return;
         }
 
@@ -37,7 +38,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
         $callback = $task->getAfterScheduling();
-        if (null === $callback) {
+        if (null === $callback || !is_callable($callback)) {
             return;
         }
 
@@ -54,7 +55,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function preExecute(TaskInterface $task): void
     {
         $callback = $task->getBeforeExecuting();
-        if (null === $callback) {
+        if (null === $callback || !is_callable($callback)) {
             return;
         }
 
@@ -69,7 +70,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         $callback = $task->getAfterExecuting();
-        if (null === $callback) {
+        if (null === $callback || !is_callable($callback)) {
             return;
         }
 

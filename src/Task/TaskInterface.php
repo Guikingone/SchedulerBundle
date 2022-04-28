@@ -131,9 +131,15 @@ interface TaskInterface
      */
     public function mustRunInBackground(): bool;
 
-    public function beforeScheduling(?callable $beforeSchedulingCallable = null): TaskInterface;
+    /**
+     * @param callable|array<object|string, string>|null $beforeSchedulingCallable
+     */
+    public function beforeScheduling(callable|array|null $beforeSchedulingCallable = null): TaskInterface;
 
-    public function getBeforeScheduling(): ?callable;
+    /**
+     * @return callable|array<object|string, string>|null
+     */
+    public function getBeforeScheduling(): callable|array|null;
 
     public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
@@ -152,19 +158,34 @@ interface TaskInterface
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
     /**
-     * @param callable|array<string|int, mixed>|null $afterSchedulingCallable
+     * @param callable|array<object|string, mixed>|null $afterSchedulingCallable
      */
     public function afterScheduling(callable|array|null $afterSchedulingCallable = null): TaskInterface;
 
-    public function getAfterScheduling(): ?callable;
+    /**
+     * @return callable|array<object|string, string>|null
+     */
+    public function getAfterScheduling(): callable|array|null;
 
-    public function beforeExecuting(?callable $beforeExecutingCallable = null): TaskInterface;
+    /**
+     * @param callable|array<object|string, mixed>|null $beforeExecutingCallable
+     */
+    public function beforeExecuting(callable|array|null $beforeExecutingCallable = null): TaskInterface;
 
-    public function getBeforeExecuting(): ?callable;
+    /**
+     * @return callable|array<object|string, string>|null
+     */
+    public function getBeforeExecuting(): callable|array|null;
 
-    public function afterExecuting(?callable $afterExecutingCallable = null): TaskInterface;
+    /**
+     * @param callable|array<object|string, mixed>|null $afterExecutingCallable
+     */
+    public function afterExecuting(callable|array|null $afterExecutingCallable = null): TaskInterface;
 
-    public function getAfterExecuting(): ?callable;
+    /**
+     * @return callable|array<object|string, string>|null
+     */
+    public function getAfterExecuting(): callable|array|null;
 
     public function setDescription(string $description = null): self;
 
