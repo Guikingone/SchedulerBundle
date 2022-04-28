@@ -23,7 +23,11 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function preScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
         $callback = $task->getBeforeScheduling();
-        if (null === $callback || !is_callable($callback)) {
+        if (null === $callback) {
+            return;
+        }
+
+        if (!is_callable($callback)) {
             return;
         }
 
@@ -38,7 +42,11 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function postScheduling(TaskInterface $task, SchedulerInterface $scheduler): void
     {
         $callback = $task->getAfterScheduling();
-        if (null === $callback || !is_callable($callback)) {
+        if (null === $callback) {
+            return;
+        }
+
+        if (!is_callable($callback)) {
             return;
         }
 
@@ -55,7 +63,11 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function preExecute(TaskInterface $task): void
     {
         $callback = $task->getBeforeExecuting();
-        if (null === $callback || !is_callable($callback)) {
+        if (null === $callback) {
+            return;
+        }
+
+        if (!is_callable($callback)) {
             return;
         }
 
@@ -70,7 +82,11 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
     public function postExecute(TaskInterface $task, WorkerInterface $worker): void
     {
         $callback = $task->getAfterExecuting();
-        if (null === $callback || !is_callable($callback)) {
+        if (null === $callback) {
+            return;
+        }
+
+        if (!is_callable($callback)) {
             return;
         }
 
