@@ -120,7 +120,6 @@ final class RoundRobinTransportTest extends TestCase
         ]));
 
         self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
-        self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
     }
 
     /**

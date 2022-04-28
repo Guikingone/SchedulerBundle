@@ -55,10 +55,10 @@ final class LazyTaskListTest extends TestCase
 
         $list->add(new NullTask('foo'));
         self::assertTrue($list->isInitialized());
-        self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertSame('* * * * *', $list->get('foo')->getExpression());
 
         self::assertTrue($list->isInitialized());
-        self::assertInstanceOf(NullTask::class, $list->get('foo'));
+        self::assertSame('* * * * *', $list->get('foo')->getExpression());
     }
 
     public function testListCanReturnTaskLazily(): void
