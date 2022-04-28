@@ -29,23 +29,23 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
     public function sort(string $policy, TaskListInterface $tasks): TaskListInterface
     {
         if ([] === $this->policies) {
-            throw new RuntimeException('The tasks cannot be sorted as no policies have been defined');
+            throw new RuntimeException(message: 'The tasks cannot be sorted as no policies have been defined');
         }
 
-        $tasks->walk(function (TaskInterface $task) use ($policy): void {
+        $tasks->walk(func: function (TaskInterface $task) use ($policy): void {
             if ($task instanceof ChainedTask) {
-                $task->setTasks($this->sort($policy, $task->getTasks()));
+                $task->setTasks(list: $this->sort(policy: $policy, tasks: $task->getTasks()));
             }
         });
 
         foreach ($this->policies as $schedulePolicy) {
-            if (!$schedulePolicy->support($policy)) {
+            if (!$schedulePolicy->support(policy: $policy)) {
                 continue;
             }
 
-            return $schedulePolicy->sort($tasks);
+            return $schedulePolicy->sort(tasks: $tasks);
         }
 
-        throw new InvalidArgumentException(sprintf('The policy "%s" cannot be used', $policy));
+        throw new InvalidArgumentException(message: sprintf('The policy "%s" cannot be used', $policy));
     }
 }

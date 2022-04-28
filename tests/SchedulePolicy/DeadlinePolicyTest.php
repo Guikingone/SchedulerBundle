@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 
@@ -21,27 +22,29 @@ final class DeadlinePolicyTest extends TestCase
     {
         $deadlinePolicy = new DeadlinePolicy();
 
-        self::assertFalse($deadlinePolicy->support('test'));
-        self::assertTrue($deadlinePolicy->support('deadline'));
+        self::assertFalse($deadlinePolicy->support(policy: 'test'));
+        self::assertTrue($deadlinePolicy->support(policy: 'deadline'));
     }
 
     public function testTasksCannotBeSortedWithoutArrivalTime(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(1))->method('getName')->willReturn('bar');
-        $task->expects(self::never())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P3D'));
+        $task = new NullTask('bar', [
+            'execution_absolute_deadline' => new DateInterval('P3D'),
+        ]);
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $secondTask->expects(self::never())->method('getExecutionRelativeDeadline')->willReturn(null);
-        $secondTask->expects(self::never())->method('getExecutionAbsoluteDeadline')->willReturn(new DateInterval('P1D'));
+        $secondTask = new NullTask('foo', [
+            'execution_absolute_deadline' => new DateInterval('P1D'),
+        ]);
 
         $deadlinePolicy = new DeadlinePolicy();
 
         self::expectException(RuntimeException::class);
         self::expectDeprecationMessage('The arrival time must be defined, consider executing the task "foo" first');
         self::expectExceptionCode(0);
-        $deadlinePolicy->sort(new TaskList([$secondTask, $task]));
+        $deadlinePolicy->sort(new TaskList([
+            $secondTask,
+            $task,
+        ]));
     }
 
     public function testTasksCannotBeSortedWithoutExecutionRelativeDeadline(): void

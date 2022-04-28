@@ -351,20 +351,6 @@ final class LazyTaskListTest extends TestCase
         ], $taskList->toArray());
     }
 
-    public function testListCannotBeChunkedWithInvalidSize(): void
-    {
-        $list = new LazyTaskList(new TaskList([
-            new NullTask('foo'),
-            new NullTask('bar'),
-        ]));
-        self::assertFalse($list->isInitialized());
-
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The given size "0" cannot be used to split the list');
-        self::expectExceptionCode(0);
-        $list->chunk(0);
-    }
-
     public function testListCanBeChunkedWithoutKeys(): void
     {
         $list = new LazyTaskList(new TaskList([

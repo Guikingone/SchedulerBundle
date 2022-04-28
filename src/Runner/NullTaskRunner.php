@@ -19,7 +19,7 @@ final class NullTaskRunner implements RunnerInterface
      */
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
-        return new Output($task, null);
+        return new Output(task: $task, output: null);
     }
 
     /**

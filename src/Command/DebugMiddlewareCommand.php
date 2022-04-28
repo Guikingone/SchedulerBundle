@@ -65,7 +65,7 @@ final class DebugMiddlewareCommand extends Command
 
             $schedulerTable = new Table($output);
             $schedulerTable->setHeaders(['Name', 'PreScheduling', 'PostScheduling', 'Priority', 'Required']);
-            $schedulerTable->addRows(array_map(static fn (object $middleware): array => [
+            $schedulerTable->addRows(array_map(static fn (PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface $middleware): array => [
                 (new ReflectionClass($middleware))->getShortName(),
                 $middleware instanceof PreSchedulingMiddlewareInterface ? 'Yes' : 'No',
                 $middleware instanceof PostSchedulingMiddlewareInterface ? 'Yes' : 'No',
@@ -84,7 +84,7 @@ final class DebugMiddlewareCommand extends Command
 
             $workerTable = new Table($output);
             $workerTable->setHeaders(['Name', 'PreExecution', 'PostExecution', 'Priority', 'Required']);
-            $workerTable->addRows(array_map(static fn (object $middleware): array => [
+            $workerTable->addRows(array_map(static fn (PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface $middleware): array => [
                 (new ReflectionClass($middleware))->getShortName(),
                 $middleware instanceof PreExecutionMiddlewareInterface ? 'Yes' : 'No',
                 $middleware instanceof PostExecutionMiddlewareInterface ? 'Yes' : 'No',

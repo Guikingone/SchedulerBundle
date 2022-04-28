@@ -13,9 +13,9 @@ use function is_array;
 final class CallbackTask extends AbstractTask
 {
     /**
-     * @param callable|Closure|string|array<string|int, mixed> $callback
+     * @param callable|Closure|string|array<int|string, mixed> $callback
      * @param array<int|string, mixed>                         $arguments
-     * @param array<int|string, mixed>                         $options
+     * @param array<string, mixed>                             $options
      */
     public function __construct(
         string $name,
@@ -28,7 +28,7 @@ final class CallbackTask extends AbstractTask
             'arguments' => $arguments,
         ], additionalOptions: [
             'callback' => ['callable', 'string', 'array'],
-            'arguments' => ['array', 'string[]'],
+            'arguments' => ['array', 'string[]', 'int[]'],
         ]);
 
         parent::__construct(name: $name);
@@ -47,7 +47,7 @@ final class CallbackTask extends AbstractTask
     }
 
     /**
-     * @return array<string|int, mixed>
+     * @return array<int|string, mixed>
      */
     public function getArguments(): array
     {
@@ -55,7 +55,7 @@ final class CallbackTask extends AbstractTask
     }
 
     /**
-     * @param array<string|int, mixed> $arguments
+     * @param array<int|string, mixed> $arguments
      */
     public function setArguments(array $arguments): self
     {

@@ -29,7 +29,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function __construct(iterable $runners)
     {
-        $this->runners = is_array($runners) ? $runners : iterator_to_array($runners);
+        $this->runners = is_array(value: $runners) ? $runners : iterator_to_array(iterator: $runners);
     }
 
     /**
@@ -37,13 +37,13 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function find(TaskInterface $task): RunnerInterface
     {
-        $list = $this->filter(static fn (RunnerInterface $runner): bool => $runner->support($task));
+        $list = $this->filter(func: static fn (RunnerInterface $runner): bool => $runner->support(task: $task));
         if (0 === $list->count()) {
-            throw new InvalidArgumentException('No runner found for this task');
+            throw new InvalidArgumentException(message: 'No runner found for this task');
         }
 
         if (1 < $list->count()) {
-            throw new InvalidArgumentException('More than one runner found, consider improving the task and/or the runner(s)');
+            throw new InvalidArgumentException(message: 'More than one runner found, consider improving the task and/or the runner(s)');
         }
 
         return $list->current();
@@ -54,7 +54,7 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function filter(Closure $func): RunnerRegistryInterface
     {
-        return new self(array_filter($this->runners, $func, ARRAY_FILTER_USE_BOTH));
+        return new self(runners: array_filter(array: $this->runners, callback:  $func, mode: ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -62,9 +62,9 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function current(): RunnerInterface
     {
-        $currentRunner = current($this->runners);
+        $currentRunner = current(array: $this->runners);
         if (false === $currentRunner) {
-            throw new RuntimeException('The current runner cannot be found');
+            throw new RuntimeException(message: 'The current runner cannot be found');
         }
 
         return $currentRunner;
@@ -75,6 +75,6 @@ final class RunnerRegistry implements RunnerRegistryInterface
      */
     public function count(): int
     {
-        return count($this->runners);
+        return count(value: $this->runners);
     }
 }

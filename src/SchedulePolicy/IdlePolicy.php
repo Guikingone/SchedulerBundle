@@ -17,7 +17,7 @@ final class IdlePolicy implements PolicyInterface
      */
     public function sort(TaskListInterface $tasks): TaskListInterface
     {
-        return $tasks->uasort(static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <= 19 && $task->getPriority() < $nextTask->getPriority() ? 1 : -1);
+        return $tasks->uasort(func: static fn (TaskInterface $task, TaskInterface $nextTask): int => $task->getPriority() <= 19 && $task->getPriority() < $nextTask->getPriority() ? 1 : -1);
     }
 
     /**

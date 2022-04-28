@@ -88,11 +88,10 @@ interface TaskListInterface extends ArrayAccess, Countable, IteratorAggregate
     public function uasort(Closure $func): TaskListInterface|LazyTaskList;
 
     /**
-     * Allow to split the list into chunks of size @param int $size.
-     *
-     * If @param bool $preserveKeys is used, the task name as keys are preserved.
-     *
      * For more information, see @link https://php.net/manual/en/function.array-chunk.php
+     *
+     * @param bool $preserveKeys If used, the task name as keys are preserved.
+     * @param int<1, max> $size  Define the size of each chunk, must be equal to or greater than 1.
      *
      * @return array<int, array<string|int, TaskInterface>>
      */

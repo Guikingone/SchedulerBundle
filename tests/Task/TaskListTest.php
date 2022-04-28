@@ -350,19 +350,6 @@ final class TaskListTest extends TestCase
         ], $taskList->toArray());
     }
 
-    public function testListCannotBeChunkedWithInvalidSize(): void
-    {
-        $taskList = new TaskList([
-            new NullTask('foo'),
-            new NullTask('bar'),
-        ]);
-
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('The given size "0" cannot be used to split the list');
-        self::expectExceptionCode(0);
-        $taskList->chunk(0);
-    }
-
     public function testListCanBeChunkedWithoutKeys(): void
     {
         $taskList = new TaskList([
