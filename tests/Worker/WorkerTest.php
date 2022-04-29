@@ -1829,6 +1829,7 @@ final class WorkerTest extends TestCase
         ]));
 
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('random'));
         $scheduler->schedule(new ProbeTask('foo', 'https://foo.com', false, 10));
         $scheduler->schedule(new ProbeTask('bar', 'https://foo.com', false, 50));
 
@@ -1836,6 +1837,7 @@ final class WorkerTest extends TestCase
 
         $worker = new Worker($scheduler, new RunnerRegistry([
             new ProbeTaskRunner($mockedHttpClient),
+            new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
         ]), $tracker, new WorkerMiddlewareStack([

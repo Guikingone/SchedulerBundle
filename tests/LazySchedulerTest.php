@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle;
 use DateTimeImmutable;
 use Exception;
 use Generator;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -56,8 +55,15 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazySchedulerTest extends TestCase
+final class LazySchedulerTest extends AbstractSchedulerTestCase
 {
+    protected function buildScheduler(): SchedulerInterface
+    {
+        return new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+    }
+
     /**
      * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
@@ -841,22 +847,6 @@ final class LazySchedulerTest extends TestCase
         $timezone = $scheduler->getTimezone();
         self::assertSame('UTC', $timezone->getName());
         self::assertTrue($scheduler->isInitialized());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
-     */
-    public function testSchedulerPoolConfigurationIsAvailable(): void
-    {
-        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
-
-        $poolConfiguration = $scheduler->getPoolConfiguration();
-
-        self::assertSame('UTC', $poolConfiguration->getTimezone()->getName());
-        self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 
     /**
