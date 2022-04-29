@@ -1560,57 +1560,6 @@ final class SchedulerTest extends AbstractSchedulerTestCase
 
     /**
      * @throws Throwable {@see Scheduler::__construct()}
-     */
-    public function testSchedulerCanRebootWithEmptyTasks(): void
-    {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
-
-        $scheduler->schedule(new NullTask('bar'));
-        self::assertCount(1, $scheduler->getTasks());
-
-        $scheduler->reboot();
-        self::assertCount(0, $scheduler->getTasks());
-    }
-
-    /**
-     * @throws Throwable {@see Scheduler::__construct()}
-     */
-    public function testSchedulerCanReboot(): void
-    {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
-
-        $scheduler->schedule(new NullTask('foo', [
-            'expression' => '@reboot',
-        ]));
-        $scheduler->schedule(new NullTask('bar'));
-        self::assertCount(2, $scheduler->getTasks());
-
-        $scheduler->reboot();
-        self::assertCount(1, $scheduler->getTasks());
-    }
-
-    /**
-     * @throws Throwable {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::schedule()}
-     */
-    public function testSchedulerCannotPreemptEmptyDueTasks(): void
-    {
-        $task = new NullTask('foo');
-
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
-
-        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
-        self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
-    }
-
-    /**
-     * @throws Throwable {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     public function testSchedulerCannotPreemptEmptyToPreemptTasks(): void
@@ -1623,7 +1572,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
     }
 
     /**

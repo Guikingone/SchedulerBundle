@@ -12,6 +12,7 @@ use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskInterface;
 use Throwable;
 
 /**
@@ -62,6 +63,63 @@ abstract class AbstractSchedulerTestCase extends TestCase
 
         $timezone = $scheduler->getTimezone();
         self::assertSame(expected: 'UTC', actual: $timezone->getName());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
+    public function testSchedulerCanRebootWithEmptyTasks(): void
+    {
+        $scheduler = $this->buildScheduler();
+
+        $scheduler->schedule(new NullTask('bar'));
+        self::assertCount(1, $scheduler->getTasks());
+
+        $scheduler->reboot();
+        self::assertCount(0, $scheduler->getTasks());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
+    public function testSchedulerCanReboot(): void
+    {
+        $scheduler = $this->buildScheduler();
+
+        $scheduler->schedule(new NullTask('foo', [
+            'expression' => '@reboot',
+        ]));
+        $scheduler->schedule(new NullTask('bar'));
+        self::assertCount(2, $scheduler->getTasks());
+
+        $scheduler->reboot();
+        self::assertCount(1, $scheduler->getTasks());
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testSchedulerCannotPreemptEmptyDueTasks(): void
+    {
+        $task = new NullTask('foo');
+
+        $scheduler = $this->buildScheduler();
+
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see FiberScheduler::getTimezone()}
+     */
+    public function testSchedulerCanReturnTheTimezone(): void
+    {
+        $scheduler = $this->buildScheduler();
+
+        $timezone = $scheduler->getTimezone();
+        self::assertSame('UTC', $timezone->getName());
     }
 
     /**
