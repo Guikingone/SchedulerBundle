@@ -1310,6 +1310,7 @@ final class SchedulerBundleExtension extends Extension
                 new TaggedIteratorArgument(self::SCHEDULER_MIDDLEWARE_TAG),
             ])
             ->setPublic(false)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => MiddlewareRegistry::class,
             ])
@@ -1380,6 +1381,7 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => NotifierMiddleware::class,
             ])
@@ -1390,6 +1392,7 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskCallbackMiddleware::class,
             ])
@@ -1403,6 +1406,7 @@ final class SchedulerBundleExtension extends Extension
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => SingleRunTaskMiddleware::class,
             ])
@@ -1415,6 +1419,7 @@ final class SchedulerBundleExtension extends Extension
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskUpdateMiddleware::class,
             ])
@@ -1428,6 +1433,7 @@ final class SchedulerBundleExtension extends Extension
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskLockBagMiddleware::class,
             ])
@@ -1437,6 +1443,7 @@ final class SchedulerBundleExtension extends Extension
             ->setPublic(false)
             ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
             ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+            ->addTag('container.hot_path')
             ->addTag('container.preload', [
                 'class' => TaskExecutionMiddleware::class,
             ])
@@ -1451,6 +1458,7 @@ final class SchedulerBundleExtension extends Extension
                 ->setPublic(false)
                 ->addTag(self::SCHEDULER_MIDDLEWARE_TAG)
                 ->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG)
+                ->addTag('container.hot_path')
                 ->addTag('container.preload', [
                     'class' => MaxExecutionMiddleware::class,
                 ])

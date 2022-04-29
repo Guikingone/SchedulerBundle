@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
+use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
@@ -29,6 +30,20 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $middleware = new TaskLockBagMiddleware(new LockFactory(new InMemoryStore()));
 
         self::assertSame(5, $middleware->getPriority());
+    }
+
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
+    public function testMiddlewareCannotAddAccessLockBagWithoutAcquiringTheTask(): void
+    {
+    }
+
+    /**
+     * @throws Throwable {@see PreExecutionMiddlewareInterface::preExecute()}
+     */
+    public function testMiddlewareCanAddAccessLockBag(): void
+    {
     }
 
     /**

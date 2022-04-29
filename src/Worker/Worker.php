@@ -248,21 +248,7 @@ final class Worker implements WorkerInterface
             strict:  $this->configuration->isStrictlyCheckingDate()
         );
 
-        $lockedTasks = $tasks->filter(filter: function (TaskInterface $task): bool {
-            $key = TaskLockBagMiddleware::createKey(task: $task);
-            $task->setAccessLockBag(bag: new AccessLockBag(key: $key));
-
-            $lock = $this->lockFactory->createLockFromKey(key: $key, ttl: null, autoRelease: false);
-            if (!$lock->acquire()) {
-                $this->logger->info(sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
-
-                return false;
-            }
-
-            return true;
-        });
-
-        return $lockedTasks->filter(filter: fn (TaskInterface $task): bool => $this->checkTaskState(task: $task));
+        return $tasks->filter(filter: fn (TaskInterface $task): bool => $this->checkTaskState(task: $task));
     }
 
     protected function handleTask(TaskInterface $task, TaskListInterface $taskList): void

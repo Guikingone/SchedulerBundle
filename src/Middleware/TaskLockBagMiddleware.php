@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
+final class TaskLockBagMiddleware implements PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
     private const TASK_LOCK_MASK = '_symfony_scheduler_foo_';
 
@@ -29,6 +29,21 @@ final class TaskLockBagMiddleware implements PostExecutionMiddlewareInterface, O
         ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preExecute(TaskInterface $task): void
+    {
+        $key = self::createKey(task: $task);
+
+        $lock = $this->lockFactory->createLockFromKey(key: $key, ttl: null, autoRelease: false);
+        if (!$lock->acquire()) {
+            $this->logger->warning(message: sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
+        }
+
+        $task->setAccessLockBag(bag: new AccessLockBag(key: $key));
     }
 
     /**
