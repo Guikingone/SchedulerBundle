@@ -8,6 +8,7 @@ use Closure;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
@@ -345,7 +346,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     /**
      * {@inheritdoc}
      */
-    protected function executeQuery(string $sql, array $parameters = [], array $types = [])
+    protected function executeQuery(string $sql, array $parameters = [], array $types = []): Result
     {
         try {
             return $this->connection->executeQuery($sql, $parameters, $types);

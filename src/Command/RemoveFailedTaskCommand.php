@@ -20,7 +20,10 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
+use function filter_var;
+use function is_string;
 use function sprintf;
+use const FILTER_SANITIZE_STRING;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -89,8 +92,14 @@ final class RemoveFailedTaskCommand extends Command
         $name = $input->getArgument(name: 'name');
         $force = $input->getOption(name: 'force');
 
+        $name = filter_var(value: $name, filter: FILTER_SANITIZE_STRING);
+        if (!is_string($name)) {
+            throw new InvalidArgumentException(message: sprintf('The task name "%s" is not valid.', $name));
+        }
+
         try {
-            $toRemoveTask = $this->worker->getFailedTasks()->get(taskName: $name);
+            $failedTasks = $this->worker->getFailedTasks();
+            $toRemoveTask = $failedTasks->get(taskName: $name);
         } catch (InvalidArgumentException) {
             $symfonyStyle->error(message: sprintf('The task "%s" does not fails', $name));
 

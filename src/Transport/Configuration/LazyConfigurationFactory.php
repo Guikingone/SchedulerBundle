@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
 
+use function is_string;
 use function sprintf;
 use function str_starts_with;
 
@@ -29,16 +31,20 @@ final class LazyConfigurationFactory implements ConfigurationFactoryInterface
     public function create(Dsn $dsn, SerializerInterface $serializer): LazyConfiguration
     {
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getOptions()[0])) {
+            if (!is_string(value: $dsn->getOptions()[0])) {
+                throw new InvalidArgumentException(message: 'The embedded configuration DSN must be a string.');
+            }
+
+            if (!$factory->support(dsn: $dsn->getOptions()[0])) {
                 continue;
             }
 
-            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+            $dsn = Dsn::fromString(dsn: $dsn->getOptions()[0]);
 
-            return new LazyConfiguration($factory->create($dsn, $serializer));
+            return new LazyConfiguration(sourceConfiguration: $factory->create(dsn: $dsn, serializer: $serializer));
         }
 
-        throw new RuntimeException(sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));
+        throw new RuntimeException(message: sprintf('No factory found for the DSN "%s"', $dsn->getRoot()));
     }
 
     /**
@@ -46,6 +52,6 @@ final class LazyConfigurationFactory implements ConfigurationFactoryInterface
      */
     public function support(string $dsn): bool
     {
-        return str_starts_with($dsn, 'configuration://lazy');
+        return str_starts_with(haystack: $dsn, needle: 'configuration://lazy');
     }
 }

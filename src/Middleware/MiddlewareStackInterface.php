@@ -12,7 +12,7 @@ interface MiddlewareStackInterface
     /**
      * Return the middleware used by a specific middleware stack.
      *
-     * @return array<int, mixed>
+     * @return array<int, PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
      */
     public function getMiddlewareList(): array;
 }
