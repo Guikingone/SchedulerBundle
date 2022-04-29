@@ -22,8 +22,9 @@ use Throwable;
 
 use function filter_var;
 use function is_string;
+use function htmlspecialchars;
 use function sprintf;
-use const FILTER_SANITIZE_STRING;
+use const ENT_QUOTES;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -92,10 +93,7 @@ final class RemoveFailedTaskCommand extends Command
         $name = $input->getArgument(name: 'name');
         $force = $input->getOption(name: 'force');
 
-        $name = filter_var(value: $name, filter: FILTER_SANITIZE_STRING);
-        if (!is_string($name)) {
-            throw new InvalidArgumentException(message: sprintf('The task name "%s" is not valid.', $name));
-        }
+        $name = htmlspecialchars(string: $name, flags: ENT_QUOTES, encoding: 'UTF-8');
 
         try {
             $failedTasks = $this->worker->getFailedTasks();
