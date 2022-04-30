@@ -38,6 +38,8 @@ final class TaskLockBagMiddleware implements PreExecutionMiddlewareInterface, Po
     {
         $key = self::createKey(task: $task);
 
+        dump($task);
+
         $lock = $this->lockFactory->createLockFromKey(key: $key, ttl: null, autoRelease: false);
         if (!$lock->acquire()) {
             $this->logger->warning(message: sprintf('The lock related to the task "%s" cannot be acquired', $task->getName()));
