@@ -7,6 +7,8 @@ namespace SchedulerBundle\Test\Constraint\Probe;
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Probe\ProbeInterface;
 
+use SchedulerBundle\SchedulerInterface;
+use Throwable;
 use function sprintf;
 
 /**
@@ -28,9 +30,15 @@ final class ProbeScheduledTask extends Constraint
 
     /**
      * @param mixed|ProbeInterface $other
+     *
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     protected function matches($other): bool
     {
+        if (!$other instanceof ProbeInterface) {
+            return false;
+        }
+
         return $this->expectedCount === $other->getScheduledTasks();
     }
 }
