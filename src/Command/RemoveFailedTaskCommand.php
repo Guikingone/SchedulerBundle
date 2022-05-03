@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -26,8 +29,10 @@ final class RemoveFailedTaskCommand extends Command
      */
     protected static $defaultName = 'scheduler:remove:failed';
 
-    public function __construct(private SchedulerInterface $scheduler, private WorkerInterface $worker)
-    {
+    public function __construct(
+        private SchedulerInterface $scheduler,
+        private WorkerInterface $worker
+    ) {
         parent::__construct();
     }
 
@@ -37,12 +42,13 @@ final class RemoveFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Remove given task from the scheduler')
+            ->setDescription(description: 'Remove given task from the scheduler')
             ->setDefinition([
-                new InputArgument('name', InputArgument::REQUIRED, 'The name of the task to remove'),
-                new InputOption('force', 'f', InputOption::VALUE_NONE, 'Force the operation without confirmation'),
+                new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'The name of the task to remove'),
+                new InputOption(name: 'force', shortcut: 'f', mode: InputOption::VALUE_NONE, description: 'Force the operation without confirmation'),
             ])
             ->setHelp(
+                help:
                 <<<'EOF'
                     The <info>%command.name%</info> command remove a failed task.
 
@@ -61,26 +67,38 @@ final class RemoveFailedTaskCommand extends Command
     /**
      * {@inheritdoc}
      */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestArgumentValuesFor(argumentName: 'name')) {
+            $failedTasks = $this->worker->getFailedTasks();
+
+            $suggestions->suggestValues(values: $failedTasks->map(func: static fn (TaskInterface $task): string => $task->getName()));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
 
-        $name = $input->getArgument('name');
-        $force = $input->getOption('force');
+        $name = $input->getArgument(name: 'name');
+        $force = $input->getOption(name: 'force');
 
         try {
-            $toRemoveTask = $this->worker->getFailedTasks()->get($name);
+            $toRemoveTask = $this->worker->getFailedTasks()->get(taskName: $name);
         } catch (InvalidArgumentException) {
-            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
+            $symfonyStyle->error(message: sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
 
-        if (true === $force || $symfonyStyle->confirm('Do you want to permanently remove this task?', false)) {
+        if (true === $force || $symfonyStyle->confirm(question: 'Do you want to permanently remove this task?', default: false)) {
             try {
-                $this->scheduler->unschedule($toRemoveTask->getName());
+                $this->scheduler->unschedule(taskName: $toRemoveTask->getName());
             } catch (Throwable $throwable) {
-                $symfonyStyle->error([
+                $symfonyStyle->error(message: [
                     'An error occurred when trying to unschedule the task:',
                     $throwable->getMessage(),
                 ]);
@@ -88,12 +106,12 @@ final class RemoveFailedTaskCommand extends Command
                 return self::FAILURE;
             }
 
-            $symfonyStyle->success(sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
+            $symfonyStyle->success(message: sprintf('The task "%s" has been unscheduled', $toRemoveTask->getName()));
 
             return self::SUCCESS;
         }
 
-        $symfonyStyle->note(sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
+        $symfonyStyle->note(message: sprintf('The task "%s" has not been unscheduled', $toRemoveTask->getName()));
 
         return self::FAILURE;
     }

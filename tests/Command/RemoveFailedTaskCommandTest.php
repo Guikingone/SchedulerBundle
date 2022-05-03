@@ -6,25 +6,39 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class RemoveFailedTaskCommandTest extends TestCase
 {
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
     public function testCommandIsConfigured(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $worker = $this->createMock(WorkerInterface::class);
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
 
-        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+        $worker = $this->createMock(originalClassName: WorkerInterface::class);
+
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand(scheduler: $scheduler, worker: $worker);
 
         self::assertSame('scheduler:remove:failed', $removeFailedTaskCommand->getName());
         self::assertSame('Remove given task from the scheduler', $removeFailedTaskCommand->getDescription());
@@ -48,6 +62,29 @@ final class RemoveFailedTaskCommandTest extends TestCase
                     <info>php %command.full_name% <task-name> --force</info>
                 EOF
         );
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     */
+    public function testCommandCanSuggestFailedTasks(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+
+        $worker = $this->createMock(originalClassName: WorkerInterface::class);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+
+        $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
+
+        $tester = new CommandCompletionTester($removeFailedTaskCommand);
+        $suggestions = $tester->complete(['f', 'b']);
+
+        self::assertSame(['foo', 'bar'], $suggestions);
     }
 
     public function testCommandCannotRemoveUndefinedTask(): void
