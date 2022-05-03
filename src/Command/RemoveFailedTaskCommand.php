@@ -9,6 +9,7 @@ use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
+use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -72,7 +73,7 @@ final class RemoveFailedTaskCommand extends Command
         if ($input->mustSuggestArgumentValuesFor(argumentName: 'name')) {
             $failedTasks = $this->worker->getFailedTasks();
 
-            $suggestions->suggestValues(values: $failedTasks->map(func: static fn (TaskInterface $task): string => $task->getName()));
+            $failedTasks->walk(func: static fn (TaskInterface $task) => $suggestions->suggestValue(value: new Suggestion(value: $task->getName())));
         }
     }
 

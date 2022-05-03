@@ -11,9 +11,11 @@ use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -50,6 +52,22 @@ final class RetryFailedTaskCommandTest extends TestCase
                     <info>php %command.full_name% <task-name> --force</info>
                 EOF
         );
+    }
+
+    public function testCommandCanSuggestFailedTasks(): void
+    {
+        $worker = $this->createMock(originalClassName: WorkerInterface::class);
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList(tasks: [
+            new NullTask('foo'),
+            new NullTask('bar'),
+        ]));
+
+        $removeFailedTaskCommand = new RetryFailedTaskCommand(worker: $worker, eventDispatcher: new EventDispatcher());
+
+        $tester = new CommandCompletionTester($removeFailedTaskCommand);
+        $suggestions = $tester->complete(['f', 'b']);
+
+        self::assertSame(['foo', 'bar'], $suggestions);
     }
 
     public function testCommandCannotRetryUndefinedTask(): void

@@ -74,7 +74,7 @@ final class RemoveFailedTaskCommandTest extends TestCase
         ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
 
         $worker = $this->createMock(originalClassName: WorkerInterface::class);
-        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
+        $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList(tasks: [
             new NullTask('foo'),
             new NullTask('bar'),
         ]));
