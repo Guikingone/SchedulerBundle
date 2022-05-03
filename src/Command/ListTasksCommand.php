@@ -7,6 +7,9 @@ namespace SchedulerBundle\Command;
 use Cron\CronExpression;
 use SchedulerBundle\Task\ChainedTask;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
+use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,6 +19,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use ReflectionClass;
+use Throwable;
+use function array_unique;
+use function array_walk;
 use function implode;
 use function sprintf;
 use const DATE_ATOM;
@@ -44,12 +50,13 @@ final class ListTasksCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('List the tasks')
+            ->setDescription(description: 'List the tasks')
             ->setDefinition([
-                new InputOption('expression', null, InputOption::VALUE_OPTIONAL, 'The expression of the tasks'),
-                new InputOption('state', 's', InputOption::VALUE_OPTIONAL, 'The state of the tasks'),
+                new InputOption(name: 'expression', shortcut: null, mode: InputOption::VALUE_OPTIONAL, description: 'The expression of the tasks'),
+                new InputOption(name: 'state', shortcut: 's', mode: InputOption::VALUE_OPTIONAL, description: 'The state of the tasks'),
             ])
             ->setHelp(
+                help:
                 <<<'EOF'
                     The <info>%command.name%</info> command list tasks.
 
@@ -70,65 +77,97 @@ final class ListTasksCommand extends Command
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $storedTasks = $this->scheduler->getTasks();
+
+        if ($input->mustSuggestOptionValuesFor(optionName: 'expression')) {
+            $expressionList = array_unique(array: $storedTasks->map(func: static fn (TaskInterface $task): string => $task->getExpression()));
+
+            array_walk(array: $expressionList, callback: static function (string $expression) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $expression));
+            });
+        }
+
+        if ($input->mustSuggestOptionValuesFor(optionName: 'state')) {
+            $stateList = array_unique(array: $storedTasks->map(func: static fn (TaskInterface $task): string => $task->getState()));
+
+            array_walk(array: $stateList, callback: static function (string $state) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $state));
+            });
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
 
         $tasks = $this->scheduler->getTasks();
         if (0 === $tasks->count()) {
-            $symfonyStyle->warning('No tasks found');
+            $symfonyStyle->warning(message: 'No tasks found');
 
             return self::SUCCESS;
         }
 
-        if (null !== $state = $input->getOption('state')) {
-            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => $state === $task->getState());
+        if (null !== $state = $input->getOption(name: 'state')) {
+            $tasks = $tasks->filter(filter: static fn (TaskInterface $task): bool => $state === $task->getState());
         }
 
-        if (null !== $expression = $input->getOption('expression')) {
-            $tasks = $tasks->filter(static fn (TaskInterface $task): bool => $expression === $task->getExpression());
+        if (null !== $expression = $input->getOption(name: 'expression')) {
+            $tasks = $tasks->filter(filter: static fn (TaskInterface $task): bool => $expression === $task->getExpression());
         }
 
         if (0 === $tasks->count()) {
-            $symfonyStyle->warning('No tasks found');
+            $symfonyStyle->warning(message: 'No tasks found');
 
             return self::SUCCESS;
         }
 
-        $symfonyStyle->success(sprintf('%d task%s found', $tasks->count(), $tasks->count() > 1 ? 's' : ''));
-        $table = new Table($output);
-        $table->setHeaders(['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
+        $symfonyStyle->success(message: sprintf('%d task%s found', $tasks->count(), $tasks->count() > 1 ? 's' : ''));
+        $table = new Table(output: $output);
+        $table->setHeaders(headers: ['Type', 'Name', 'Description', 'Expression',  'Last execution date', 'Next execution date', 'Last execution duration', 'Last execution memory usage', 'State', 'Tags']);
 
-        $tasks->walk(static function (TaskInterface $task) use ($table): void {
+        $tasks->walk(func: static function (TaskInterface $task) use ($table): void {
             $lastExecutionDate = $task->getLastExecution();
 
-            $table->addRow([
-                (new ReflectionClass($task))->getShortName(),
+            $table->addRow(row: [
+                (new ReflectionClass(objectOrClass: $task))->getShortName(),
                 $task->getName(),
                 $task->getDescription() ?? 'No description set',
                 $task->getExpression(),
-                null !== $lastExecutionDate ? $lastExecutionDate->format(DATE_ATOM) : 'Not executed',
-                (new CronExpression($task->getExpression()))->getNextRunDate()->format(DATE_ATOM),
-                null !== $task->getExecutionComputationTime() ? Helper::formatTime($task->getExecutionComputationTime() / 1000) : 'Not tracked',
-                0 !== $task->getExecutionMemoryUsage() ? Helper::formatMemory($task->getExecutionMemoryUsage()) : 'Not tracked',
+                null !== $lastExecutionDate ? $lastExecutionDate->format(format: DATE_ATOM) : 'Not executed',
+                (new CronExpression(expression: $task->getExpression()))->getNextRunDate()->format(format: DATE_ATOM),
+                null !== $task->getExecutionComputationTime() ? Helper::formatTime(secs: $task->getExecutionComputationTime() / 1000) : 'Not tracked',
+                0 !== $task->getExecutionMemoryUsage() ? Helper::formatMemory(memory: $task->getExecutionMemoryUsage()) : 'Not tracked',
                 $task->getState(),
-                implode(', ', $task->getTags()),
+                implode(separator: ', ', array: $task->getTags()),
             ]);
 
             if ($task instanceof ChainedTask) {
-                $table->addRows($task->getTasks()->map(static fn (TaskInterface $subTask): array => [
-                    '<info>          ></info>',
-                    $subTask->getName(),
-                    $subTask->getDescription() ?? 'No description set',
-                    '-',
-                    null !== $subTask->getLastExecution() ? $subTask->getLastExecution()->format(DATE_ATOM) : 'Not executed',
-                    (new CronExpression($subTask->getExpression()))->getNextRunDate()->format(DATE_ATOM),
-                    null !== $subTask->getExecutionComputationTime() ? Helper::formatTime($subTask->getExecutionComputationTime() / 1000) : 'Not tracked',
-                    0 !== $subTask->getExecutionMemoryUsage() ? Helper::formatMemory($subTask->getExecutionMemoryUsage()) : 'Not tracked',
-                    $subTask->getState(),
-                    implode(', ', $subTask->getTags()),
-                ]));
+                $subTasks = $task->getTasks();
+
+                $subTasks->walk(func: static function (TaskInterface $subTask) use ($table): void {
+                    $table->addRow(row: [
+                        '<info>          ></info>',
+                        $subTask->getName(),
+                        $subTask->getDescription() ?? 'No description set',
+                        '-',
+                        null !== $subTask->getLastExecution() ? $subTask->getLastExecution()->format(format: DATE_ATOM) : 'Not executed',
+                        (new CronExpression(expression: $subTask->getExpression()))->getNextRunDate()->format(format: DATE_ATOM),
+                        null !== $subTask->getExecutionComputationTime() ? Helper::formatTime(secs: $subTask->getExecutionComputationTime() / 1000) : 'Not tracked',
+                        0 !== $subTask->getExecutionMemoryUsage() ? Helper::formatMemory(memory: $subTask->getExecutionMemoryUsage()) : 'Not tracked',
+                        $subTask->getState(),
+                        implode(separator: ', ', array: $subTask->getTags()),
+                    ]);
+                });
             }
         });
 

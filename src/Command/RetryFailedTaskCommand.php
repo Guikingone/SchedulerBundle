@@ -82,7 +82,9 @@ final class RetryFailedTaskCommand extends Command
         if ($input->mustSuggestArgumentValuesFor(argumentName: 'name')) {
             $failedTasks = $this->worker->getFailedTasks();
 
-            $failedTasks->walk(func: static fn (TaskInterface $task) => $suggestions->suggestValue(value: new Suggestion(value: $task->getName())));
+            $failedTasks->walk(func: static function (TaskInterface $task) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $task->getName()));
+            });
         }
     }
 

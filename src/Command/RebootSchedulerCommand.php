@@ -55,7 +55,8 @@ final class RebootSchedulerCommand extends Command
                 new InputOption(name: 'dry-run', shortcut: 'd', mode: InputOption::VALUE_NONE, description: 'Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed'),
             ])
             ->setDescription(description: 'Reboot the scheduler')
-            ->setHelp(help:
+            ->setHelp(
+                help:
                 <<<'EOF'
                     The <info>%command.name%</info> command reboot the scheduler.
 

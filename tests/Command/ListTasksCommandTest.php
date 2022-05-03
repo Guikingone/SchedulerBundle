@@ -7,14 +7,23 @@ namespace Tests\SchedulerBundle\Command;
 use DateTimeImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -23,8 +32,8 @@ final class ListTasksCommandTest extends TestCase
 {
     public function testCommandIsCorrectlyConfigured(): void
     {
-        $schedulerRegistry = $this->createMock(SchedulerInterface::class);
-        $listTasksCommand = new ListTasksCommand($schedulerRegistry);
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $listTasksCommand = new ListTasksCommand(scheduler: $scheduler);
 
         self::assertSame('scheduler:list', $listTasksCommand->getName());
         self::assertSame('List the tasks', $listTasksCommand->getDescription());
@@ -53,18 +62,64 @@ final class ListTasksCommandTest extends TestCase
         );
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasksPerExpression(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
+        $scheduler->schedule(task: new NullTask(name: 'bar'));
+
+        $tester = new CommandCompletionTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $suggestions = $tester->complete(input: [
+            '--expression',
+            '* * * * *',
+        ]);
+
+        self::assertCount(1, $suggestions);
+        self::assertSame(expected: ['* * * * *'], actual: $suggestions);
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasksPerState(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
+        $scheduler->schedule(task: new NullTask(name: 'bar'));
+
+        $tester = new CommandCompletionTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $suggestions = $tester->complete(input: [
+            '--state',
+            'en',
+        ]);
+
+        self::assertCount(1, $suggestions);
+        self::assertSame(expected: ['enabled'], actual: $suggestions);
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCannotReturnTaskOnEmptyScheduler(): void
     {
-        $taskList = new TaskList();
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
 
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn($taskList);
+        $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $commandTester->execute(input: []);
 
-        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
-        $commandTester->execute([]);
-
-        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
+        self::assertSame(expected: Command::SUCCESS, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[WARNING] No tasks found', haystack: $commandTester->getDisplay());
     }
 
     public function testCommandCannotReturnTaskOnEmptyTaskList(): void
@@ -380,21 +435,25 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanReturnTasksWithInvalidStateAndExpressionFilter(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             '--expression' => '0 * * * *',
             '--state' => 'started',
         ]);
 
-        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-        self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
+        self::assertSame(expected: Command::SUCCESS, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[WARNING] No tasks found', haystack: $commandTester->getDisplay());
     }
 
     /**

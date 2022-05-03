@@ -74,7 +74,9 @@ final class YieldTaskCommand extends Command
         if ($input->mustSuggestArgumentValuesFor(argumentName: 'name')) {
             $storedTasks = $this->scheduler->getTasks();
 
-            $storedTasks->walk(func: static fn (TaskInterface $task) => $suggestions->suggestValue(value: new Suggestion(value: $task->getName())));
+            $storedTasks->walk(func: static function (TaskInterface $task) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $task->getName()));
+            });
         }
     }
 
