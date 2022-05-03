@@ -19,7 +19,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function array_map;
+use Throwable;
 use function implode;
 
 /**
@@ -52,10 +52,10 @@ final class RebootSchedulerCommand extends Command
     {
         $this
             ->setDefinition([
-                new InputOption('dry-run', 'd', InputOption::VALUE_NONE, 'Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed'),
+                new InputOption(name: 'dry-run', shortcut: 'd', mode: InputOption::VALUE_NONE, description: 'Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed'),
             ])
-            ->setDescription('Reboot the scheduler')
-            ->setHelp(
+            ->setDescription(description: 'Reboot the scheduler')
+            ->setHelp(help:
                 <<<'EOF'
                     The <info>%command.name%</info> command reboot the scheduler.
 
@@ -70,20 +70,23 @@ final class RebootSchedulerCommand extends Command
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Throwable {@see SchedulerInterface::reboot()}
+     * @throws Throwable {@see WorkerInterface::execute()}
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
-        $tasks = $this->scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
+        $toRebootTasks = $this->scheduler->getTasks()->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
-        $table = new Table($output);
-        $table->setHeaders(['Name', 'Type', 'State', 'Tags']);
+        $table = new Table(output: $output);
+        $table->setHeaders(headers: ['Name', 'Type', 'State', 'Tags']);
 
-        $dryRun = $input->getOption('dry-run');
+        $dryRun = $input->getOption(name: 'dry-run');
 
         if (true === $dryRun) {
-            if (0 === $tasks->count()) {
-                $symfonyStyle->warning([
+            if (0 === $toRebootTasks->count()) {
+                $symfonyStyle->warning(message: [
                     'The scheduler does not contain any tasks',
                     'Be sure that the tasks use the "@reboot" expression',
                 ]);
@@ -91,14 +94,16 @@ final class RebootSchedulerCommand extends Command
                 return self::SUCCESS;
             }
 
-            $table->addRows(array_map(static fn (TaskInterface $task): array => [
-                $task->getName(),
-                $task::class,
-                $task->getState(),
-                implode(', ', $task->getTags()),
-            ], $tasks->toArray()));
+            $toRebootTasks->walk(func: static function (TaskInterface $task) use ($table): void {
+                $table->addRow(row: [
+                    $task->getName(),
+                    $task::class,
+                    $task->getState(),
+                    implode(separator: ', ', array: $task->getTags()),
+                ]);
+            });
 
-            $symfonyStyle->success('The following tasks will be executed when the scheduler will reboot:');
+            $symfonyStyle->success(message: 'The following tasks will be executed when the scheduler will reboot:');
             $table->render();
 
             return self::SUCCESS;
@@ -106,34 +111,36 @@ final class RebootSchedulerCommand extends Command
 
         $this->scheduler->reboot();
 
-        if (0 === $tasks->count()) {
-            $symfonyStyle->success('The scheduler have been rebooted, no tasks have been executed');
+        if (0 === $toRebootTasks->count()) {
+            $symfonyStyle->success(message: 'The scheduler have been rebooted, no tasks have been executed');
 
             return self::SUCCESS;
         }
 
         while ($this->worker->isRunning()) {
-            $symfonyStyle->warning([
+            $symfonyStyle->warning(message: [
                 'The scheduler cannot be rebooted as the worker is not available,',
                 'The process will be retried as soon as the worker is available',
             ]);
         }
 
-        $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber($tasks->count(), $this->logger));
+        $this->eventDispatcher->addSubscriber(subscriber: new StopWorkerOnTaskLimitSubscriber(maximumTasks: $toRebootTasks->count(), logger: $this->logger));
 
         $this->worker->execute(
             WorkerConfiguration::create(),
-            ...$tasks->toArray(false)
+            ...$toRebootTasks->toArray(keepKeys: false)
         );
 
-        $symfonyStyle->success('The scheduler have been rebooted, the following tasks have been executed');
+        $symfonyStyle->success(message: 'The scheduler have been rebooted, the following tasks have been executed');
 
-        $table->addRows(array_map(static fn (TaskInterface $task): array => [
-            $task->getName(),
-            $task::class,
-            $task->getState(),
-            implode(', ', $task->getTags()),
-        ], $tasks->toArray()));
+        $toRebootTasks->walk(func: static function (TaskInterface $task) use ($table): void {
+            $table->addRow(row: [
+                $task->getName(),
+                $task::class,
+                $task->getState(),
+                implode(separator: ', ', array: $task->getTags()),
+            ]);
+        });
 
         $table->render();
 
