@@ -13,12 +13,19 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
+use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
+use function array_map;
+use function array_merge;
+use function array_values;
 use function array_walk;
+use function array_unique;
 use function count;
 use function implode;
 use function in_array;
@@ -80,6 +87,42 @@ final class ExecuteTaskCommand extends Command
                     EOF
             )
         ;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Throwable {@see SchedulerInterface::getTasks()}
+     */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $storedTasks = $this->scheduler->getTasks();
+
+        if ($input->mustSuggestOptionValuesFor(optionName: 'name')) {
+            $nameList = array_unique(array: $storedTasks->map(func: static fn (TaskInterface $task): string => $task->getName()));
+
+            array_walk(array: $nameList, callback: static function (string $name) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $name));
+            });
+        }
+
+        if ($input->mustSuggestOptionValuesFor(optionName: 'expression')) {
+            $expressionList = array_unique(array: $storedTasks->map(func: static fn (TaskInterface $task): string => $task->getExpression()));
+
+            array_walk(array: $expressionList, callback: static function (string $expression) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $expression));
+            });
+        }
+
+        if ($input->mustSuggestOptionValuesFor(optionName: 'tags')) {
+            $tags = $storedTasks->map(func: static fn (TaskInterface $task): array => $task->getTags());
+
+            $uniqueTags = array_unique(array: array_merge(...array_map(callback: 'array_values', array: array_values(array: $tags))));
+
+            array_walk(array: $uniqueTags, callback: static function (string $tag) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $tag));
+            });
+        }
     }
 
     /**

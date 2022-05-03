@@ -9,13 +9,21 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Throwable;
 
 /**
@@ -72,6 +80,73 @@ final class ExecuteTaskCommandTest extends TestCase
                     <info>php %command.full_name% --tags=foo, bar</info>
                 EOF
         );
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasksPerName(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
+        $scheduler->schedule(task: new NullTask(name: 'bar'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
+        $suggestions = $tester->complete(input: ['--name', 'f']);
+
+        self::assertCount(2, $suggestions);
+        self::assertSame(expected: ['foo', 'bar'], actual: $suggestions);
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasksPerExpression(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
+        $scheduler->schedule(task: new NullTask(name: 'bar'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
+        $suggestions = $tester->complete(input: ['--expression', '* * * * *']);
+
+        self::assertCount(1, $suggestions);
+        self::assertSame(expected: ['* * * * *'], actual: $suggestions);
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasksPerTag(): void
+    {
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        $scheduler->schedule(task: new NullTask(name: 'foo', options: [
+            'tags' => ['random'],
+        ]));
+        $scheduler->schedule(task: new NullTask(name: 'bar', options: [
+            'tags' => ['second_random'],
+        ]));
+
+        $worker = $this->createMock(WorkerInterface::class);
+
+        $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
+        $suggestions = $tester->complete(input: ['--tags', 'random']);
+
+        self::assertCount(2, $suggestions);
+        self::assertSame(expected: ['random', 'second_random'], actual: $suggestions);
     }
 
     public function testCommandCannotExecuteDueTasks(): void
