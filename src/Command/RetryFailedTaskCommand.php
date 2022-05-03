@@ -7,8 +7,12 @@ namespace SchedulerBundle\Command;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
+use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -48,12 +52,13 @@ final class RetryFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Retries one or more tasks from the failed tasks')
+            ->setDescription(description: 'Retries one or more tasks from the failed tasks')
             ->setDefinition([
-                new InputArgument('name', InputArgument::REQUIRED, 'Specific task name(s) to retry'),
-                new InputOption('force', 'f', InputOption::VALUE_NONE, 'Force the operation without confirmation'),
+                new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'Specific task name(s) to retry'),
+                new InputOption(name: 'force', shortcut: 'f', mode: InputOption::VALUE_NONE, description: 'Force the operation without confirmation'),
             ])
             ->setHelp(
+                help:
                 <<<'EOF'
                     The <info>%command.name%</info> command retry a failed task.
 
@@ -72,28 +77,42 @@ final class RetryFailedTaskCommand extends Command
     /**
      * {@inheritdoc}
      */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestArgumentValuesFor(argumentName: 'name')) {
+            $failedTasks = $this->worker->getFailedTasks();
+
+            $failedTasks->walk(func: static function (TaskInterface $task) use ($suggestions): void {
+                $suggestions->suggestValue(value: new Suggestion(value: $task->getName()));
+            });
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
 
-        $name = $input->getArgument('name');
-        $force = $input->getOption('force');
+        $name = $input->getArgument(name: 'name');
+        $force = $input->getOption(name: 'force');
 
         try {
-            $task = $this->worker->getFailedTasks()->get($name);
+            $task = $this->worker->getFailedTasks()->get(taskName: $name);
         } catch (InvalidArgumentException) {
-            $symfonyStyle->error(sprintf('The task "%s" does not fails', $name));
+            $symfonyStyle->error(message: sprintf('The task "%s" does not fails', $name));
 
             return self::FAILURE;
         }
 
-        if (true === $force || $symfonyStyle->confirm('Do you want to retry this task?', false)) {
-            $this->eventDispatcher->dispatch(new StopWorkerOnTaskLimitSubscriber(1, $this->logger));
+        if (true === $force || $symfonyStyle->confirm(question: 'Do you want to retry this task?', default: false)) {
+            $this->eventDispatcher->dispatch(event: new StopWorkerOnTaskLimitSubscriber(maximumTasks: 1, logger: $this->logger));
 
             try {
-                $this->worker->execute(WorkerConfiguration::create(), $task);
+                $this->worker->execute(configuration: WorkerConfiguration::create(), tasks: $task);
             } catch (Throwable $throwable) {
-                $symfonyStyle->error([
+                $symfonyStyle->error(message: [
                     'An error occurred when trying to retry the task:',
                     $throwable->getMessage(),
                 ]);
@@ -101,12 +120,12 @@ final class RetryFailedTaskCommand extends Command
                 return self::FAILURE;
             }
 
-            $symfonyStyle->success(sprintf('The task "%s" has been retried', $task->getName()));
+            $symfonyStyle->success(message: sprintf('The task "%s" has been retried', $task->getName()));
 
             return self::SUCCESS;
         }
 
-        $symfonyStyle->warning(sprintf('The task "%s" has not been retried', $task->getName()));
+        $symfonyStyle->warning(message: sprintf('The task "%s" has not been retried', $task->getName()));
 
         return self::FAILURE;
     }

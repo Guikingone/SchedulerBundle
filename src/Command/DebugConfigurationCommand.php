@@ -30,8 +30,9 @@ final class DebugConfigurationCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Display the current transport configuration keys and values')
+            ->setDescription(description: 'Display the current transport configuration keys and values')
             ->setHelp(
+                help:
                 <<<'EOF'
                     The <info>%command.name%</info> command display the current configuration.
 
@@ -46,14 +47,14 @@ final class DebugConfigurationCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $style = new SymfonyStyle($input, $output);
+        $style = new SymfonyStyle(input: $input, output: $output);
 
-        $style->info(sprintf('Found %d keys', $this->configuration->count()));
+        $style->info(message: sprintf('Found %d keys', $this->configuration->count()));
 
-        $table = new Table($output);
-        $table->setHeaders(['Key', 'Value']);
-        $this->configuration->walk(static function ($value, string $key) use ($table): void {
-            $table->addRow([$key, $value]);
+        $table = new Table(output: $output);
+        $table->setHeaders(headers: ['Key', 'Value']);
+        $this->configuration->walk(func: static function (string|bool|float|int $value, string $key) use ($table): void {
+            $table->addRow(row: [$key, $value]);
         });
 
         $table->render();

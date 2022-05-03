@@ -36,7 +36,7 @@ final class ListFailedTasksCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('List all the failed tasks')
+            ->setDescription(description: 'List all the failed tasks')
         ;
     }
 
@@ -45,21 +45,28 @@ final class ListFailedTasksCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
 
         $failedTasksList = $this->worker->getFailedTasks();
         if (0 === $failedTasksList->count()) {
-            $symfonyStyle->warning('No failed task has been found');
+            $symfonyStyle->warning(message: 'No failed task has been found');
 
             return self::SUCCESS;
         }
 
-        $table = new Table($output);
-        $table->setHeaders(['Name', 'Expression', 'Reason', 'Date']);
+        $table = new Table(output: $output);
+        $table->setHeaders(headers: ['Name', 'Expression', 'Reason', 'Date']);
 
-        $table->addRows($failedTasksList->map(static fn (FailedTask $task): array => [$task->getName(), $task->getTask()->getExpression(), $task->getReason(), $task->getFailedAt()->format(DATE_ATOM)]));
+        $failedTasksList->walk(func: static function (FailedTask $task) use ($table): void {
+            $table->addRow(row: [
+                $task->getName(),
+                $task->getTask()->getExpression(),
+                $task->getReason(),
+                $task->getFailedAt()->format(DATE_ATOM),
+            ]);
+        });
 
-        $symfonyStyle->success(sprintf('%d task%s found', count($failedTasksList), count($failedTasksList) > 1 ? 's' : ''));
+        $symfonyStyle->success(message: sprintf('%d task%s found', count(value: $failedTasksList), count(value: $failedTasksList) > 1 ? 's' : ''));
         $table->render();
 
         return self::SUCCESS;

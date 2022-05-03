@@ -6,9 +6,19 @@ namespace Tests\SchedulerBundle\Command;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Command\YieldTaskCommand;
+use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
+use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
+use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -49,6 +59,24 @@ final class YieldTaskCommandTest extends TestCase
                     <info>php %command.full_name% <name> --force</info>
                 EOF
         );
+    }
+
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
+    public function testCommandCanSuggestStoredTasks(): void
+    {
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('foo'));
+        $scheduler->schedule(new NullTask('bar'));
+
+        $tester = new CommandCompletionTester(new YieldTaskCommand($scheduler));
+        $suggestions = $tester->complete(['f', 'b']);
+
+        self::assertSame(['foo', 'bar'], $suggestions);
     }
 
     public function testCommandCannotYieldWithoutConfirmationOrForceOption(): void

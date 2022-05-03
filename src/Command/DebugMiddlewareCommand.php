@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use ReflectionClass;
-use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\OrderedMiddlewareInterface;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
@@ -34,8 +33,8 @@ final class DebugMiddlewareCommand extends Command
     protected static $defaultName = 'scheduler:debug:middleware';
 
     public function __construct(
-        private SchedulerMiddlewareStackInterface|MiddlewareStackInterface $schedulerMiddlewareStack,
-        private WorkerMiddlewareStackInterface|MiddlewareStackInterface $workerMiddlewareStack
+        private SchedulerMiddlewareStackInterface $schedulerMiddlewareStack,
+        private WorkerMiddlewareStackInterface $workerMiddlewareStack
     ) {
         parent::__construct();
     }
