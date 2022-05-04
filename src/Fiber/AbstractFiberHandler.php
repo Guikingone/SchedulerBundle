@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace SchedulerBundle\Fiber;
 
 use Closure;
+use DateTimeZone;
 use Fiber;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use Throwable;
 
 use function sprintf;
@@ -24,7 +31,7 @@ abstract class AbstractFiberHandler
         $this->logger = $logger ?? new NullLogger();
     }
 
-    protected function handleOperationViaFiber(Closure $func): mixed
+    protected function handleOperationViaFiber(Closure $func): TaskListInterface|LazyTaskList|TaskInterface|LazyTask|SchedulerConfiguration|ConfigurationInterface|DateTimeZone|string|float|int|bool|array|null
     {
         $fiber = new Fiber(callback: function (Closure $operation): void {
             $value = $operation();
