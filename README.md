@@ -8,7 +8,6 @@
     <img src="https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FGuikingone%2FSchedulerBundle%2Fmain" alt="Infection score" />
     <img src="https://img.shields.io/github/license/Guikingone/SchedulerBundle?style=flat" alt="License" />
     <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FGuikingone%2FSchedulerBundle.svg?type=shield" alt="fossa" />
-</div>
     <br><br>Daily runs<br>
     <table>
         <tr>
