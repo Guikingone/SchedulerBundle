@@ -209,7 +209,7 @@ final class TaskList implements TaskListInterface
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset): ?TaskInterface
+    public function offsetGet($offset): TaskInterface|LazyTask
     {
         if (!is_string(value: $offset)) {
             throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));

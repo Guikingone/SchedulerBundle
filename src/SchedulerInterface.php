@@ -9,6 +9,7 @@ use DateTimeZone;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
@@ -81,16 +82,18 @@ interface SchedulerInterface
     public function getTasks(bool $lazy = false): TaskListInterface|LazyTaskList;
 
     /**
-     * Allow to retrieve every due tasks, the logic used to build the TaskList is own to the scheduler.
+     * Allow to retrieve every due tasks, the logic used to build the TaskList its own to the scheduler.
      *
      * If the @param bool $lazy is used, the tasks are lazy-loaded.
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
      *
-     * @return TaskListInterface<string|int, TaskInterface>|LazyTaskList<string|int, TaskInterface>
+     * By default, a {@see LockedTaskList} is returned.
+     *
+     * @return TaskListInterface<string|int, TaskInterface|LazyTask>|LazyTaskList<string|int, TaskInterface|LazyTask>|LockedTaskList<string|int, TaskInterface|LazyTask>
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList;
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList|LockedTaskList;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})

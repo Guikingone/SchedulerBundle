@@ -25,6 +25,8 @@ use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\RunnerRegistryInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\FailedTask;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskExecutionTrackerInterface;
 use SchedulerBundle\Task\TaskInterface;
@@ -78,7 +80,7 @@ final class Worker implements WorkerInterface
         try {
             $executionPolicy = $this->executionPolicyRegistry->find(policy: $configuration->getExecutionPolicy());
         } catch (Throwable $throwable) {
-            $this->logger->critical(sprintf('The tasks cannot be executed, an error occurred while retrieving the execution policy: %s', $throwable->getMessage()));
+            $this->logger->critical(message: sprintf('The tasks cannot be executed, an error occurred while retrieving the execution policy: %s', $throwable->getMessage()));
 
             return;
         }
@@ -92,6 +94,9 @@ final class Worker implements WorkerInterface
             $executionPolicy->execute(toExecuteTasks: $toExecuteTasks, handleTaskFunc: function (TaskInterface $task, TaskListInterface $taskList): void {
                 $this->handleTask(task: $task, taskList: $taskList);
             });
+
+            $postExecutionLock = $this->lockFactory->createLockFromKey(key: $toExecuteTasks->getKey());
+            $postExecutionLock->release();
 
             if ($this->shouldStop(taskList: $toExecuteTasks)) {
                 break;
@@ -118,7 +123,7 @@ final class Worker implements WorkerInterface
             $lock = $this->lockFactory->createLockFromKey(
                 key: $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
                 ? $accessLockBag->getKey()
-                : TaskLockBagMiddleware::createKey($task)
+                : TaskLockBagMiddleware::createKey(task: $task)
             );
 
             $lock->release();
@@ -241,7 +246,7 @@ final class Worker implements WorkerInterface
      *
      * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
-    protected function getTasks(array $tasks): TaskListInterface
+    protected function getTasks(array $tasks): TaskListInterface|LazyTaskList|LockedTaskList
     {
         $tasks = [] !== $tasks ? new TaskList(tasks: $tasks) : $this->scheduler->getDueTasks(
             lazy: $this->configuration->shouldRetrieveTasksLazily(),
@@ -324,7 +329,7 @@ final class Worker implements WorkerInterface
         }
 
         if (in_array(needle: $task->getState(), haystack: [TaskInterface::PAUSED, TaskInterface::DISABLED], strict: true)) {
-            $this->logger->info(sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), [
+            $this->logger->info(message: sprintf('The following task "%s" is paused|disabled, consider enable it if it should be executed!', $task->getName()), context: [
                 'name' => $task->getName(),
                 'expression' => $task->getExpression(),
                 'state' => $task->getState(),
@@ -342,7 +347,7 @@ final class Worker implements WorkerInterface
     private function getSleepDuration(): int
     {
         $dateTimeImmutable = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $dateTimeImmutable->setTime(hour: (int) $dateTimeImmutable->format('H'), minute: (int) $dateTimeImmutable->format('i'));
+        $updatedNextExecutionDate = $dateTimeImmutable->setTime(hour: (int) $dateTimeImmutable->format(format: 'H'), minute: (int) $dateTimeImmutable->format(format: 'i'));
 
         return (new DateTimeImmutable(datetime: 'now', timezone: $this->scheduler->getTimezone()))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }

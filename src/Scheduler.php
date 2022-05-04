@@ -10,6 +10,8 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
@@ -19,8 +21,11 @@ use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Lock\Key;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -48,12 +53,15 @@ final class Scheduler implements SchedulerInterface
 
     /**
      * @throws Exception {@see DateTimeImmutable::__construct()}
+     * @throws Exception {@see DateInterval::__construct()}
      */
     public function __construct(
         string $timezone,
         private TransportInterface $transport,
         private SchedulerMiddlewareStack $middlewareStack,
         private EventDispatcherInterface $eventDispatcher,
+        private LockFactory $lockFactory,
+        private ?LoggerInterface $logger = null,
         private ?MessageBusInterface $bus = null
     ) {
         $this->timezone = new DateTimeZone(timezone: $timezone);
@@ -61,6 +69,8 @@ final class Scheduler implements SchedulerInterface
 
         $this->minSynchronizationDelay = new DateInterval(duration: 'PT1S');
         $this->maxSynchronizationDelay = new DateInterval(duration: 'P1D');
+
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -188,7 +198,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
+    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
@@ -211,7 +221,7 @@ final class Scheduler implements SchedulerInterface
             return $lastExecution->format(format: 'Y-m-d h:i') !== $synchronizedCurrentDate->format(format: 'Y-m-d h:i');
         });
 
-        return $dueTasks->filter(filter: static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
+        $filteredTasks = $dueTasks->filter(filter: static function (TaskInterface $task) use ($synchronizedCurrentDate): bool {
             $executionStartDate = $task->getExecutionStartDate();
             $executionEndDate = $task->getExecutionEndDate();
 
@@ -241,6 +251,17 @@ final class Scheduler implements SchedulerInterface
 
             return true;
         });
+
+        $key = new Key($synchronizedCurrentDate->format(format: 'Y_m_d_h_i'));
+
+        $lock = $this->lockFactory->createLockFromKey(key: $key, autoRelease: false);
+        if (!$lock->acquire()) {
+            $this->logger->critical(message: 'The current task list is already acquired.');
+
+            return $lazy ? new LazyTaskList(sourceList: new TaskList()) : new TaskList();
+        }
+
+        return new LockedTaskList(key: $key, sourceList: $filteredTasks);
     }
 
     /**
@@ -261,7 +282,7 @@ final class Scheduler implements SchedulerInterface
         }
 
         return $lazy
-            ? new LazyTask(name: $nextTask->getName(), sourceTaskClosure: Closure::bind(fn (): TaskInterface => $nextTask, $this))
+            ? new LazyTask(name: $nextTask->getName(), sourceTaskClosure: Closure::bind(closure: fn (): TaskInterface => $nextTask, newThis: $this))
             : $nextTask
         ;
     }
@@ -297,7 +318,7 @@ final class Scheduler implements SchedulerInterface
     {
         $dueTasks = $this->getDueTasks();
 
-        return new SchedulerConfiguration($this->timezone, $this->getSynchronizedCurrentDate(), ...$dueTasks->toArray(false));
+        return new SchedulerConfiguration($this->timezone, $this->getSynchronizedCurrentDate(), ...$dueTasks->toArray(keepKeys: false));
     }
 
     /**
