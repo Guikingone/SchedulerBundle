@@ -1,4 +1,5 @@
 ![SchedulerBundleHero](assets/SchedulerBundle.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGuikingone%2FSchedulerBundle.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FGuikingone%2FSchedulerBundle?ref=badge_shield)
 
 <div align="center">
     <img src="https://img.shields.io/packagist/v/guikingone/scheduler-bundle?style=flat" alt="Current bundle version" />
@@ -29,6 +30,9 @@
 </div>
 
 <h4 align="center">A Symfony bundle built to schedule/consume repetitive tasks</h4>
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGuikingone%2FSchedulerBundle.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FGuikingone%2FSchedulerBundle?ref=badge_large)
 
 ## Main features
 
