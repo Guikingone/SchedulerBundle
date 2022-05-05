@@ -95,8 +95,10 @@ final class Worker implements WorkerInterface
                 $this->handleTask(task: $task, taskList: $taskList);
             });
 
-            $postExecutionLock = $this->lockFactory->createLockFromKey(key: $toExecuteTasks->getKey());
-            $postExecutionLock->release();
+            if ($toExecuteTasks instanceof LockedTaskList) {
+                $postExecutionLock = $this->lockFactory->createLockFromKey(key: $toExecuteTasks->getKey());
+                $postExecutionLock->release();
+            }
 
             if ($this->shouldStop(taskList: $toExecuteTasks)) {
                 break;

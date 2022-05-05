@@ -87,7 +87,7 @@ interface SchedulerInterface
      * If the @param bool $lazy is used, the tasks are lazy-loaded.
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
      *
-     * By default, a {@see LockedTaskList} is returned.
+     * By default, a {@see LockedTaskList} is returned, if the list cannot be locked, an empty list is returned.
      *
      * @return TaskListInterface<string|int, TaskInterface|LazyTask>|LazyTaskList<string|int, TaskInterface|LazyTask>|LockedTaskList<string|int, TaskInterface|LazyTask>
      *

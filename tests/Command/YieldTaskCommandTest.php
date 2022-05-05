@@ -18,6 +18,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Throwable;
 
 /**
@@ -25,11 +27,14 @@ use Throwable;
  */
 final class YieldTaskCommandTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandIsConfigured(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-
-        $yieldTaskCommand = new YieldTaskCommand($scheduler);
+        $yieldTaskCommand = new YieldTaskCommand(scheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())));
 
         self::assertSame('scheduler:yield', $yieldTaskCommand->getName());
         self::assertSame('Yield a task', $yieldTaskCommand->getDescription());
@@ -67,9 +72,9 @@ final class YieldTaskCommandTest extends TestCase
      */
     public function testCommandCanSuggestStoredTasks(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
 
@@ -79,10 +84,14 @@ final class YieldTaskCommandTest extends TestCase
         self::assertSame(['foo', 'bar'], $suggestions);
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCannotYieldWithoutConfirmationOrForceOption(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('yieldTask');
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
         $commandTester->execute([
@@ -93,10 +102,14 @@ final class YieldTaskCommandTest extends TestCase
         self::assertStringContainsString('[WARNING] The task "foo" has not been yielded', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCanYieldWithConfirmation(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(false));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
         $commandTester->setInputs(['yes']);
@@ -108,10 +121,14 @@ final class YieldTaskCommandTest extends TestCase
         self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCanYieldWithForceOption(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(false));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
         $commandTester->execute([
@@ -123,10 +140,14 @@ final class YieldTaskCommandTest extends TestCase
         self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCanYieldUsingAsyncOption(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('yieldTask')->with(self::equalTo('foo'), self::equalTo(true));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
         $commandTester->execute([

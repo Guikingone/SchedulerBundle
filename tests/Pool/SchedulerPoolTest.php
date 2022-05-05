@@ -14,42 +14,51 @@ use SchedulerBundle\Scheduler;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class SchedulerPoolTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testPoolCanAddScheduler(): void
     {
         $pool = new SchedulerPool();
 
         self::assertCount(0, $pool);
 
-        $pool->add('https://127.0.0.1:9090', new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+        $pool->add(endpoint: 'https://127.0.0.1:9090', scheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(options: [
             'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
+        ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())));
 
         self::assertCount(1, $pool);
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testPoolCanAddSchedulerAndReturnIt(): void
     {
         $pool = new SchedulerPool();
 
         self::assertCount(0, $pool);
 
-        $pool->add('https://127.0.0.1:9090', new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+        $pool->add(endpoint: 'https://127.0.0.1:9090', scheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(options: [
             'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
+        ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())));
 
         self::assertCount(1, $pool);
 
-        $scheduler = $pool->get('https://127.0.0.1:9090');
+        $scheduler = $pool->get(endpoint: 'https://127.0.0.1:9090');
         self::assertCount(0, $scheduler->getTasks());
     }
 }

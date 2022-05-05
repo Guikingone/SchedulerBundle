@@ -21,6 +21,9 @@ use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -34,7 +37,7 @@ final class RemoveFailedTaskCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $worker = $this->createMock(originalClassName: WorkerInterface::class);
 
@@ -71,7 +74,7 @@ final class RemoveFailedTaskCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $worker = $this->createMock(originalClassName: WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList(tasks: [
@@ -87,9 +90,14 @@ final class RemoveFailedTaskCommandTest extends TestCase
         self::assertSame(['foo', 'bar'], $suggestions);
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCannotRemoveUndefinedTask(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList());
@@ -126,10 +134,18 @@ final class RemoveFailedTaskCommandTest extends TestCase
         self::assertStringContainsString('Random error', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCannotRemoveWithoutConfirmationOrForceOption(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::never())->method('unschedule');
+        $task = new NullTask('foo');
+
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule($task);
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
@@ -146,14 +162,22 @@ final class RemoveFailedTaskCommandTest extends TestCase
         self::assertStringContainsString('[NOTE] The task "foo" has not been unscheduled', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanRemoveTaskWithForceOption(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('unschedule');
+        $task = new NullTask('foo');
+
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule($task);
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
+            $task,
         ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);
@@ -167,14 +191,22 @@ final class RemoveFailedTaskCommandTest extends TestCase
         self::assertStringContainsString('[OK] The task "foo" has been unscheduled', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanRemoveTask(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('unschedule');
+        $task = new NullTask('foo');
+
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule($task);
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('getFailedTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
+            $task,
         ]));
 
         $removeFailedTaskCommand = new RemoveFailedTaskCommand($scheduler, $worker);

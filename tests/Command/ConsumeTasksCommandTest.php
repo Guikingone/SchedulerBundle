@@ -184,7 +184,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -211,7 +211,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -621,7 +621,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $scheduler->schedule(new NullTask('foo'));
 
@@ -652,7 +652,7 @@ final class ConsumeTasksCommandTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore()));
 
         $scheduler->schedule(new NullTask('foo'));
 

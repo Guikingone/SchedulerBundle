@@ -256,7 +256,7 @@ final class Scheduler implements SchedulerInterface
 
         $lock = $this->lockFactory->createLockFromKey(key: $key, autoRelease: false);
         if (!$lock->acquire()) {
-            $this->logger->critical(message: 'The current task list is already acquired.');
+            $this->logger->warning(message: 'The current task list is already acquired.');
 
             return $lazy ? new LazyTaskList(sourceList: new TaskList()) : new TaskList();
         }

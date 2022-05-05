@@ -9,6 +9,7 @@ use Exception;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\LazyScheduler;
@@ -123,7 +124,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -144,7 +145,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus);
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -169,7 +170,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus);
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -188,7 +189,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -210,7 +211,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus);
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -240,7 +241,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus);
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -264,7 +265,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -283,7 +284,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -314,7 +315,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -332,7 +333,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -354,7 +355,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -372,7 +373,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -401,7 +402,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -419,7 +420,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -441,7 +442,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -459,7 +460,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -481,7 +482,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -500,7 +501,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -522,7 +523,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -543,7 +544,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -565,7 +566,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
@@ -594,7 +595,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore())));
         self::assertFalse($lazyScheduler->isInitialized());
 
         $lazyScheduler->reboot();
@@ -610,7 +611,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore())));
         self::assertFalse($lazyScheduler->isInitialized());
 
         $lazyScheduler->schedule(new NullTask('bar'));
@@ -630,7 +631,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore())));
         self::assertFalse($lazyScheduler->isInitialized());
 
         $lazyScheduler->schedule(new NullTask('foo', [
@@ -652,7 +653,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()));
 
         $lazyScheduler = new LazyScheduler($scheduler);
 
@@ -671,7 +672,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore())));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
@@ -689,7 +690,7 @@ final class LazySchedulerTest extends TestCase
 
         $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore())));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule(new NullTask('foo'));
@@ -710,7 +711,7 @@ final class LazySchedulerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher));
+        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher, new LockFactory(new InMemoryStore())));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule(new NullTask('foo'));
@@ -773,7 +774,7 @@ final class LazySchedulerTest extends TestCase
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule($task);
@@ -809,7 +810,7 @@ final class LazySchedulerTest extends TestCase
             ])),
         ]);
 
-        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus));
+        $scheduler = new LazyScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore()), new NullLogger(), $bus));
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule($task);
@@ -835,7 +836,7 @@ final class LazySchedulerTest extends TestCase
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), new LockFactory(new InMemoryStore())));
         self::assertFalse($scheduler->isInitialized());
 
         $timezone = $scheduler->getTimezone();
@@ -851,7 +852,7 @@ final class LazySchedulerTest extends TestCase
     {
         $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), new LockFactory(new InMemoryStore())));
 
         $poolConfiguration = $scheduler->getPoolConfiguration();
 
