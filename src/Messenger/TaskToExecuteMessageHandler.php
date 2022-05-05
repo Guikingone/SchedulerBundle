@@ -35,16 +35,16 @@ final class TaskToExecuteMessageHandler implements MessageHandlerInterface
     public function __invoke(TaskToExecuteMessage $taskMessage): void
     {
         $task = $taskMessage->getTask();
-        $timezone = $task->getTimezone() ?? new DateTimeZone('UTC');
+        $timezone = $task->getTimezone() ?? new DateTimeZone(timezone: 'UTC');
 
-        if (!(new CronExpression($task->getExpression()))->isDue(new DateTimeImmutable('now', $timezone), $timezone->getName())) {
+        if (!(new CronExpression(expression: $task->getExpression()))->isDue(currentTime: new DateTimeImmutable(datetime: 'now', timezone: $timezone), timeZone: $timezone->getName())) {
             return;
         }
 
         while ($this->worker->isRunning()) {
-            $this->logger->info(sprintf('The task "%s" cannot be executed for now as the worker is currently running', $task->getName()));
+            $this->logger->info(message: sprintf('The task "%s" cannot be executed for now as the worker is currently running', $task->getName()));
         }
 
-        $this->worker->execute(WorkerConfiguration::create(), $task);
+        $this->worker->execute(configuration: WorkerConfiguration::create(), tasks: $task);
     }
 }
