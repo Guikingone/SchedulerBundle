@@ -26,7 +26,7 @@ final class FailOverTransport extends AbstractCompoundTransport
     ) {
         $this->failedTransports = new SplObjectStorage();
 
-        parent::__construct($registry, $configuration);
+        parent::__construct(registry: $registry, configuration: $configuration);
     }
 
     /**
@@ -35,23 +35,23 @@ final class FailOverTransport extends AbstractCompoundTransport
     protected function execute(Closure $func)
     {
         if (0 === $this->registry->count()) {
-            throw new TransportException('No transport found');
+            throw new TransportException(message: 'No transport found');
         }
 
         foreach ($this->registry as $transport) {
-            if ($this->failedTransports->contains($transport)) {
+            if ($this->failedTransports->contains(object: $transport)) {
                 continue;
             }
 
             try {
                 return $func($transport);
             } catch (Throwable) {
-                $this->failedTransports->attach($transport);
+                $this->failedTransports->attach(object: $transport);
 
                 continue;
             }
         }
 
-        throw new TransportException('All the transports failed to execute the requested action');
+        throw new TransportException(message: 'All the transports failed to execute the requested action');
     }
 }

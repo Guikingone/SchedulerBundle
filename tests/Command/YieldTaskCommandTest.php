@@ -36,19 +36,21 @@ final class YieldTaskCommandTest extends TestCase
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())));
 
-        self::assertSame('scheduler:yield', $yieldTaskCommand->getName());
-        self::assertSame('Yield a task', $yieldTaskCommand->getDescription());
-        self::assertTrue($yieldTaskCommand->getDefinition()->hasArgument('name'));
-        self::assertSame('The task to yield', $yieldTaskCommand->getDefinition()->getArgument('name')->getDescription());
-        self::assertTrue($yieldTaskCommand->getDefinition()->getArgument('name')->isRequired());
-        self::assertTrue($yieldTaskCommand->getDefinition()->hasOption('async'));
-        self::assertSame('Yield the task using the message bus', $yieldTaskCommand->getDefinition()->getOption('async')->getDescription());
-        self::assertSame('a', $yieldTaskCommand->getDefinition()->getOption('async')->getShortcut());
-        self::assertTrue($yieldTaskCommand->getDefinition()->hasOption('force'));
-        self::assertSame('Force the operation without confirmation', $yieldTaskCommand->getDefinition()->getOption('force')->getDescription());
-        self::assertSame('f', $yieldTaskCommand->getDefinition()->getOption('force')->getShortcut());
+        self::assertSame(expected: 'scheduler:yield', actual: $yieldTaskCommand->getName());
+        self::assertSame(expected: 'Yield a task', actual: $yieldTaskCommand->getDescription());
+        self::assertTrue(condition: $yieldTaskCommand->getDefinition()->hasArgument(name: 'name'));
+        self::assertSame(expected: 'The task to yield', actual: $yieldTaskCommand->getDefinition()->getArgument(name: 'name')->getDescription());
+        self::assertTrue(condition: $yieldTaskCommand->getDefinition()->getArgument(name: 'name')->isRequired());
+        self::assertTrue(condition: $yieldTaskCommand->getDefinition()->hasOption(name: 'async'));
+        self::assertSame(expected: 'Yield the task using the message bus', actual: $yieldTaskCommand->getDefinition()->getOption(name: 'async')->getDescription());
+        self::assertSame(expected: 'a', actual: $yieldTaskCommand->getDefinition()->getOption(name: 'async')->getShortcut());
+        self::assertTrue(condition: $yieldTaskCommand->getDefinition()->hasOption(name: 'force'));
+        self::assertSame(expected: 'Force the operation without confirmation', actual: $yieldTaskCommand->getDefinition()->getOption(name: 'force')->getDescription());
+        self::assertSame(expected: 'f', actual: $yieldTaskCommand->getDefinition()->getOption(name: 'force')->getShortcut());
         self::assertSame(
+            expected:
             $yieldTaskCommand->getHelp(),
+            actual:
             <<<'EOF'
                 The <info>%command.name%</info> command yield a task.
 
@@ -75,13 +77,13 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
-        $scheduler->schedule(new NullTask('foo'));
-        $scheduler->schedule(new NullTask('bar'));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
+        $scheduler->schedule(task: new NullTask(name: 'bar'));
 
-        $tester = new CommandCompletionTester(new YieldTaskCommand($scheduler));
-        $suggestions = $tester->complete(['f', 'b']);
+        $tester = new CommandCompletionTester(command: new YieldTaskCommand(scheduler: $scheduler));
+        $suggestions = $tester->complete(input: ['f', 'b']);
 
-        self::assertSame(['foo', 'bar'], $suggestions);
+        self::assertSame(expected: ['foo', 'bar'], actual: $suggestions);
     }
 
     /**
@@ -93,13 +95,13 @@ final class YieldTaskCommandTest extends TestCase
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
-        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new YieldTaskCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::FAILURE, $commandTester->getStatusCode());
-        self::assertStringContainsString('[WARNING] The task "foo" has not been yielded', $commandTester->getDisplay());
+        self::assertSame(expected: Command::FAILURE, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[WARNING] The task "foo" has not been yielded', haystack: $commandTester->getDisplay());
     }
 
     /**
@@ -110,15 +112,16 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
-        $commandTester->setInputs(['yes']);
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new YieldTaskCommand(scheduler: $scheduler));
+        $commandTester->setInputs(inputs: ['yes']);
+        $commandTester->execute(input: [
             'name' => 'foo',
         ]);
 
-        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
+        self::assertSame(expected: Command::SUCCESS, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[OK] The task "foo" has been yielded', haystack: $commandTester->getDisplay());
     }
 
     /**
@@ -129,15 +132,16 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new YieldTaskCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             'name' => 'foo',
             '--force' => true,
         ]);
 
-        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
+        self::assertSame(expected: Command::SUCCESS, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[OK] The task "foo" has been yielded', haystack: $commandTester->getDisplay());
     }
 
     /**
@@ -148,15 +152,16 @@ final class YieldTaskCommandTest extends TestCase
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new YieldTaskCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new YieldTaskCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             'name' => 'foo',
             '--async' => true,
             '--force' => true,
         ]);
 
-        self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-        self::assertStringContainsString('[OK] The task "foo" has been yielded', $commandTester->getDisplay());
+        self::assertSame(expected: Command::SUCCESS, actual: $commandTester->getStatusCode());
+        self::assertStringContainsString(needle: '[OK] The task "foo" has been yielded', haystack: $commandTester->getDisplay());
     }
 }

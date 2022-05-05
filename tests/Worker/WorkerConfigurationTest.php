@@ -105,6 +105,15 @@ final class WorkerConfigurationTest extends TestCase
         self::assertTrue($configuration->isStrictlyCheckingDate());
     }
 
+    public function testConfigurationCanDefineToLockTasks(): void
+    {
+        $configuration = WorkerConfiguration::create();
+        self::assertFalse($configuration->shouldLockTasks());
+
+        $configuration->lockTask(true);
+        self::assertTrue($configuration->shouldLockTasks());
+    }
+
     public function testConfigurationCanDefineSleepDurationDelay(): void
     {
         $configuration = WorkerConfiguration::create();

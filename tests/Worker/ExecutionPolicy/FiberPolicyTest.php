@@ -16,7 +16,7 @@ final class FiberPolicyTest extends TestCase
     {
         $policy = new FiberPolicy();
 
-        self::assertTrue($policy->support('fiber'));
-        self::assertFalse($policy->support('foo'));
+        self::assertTrue(condition: $policy->support(policy: 'fiber'));
+        self::assertFalse(condition: $policy->support(policy: 'foo'));
     }
 }

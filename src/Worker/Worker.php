@@ -252,7 +252,8 @@ final class Worker implements WorkerInterface
     {
         $tasks = [] !== $tasks ? new TaskList(tasks: $tasks) : $this->scheduler->getDueTasks(
             lazy: $this->configuration->shouldRetrieveTasksLazily(),
-            strict:  $this->configuration->isStrictlyCheckingDate()
+            strict:  $this->configuration->isStrictlyCheckingDate(),
+            lock: $this->configuration->shouldLockTasks()
         );
 
         return $tasks->filter(filter: fn (TaskInterface $task): bool => $this->checkTaskState(task: $task));

@@ -11,6 +11,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
@@ -166,13 +167,13 @@ final class HttpScheduler implements SchedulerInterface
 
         $list = $this->serializer->deserialize(data: $response->getContent(), type: TaskInterface::class.'[]', format: 'json');
 
-        return new TaskList(tasks: $list);
+        return $lazy ? new LazyTaskList($list) : new TaskList(tasks: $list);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
+    public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
         $response = $this->httpClient->request(method: 'GET', url: sprintf('%s/tasks:due', $this->externalSchedulerEndpoint), options: [
             'headers' => [
@@ -181,6 +182,7 @@ final class HttpScheduler implements SchedulerInterface
             'query' => [
                 'lazy' => $lazy,
                 'strict' => $strict,
+                'lock' => $lock,
             ],
         ]);
 
@@ -211,7 +213,9 @@ final class HttpScheduler implements SchedulerInterface
             throw new RuntimeException(message: 'The next task cannot be retrieved');
         }
 
-        return $this->serializer->deserialize(data: $response->getContent(), type: TaskInterface::class, format: 'json');
+        $task = $this->serializer->deserialize(data: $response->getContent(), type: TaskInterface::class, format: 'json');
+
+        return $lazy ? new LazyTask(name: $task->getName(), sourceTaskClosure: static fn (): TaskInterface => $task) : $task;
     }
 
     /**

@@ -198,7 +198,7 @@ final class Scheduler implements SchedulerInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList|LockedTaskList
+    public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
@@ -251,6 +251,10 @@ final class Scheduler implements SchedulerInterface
 
             return true;
         });
+
+        if (!$lock) {
+            return $filteredTasks;
+        }
 
         $key = new Key($synchronizedCurrentDate->format(format: 'Y_m_d_h_i'));
 

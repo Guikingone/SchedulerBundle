@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Worker;
 
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\NotifierMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
@@ -51,6 +49,7 @@ use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\ExecutionPolicy\FiberPolicy;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -71,34 +70,22 @@ use Throwable;
  *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FiberWorkerTest extends TestCase
+final class FiberWorkerTest extends AbstractWorkerTestCase
 {
-    /**
-     * @throws Throwable
-     */
-    public function testTaskCannotBeExecutedWithoutRunner(): void
+    protected function getWorker(): WorkerInterface
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $worker = new Worker(
+        return new Worker(
             new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
-            ])), new SchedulerMiddlewareStack([]), new EventDispatcher()),
+            ])), new SchedulerMiddlewareStack([]), new EventDispatcher(), new LockFactory(new InMemoryStore())),
             new RunnerRegistry([]),
             new ExecutionPolicyRegistry([]),
-            $watcher,
+            new TaskExecutionTracker(new Stopwatch()),
             new WorkerMiddlewareStack(),
-            $eventDispatcher,
+            new EventDispatcher(),
             new LockFactory(new InMemoryStore()),
-            $logger
+            new NullLogger()
         );
-
-        self::expectException(UndefinedRunnerException::class);
-        self::expectExceptionMessage('No runner found');
-        self::expectExceptionCode(0);
-        $worker->execute(WorkerConfiguration::create());
     }
 
     /**
@@ -106,22 +93,19 @@ final class FiberWorkerTest extends TestCase
      */
     public function testWorkerCanBeConfigured(): void
     {
-        $runner = $this->createMock(RunnerInterface::class);
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $watcher = $this->createMock(TaskExecutionTrackerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
         $worker = new Worker(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()), new RunnerRegistry([
-            $runner,
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())), new RunnerRegistry([
+            new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
             new FiberPolicy(),
-        ]), $watcher, new WorkerMiddlewareStack([
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
             new TaskLockBagMiddleware($lockFactory),
-        ]), $eventDispatcher, $lockFactory, $logger);
+        ]), new EventDispatcher(), $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
         $configuration->setExecutionPolicy('fiber');
@@ -157,7 +141,7 @@ final class FiberWorkerTest extends TestCase
 
         $worker = new Worker(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack([]), $eventDispatcher), new RunnerRegistry([
+        ])), new SchedulerMiddlewareStack([]), $eventDispatcher, lockFactory: new LockFactory(store: new InMemoryStore())), new RunnerRegistry([
             new NullTaskRunner(),
         ]), new ExecutionPolicyRegistry([
             new FiberPolicy(),
@@ -198,7 +182,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -248,7 +232,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -300,7 +284,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
         $scheduler->schedule($secondTask);
 
@@ -350,7 +334,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -394,7 +378,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -444,7 +428,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
         $scheduler->schedule($validTask);
 
@@ -493,7 +477,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -525,11 +509,11 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'after_executing' => fn (): bool => false,
+            'after_executing' => static fn (): bool => false,
         ]);
 
         $validTask = new NullTask('bar', [
-            'after_executing' => fn (): bool => true,
+            'after_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -543,7 +527,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
         $scheduler->schedule($validTask);
 
@@ -592,7 +576,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -635,7 +619,7 @@ final class FiberWorkerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
-        ]), $eventDispatcher);
+        ]), $eventDispatcher, lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $lockFactory = new LockFactory(new InMemoryStore());
@@ -687,7 +671,7 @@ final class FiberWorkerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([
             new TaskLockBagMiddleware(new LockFactory(new InMemoryStore())),
-        ]), $eventDispatcher);
+        ]), $eventDispatcher, lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -731,7 +715,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -779,7 +763,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($shellTask);
 
         $eventDispatcher = new EventDispatcher();
@@ -823,7 +807,7 @@ final class FiberWorkerTest extends TestCase
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -875,7 +859,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -928,7 +912,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -976,7 +960,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -1029,7 +1013,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -1074,7 +1058,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -1119,7 +1103,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -1171,7 +1155,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $eventDispatcher = new EventDispatcher();
@@ -1227,7 +1211,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
@@ -1273,7 +1257,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::exactly(7))->method('dispatch');
@@ -1325,7 +1309,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $scheduler->schedule(new NullTask('bar', [
             'access_lock_bag' => new AccessLockBag(new Key('bar')),
@@ -1376,7 +1360,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($chainedTask);
         $scheduler->schedule($shellTask);
 
@@ -1439,7 +1423,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($chainedTask);
         $scheduler->schedule($shellTask);
 
@@ -1508,7 +1492,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $lockFactory = new LockFactory(new InMemoryStore());
@@ -1552,7 +1536,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule($task);
 
         $lockFactory = new LockFactory(new InMemoryStore());
@@ -1590,7 +1574,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -1628,7 +1612,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $lockFactory = new LockFactory(new InMemoryStore());
@@ -1665,7 +1649,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $lockFactory = new LockFactory(new InMemoryStore());
@@ -1712,7 +1696,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
@@ -1768,7 +1752,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
@@ -1819,7 +1803,7 @@ final class FiberWorkerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -1862,13 +1846,12 @@ final class FiberWorkerTest extends TestCase
     public function testWorkerCannotPreemptEmptyList(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
         $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -1877,7 +1860,7 @@ final class FiberWorkerTest extends TestCase
         ]), new ExecutionPolicyRegistry([
             new DefaultPolicy(),
             new FiberPolicy(),
-        ]), $tracker, new WorkerMiddlewareStack([
+        ]), new TaskExecutionTracker(new Stopwatch()), new WorkerMiddlewareStack([
             new SingleRunTaskMiddleware($transport),
             new TaskUpdateMiddleware($transport),
             new TaskLockBagMiddleware($lockFactory),

@@ -86,6 +86,7 @@ interface SchedulerInterface
      *
      * If the @param bool $lazy is used, the tasks are lazy-loaded.
      * If the @param bool $strict is used, the current date will assert that the seconds are equals to '00'.
+     * If the @param bool $lock is used, the tasks are retrieved using a {@see LockedTaskList}, the lock release is up to its consumer.
      *
      * By default, a {@see LockedTaskList} is returned, if the list cannot be locked, an empty list is returned.
      *
@@ -93,7 +94,7 @@ interface SchedulerInterface
      *
      * @throws Throwable {@see TransportInterface::list()}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList|LockedTaskList;
+    public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList;
 
     /**
      * Return the next task that must be executed (based on {@see SchedulerInterface::getDueTasks()})

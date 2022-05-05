@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Worker;
 
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
@@ -47,7 +46,6 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
@@ -69,14 +67,14 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class WorkerTest extends TestCase
+final class WorkerTest extends AbstractWorkerTestCase
 {
     /**
-     * @throws Throwable
+     * {@inheritdoc}
      */
-    public function testTaskCannotBeExecutedWithoutRunner(): void
+    protected function getWorker(): WorkerInterface
     {
-        $worker = new Worker(
+        return new Worker(
             new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
                 new FirstInFirstOutPolicy(),
             ])), new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())),
@@ -88,11 +86,6 @@ final class WorkerTest extends TestCase
             new LockFactory(new InMemoryStore()),
             new NullLogger()
         );
-
-        self::expectException(UndefinedRunnerException::class);
-        self::expectExceptionMessage('No runner found');
-        self::expectExceptionCode(0);
-        $worker->execute(WorkerConfiguration::create());
     }
 
     /**

@@ -11,6 +11,7 @@ use SchedulerBundle\Fiber\AbstractFiberHandler;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use Throwable;
@@ -126,9 +127,9 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      *
      * @throws Throwable {@see AbstractFiberHandler::handleOperationViaFiber()}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
+    public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
-        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict));
+        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict, lock: $lock));
     }
 
     /**

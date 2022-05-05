@@ -190,40 +190,40 @@ final class SchedulerBundleExtension extends Extension
     {
         $schedulerBundleConfiguration = new SchedulerBundleConfiguration();
 
-        $config = $this->processConfiguration($schedulerBundleConfiguration, $configs);
+        $config = $this->processConfiguration(configuration: $schedulerBundleConfiguration, configs: $configs);
 
-        if (!array_key_exists('transport', $config)) {
+        if (!array_key_exists(key: 'transport', array: $config)) {
             return;
         }
 
-        $this->registerParameters($container, $config);
-        $this->registerAutoConfigure($container);
-        $this->registerConfigurationFactories($container);
-        $this->registerConfiguration($container, $config);
-        $this->registerTransportFactories($container, $config);
-        $this->registerTransport($container, $config);
-        $this->registerLockStore($container, $config);
-        $this->registerScheduler($container);
-        $this->registerCommands($container);
-        $this->registerExpressionFactoryAndPolicies($container);
-        $this->registerBuilders($container);
-        $this->registerRunners($container);
-        $this->registerNormalizer($container);
-        $this->registerMessengerTools($container);
-        $this->registerSubscribers($container);
-        $this->registerTracker($container);
-        $this->registerWorker($container);
-        $this->registerWorkerRegistry($container);
-        $this->registerExecutionPolicyRegistry($container);
-        $this->registerExecutionPolicies($container);
-        $this->registerTasks($container, $config);
-        $this->registerDoctrineBridge($container, $config);
-        $this->registerRedisBridge($container);
-        $this->registerMiddlewareStacks($container, $config);
-        $this->registerProbeContext($container, $config);
-        $this->registerMercureSupport($container, $config);
-        $this->registerPoolSupport($container, $config);
-        $this->registerDataCollector($container);
+        $this->registerParameters(container: $container, configuration: $config);
+        $this->registerAutoConfigure(container: $container);
+        $this->registerConfigurationFactories(container: $container);
+        $this->registerConfiguration($container, configuration: $config);
+        $this->registerTransportFactories($container, configuration: $config);
+        $this->registerTransport($container, configuration: $config);
+        $this->registerLockStore($container, configuration: $config);
+        $this->registerScheduler(container: $container);
+        $this->registerCommands(container: $container);
+        $this->registerExpressionFactoryAndPolicies(container: $container);
+        $this->registerBuilders(container: $container);
+        $this->registerRunners(container: $container);
+        $this->registerNormalizer(container: $container);
+        $this->registerMessengerTools(container: $container);
+        $this->registerSubscribers(container: $container);
+        $this->registerTracker(container: $container);
+        $this->registerWorker(container: $container);
+        $this->registerWorkerRegistry(container: $container);
+        $this->registerExecutionPolicyRegistry(container: $container);
+        $this->registerExecutionPolicies(container: $container);
+        $this->registerTasks($container, configuration: $config);
+        $this->registerDoctrineBridge($container, configuration: $config);
+        $this->registerRedisBridge(container: $container);
+        $this->registerMiddlewareStacks($container, configuration: $config);
+        $this->registerProbeContext($container, configuration: $config);
+        $this->registerMercureSupport($container, configuration: $config);
+        $this->registerPoolSupport($container, configuration: $config);
+        $this->registerDataCollector(container: $container);
     }
 
     /**
@@ -231,37 +231,37 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerParameters(ContainerBuilder $container, array $configuration): void
     {
-        $container->setParameter('scheduler.timezone', $configuration['timezone']);
-        $container->setParameter('scheduler.trigger_path', $configuration['path']);
-        $container->setParameter('scheduler.scheduler_mode', $configuration['scheduler']['mode'] ?? 'default');
-        $container->setParameter('scheduler.probe_enabled', $configuration['probe']['enabled'] ?? false);
-        $container->setParameter('scheduler.mercure_support', $configuration['mercure']['enabled']);
-        $container->setParameter('scheduler.pool_support', $configuration['pool']['enabled']);
-        $container->setParameter('scheduler.worker_mode', $configuration['worker']['mode']);
-        $container->setParameter('scheduler.worker_registry', $configuration['worker']['registry']);
-        $container->setParameter('scheduler.middleware_mode', $configuration['middleware']['mode']);
+        $container->setParameter(name: 'scheduler.timezone', value: $configuration['timezone']);
+        $container->setParameter(name: 'scheduler.trigger_path', value: $configuration['path']);
+        $container->setParameter(name: 'scheduler.scheduler_mode', value: $configuration['scheduler']['mode'] ?? 'default');
+        $container->setParameter(name: 'scheduler.probe_enabled', value: $configuration['probe']['enabled'] ?? false);
+        $container->setParameter(name: 'scheduler.mercure_support', value: $configuration['mercure']['enabled']);
+        $container->setParameter(name: 'scheduler.pool_support', value: $configuration['pool']['enabled']);
+        $container->setParameter(name: 'scheduler.worker_mode', value: $configuration['worker']['mode']);
+        $container->setParameter(name: 'scheduler.worker_registry', value: $configuration['worker']['registry']);
+        $container->setParameter(name: 'scheduler.middleware_mode', value: $configuration['middleware']['mode']);
     }
 
     private function registerAutoConfigure(ContainerBuilder $container): void
     {
-        $container->registerForAutoconfiguration(RunnerInterface::class)->addTag(self::SCHEDULER_RUNNER_TAG);
-        $container->registerForAutoconfiguration(TransportInterface::class)->addTag('scheduler.transport');
-        $container->registerForAutoconfiguration(TransportFactoryInterface::class)->addTag(self::SCHEDULER_TRANSPORT_FACTORY_TAG);
-        $container->registerForAutoconfiguration(TransportConfigurationInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_TAG);
-        $container->registerForAutoconfiguration(ConfigurationFactoryInterface::class)->addTag(self::TRANSPORT_CONFIGURATION_FACTORY_TAG);
-        $container->registerForAutoconfiguration(PolicyInterface::class)->addTag(self::SCHEDULER_SCHEDULE_POLICY);
-        $container->registerForAutoconfiguration(WorkerInterface::class)->addTag(self::WORKER_TAG);
-        $container->registerForAutoconfiguration(MiddlewareStackInterface::class)->addTag('scheduler.middleware_hub');
-        $container->registerForAutoconfiguration(PreSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
-        $container->registerForAutoconfiguration(PostSchedulingMiddlewareInterface::class)->addTag(self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
-        $container->registerForAutoconfiguration(PreExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
-        $container->registerForAutoconfiguration(PostExecutionMiddlewareInterface::class)->addTag(self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
-        $container->registerForAutoconfiguration(ExpressionBuilderInterface::class)->addTag(self::SCHEDULER_EXPRESSION_BUILDER_TAG);
-        $container->registerForAutoconfiguration(BuilderInterface::class)->addTag(self::SCHEDULER_TASK_BUILDER_TAG);
-        $container->registerForAutoconfiguration(ProbeInterface::class)->addTag(self::SCHEDULER_PROBE_TAG);
-        $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
-        $container->registerForAutoconfiguration(SchedulerAwareInterface::class)->addTag('scheduler.entry_point');
-        $container->registerForAutoconfiguration(ExecutionPolicyInterface::class)->addTag(self::EXECUTION_POLICY_TAG);
+        $container->registerForAutoconfiguration(interface: RunnerInterface::class)->addTag(name: self::SCHEDULER_RUNNER_TAG);
+        $container->registerForAutoconfiguration(interface: TransportInterface::class)->addTag(name: 'scheduler.transport');
+        $container->registerForAutoconfiguration(interface: TransportFactoryInterface::class)->addTag(name: self::SCHEDULER_TRANSPORT_FACTORY_TAG);
+        $container->registerForAutoconfiguration(interface: TransportConfigurationInterface::class)->addTag(name: self::TRANSPORT_CONFIGURATION_TAG);
+        $container->registerForAutoconfiguration(interface: ConfigurationFactoryInterface::class)->addTag(name: self::TRANSPORT_CONFIGURATION_FACTORY_TAG);
+        $container->registerForAutoconfiguration(interface: PolicyInterface::class)->addTag(name: self::SCHEDULER_SCHEDULE_POLICY);
+        $container->registerForAutoconfiguration(interface: WorkerInterface::class)->addTag(name: self::WORKER_TAG);
+        $container->registerForAutoconfiguration(interface: MiddlewareStackInterface::class)->addTag(name: 'scheduler.middleware_hub');
+        $container->registerForAutoconfiguration(interface: PreSchedulingMiddlewareInterface::class)->addTag(name: self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(interface: PostSchedulingMiddlewareInterface::class)->addTag(name: self::SCHEDULER_SCHEDULER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(interface: PreExecutionMiddlewareInterface::class)->addTag(name: self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(interface: PostExecutionMiddlewareInterface::class)->addTag(name: self::SCHEDULER_WORKER_MIDDLEWARE_TAG);
+        $container->registerForAutoconfiguration(interface: ExpressionBuilderInterface::class)->addTag(name: self::SCHEDULER_EXPRESSION_BUILDER_TAG);
+        $container->registerForAutoconfiguration(interface: BuilderInterface::class)->addTag(name: self::SCHEDULER_TASK_BUILDER_TAG);
+        $container->registerForAutoconfiguration(interface: ProbeInterface::class)->addTag(name: self::SCHEDULER_PROBE_TAG);
+        $container->registerForAutoconfiguration(interface: TaskBagInterface::class)->addTag(name: 'scheduler.task_bag');
+        $container->registerForAutoconfiguration(interface: SchedulerAwareInterface::class)->addTag(name: 'scheduler.entry_point');
+        $container->registerForAutoconfiguration(interface: ExecutionPolicyInterface::class)->addTag(name: self::EXECUTION_POLICY_TAG);
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
@@ -1560,9 +1560,9 @@ final class SchedulerBundleExtension extends Extension
 
     /**
      * @param ContainerBuilder     $container
-     * @param array<string, mixed> $config
+     * @param array<string, mixed> $configuration
      */
-    private function registerMercureSupport(ContainerBuilder $container, array $config): void
+    private function registerMercureSupport(ContainerBuilder $container, array $configuration): void
     {
         if (false === $container->getParameter('scheduler.mercure_support')) {
             return;
@@ -1570,7 +1570,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register('scheduler.mercure_hub', Hub::class)
             ->setArguments([
-                $config['mercure']['hub_url'],
+                $configuration['mercure']['hub_url'],
                 new Reference('scheduler.mercure.token_provider', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -1581,7 +1581,7 @@ final class SchedulerBundleExtension extends Extension
 
         $container->register('scheduler.mercure.token_provider', StaticTokenProvider::class)
             ->setArguments([
-                $config['mercure']['jwt_token'],
+                $configuration['mercure']['jwt_token'],
             ])
             ->setPublic(false)
             ->addTag('container.preload', [
@@ -1592,7 +1592,7 @@ final class SchedulerBundleExtension extends Extension
         $container->register(MercureEventSubscriber::class, MercureEventSubscriber::class)
             ->setArguments([
                 new Reference('scheduler.mercure_hub', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                $config['mercure']['update_url'],
+                $configuration['mercure']['update_url'],
                 new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
             ->setPublic(false)
@@ -1637,17 +1637,17 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerDataCollector(ContainerBuilder $container): void
     {
-        $container->register(SchedulerDataCollector::class, SchedulerDataCollector::class)
+        $container->register(id: SchedulerDataCollector::class, class: SchedulerDataCollector::class)
             ->setArguments([
-                new Reference(TaskLoggerSubscriber::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference(ProbeInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                new Reference(id: TaskLoggerSubscriber::class, invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(id: ProbeInterface::class, invalidBehavior: ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
-            ->setPublic(false)
-            ->addTag('data_collector', [
+            ->setPublic(boolean: false)
+            ->addTag(name: 'data_collector', attributes: [
                 'template' => '@Scheduler/Collector/data_collector.html.twig',
                 'id'       => SchedulerDataCollector::NAME,
             ])
-            ->addTag('container.preload', [
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => SchedulerDataCollector::class,
             ])
         ;

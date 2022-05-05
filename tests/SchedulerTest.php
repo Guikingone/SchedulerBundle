@@ -1684,17 +1684,6 @@ final class SchedulerTest extends AbstractSchedulerTestCase
     }
 
     /**
-     * @return Generator<array<int, ShellTask>>
-     */
-    public function provideTasks(): Generator
-    {
-        yield 'Shell tasks' => [
-            new ShellTask('Bar', ['echo', 'Symfony']),
-            new ShellTask('Foo', ['echo', 'Symfony']),
-        ];
-    }
-
-    /**
      * @return Generator<array<int, TransportInterface>>
      */
     public function provideTransports(): Generator

@@ -16,7 +16,7 @@ final class DefaultPolicyTest extends TestCase
     {
         $policy = new DefaultPolicy();
 
-        self::assertTrue($policy->support('default'));
-        self::assertFalse($policy->support('foo'));
+        self::assertTrue(condition: $policy->support(policy: 'default'));
+        self::assertFalse(condition: $policy->support(policy: 'foo'));
     }
 }

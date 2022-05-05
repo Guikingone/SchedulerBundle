@@ -168,18 +168,18 @@ final class SchedulerBundleExtensionTest extends TestCase
 {
     public function testExtensionCannotBeConfiguredWithoutTransport(): void
     {
-        $container = $this->getContainer([
+        $container = $this->getContainer(configuration: [
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
         ]);
 
-        self::assertFalse($container->hasParameter('scheduler.timezone'));
-        self::assertFalse($container->hasParameter('scheduler.trigger_path'));
+        self::assertFalse($container->hasParameter(name: 'scheduler.timezone'));
+        self::assertFalse($container->hasParameter(name: 'scheduler.trigger_path'));
     }
 
     public function testParametersAreRegistered(): void
     {
-        $container = $this->getContainer([
+        $container = $this->getContainer(configuration: [
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
             'transport' => [
@@ -188,24 +188,24 @@ final class SchedulerBundleExtensionTest extends TestCase
         ]);
 
         self::assertCount(9, $container->getParameterBag()->all());
-        self::assertTrue($container->hasParameter('scheduler.timezone'));
-        self::assertSame('Europe/Paris', $container->getParameter('scheduler.timezone'));
-        self::assertTrue($container->hasParameter('scheduler.trigger_path'));
-        self::assertSame('/_foo', $container->getParameter('scheduler.trigger_path'));
-        self::assertTrue($container->hasParameter('scheduler.scheduler_mode'));
-        self::assertSame('default', $container->getParameter('scheduler.scheduler_mode'));
-        self::assertTrue($container->hasParameter('scheduler.probe_enabled'));
-        self::assertFalse($container->getParameter('scheduler.probe_enabled'));
-        self::assertFalse($container->getParameter('scheduler.pool_support'));
-        self::assertSame('default', $container->getParameter('scheduler.worker_mode'));
-        self::assertFalse($container->getParameter('scheduler.worker_registry'));
-        self::assertTrue($container->hasParameter('scheduler.middleware_mode'));
-        self::assertSame('default', $container->getParameter('scheduler.middleware_mode'));
+        self::assertTrue($container->hasParameter(name: 'scheduler.timezone'));
+        self::assertSame('Europe/Paris', $container->getParameter(name: 'scheduler.timezone'));
+        self::assertTrue($container->hasParameter(name: 'scheduler.trigger_path'));
+        self::assertSame('/_foo', $container->getParameter(name: 'scheduler.trigger_path'));
+        self::assertTrue($container->hasParameter(name: 'scheduler.scheduler_mode'));
+        self::assertSame('default', $container->getParameter(name: 'scheduler.scheduler_mode'));
+        self::assertTrue($container->hasParameter(name: 'scheduler.probe_enabled'));
+        self::assertFalse($container->getParameter(name: 'scheduler.probe_enabled'));
+        self::assertFalse($container->getParameter(name: 'scheduler.pool_support'));
+        self::assertSame('default', $container->getParameter(name: 'scheduler.worker_mode'));
+        self::assertFalse($container->getParameter(name: 'scheduler.worker_registry'));
+        self::assertTrue($container->hasParameter(name: 'scheduler.middleware_mode'));
+        self::assertSame('default', $container->getParameter(name: 'scheduler.middleware_mode'));
     }
 
     public function testInterfacesForAutoconfigureAreRegistered(): void
     {
-        $container = $this->getContainer([
+        $container = $this->getContainer(configuration: [
             'path' => '/_foo',
             'timezone' => 'Europe/Paris',
             'transport' => [

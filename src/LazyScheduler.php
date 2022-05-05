@@ -9,6 +9,7 @@ use DateTimeZone;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 
@@ -113,11 +114,11 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     /**
      * {@inheritdoc}
      */
-    public function getDueTasks(bool $lazy = false, bool $strict = false): TaskListInterface|LazyTaskList
+    public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
         $this->initialize();
 
-        return $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict);
+        return $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict, lock: $lock);
     }
 
     /**

@@ -42,32 +42,32 @@ final class HttpSchedulerTest extends TestCase
 {
     public function testSchedulerCannotScheduleWithInvalidResponse(): void
     {
-        $httpClientMock = new MockHttpClient([
-            new MockResponse('', [
+        $httpClientMock = new MockHttpClient(responseFactory: [
+            new MockResponse(body: '', info: [
                 'http_code' => 500,
             ]),
-        ], 'https://127.0.0.1:9090');
+        ], baseUri: 'https://127.0.0.1:9090');
 
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
+        $scheduler = new HttpScheduler(externalSchedulerEndpoint: 'https://127.0.0.1:9090', serializer: $this->getSerializer(), httpClient: $httpClientMock);
 
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The task "foo" cannot be scheduled');
-        self::expectExceptionCode(0);
-        $scheduler->schedule(new NullTask('foo'));
+        self::expectException(exception: RuntimeException::class);
+        self::expectExceptionMessage(message: 'The task "foo" cannot be scheduled');
+        self::expectExceptionCode(code: 0);
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
     }
 
     public function testSchedulerCanSchedule(): void
     {
-        $httpClientMock = new MockHttpClient([
-            new MockResponse('', [
+        $httpClientMock = new MockHttpClient(responseFactory: [
+            new MockResponse(body: '', info: [
                 'http_code' => 201,
             ]),
-        ], 'https://127.0.0.1:9090');
+        ], baseUri: 'https://127.0.0.1:9090');
 
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $this->getSerializer(), $httpClientMock);
-        $scheduler->schedule(new NullTask('foo'));
+        $scheduler = new HttpScheduler(externalSchedulerEndpoint: 'https://127.0.0.1:9090', serializer: $this->getSerializer(), httpClient: $httpClientMock);
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        self::assertSame(1, $httpClientMock->getRequestsCount());
+        self::assertSame(expected: 1, actual: $httpClientMock->getRequestsCount());
     }
 
     public function testSchedulerCanScheduleWithCustomHttpClient(): void
@@ -718,6 +718,7 @@ final class HttpSchedulerTest extends TestCase
             'query' => [
                 'lazy' => false,
                 'strict' => false,
+                'lock' => false,
             ],
         ]))->willReturn(new MockResponse('', [
             'http_code' => 500,
@@ -744,6 +745,7 @@ final class HttpSchedulerTest extends TestCase
             'query' => [
                 'lazy' => true,
                 'strict' => false,
+                'lock' => false,
             ],
         ]))->willReturn(new MockResponse('', [
             'http_code' => 500,
@@ -770,6 +772,7 @@ final class HttpSchedulerTest extends TestCase
             'query' => [
                 'lazy' => true,
                 'strict' => true,
+                'lock' => false,
             ],
         ]))->willReturn(new MockResponse('', [
             'http_code' => 500,
