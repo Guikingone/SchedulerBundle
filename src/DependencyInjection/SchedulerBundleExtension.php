@@ -222,7 +222,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerMiddlewareStacks($container, configuration: $config);
         $this->registerProbeContext($container, configuration: $config);
         $this->registerMercureSupport($container, configuration: $config);
-        $this->registerPoolSupport($container, configuration: $config);
+        $this->registerPoolSupport($container);
         $this->registerDataCollector(container: $container);
     }
 
@@ -335,20 +335,20 @@ final class SchedulerBundleExtension extends Extension
      */
     private function registerConfiguration(ContainerBuilder $container, array $configuration): void
     {
-        $container->register(self::TRANSPORT_CONFIGURATION_TAG, TransportConfigurationInterface::class)
-            ->setFactory([new Reference(ConfigurationFactory::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE), 'build'])
-            ->setArguments([
+        $container->register(id: self::TRANSPORT_CONFIGURATION_TAG, class: TransportConfigurationInterface::class)
+            ->setFactory(factory: [new Reference(id: ConfigurationFactory::class, invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE), 'build'])
+            ->setArguments(arguments: [
                 $configuration['configuration']['dsn'],
-                new Reference(SerializerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(id: SerializerInterface::class, invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
-            ->setPublic(false)
-            ->addTag(self::TRANSPORT_CONFIGURATION_TAG)
-            ->addTag('container.preload', [
+            ->setPublic(boolean: false)
+            ->addTag(name: self::TRANSPORT_CONFIGURATION_TAG)
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => TransportConfigurationInterface::class,
             ])
         ;
 
-        $container->setAlias(TransportConfigurationInterface::class, self::TRANSPORT_CONFIGURATION_TAG);
+        $container->setAlias(alias: TransportConfigurationInterface::class, id: self::TRANSPORT_CONFIGURATION_TAG);
     }
 
     /**
@@ -1166,20 +1166,20 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerWorkerRegistry(ContainerBuilder $container): void
     {
-        if (false === $container->getParameter('scheduler.worker_registry')) {
+        if (false === $container->getParameter(name: 'scheduler.worker_registry')) {
             return;
         }
 
-        $container->register(WorkerRegistry::class, WorkerRegistry::class)
-            ->setArguments([
-                new TaggedIteratorArgument(self::WORKER_TAG),
+        $container->register(id: WorkerRegistry::class, class: WorkerRegistry::class)
+            ->setArguments(arguments: [
+                new TaggedIteratorArgument(tag: self::WORKER_TAG),
             ])
-            ->addTag('container.hot_path')
-            ->addTag('container.preload', [
+            ->addTag(name: 'container.hot_path')
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => WorkerRegistry::class,
             ])
         ;
-        $container->setAlias(WorkerRegistryInterface::class, WorkerRegistry::class);
+        $container->setAlias(alias: WorkerRegistryInterface::class, id: WorkerRegistry::class);
     }
 
     private function registerExecutionPolicyRegistry(ContainerBuilder $container): void
@@ -1198,22 +1198,22 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerExecutionPolicies(ContainerBuilder $container): void
     {
-        $container->register(DefaultPolicy::class, DefaultPolicy::class)
-            ->addTag(self::EXECUTION_POLICY_TAG)
-            ->addTag('container.hot_path')
-            ->addTag('container.preload', [
+        $container->register(id: DefaultPolicy::class, class: DefaultPolicy::class)
+            ->addTag(name: self::EXECUTION_POLICY_TAG)
+            ->addTag(name: 'container.hot_path')
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => DefaultPolicy::class,
             ])
         ;
 
-        if ('fiber' === $container->getParameter('scheduler.worker_mode')) {
-            $container->register(FiberPolicy::class, FiberPolicy::class)
+        if ('fiber' === $container->getParameter(name: 'scheduler.worker_mode')) {
+            $container->register(id: FiberPolicy::class, class: FiberPolicy::class)
                 ->setArguments([
-                    new Reference(LoggerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                    new Reference(id: LoggerInterface::class, invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
                 ])
-                ->addTag(self::EXECUTION_POLICY_TAG)
-                ->addTag('container.hot_path')
-                ->addTag('container.preload', [
+                ->addTag(name: self::EXECUTION_POLICY_TAG)
+                ->addTag(name: 'container.hot_path')
+                ->addTag(name: 'container.preload', attributes: [
                     'class' => FiberPolicy::class,
                 ])
             ;
@@ -1603,36 +1603,33 @@ final class SchedulerBundleExtension extends Extension
         ;
     }
 
-    /**
-     * @param array<string, mixed> $configuration
-     */
-    private function registerPoolSupport(ContainerBuilder $container, array $configuration): void
+    private function registerPoolSupport(ContainerBuilder $container): void
     {
-        if (false === $container->getParameter('scheduler.pool_support')) {
+        if (false === $container->getParameter(name: 'scheduler.pool_support')) {
             return;
         }
 
-        $container->register(SchedulerConfigurationNormalizer::class, SchedulerConfigurationNormalizer::class)
-            ->setArguments([
-                new Reference(TaskNormalizer::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference('serializer.normalizer.datetimezone', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference('serializer.normalizer.datetime', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
-                new Reference('serializer.normalizer.object', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+        $container->register(id: SchedulerConfigurationNormalizer::class, class: SchedulerConfigurationNormalizer::class)
+            ->setArguments(arguments: [
+                new Reference(id: TaskNormalizer::class, invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(id: 'serializer.normalizer.datetimezone', invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(id: 'serializer.normalizer.datetime', invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(id: 'serializer.normalizer.object', invalidBehavior: ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
             ])
-            ->setPublic(false)
-            ->addTag('serializer.normalizer')
-            ->addTag('container.preload', [
+            ->setPublic(boolean: false)
+            ->addTag(name: 'serializer.normalizer')
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => SchedulerConfigurationNormalizer::class,
             ])
         ;
 
-        $container->register(SchedulerPool::class, SchedulerPool::class)
-            ->setPublic(false)
-            ->addTag('container.preload', [
+        $container->register(id: SchedulerPool::class, class: SchedulerPool::class)
+            ->setPublic(boolean: false)
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => SchedulerPool::class,
             ])
         ;
-        $container->setAlias(SchedulerPoolInterface::class, SchedulerPool::class);
+        $container->setAlias(alias: SchedulerPoolInterface::class, id: SchedulerPool::class);
     }
 
     private function registerDataCollector(ContainerBuilder $container): void
