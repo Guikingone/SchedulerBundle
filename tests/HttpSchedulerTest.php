@@ -952,18 +952,18 @@ final class HttpSchedulerTest extends TestCase
     public function testSchedulerCanGetNextTask(): void
     {
         $serializer = $this->getSerializer();
-        $payload = $serializer->serialize(new NullTask('foo'), 'json');
+        $payload = $serializer->serialize(data: new NullTask(name: 'foo'), format: 'json');
 
-        $httpClientMock = new MockHttpClient([
-            new MockResponse($payload, [
+        $httpClientMock = new MockHttpClient(responseFactory: [
+            new MockResponse(body: $payload, info: [
                 'http_code' => 200,
             ]),
-        ], 'https://127.0.0.1:9090');
+        ], baseUri: 'https://127.0.0.1:9090');
 
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
+        $scheduler = new HttpScheduler(externalSchedulerEndpoint: 'https://127.0.0.1:9090', serializer: $serializer, httpClient: $httpClientMock);
         $task = $scheduler->next();
 
-        self::assertSame('foo', $task->getName());
+        self::assertSame(expected: 'foo', actual: $task->getName());
     }
 
     /**
@@ -972,18 +972,18 @@ final class HttpSchedulerTest extends TestCase
     public function testSchedulerCanGetNextTaskLazily(): void
     {
         $serializer = $this->getSerializer();
-        $payload = $serializer->serialize(new NullTask('foo'), 'json');
+        $payload = $serializer->serialize(data: new NullTask(name: 'foo'), format: 'json');
 
-        $httpClientMock = new MockHttpClient([
-            new MockResponse($payload, [
+        $httpClientMock = new MockHttpClient(responseFactory: [
+            new MockResponse(body: $payload, info: [
                 'http_code' => 200,
             ]),
-        ], 'https://127.0.0.1:9090');
+        ], baseUri: 'https://127.0.0.1:9090');
 
-        $scheduler = new HttpScheduler('https://127.0.0.1:9090', $serializer, $httpClientMock);
-        $task = $scheduler->next(true);
+        $scheduler = new HttpScheduler(externalSchedulerEndpoint: 'https://127.0.0.1:9090', serializer: $serializer, httpClient: $httpClientMock);
+        $task = $scheduler->next(lazy: true);
 
-        self::assertSame('foo', $task->getName());
+        self::assertSame(expected: 'foo.lazy', actual: $task->getName());
     }
 
     /**

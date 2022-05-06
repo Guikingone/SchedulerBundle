@@ -167,7 +167,7 @@ final class HttpScheduler implements SchedulerInterface
 
         $list = $this->serializer->deserialize(data: $response->getContent(), type: TaskInterface::class.'[]', format: 'json');
 
-        return $lazy ? new LazyTaskList($list) : new TaskList(tasks: $list);
+        return $lazy ? new LazyTaskList(sourceList: new TaskList(tasks: $list)) : new TaskList(tasks: $list);
     }
 
     /**
