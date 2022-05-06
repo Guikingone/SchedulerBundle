@@ -1184,16 +1184,16 @@ final class SchedulerBundleExtension extends Extension
 
     private function registerExecutionPolicyRegistry(ContainerBuilder $container): void
     {
-        $container->register(ExecutionPolicyRegistry::class, ExecutionPolicyRegistry::class)
-            ->setArguments([
-                new TaggedIteratorArgument(self::EXECUTION_POLICY_TAG),
+        $container->register(id: ExecutionPolicyRegistry::class, class: ExecutionPolicyRegistry::class)
+            ->setArguments(arguments: [
+                new TaggedIteratorArgument(tag: self::EXECUTION_POLICY_TAG),
             ])
-            ->addTag('container.hot_path')
-            ->addTag('container.preload', [
+            ->addTag(name: 'container.hot_path')
+            ->addTag(name: 'container.preload', attributes: [
                 'class' => ExecutionPolicyRegistry::class,
             ])
         ;
-        $container->setAlias(ExecutionPolicyRegistryInterface::class, ExecutionPolicyRegistry::class);
+        $container->setAlias(alias: ExecutionPolicyRegistryInterface::class, id: ExecutionPolicyRegistry::class);
     }
 
     private function registerExecutionPolicies(ContainerBuilder $container): void
