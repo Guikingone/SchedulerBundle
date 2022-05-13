@@ -19,6 +19,7 @@ use SchedulerBundle\Command\DebugMiddlewareCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
+use SchedulerBundle\Command\ExportCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -35,6 +36,10 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
+use SchedulerBundle\Export\CronTabExporter;
+use SchedulerBundle\Export\ExporterInterface;
+use SchedulerBundle\Export\ExporterRegistry;
+use SchedulerBundle\Export\ExporterRegistryInterface;
 use SchedulerBundle\Expression\BuilderInterface;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
@@ -252,6 +257,8 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($autoconfigurationInterfaces[SchedulerAwareInterface::class]->hasTag('scheduler.entry_point'));
         self::assertArrayHasKey(ExecutionPolicyInterface::class, $autoconfigurationInterfaces);
         self::assertTrue($autoconfigurationInterfaces[ExecutionPolicyInterface::class]->hasTag('scheduler.execution_policy'));
+        self::assertArrayHasKey(ExporterInterface::class, $autoconfigurationInterfaces);
+        self::assertTrue($autoconfigurationInterfaces[ExporterInterface::class]->hasTag('scheduler.task_exporter'));
     }
 
     public function testConfigurationFactoriesAreRegistered(): void
@@ -458,6 +465,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         $schedulerBundleExtension = new SchedulerBundleExtension();
 
         $containerBuilder = new ContainerBuilder();
+        $containerBuilder->setParameter('kernel.project_dir', 'foo');
         $containerBuilder->register(SerializerInterface::class, SerializerInterface::class);
 
         $schedulerBundleExtension->load([
@@ -717,10 +725,24 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(ExecuteTaskCommand::class)->hasTag('container.preload'));
         self::assertSame(ExecuteTaskCommand::class, $container->getDefinition(ExecuteTaskCommand::class)->getTag('container.preload')[0]['class']);
 
+        self::assertTrue($container->hasDefinition(ExportCommand::class));
+        self::assertCount(2, $container->getDefinition(ExportCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExportCommand::class)->getArgument(0));
+        self::assertSame(ExporterRegistryInterface::class, (string) $container->getDefinition(ExportCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExportCommand::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(ExportCommand::class)->getArgument(1));
+        self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(ExportCommand::class)->getArgument(1));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(ExportCommand::class)->getArgument(1)->getInvalidBehavior());
+        self::assertCount(2, $container->getDefinition(ExportCommand::class)->getTags());
+        self::assertTrue($container->getDefinition(ExportCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(ExportCommand::class)->hasTag('container.preload'));
+        self::assertSame(ExportCommand::class, $container->getDefinition(ExportCommand::class)->getTag('container.preload')[0]['class']);
+
         self::assertTrue($container->hasDefinition(ListFailedTasksCommand::class));
         self::assertCount(1, $container->getDefinition(ListFailedTasksCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ListFailedTasksCommand::class)->getArgument(0));
         self::assertSame(WorkerInterface::class, (string) $container->getDefinition(ListFailedTasksCommand::class)->getArgument(0));
+        self::assertCount(2, $container->getDefinition(ListFailedTasksCommand::class)->getTags());
         self::assertTrue($container->getDefinition(ListFailedTasksCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(ListFailedTasksCommand::class)->hasTag('container.preload'));
         self::assertSame(ListFailedTasksCommand::class, $container->getDefinition(ListFailedTasksCommand::class)->getTag('container.preload')[0]['class']);
@@ -729,6 +751,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertCount(1, $container->getDefinition(ListTasksCommand::class)->getArguments());
         self::assertInstanceOf(Reference::class, $container->getDefinition(ListTasksCommand::class)->getArgument(0));
         self::assertSame(SchedulerInterface::class, (string) $container->getDefinition(ListTasksCommand::class)->getArgument(0));
+        self::assertCount(2, $container->getDefinition(ListTasksCommand::class)->getTags());
         self::assertTrue($container->getDefinition(ListTasksCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(ListTasksCommand::class)->hasTag('container.preload'));
         self::assertSame(ListTasksCommand::class, $container->getDefinition(ListTasksCommand::class)->getTag('container.preload')[0]['class']);
@@ -743,6 +766,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(EventDispatcherInterface::class, (string) $container->getDefinition(RebootSchedulerCommand::class)->getArgument(2));
         self::assertInstanceOf(Reference::class, $container->getDefinition(RebootSchedulerCommand::class)->getArgument(3));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(RebootSchedulerCommand::class)->getArgument(3));
+        self::assertCount(3, $container->getDefinition(RebootSchedulerCommand::class)->getTags());
         self::assertTrue($container->getDefinition(RebootSchedulerCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(RebootSchedulerCommand::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(RebootSchedulerCommand::class)->getTag('monolog.logger')[0]['channel']);
@@ -1070,6 +1094,34 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('scheduler.runner'));
         self::assertTrue($container->getDefinition(ChainedTaskRunner::class)->hasTag('container.preload'));
         self::assertSame(ChainedTaskRunner::class, $container->getDefinition(ChainedTaskRunner::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testExportToolsAreRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+            'tasks' => [],
+            'lock_store' => null,
+        ]);
+
+        self::assertTrue($container->hasAlias(ExporterRegistryInterface::class));
+        self::assertTrue($container->hasDefinition(ExporterRegistry::class));
+        self::assertFalse($container->getDefinition(ExporterRegistry::class)->isPublic());
+        self::assertCount(1, $container->getDefinition(ExporterRegistry::class)->getArguments());
+        self::assertInstanceOf(TaggedIteratorArgument::class, $container->getDefinition(ExporterRegistry::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(ExporterRegistry::class)->hasTag('container.preload'));
+        self::assertSame(ExporterRegistry::class, $container->getDefinition(ExporterRegistry::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(CronTabExporter::class));
+        self::assertCount(1, $container->getDefinition(CronTabExporter::class)->getArguments());
+        self::assertSame('foo', $container->getDefinition(CronTabExporter::class)->getArgument(0));
+        self::assertTrue($container->getDefinition(CronTabExporter::class)->hasTag('scheduler.task_exporter'));
+        self::assertTrue($container->getDefinition(CronTabExporter::class)->hasTag('container.preload'));
+        self::assertSame(CronTabExporter::class, $container->getDefinition(CronTabExporter::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testNormalizersAreRegistered(): void
@@ -2265,6 +2317,7 @@ final class SchedulerBundleExtensionTest extends TestCase
     private function getContainer(array $configuration = [], Closure $extraDefinitions = null, Closure $extraPasses = null): ContainerBuilder
     {
         $containerBuilder = new ContainerBuilder();
+        $containerBuilder->setParameter('kernel.project_dir', 'foo');
         $containerBuilder->registerExtension(new SchedulerBundleExtension());
         $containerBuilder->loadFromExtension('scheduler_bundle', $configuration);
 

@@ -17,6 +17,7 @@ use SchedulerBundle\Command\DebugMiddlewareCommand;
 use SchedulerBundle\Command\DebugProbeCommand;
 use SchedulerBundle\Command\ExecuteExternalProbeCommand;
 use SchedulerBundle\Command\ExecuteTaskCommand;
+use SchedulerBundle\Command\ExportCommand;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
@@ -31,6 +32,10 @@ use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\EventListener\TaskSubscriber;
 use SchedulerBundle\EventListener\WorkerLifecycleSubscriber;
+use SchedulerBundle\Export\CronTabExporter;
+use SchedulerBundle\Export\ExporterInterface;
+use SchedulerBundle\Export\ExporterRegistry;
+use SchedulerBundle\Export\ExporterRegistryInterface;
 use SchedulerBundle\Expression\BuilderInterface;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
@@ -185,6 +190,7 @@ final class SchedulerBundleExtension extends Extension
     private const EXECUTION_POLICY_TAG = 'scheduler.execution_policy';
     private const WORKER_TAG = 'scheduler.worker';
     private const SCHEDULER_MIDDLEWARE_TAG = 'scheduler.middleware';
+    private const TASK_EXPORTER_TAG = 'scheduler.task_exporter';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -208,6 +214,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerExpressionFactoryAndPolicies($container);
         $this->registerBuilders($container);
         $this->registerRunners($container);
+        $this->registerExportTools($container);
         $this->registerNormalizer($container);
         $this->registerMessengerTools($container);
         $this->registerSubscribers($container);
@@ -262,6 +269,7 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
         $container->registerForAutoconfiguration(SchedulerAwareInterface::class)->addTag('scheduler.entry_point');
         $container->registerForAutoconfiguration(ExecutionPolicyInterface::class)->addTag(self::EXECUTION_POLICY_TAG);
+        $container->registerForAutoconfiguration(ExporterInterface::class)->addTag(self::TASK_EXPORTER_TAG);
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
@@ -596,6 +604,17 @@ final class SchedulerBundleExtension extends Extension
             ])
             ->addTag('container.preload', [
                 'class' => ExecuteTaskCommand::class,
+            ])
+        ;
+
+        $container->register(ExportCommand::class, ExportCommand::class)
+            ->setArguments([
+                new Reference(ExporterRegistryInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(SchedulerInterface::class, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => ExportCommand::class,
             ])
         ;
 
@@ -957,6 +976,29 @@ final class SchedulerBundleExtension extends Extension
             ->addTag(self::SCHEDULER_RUNNER_TAG)
             ->addTag('container.preload', [
                 'class' => ChainedTaskRunner::class,
+            ])
+        ;
+    }
+
+    public function registerExportTools(ContainerBuilder $container): void
+    {
+        $container->register(ExporterRegistry::class, ExporterRegistry::class)
+            ->setArguments([
+                new TaggedIteratorArgument(self::TASK_EXPORTER_TAG),
+            ])
+            ->addTag('container.preload', [
+                'class' => ExporterRegistry::class,
+            ])
+        ;
+        $container->setAlias(ExporterRegistryInterface::class, ExporterRegistry::class);
+
+        $container->register(CronTabExporter::class, CronTabExporter::class)
+            ->setArguments([
+                $container->getParameter('kernel.project_dir'),
+            ])
+            ->addTag(self::TASK_EXPORTER_TAG)
+            ->addTag('container.preload', [
+                'class' => CronTabExporter::class,
             ])
         ;
     }
