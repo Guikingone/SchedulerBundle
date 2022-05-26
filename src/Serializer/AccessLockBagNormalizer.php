@@ -22,7 +22,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     private LoggerInterface $logger;
 
     public function __construct(
-        private ObjectNormalizer $objectNormalizer,
+        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer,
         ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
@@ -38,18 +38,18 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
         try {
             return [
                 'bag' => AccessLockBag::class,
-                'body' => $this->objectNormalizer->normalize($object, $format, [
+                'body' => $this->objectNormalizer->normalize(object: $object, format: $format, context: [
                     AbstractNormalizer::CALLBACKS => [
-                        'key' => static fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize($innerObject),
+                        'key' => static fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize(value: $innerObject),
                     ],
                 ]),
             ];
         } catch (Throwable) {
-            $this->logger->warning('The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
+            $this->logger->warning(message: 'The key cannot be serialized as the current lock store does not support it, please consider using a store that support the serialization of the key');
 
             return [
                 'bag' => AccessLockBag::class,
-                'body' => $this->objectNormalizer->normalize($object, $format, [
+                'body' => $this->objectNormalizer->normalize(object: $object, format: $format, context: [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => [
                         'key',
                     ],
@@ -71,10 +71,10 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): AccessLockBag
     {
-        return $this->objectNormalizer->denormalize($data, $type, $format, [
+        return $this->objectNormalizer->denormalize(data: $data, type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 AccessLockBag::class => [
-                    'key' => (array_key_exists('key', $data['body']) && null !== $data['body']['key']) ? unserialize($data['body']['key']) : null,
+                    'key' => (array_key_exists(key: 'key', array: $data['body']) && null !== $data['body']['key']) ? unserialize(data: $data['body']['key']) : null,
                 ],
             ],
         ]);

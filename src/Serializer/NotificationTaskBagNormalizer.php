@@ -19,7 +19,7 @@ use function array_merge;
  */
 final class NotificationTaskBagNormalizer implements DenormalizerInterface, NormalizerInterface
 {
-    public function __construct(private ObjectNormalizer $objectNormalizer)
+    public function __construct(private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer)
     {
     }
 
@@ -32,17 +32,17 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     {
         return [
             'bag' => NotificationTaskBag::class,
-            'body' => $this->objectNormalizer->normalize($object, $format, [
+            'body' => $this->objectNormalizer->normalize(object: $object, format: $format, context: [
                 AbstractNormalizer::CALLBACKS => [
-                    'recipients' => static fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(static fn (Recipient $recipient): array => [
+                    'recipients' => static fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(callback: static fn (Recipient $recipient): array => [
                         'email' => $recipient->getEmail(),
                         'phone' => $recipient->getPhone(),
-                    ], $innerObject),
+                    ], array: $innerObject),
                     'notification' => static fn (Notification $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                         'subject' => $innerObject->getSubject(),
                         'content' => $innerObject->getContent(),
                         'emoji' => $innerObject->getEmoji(),
-                        'channels' => array_merge(...array_map(static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
+                        'channels' => array_merge(...array_map(callback: static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), array: $outerObject->getRecipients())),
                         'importance' => $innerObject->getImportance(),
                     ],
                 ],
@@ -63,11 +63,11 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): NotificationTaskBag
     {
-        return $this->objectNormalizer->denormalize($data['body'], $type, $format, [
+        return $this->objectNormalizer->denormalize(data: $data['body'], type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 NotificationTaskBag::class => [
-                    'notification' => $this->objectNormalizer->denormalize($data['body']['notification'], Notification::class, $format, $context),
-                    'recipients' => array_map(fn (array $recipient): Recipient => $this->objectNormalizer->denormalize($recipient, Recipient::class, $format, $context), $data['body']['recipients']),
+                    'notification' => $this->objectNormalizer->denormalize(data: $data['body']['notification'], type: Notification::class, format: $format, context: $context),
+                    'recipients' => array_map(callback: fn (array $recipient): Recipient => $this->objectNormalizer->denormalize(data: $recipient, type: Recipient::class, format: $format, context: $context), array: $data['body']['recipients']),
                 ],
             ],
         ]);

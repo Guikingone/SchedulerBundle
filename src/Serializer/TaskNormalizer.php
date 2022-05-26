@@ -50,12 +50,12 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
     public function __construct(
-        private DateTimeNormalizer $dateTimeNormalizer,
-        private DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        private DateIntervalNormalizer $dateIntervalNormalizer,
-        private ObjectNormalizer $objectNormalizer,
-        private NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
-        private AccessLockBagNormalizer $accessLockBagNormalizer
+        private DenormalizerInterface|NormalizerInterface|DateTimeNormalizer $dateTimeNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateTimeZoneNormalizer $dateTimeZoneNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateIntervalNormalizer $dateIntervalNormalizer,
+        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer,
+        private DenormalizerInterface|NormalizerInterface|NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
+        private DenormalizerInterface|NormalizerInterface|AccessLockBagNormalizer $accessLockBagNormalizer
     ) {
     }
 

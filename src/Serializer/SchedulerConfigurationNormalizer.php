@@ -20,10 +20,10 @@ use function array_map;
 final class SchedulerConfigurationNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     public function __construct(
-        private TaskNormalizer $taskNormalizer,
-        private DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        private DateTimeNormalizer $dateTimeNormalizer,
-        private ObjectNormalizer $objectNormalizer
+        private DenormalizerInterface|NormalizerInterface|TaskNormalizer $taskNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateTimeZoneNormalizer $dateTimeZoneNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateTimeNormalizer $dateTimeNormalizer,
+        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer
     ) {
     }
 
@@ -37,9 +37,9 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
         $dueTasks = $object->getDueTasks();
 
         return [
-            'timezone' => $this->dateTimeZoneNormalizer->normalize($object->getTimezone(), $format, $context),
-            'synchronizedDate' => $this->dateTimeNormalizer->normalize($object->getSynchronizedDate(), $format, $context),
-            'dueTasks' => $dueTasks->map(fn (TaskInterface $task): array => $this->taskNormalizer->normalize($task, $format, $context), false),
+            'timezone' => $this->dateTimeZoneNormalizer->normalize(object: $object->getTimezone(), format: $format, context: $context),
+            'synchronizedDate' => $this->dateTimeNormalizer->normalize(object: $object->getSynchronizedDate(), format: $format, context: $context),
+            'dueTasks' => $dueTasks->map(func: fn (TaskInterface $task): array => $this->taskNormalizer->normalize(object: $task, format: $format, context: $context), keepKeys: false),
         ];
     }
 
@@ -56,12 +56,12 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): SchedulerConfiguration
     {
-        return $this->objectNormalizer->denormalize($data, $type, $format, [
+        return $this->objectNormalizer->denormalize(data: $data, type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 SchedulerConfiguration::class => [
-                    'timezone' => $this->dateTimeZoneNormalizer->denormalize($data['timezone'], $type, $format, $context),
-                    'synchronizedDate' => $this->dateTimeNormalizer->denormalize($data['synchronizedDate'], $type, $format, $context),
-                    'dueTasks' => array_map(fn (array $task): TaskInterface => $this->taskNormalizer->denormalize($task, $type, $format, $context), $data['dueTasks']),
+                    'timezone' => $this->dateTimeZoneNormalizer->denormalize(data: $data['timezone'], type: $type, format:  $format, context:  $context),
+                    'synchronizedDate' => $this->dateTimeNormalizer->denormalize(data: $data['synchronizedDate'], type: $type, format:  $format, context:  $context),
+                    'dueTasks' => array_map(callback: fn (array $task): TaskInterface => $this->taskNormalizer->denormalize(data: $task, type: $type, format: $format, context: $context), array: $data['dueTasks']),
                 ],
             ],
         ]);
