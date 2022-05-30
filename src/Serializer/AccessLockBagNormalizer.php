@@ -22,7 +22,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     private LoggerInterface $logger;
 
     public function __construct(
-        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer,
+        private ObjectNormalizer|NormalizerInterface|DenormalizerInterface $objectNormalizer,
         ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
