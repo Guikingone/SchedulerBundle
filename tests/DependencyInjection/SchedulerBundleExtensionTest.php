@@ -1206,6 +1206,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertInstanceOf(Reference::class, $container->getDefinition(TaskSubscriber::class)->getArgument(4));
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(TaskSubscriber::class)->getArgument(4));
         self::assertSame('/_foo', $container->getDefinition(TaskSubscriber::class)->getArgument(5));
+        self::assertFalse($container->getDefinition(TaskSubscriber::class)->isPublic());
         self::assertTrue($container->getDefinition(TaskSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(TaskSubscriber::class)->hasTag('monolog.logger'));
         self::assertSame('scheduler', $container->getDefinition(TaskSubscriber::class)->getTag('monolog.logger')[0]['channel']);
@@ -1213,6 +1214,7 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(TaskSubscriber::class, $container->getDefinition(TaskSubscriber::class)->getTag('container.preload')[0]['class']);
 
         self::assertTrue($container->hasDefinition(TaskLoggerSubscriber::class));
+        self::assertFalse($container->getDefinition(TaskLoggerSubscriber::class)->isPublic());
         self::assertTrue($container->getDefinition(TaskLoggerSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(TaskLoggerSubscriber::class)->hasTag('container.preload'));
         self::assertSame(TaskLoggerSubscriber::class, $container->getDefinition(TaskLoggerSubscriber::class)->getTag('container.preload')[0]['class']);
