@@ -40,11 +40,11 @@ final class FiberTransportFactory implements TransportFactoryInterface
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ): FiberTransport {
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getOptions()[0])) {
+            if (!$factory->support((string) $dsn->getOptions()[0])) {
                 continue;
             }
 
-            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+            $dsn = Dsn::fromString((string) $dsn->getOptions()[0]);
 
             return new FiberTransport(
                 $factory->createTransport($dsn, $options, $configuration, $serializer, $schedulePolicyOrchestrator),

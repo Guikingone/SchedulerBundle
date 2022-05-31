@@ -93,7 +93,7 @@ final class RemoveFailedTaskCommand extends Command
         $name = $input->getArgument(name: 'name');
         $force = $input->getOption(name: 'force');
 
-        $name = htmlspecialchars(string: $name, flags: ENT_QUOTES, encoding: 'UTF-8');
+        $name = htmlspecialchars(string: (string) $name, flags: ENT_QUOTES, encoding: 'UTF-8');
 
         try {
             $failedTasks = $this->worker->getFailedTasks();

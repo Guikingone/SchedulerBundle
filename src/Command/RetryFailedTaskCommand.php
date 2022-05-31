@@ -99,7 +99,7 @@ final class RetryFailedTaskCommand extends Command
         $force = $input->getOption(name: 'force');
 
         try {
-            $task = $this->worker->getFailedTasks()->get(taskName: $name);
+            $task = $this->worker->getFailedTasks()->get(taskName: (string) $name);
         } catch (InvalidArgumentException) {
             $symfonyStyle->error(message: sprintf('The task "%s" does not fails', $name));
 

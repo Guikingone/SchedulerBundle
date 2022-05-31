@@ -91,7 +91,7 @@ final class YieldTaskCommand extends Command
 
         if (true === $force || $symfonyStyle->confirm(question: 'Do you want to yield this task?', default: false)) {
             try {
-                $this->scheduler->yieldTask(name: $name, async: $input->getOption('async'));
+                $this->scheduler->yieldTask(name: (string) $name, async: (bool) $input->getOption('async'));
             } catch (Throwable $throwable) {
                 $symfonyStyle->error(message: [
                     'An error occurred when trying to yield the task:',
