@@ -1067,6 +1067,7 @@ final class SchedulerBundleExtension extends Extension
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 $container->getParameter('scheduler.trigger_path'),
             ])
+            ->setPublic(false)
             ->addTag('kernel.event_subscriber')
             ->addTag('monolog.logger', [
                 'channel' => 'scheduler',
@@ -1077,6 +1078,7 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->register(TaskLoggerSubscriber::class, TaskLoggerSubscriber::class)
+            ->setPublic(false)
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => TaskLoggerSubscriber::class,
@@ -1087,6 +1089,7 @@ final class SchedulerBundleExtension extends Extension
             ->setArguments([
                 new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ])
+            ->setPublic(false)
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => StopWorkerOnSignalSubscriber::class,

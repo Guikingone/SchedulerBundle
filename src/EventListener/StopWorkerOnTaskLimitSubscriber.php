@@ -31,7 +31,7 @@ final class StopWorkerOnTaskLimitSubscriber implements EventSubscriberInterface
 
             $worker->stop();
 
-            $this->logger->info('The worker has been stopped due to maximum tasks executed', [
+            $this->logger->info(message: 'The worker has been stopped due to maximum tasks executed', context: [
                 'count' => $this->consumedTasks,
             ]);
         }
