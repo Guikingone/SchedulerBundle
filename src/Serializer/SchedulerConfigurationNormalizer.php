@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use SchedulerBundle\Exception\BadMethodCallException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -13,6 +14,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use function array_map;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -34,6 +36,10 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        if ((!$this->taskNormalizer instanceof NormalizerInterface) || !$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         $dueTasks = $object->getDueTasks();
 
         return [
@@ -56,6 +62,10 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): SchedulerConfiguration
     {
+        if (!$this->objectNormalizer instanceof DenormalizerInterface || !$this->taskNormalizer instanceof DenormalizerInterface || !$this->dateTimeZoneNormalizer instanceof DenormalizerInterface || !$this->dateTimeNormalizer instanceof DenormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         return $this->objectNormalizer->denormalize(data: $data, type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 SchedulerConfiguration::class => [

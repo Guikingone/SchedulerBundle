@@ -8,6 +8,7 @@ use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Exception\BadMethodCallException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Task\ProbeTask;
@@ -154,6 +155,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): TaskInterface
     {
+        if (!$this->objectNormalizer instanceof DenormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         $objectType = $data[self::NORMALIZATION_DISCRIMINATOR];
         $body = $data['body'];
 

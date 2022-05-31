@@ -6,6 +6,7 @@ namespace SchedulerBundle\Serializer;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use SchedulerBundle\Exception\BadMethodCallException;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -13,6 +14,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Throwable;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -35,6 +37,10 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        if (!$this->objectNormalizer instanceof NormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, NormalizerInterface::class));
+        }
+
         try {
             return [
                 'bag' => AccessLockBag::class,
@@ -71,6 +77,10 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): AccessLockBag
     {
+        if (!$this->objectNormalizer instanceof DenormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         return $this->objectNormalizer->denormalize(data: $data, type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 AccessLockBag::class => [
