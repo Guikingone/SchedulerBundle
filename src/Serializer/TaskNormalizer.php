@@ -67,6 +67,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface || !$this->dateIntervalNormalizer instanceof NormalizerInterface || !$this->objectNormalizer instanceof NormalizerInterface || !$this->notificationTaskBagNormalizer instanceof NormalizerInterface || !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         if ($object instanceof CallbackTask && $object->getCallback() instanceof Closure) {
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
@@ -77,6 +81,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         $dateIntervalAttributesCallback = fn (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
         $notificationTaskBagCallback = fn (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
         $taskCallbacksAttributesCallback = function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
+            if (!$this->objectNormalizer instanceof NormalizerInterface) {
+                throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+            }
+
             if ($innerObject instanceof Closure) {
                 throw new InvalidArgumentException('The callback cannot be normalized as its a Closure instance');
             }

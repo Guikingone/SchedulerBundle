@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Serializer;
 
 use SchedulerBundle\Exception\BadMethodCallException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -36,7 +37,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        if ((!$this->taskNormalizer instanceof NormalizerInterface) || !$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface) {
+        if (!$this->taskNormalizer instanceof NormalizerInterface || !$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
         }
 
@@ -45,7 +46,13 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
         return [
             'timezone' => $this->dateTimeZoneNormalizer->normalize(object: $object->getTimezone(), format: $format, context: $context),
             'synchronizedDate' => $this->dateTimeNormalizer->normalize(object: $object->getSynchronizedDate(), format: $format, context: $context),
-            'dueTasks' => $dueTasks->map(func: fn (TaskInterface $task): array => $this->taskNormalizer->normalize(object: $task, format: $format, context: $context), keepKeys: false),
+            'dueTasks' => $dueTasks->map(func: function (TaskInterface $task) use ($format, $context): array {
+                if (!$this->taskNormalizer instanceof TaskNormalizer) {
+                    throw new RuntimeException('The task normalizer is not an instance of TaskNormalizer.');
+                }
+
+                return $this->taskNormalizer->normalize(object: $task, format: $format, context: $context);
+            }, keepKeys: false),
         ];
     }
 
