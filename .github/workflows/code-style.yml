@@ -31,10 +31,18 @@ jobs:
           update: true
 
       - name: Install Composer dependencies
+        if: matrix.php-versions != '8.2'
         uses: "ramsey/composer-install@v1"
         with:
           dependency-versions: ${{ matrix.composer-dependencies }}
           composer-options: "--prefer-stable"
+
+      - name: Install Composer dependencies - 8.2
+        if: matrix.php-versions == '8.2'
+        uses: "ramsey/composer-install@v1"
+        with:
+          dependency-versions: ${{ matrix.composer-dependencies }}
+          composer-options: "--prefer-stable --ignore-platform-reqs"
 
       - name: PHP CS Fixer
         run: php vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
