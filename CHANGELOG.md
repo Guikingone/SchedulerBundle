@@ -1,6 +1,26 @@
 # Changelog
 
-0.9.1
+0.9.3
+-----
+### Features
+
+##### Command
+
+* Suggestions implemented (#256) ([d4f0b0](https://github.com/Guikingone/SchedulerBundle/commit/d4f0b05aaa59f93aece6d5f71ad7f4b7fcc8d036))
+
+### Code Refactoring
+
+##### Core
+
+* Improvements on serializer usage (#261) ([15db6c](https://github.com/Guikingone/SchedulerBundle/commit/15db6c8e7923eb37cd24a9d88604e1dd47a2c07d))
+
+##### Serializer
+
+* Support for TraceableNormalizer && TraceableDenormalizer added (#260) ([15dbc8](https://github.com/Guikingone/SchedulerBundle/commit/15dbc87f44dff462dd277c6c67ef1eac74439356))
+
+---
+
+0.9.2
 -----
 ### Bug Fixes
 
