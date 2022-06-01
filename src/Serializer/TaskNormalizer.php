@@ -8,6 +8,8 @@ use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+use SchedulerBundle\Exception\BadMethodCallException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Task\ProbeTask;
@@ -50,12 +52,12 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     private const NORMALIZATION_DISCRIMINATOR = 'taskInternalType';
 
     public function __construct(
-        private DateTimeNormalizer $dateTimeNormalizer,
-        private DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        private DateIntervalNormalizer $dateIntervalNormalizer,
-        private ObjectNormalizer $objectNormalizer,
-        private NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
-        private AccessLockBagNormalizer $accessLockBagNormalizer
+        private DenormalizerInterface|NormalizerInterface|DateTimeNormalizer $dateTimeNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateTimeZoneNormalizer $dateTimeZoneNormalizer,
+        private DenormalizerInterface|NormalizerInterface|DateIntervalNormalizer $dateIntervalNormalizer,
+        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer,
+        private DenormalizerInterface|NormalizerInterface|NotificationTaskBagNormalizer $notificationTaskBagNormalizer,
+        private DenormalizerInterface|NormalizerInterface|AccessLockBagNormalizer $accessLockBagNormalizer
     ) {
     }
 
@@ -66,16 +68,45 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface || !$this->dateIntervalNormalizer instanceof NormalizerInterface || !$this->objectNormalizer instanceof NormalizerInterface || !$this->notificationTaskBagNormalizer instanceof NormalizerInterface || !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         if ($object instanceof CallbackTask && $object->getCallback() instanceof Closure) {
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
-        $dateAttributesCallback = fn (?DateTimeImmutable $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
-            DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u",
-        ]) : null;
-        $dateIntervalAttributesCallback = fn (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
-        $notificationTaskBagCallback = fn (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
+        $dateAttributesCallback = function (?DateTimeImmutable $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null): ?string {
+            if (!$this->dateTimeNormalizer instanceof DateTimeNormalizer) {
+                throw new RuntimeException(sprintf('The datetime normalizer is not an instance of %s.', DateTimeNormalizer::class));
+            }
+
+            return $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
+                DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u",
+            ]) : null;
+        };
+
+        $dateIntervalAttributesCallback = function (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
+            if (!$this->dateIntervalNormalizer instanceof DateIntervalNormalizer) {
+                throw new RuntimeException(sprintf('The date interval normalizer is not an instance of %s.', DateIntervalNormalizer::class));
+            }
+
+            return $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
+        };
+
+        $notificationTaskBagCallback = function (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
+            if (!$this->notificationTaskBagNormalizer instanceof NotificationTaskBagNormalizer) {
+                throw new RuntimeException(sprintf('The notification task bag normalizer is not an instance of %s.', NotificationTaskBagNormalizer::class));
+            }
+
+            return $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
+        };
+
         $taskCallbacksAttributesCallback = function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
+            if (!$this->objectNormalizer instanceof NormalizerInterface) {
+                throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+            }
+
             if ($innerObject instanceof Closure) {
                 throw new InvalidArgumentException('The callback cannot be normalized as its a Closure instance');
             }
@@ -96,7 +127,13 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'executionEndTime' => $dateAttributesCallback,
                 'lastExecution' => $dateAttributesCallback,
                 'scheduledAt' => $dateAttributesCallback,
-                'timezone' => fn (?DateTimeZone $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string => $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null,
+                'timezone' => function (?DateTimeZone $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
+                    if (!$this->dateTimeZoneNormalizer instanceof DateTimeZoneNormalizer) {
+                        throw new RuntimeException(sprintf('The datetimezone normalizer is not an instance of %s.', DateTimeZoneNormalizer::class));
+                    }
+
+                    return $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
+                },
                 'beforeScheduling' => $taskCallbacksAttributesCallback,
                 'afterScheduling' => $taskCallbacksAttributesCallback,
                 'beforeExecuting' => $taskCallbacksAttributesCallback,
@@ -127,7 +164,13 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                         'options' => [],
                     ],
                 ]), $innerObject->toArray(false)),
-                'accessLockBag' => fn (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array => $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null,
+                'accessLockBag' => function (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
+                    if (!$this->accessLockBagNormalizer instanceof AccessLockBagNormalizer) {
+                        throw new RuntimeException(sprintf('The access lock bag normalizer is not an instance of %s.', AccessLockBagNormalizer::class));
+                    }
+
+                    return $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null;
+                },
             ],
         ];
 
@@ -154,6 +197,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): TaskInterface
     {
+        if (!$this->objectNormalizer instanceof DenormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         $objectType = $data[self::NORMALIZATION_DISCRIMINATOR];
         $body = $data['body'];
 

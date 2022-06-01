@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use SchedulerBundle\Exception\BadMethodCallException;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -13,13 +14,14 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use function array_map;
 use function array_merge;
+use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class NotificationTaskBagNormalizer implements DenormalizerInterface, NormalizerInterface
 {
-    public function __construct(private ObjectNormalizer $objectNormalizer)
+    public function __construct(private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer)
     {
     }
 
@@ -30,19 +32,23 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        if (!$this->objectNormalizer instanceof NormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
         return [
             'bag' => NotificationTaskBag::class,
-            'body' => $this->objectNormalizer->normalize($object, $format, [
+            'body' => $this->objectNormalizer->normalize(object: $object, format: $format, context: [
                 AbstractNormalizer::CALLBACKS => [
-                    'recipients' => static fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(static fn (Recipient $recipient): array => [
+                    'recipients' => static fn (array $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(callback: static fn (Recipient $recipient): array => [
                         'email' => $recipient->getEmail(),
                         'phone' => $recipient->getPhone(),
-                    ], $innerObject),
+                    ], array: $innerObject),
                     'notification' => static fn (Notification $innerObject, NotificationTaskBag $outerObject, string $attributeName, string $format = null, array $context = []): array => [
                         'subject' => $innerObject->getSubject(),
                         'content' => $innerObject->getContent(),
                         'emoji' => $innerObject->getEmoji(),
-                        'channels' => array_merge(...array_map(static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
+                        'channels' => array_merge(...array_map(callback: static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), array: $outerObject->getRecipients())),
                         'importance' => $innerObject->getImportance(),
                     ],
                 ],
@@ -63,11 +69,15 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
      */
     public function denormalize($data, string $type, string $format = null, array $context = []): NotificationTaskBag
     {
-        return $this->objectNormalizer->denormalize($data['body'], $type, $format, [
+        if (!$this->objectNormalizer instanceof DenormalizerInterface) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
+        return $this->objectNormalizer->denormalize(data: $data['body'], type: $type, format: $format, context: [
             AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                 NotificationTaskBag::class => [
-                    'notification' => $this->objectNormalizer->denormalize($data['body']['notification'], Notification::class, $format, $context),
-                    'recipients' => array_map(fn (array $recipient): Recipient => $this->objectNormalizer->denormalize($recipient, Recipient::class, $format, $context), $data['body']['recipients']),
+                    'notification' => $this->objectNormalizer->denormalize(data: $data['body']['notification'], type: Notification::class, format: $format, context: $context),
+                    'recipients' => array_map(callback: fn (array $recipient): Recipient => $this->objectNormalizer->denormalize(data: $recipient, type: Recipient::class, format: $format, context: $context), array: $data['body']['recipients']),
                 ],
             ],
         ]);
