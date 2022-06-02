@@ -217,8 +217,10 @@ final class LockedTaskList implements TaskListInterface
 
     private function checkIfKeyIsExpired(): void
     {
-        if ($this->key->isExpired()) {
-            throw new RuntimeException(message: 'The current list is expired and cannot be used anymore.');
+        if (!$this->key->isExpired()) {
+            return;
         }
+
+        throw new RuntimeException(message: 'The current list is expired and cannot be used anymore.');
     }
 }
