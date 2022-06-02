@@ -2,31 +2,29 @@
 
 declare(strict_types=1);
 
-use Rector\Core\Configuration\Option;
+use Rector\Config\RectorConfig;
 use Rector\Core\ValueObject\PhpVersion;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
-return static function (ContainerConfigurator $containerConfigurator): void {
-    $parameters = $containerConfigurator->parameters();
+return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->phpVersion(phpVersion: PhpVersion::PHP_80);
+    $rectorConfig->importNames();
+    $rectorConfig->importShortClasses();
+    $rectorConfig->parallel();
 
-    $parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_80);
-    $parameters->set(Option::AUTO_IMPORT_NAMES, true);
-    $parameters->set(Option::IMPORT_SHORT_CLASSES, true);
-
-    $parameters->set(Option::AUTOLOAD_PATHS, [
+    $rectorConfig->autoloadPaths(autoloadPaths: [
         __DIR__ . '/vendor/autoload.php',
     ]);
 
-    $parameters->set(Option::PATHS, [
+    $rectorConfig->paths(paths: [
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ]);
 
-    '8.1' !== PHP_VERSION ? $parameters->set(Option::SKIP, [
+    '8.1' !== PHP_VERSION ? $rectorConfig->skip(criteria: [
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
         __DIR__ . '/src/Fiber/AbstractFiberHandler.php',
@@ -43,34 +41,48 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         __DIR__ . '/tests/Transport/FiberTransportTest.php',
         __DIR__ . '/tests/Worker/ExecutionPolicy/FiberPolicyTest.php',
         __DIR__ . '/tests/Worker/FiberWorkerTest.php',
-    ]) : $parameters->set(Option::SKIP, [
+    ]) : $rectorConfig->skip(criteria: [
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
         __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
     ]);
 
-    $containerConfigurator->import(DoctrineSetList::DOCTRINE_25);
-    $containerConfigurator->import(DoctrineSetList::DOCTRINE_DBAL_211);
-    $containerConfigurator->import(DoctrineSetList::DOCTRINE_DBAL_30);
-    $containerConfigurator->import(PHPUnitSetList::PHPUNIT_91);
-    $containerConfigurator->import(PHPUnitSetList::PHPUNIT_EXCEPTION);
-    $containerConfigurator->import(PHPUnitSetList::PHPUNIT_MOCK);
-    $containerConfigurator->import(PHPUnitSetList::PHPUNIT_SPECIFIC_METHOD);
-    $containerConfigurator->import(PHPUnitSetList::PHPUNIT_YIELD_DATA_PROVIDER);
-    $containerConfigurator->import(SetList::CODE_QUALITY);
-    $containerConfigurator->import(SetList::DEAD_CODE);
-    $containerConfigurator->import(SetList::EARLY_RETURN);
-    $containerConfigurator->import(SetList::PHP_70);
-    $containerConfigurator->import(SetList::PHP_71);
-    $containerConfigurator->import(SetList::PHP_72);
-    $containerConfigurator->import(SetList::PHP_73);
-    $containerConfigurator->import(SetList::PHP_74);
-    $containerConfigurator->import(SetList::PHP_80);
-    $containerConfigurator->import(SetList::UNWRAP_COMPAT);
-    $containerConfigurator->import(SymfonySetList::SYMFONY_50);
-    $containerConfigurator->import(SymfonySetList::SYMFONY_50_TYPES);
-    $containerConfigurator->import(SymfonySetList::SYMFONY_52);
-    $containerConfigurator->import(SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION);
+    $rectorConfig->sets([
+        DoctrineSetList::DOCTRINE_25,
+        DoctrineSetList::DOCTRINE_DBAL_211,
+        DoctrineSetList::DOCTRINE_DBAL_30,
+    ]);
 
-    $parameters->set(Option::PHPSTAN_FOR_RECTOR_PATH, __DIR__.'/phpstan.neon.dist');
+    $rectorConfig->sets([
+        PHPUnitSetList::PHPUNIT_91,
+        PHPUnitSetList::PHPUNIT_EXCEPTION,
+        PHPUnitSetList::REMOVE_MOCKS,
+        PHPUnitSetList::PHPUNIT_SPECIFIC_METHOD,
+        PHPUnitSetList::PHPUNIT_YIELD_DATA_PROVIDER,
+    ]);
+
+    $rectorConfig->sets([
+        SetList::CODE_QUALITY,
+        SetList::DEAD_CODE,
+        SetList::EARLY_RETURN,
+        SetList::PHP_70,
+        SetList::PHP_71,
+        SetList::PHP_72,
+        SetList::PHP_73,
+        SetList::PHP_74,
+        SetList::PHP_80,
+        SetList::UNWRAP_COMPAT,
+    ]);
+
+    $rectorConfig->sets([
+        SymfonySetList::SYMFONY_50,
+        SymfonySetList::SYMFONY_50_TYPES,
+        SymfonySetList::SYMFONY_52,
+        SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
+    ]);
+
+    '8.1' !== PHP_VERSION
+        ? $rectorConfig->phpstanConfig(filePath: __DIR__ . '/phpstan.neon.8.0.dist')
+        : $rectorConfig->phpstanConfig(filePath: __DIR__ . '/phpstan.neon.8.1.dist')
+    ;
 };
