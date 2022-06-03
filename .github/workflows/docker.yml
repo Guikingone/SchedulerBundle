@@ -11,7 +11,7 @@ on:
 
 jobs:
   php-cs-fixer:
-    name: Docker linting - ${{ matrix.os }} OS
+    name: Docker linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
