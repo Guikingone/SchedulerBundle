@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 use function array_key_exists;
 use function array_walk;
 use function is_array;
-use function is_string;
 use function sprintf;
 
 /**
@@ -19,6 +17,9 @@ use function sprintf;
  */
 final class HttpTask extends AbstractTask
 {
+    private string $url;
+    private string $method;
+
     /**
      * @param array<string, mixed> $clientOptions
      */
@@ -26,42 +27,37 @@ final class HttpTask extends AbstractTask
     {
         $this->validateClientOptions(clientOptions: $clientOptions);
         $this->defineOptions(options: [
-            'url' => $url,
-            'method' => $method,
             'client_options' => $clientOptions,
         ], additionalOptions: [
-            'url' => 'string',
-            'method' => 'string',
             'client_options' => ['array', 'string[]'],
         ]);
+
+        $this->url = $url;
+        $this->method = $method;
 
         parent::__construct(name: $name);
     }
 
     public function getUrl(): string
     {
-        if (!is_string(value: $this->options['url'])) {
-            throw new RuntimeException(message: 'The url is not defined');
-        }
-
-        return $this->options['url'];
+        return $this->url;
     }
 
     public function setUrl(string $url): self
     {
-        $this->options['url'] = $url;
+        $this->url = $url;
 
         return $this;
     }
 
     public function getMethod(): string
     {
-        return $this->options['method'] ?? 'GET';
+        return $this->method;
     }
 
     public function setMethod(string $method): self
     {
-        $this->options['method'] = $method;
+        $this->method = $method;
 
         return $this;
     }
