@@ -12,11 +12,7 @@ on:
 jobs:
   php-cs-fixer:
     name: Docker linting - ${{ matrix.os }} OS
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: ['ubuntu-latest']
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
