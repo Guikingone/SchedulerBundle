@@ -22,11 +22,6 @@ use Throwable;
  */
 final class YieldTaskCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:yield';
-
     public function __construct(private SchedulerInterface $scheduler)
     {
         parent::__construct();
@@ -38,6 +33,7 @@ final class YieldTaskCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:yield')
             ->setDescription(description: 'Yield a task')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'The task to yield'),

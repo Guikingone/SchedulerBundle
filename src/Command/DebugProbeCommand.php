@@ -23,11 +23,6 @@ use function sprintf;
  */
 final class DebugProbeCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:debug:probe';
-
     public function __construct(
         private ProbeInterface $probe,
         private SchedulerInterface $scheduler
@@ -41,6 +36,7 @@ final class DebugProbeCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:debug:probe')
             ->setDescription('Display the current probe state and the external probes state (if defined)')
             ->setDefinition([
                 new InputOption('external', null, InputOption::VALUE_NONE, 'Define if the external probes state must be displayed'),

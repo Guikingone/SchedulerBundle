@@ -38,11 +38,6 @@ final class ConsumeTasksCommand extends Command
 {
     private LoggerInterface $logger;
 
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:consume';
-
     public function __construct(
         private SchedulerInterface $scheduler,
         private WorkerInterface $worker,
@@ -60,6 +55,7 @@ final class ConsumeTasksCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:consume')
             ->setDescription('Consumes due tasks')
             ->setDefinition([
                 new InputOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Limit the number of tasks consumed'),
