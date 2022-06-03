@@ -45,9 +45,10 @@ jobs:
           dependency-versions: ${{ matrix.composer-dependencies }}
           composer-options: "--prefer-stable --ignore-platform-reqs"
 
-      - name: Run Snyk to check for vulnerabilities # See https://github.com/snyk/actions/tree/master/php
-        uses: snyk/actions/php@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - uses: actions/cache@v2
+        id: cache-db
         with:
-          command: monitor
+          path: ~/.symfony/cache
+          key: db
+
+      - uses: symfonycorp/security-checker-action@v3
