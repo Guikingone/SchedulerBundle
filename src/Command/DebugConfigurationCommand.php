@@ -17,8 +17,6 @@ use function sprintf;
  */
 final class DebugConfigurationCommand extends Command
 {
-    protected static $defaultName = 'scheduler:debug:configuration';
-
     public function __construct(private ConfigurationInterface $configuration)
     {
         parent::__construct();
@@ -30,6 +28,7 @@ final class DebugConfigurationCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:debug:configuration')
             ->setDescription(description: 'Display the current transport configuration keys and values')
             ->setHelp(
                 help:

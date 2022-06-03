@@ -25,11 +25,6 @@ use function sprintf;
  */
 final class RemoveFailedTaskCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:remove:failed';
-
     public function __construct(
         private SchedulerInterface $scheduler,
         private WorkerInterface $worker
@@ -43,6 +38,7 @@ final class RemoveFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:remove:failed')
             ->setDescription(description: 'Remove given task from the scheduler')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'The name of the task to remove'),

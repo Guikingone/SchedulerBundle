@@ -22,11 +22,6 @@ use function sprintf;
  */
 final class ExecuteExternalProbeCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:execute:external-probe';
-
     public function __construct(
         private SchedulerInterface $scheduler,
         private WorkerInterface $worker
@@ -40,6 +35,7 @@ final class ExecuteExternalProbeCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:execute:external-probe')
             ->setDescription('Execute the external probes')
         ;
     }

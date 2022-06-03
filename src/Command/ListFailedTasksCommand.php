@@ -20,11 +20,6 @@ use const DATE_ATOM;
  */
 final class ListFailedTasksCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:list:failed';
-
     public function __construct(private WorkerInterface $worker)
     {
         parent::__construct();
@@ -36,6 +31,7 @@ final class ListFailedTasksCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:list:failed')
             ->setDescription(description: 'List all the failed tasks')
         ;
     }

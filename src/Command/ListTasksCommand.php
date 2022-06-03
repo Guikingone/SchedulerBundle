@@ -32,11 +32,6 @@ use const DATE_ATOM;
 final class ListTasksCommand extends Command
 {
     /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:list';
-
-    /**
      * {@inheritdoc}
      */
     public function __construct(private SchedulerInterface $scheduler)
@@ -50,6 +45,7 @@ final class ListTasksCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:list')
             ->setDescription(description: 'List the tasks')
             ->setDefinition([
                 new InputOption(name: 'expression', shortcut: null, mode: InputOption::VALUE_OPTIONAL, description: 'The expression of the tasks'),

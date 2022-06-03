@@ -31,11 +31,6 @@ final class RetryFailedTaskCommand extends Command
 {
     private LoggerInterface $logger;
 
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:retry:failed';
-
     public function __construct(
         private WorkerInterface $worker,
         private EventDispatcherInterface $eventDispatcher,
@@ -52,6 +47,7 @@ final class RetryFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:retry:failed')
             ->setDescription(description: 'Retries one or more tasks from the failed tasks')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'Specific task name(s) to retry'),

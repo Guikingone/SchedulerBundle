@@ -27,11 +27,6 @@ use function sprintf;
  */
 final class DebugMiddlewareCommand extends Command
 {
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:debug:middleware';
-
     public function __construct(
         private SchedulerMiddlewareStackInterface $schedulerMiddlewareStack,
         private WorkerMiddlewareStackInterface $workerMiddlewareStack
@@ -45,6 +40,7 @@ final class DebugMiddlewareCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:debug:middleware')
             ->setDescription('Display the registered middlewares')
         ;
     }

@@ -38,11 +38,6 @@ final class ExecuteTaskCommand extends Command
 {
     private LoggerInterface $logger;
 
-    /**
-     * @var string|null
-     */
-    protected static $defaultName = 'scheduler:execute';
-
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private SchedulerInterface $scheduler,
@@ -60,6 +55,7 @@ final class ExecuteTaskCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setName('scheduler:execute')
             ->setDescription('Execute tasks (due or not) depending on filters')
             ->setDefinition([
                 new InputOption('due', 'd', InputOption::VALUE_NONE, 'Define if the filters must be applied on due tasks'),
