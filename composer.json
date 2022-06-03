@@ -142,6 +142,7 @@
         "rector/rector": "0.12.21",
         "symfony/cache": "^5.4",
         "symfony/dependency-injection": "^5.4 || ^6.0",
+        "symfony/error-handler": "^5.4 || ^6.0",
         "symfony/framework-bundle": "^5.4 || ^6.0",
         "symfony/http-client": "^5.4 || ^6.0",
         "symfony/http-kernel": "^5.4 || ^6.0",
