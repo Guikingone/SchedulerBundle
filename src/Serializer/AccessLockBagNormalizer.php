@@ -67,7 +67,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null): bool
+    public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof AccessLockBag;
     }
@@ -93,7 +93,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null): bool
+    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return AccessLockBag::class === $type;
     }
