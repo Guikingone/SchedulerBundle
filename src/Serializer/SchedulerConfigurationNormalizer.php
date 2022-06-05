@@ -59,7 +59,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof SchedulerConfiguration;
     }
@@ -87,7 +87,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null)
+    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return SchedulerConfiguration::class === $type;
     }

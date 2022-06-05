@@ -12,3 +12,6 @@ parameters:
         - tests
     excludePaths:
         - vendor
+    ignoreErrors:
+        # The following can be dropped once Symfony 7.0+ will be required
+        - '#Method .* has parameter \$context with no value type specified in iterable type array.#'

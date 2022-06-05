@@ -16,3 +16,5 @@ parameters:
         - '#Instantiated class Fiber not found#'
         - '#Call to method start\(\) on an unknown class Fiber#'
         - '#Call to static method suspend\(\) on an unknown class Fiber#'
+        # The following can be dropped once Symfony 7.0+ will be required
+        - '#Method .* has parameter \$context with no value type specified in iterable type array.#'

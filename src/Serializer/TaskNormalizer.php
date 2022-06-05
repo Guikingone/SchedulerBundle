@@ -187,7 +187,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null): bool
+    public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof TaskInterface;
     }
@@ -330,7 +330,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null): bool
+    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
         return is_array($data) && array_key_exists(self::NORMALIZATION_DISCRIMINATOR, $data) || $type === TaskInterface::class;
     }
