@@ -46,13 +46,13 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
     ]);
 
-    $rectorConfig->sets([
+    $rectorConfig->sets(sets: [
         DoctrineSetList::DOCTRINE_25,
         DoctrineSetList::DOCTRINE_DBAL_211,
         DoctrineSetList::DOCTRINE_DBAL_30,
     ]);
 
-    $rectorConfig->sets([
+    $rectorConfig->sets(sets: [
         PHPUnitSetList::PHPUNIT_91,
         PHPUnitSetList::PHPUNIT_EXCEPTION,
         PHPUnitSetList::REMOVE_MOCKS,
@@ -60,7 +60,7 @@ return static function (RectorConfig $rectorConfig): void {
         PHPUnitSetList::PHPUNIT_YIELD_DATA_PROVIDER,
     ]);
 
-    $rectorConfig->sets([
+    $rectorConfig->sets(sets: [
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
@@ -73,7 +73,7 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::UNWRAP_COMPAT,
     ]);
 
-    $rectorConfig->sets([
+    $rectorConfig->sets(sets: [
         SymfonySetList::SYMFONY_50,
         SymfonySetList::SYMFONY_50_TYPES,
         SymfonySetList::SYMFONY_52,
