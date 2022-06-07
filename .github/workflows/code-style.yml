@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['8.1']
+        php-versions: ['8.1']
         composer-dependencies: ['highest']
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-versions: ${{ matrix.php-versions }}
           extensions: zip, redis, pcntl
         env:
           update: true
