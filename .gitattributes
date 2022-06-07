@@ -1,7 +1,7 @@
 /.cloud export-ignore
 /.github export-ignore
-/assets
-/doc
+/assets export-ignore
+/doc export-ignore
 /tests export-ignore
 /CHANGELOG.md export-ignore
 /docker-compose.override.yaml.dist export-ignore
