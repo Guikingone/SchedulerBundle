@@ -55,7 +55,7 @@ jobs:
           SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
 
       - name: Cache PHPUnit result
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.phpunit.result.cache
           key: ${{ runner.os }}-composer-${{ matrix.php-versions }}-${{ matrix.composer-dependencies }}-${{ hashFiles('**/.phpunit.result.cache') }}
