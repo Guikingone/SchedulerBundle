@@ -52,5 +52,5 @@ and ease the debug phase.
 
 ## External ressources
 
-Consider exploring this [article](https://www.endpoint.com/blog/2008/12/08/best-practices-for-cron)
+Consider exploring this [article](https://blog.sanctum.geek.nz/cron-best-practices/)
 to have a better idea of general approaches related to repetitive tasks.
