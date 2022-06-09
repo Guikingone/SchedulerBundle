@@ -76,9 +76,11 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             throw new InvalidArgumentException(sprintf('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "%s::execute()"', Worker::class));
         }
 
+
+
         $dateAttributesCallback = function (?DateTimeImmutable $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null): ?string {
             if (!$this->dateTimeNormalizer instanceof DateTimeNormalizer) {
-                throw new RuntimeException(sprintf('The datetime normalizer is not an instance of %s.', DateTimeNormalizer::class));
+                throw new RuntimeException(sprintf('The datetime normalizer is a %s, not an instance of %s', $this->dateIntervalNormalizer::class, DateTimeNormalizer::class));
             }
 
             return $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
@@ -96,7 +98,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
 
         $notificationTaskBagCallback = function (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
             if (!$this->notificationTaskBagNormalizer instanceof NotificationTaskBagNormalizer) {
-                throw new RuntimeException(sprintf('The notification task bag normalizer is not an instance of %s.', NotificationTaskBagNormalizer::class));
+                throw new RuntimeException(sprintf('The notification task bag normalizer is a %s, not an instance of %s.', $this->notificationTaskBagNormalizer::class, NotificationTaskBagNormalizer::class));
             }
 
             return $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
