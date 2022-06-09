@@ -53,7 +53,7 @@ composer require guikingone/scheduler-bundle
 
 ## Quick start
 
-I Once installed, time to update the `config/bundles.php`:
+If symfony/flex is not installed, manually update the `config/bundles.php`:
 
 ```php
 // config/bundles.php
