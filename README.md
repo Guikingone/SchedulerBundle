@@ -48,12 +48,12 @@ Make sure Composer is installed globally, as explained in the
 of the Composer documentation.
 
 ```bash
-$ composer require guikingone/scheduler-bundle
+composer require guikingone/scheduler-bundle
 ```
 
 ## Quick start
 
-Once installed, time to update the `config/bundles.php`:
+If symfony/flex is not installed, manually update the `config/bundles.php`:
 
 ```php
 // config/bundles.php
