@@ -11,12 +11,12 @@ on:
 
 jobs:
   phpstan:
-    name: PHPStan
+    name: PHPStan with PHP ${{ matrix.php-versions }} - ${{ matrix.composer-dependencies }} dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.1']
-        composer-dependencies: ['highest']
+        php-versions: ['8.0', '8.1']
+        composer-dependencies: ['lowest', 'highest']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,4 +39,4 @@ jobs:
           composer-options: '--prefer-stable'
 
       - name: Run PHPStan
-        run: php vendor/bin/phpstan analyze --xdebug --configuration phpstan.neon.dist
+        run: php vendor/bin/phpstan analyze --xdebug --configuration phpstan.neon.${{ matrix.php-versions }}.dist

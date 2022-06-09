@@ -64,9 +64,13 @@ php-cs-fixer-dry: ## Run PHP-CS-FIXER in --dry-run mode
 php-cs-fixer-dry: .php-cs-fixer.dist.php
 	$(PHP) vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
 
-phpstan: ## Run PHPStan (the configuration must be defined in phpstan.neon.dist)
-phpstan: phpstan.neon.dist
-	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug --configuration phpstan.neon.dist
+phpstan_80: ## Run PHPStan (the configuration must be defined in phpstan.neon.dist)
+phpstan_80: phpstan.neon.8.0.dist
+	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug --configuration phpstan.neon.8.0.dist
+
+phpstan_81: ## Run PHPStan (the configuration must be defined in phpstan.neon.dist)
+phpstan_81: phpstan.neon.8.1.dist
+	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug --configuration phpstan.neon.8.1.dist
 
 rector: rector.php
 	$(PHP) vendor/bin/rector
