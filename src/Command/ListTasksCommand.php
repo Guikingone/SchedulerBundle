@@ -6,6 +6,7 @@ namespace SchedulerBundle\Command;
 
 use Cron\CronExpression;
 use SchedulerBundle\Task\ChainedTask;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -29,6 +30,10 @@ use const DATE_ATOM;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:list',
+    description: 'List the tasks',
+)]
 final class ListTasksCommand extends Command
 {
     /**
@@ -45,8 +50,6 @@ final class ListTasksCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:list')
-            ->setDescription(description: 'List the tasks')
             ->setDefinition([
                 new InputOption(name: 'expression', shortcut: null, mode: InputOption::VALUE_OPTIONAL, description: 'The expression of the tasks'),
                 new InputOption(name: 'state', shortcut: 's', mode: InputOption::VALUE_OPTIONAL, description: 'The state of the tasks'),

@@ -6,6 +6,7 @@ namespace SchedulerBundle\Command;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -23,6 +24,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:remove:failed',
+    description: 'Remove given task from the scheduler',
+)]
 final class RemoveFailedTaskCommand extends Command
 {
     public function __construct(
@@ -38,8 +43,6 @@ final class RemoveFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:remove:failed')
-            ->setDescription(description: 'Remove given task from the scheduler')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'The name of the task to remove'),
                 new InputOption(name: 'force', shortcut: 'f', mode: InputOption::VALUE_NONE, description: 'Force the operation without confirmation'),

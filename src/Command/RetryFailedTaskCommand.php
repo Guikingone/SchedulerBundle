@@ -9,6 +9,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -27,6 +28,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:retry:failed',
+    description: 'Retries one or more tasks from the failed tasks',
+)]
 final class RetryFailedTaskCommand extends Command
 {
     private LoggerInterface $logger;
@@ -47,8 +52,6 @@ final class RetryFailedTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:retry:failed')
-            ->setDescription(description: 'Retries one or more tasks from the failed tasks')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'Specific task name(s) to retry'),
                 new InputOption(name: 'force', shortcut: 'f', mode: InputOption::VALUE_NONE, description: 'Force the operation without confirmation'),

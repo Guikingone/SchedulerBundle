@@ -13,6 +13,7 @@ use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
 use SchedulerBundle\Middleware\RequiredMiddlewareInterface;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStackInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStackInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +26,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:debug:middleware',
+    description: 'Display the registered middlewares',
+)]
 final class DebugMiddlewareCommand extends Command
 {
     public function __construct(
@@ -32,17 +37,6 @@ final class DebugMiddlewareCommand extends Command
         private WorkerMiddlewareStackInterface $workerMiddlewareStack
     ) {
         parent::__construct();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this
-            ->setName('scheduler:debug:middleware')
-            ->setDescription('Display the registered middlewares')
-        ;
     }
 
     /**
