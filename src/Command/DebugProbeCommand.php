@@ -10,6 +10,7 @@ use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +22,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:debug:probe',
+    description: 'Display the current probe state and the external probes state (if defined)',
+)]
 final class DebugProbeCommand extends Command
 {
     public function __construct(
@@ -36,8 +41,6 @@ final class DebugProbeCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:debug:probe')
-            ->setDescription('Display the current probe state and the external probes state (if defined)')
             ->setDefinition([
                 new InputOption('external', null, InputOption::VALUE_NONE, 'Define if the external probes state must be displayed'),
             ])

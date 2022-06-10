@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,6 +16,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:debug:configuration',
+    description: 'Display the current transport configuration keys and values',
+)]
 final class DebugConfigurationCommand extends Command
 {
     public function __construct(private ConfigurationInterface $configuration)
@@ -28,8 +33,6 @@ final class DebugConfigurationCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:debug:configuration')
-            ->setDescription(description: 'Display the current transport configuration keys and values')
             ->setHelp(
                 help:
                 <<<'EOF'

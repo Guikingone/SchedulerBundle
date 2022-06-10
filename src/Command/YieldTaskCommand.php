@@ -6,6 +6,7 @@ namespace SchedulerBundle\Command;
 
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -20,6 +21,10 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:yield',
+    description: 'Yield a task',
+)]
 final class YieldTaskCommand extends Command
 {
     public function __construct(private SchedulerInterface $scheduler)
@@ -33,8 +38,6 @@ final class YieldTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:yield')
-            ->setDescription(description: 'Yield a task')
             ->setDefinition([
                 new InputArgument(name: 'name', mode: InputArgument::REQUIRED, description: 'The task to yield'),
                 new InputOption(name: 'async', shortcut: 'a', mode: InputOption::VALUE_NONE, description: 'Yield the task using the message bus'),

@@ -11,6 +11,7 @@ use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,6 +35,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:consume',
+    description: 'Consumes due tasks',
+)]
 final class ConsumeTasksCommand extends Command
 {
     private LoggerInterface $logger;
@@ -55,8 +60,6 @@ final class ConsumeTasksCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:consume')
-            ->setDescription('Consumes due tasks')
             ->setDefinition([
                 new InputOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Limit the number of tasks consumed'),
                 new InputOption('time-limit', 't', InputOption::VALUE_REQUIRED, 'Limit the time in seconds the worker can run'),

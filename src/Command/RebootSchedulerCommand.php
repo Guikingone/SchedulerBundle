@@ -7,6 +7,7 @@ namespace SchedulerBundle\Command;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +26,10 @@ use function implode;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:reboot',
+    description: 'Reboot the scheduler',
+)]
 final class RebootSchedulerCommand extends Command
 {
     private LoggerInterface $logger;
@@ -46,11 +51,9 @@ final class RebootSchedulerCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:reboot')
             ->setDefinition([
                 new InputOption(name: 'dry-run', shortcut: 'd', mode: InputOption::VALUE_NONE, description: 'Test the reboot without executing the tasks, the "ready to reboot" tasks are displayed'),
             ])
-            ->setDescription(description: 'Reboot the scheduler')
             ->setHelp(
                 help:
                 <<<'EOF'

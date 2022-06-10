@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Command;
 
 use SchedulerBundle\Task\FailedTask;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,22 +19,15 @@ use const DATE_ATOM;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:list:failed',
+    description: 'List all the failed tasks',
+)]
 final class ListFailedTasksCommand extends Command
 {
     public function __construct(private WorkerInterface $worker)
     {
         parent::__construct();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this
-            ->setName('scheduler:list:failed')
-            ->setDescription(description: 'List all the failed tasks')
-        ;
     }
 
     /**

@@ -12,6 +12,7 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -34,6 +35,10 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
+#[AsCommand(
+    name: 'scheduler:execute',
+    description: 'Execute tasks (due or not) depending on filters',
+)]
 final class ExecuteTaskCommand extends Command
 {
     private LoggerInterface $logger;
@@ -55,8 +60,6 @@ final class ExecuteTaskCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('scheduler:execute')
-            ->setDescription('Execute tasks (due or not) depending on filters')
             ->setDefinition([
                 new InputOption('due', 'd', InputOption::VALUE_NONE, 'Define if the filters must be applied on due tasks'),
                 new InputOption('name', null, InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'The name of the task(s) to execute'),
