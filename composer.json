@@ -140,7 +140,7 @@
         "phpunit/phpunit": "^9.5.13",
         "psr/cache": "^1.0 || ^2.0 || ^3.0",
         "rector/rector": "0.12.21",
-        "symfony/cache": "^5.4",
+        "symfony/cache": "^5.4 || ^6.0",
         "symfony/dependency-injection": "^5.4 || ^6.0",
         "symfony/error-handler": "^5.4 || ^6.0",
         "symfony/framework-bundle": "^5.4 || ^6.0",
