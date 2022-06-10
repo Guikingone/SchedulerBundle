@@ -68,7 +68,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface || !$this->dateIntervalNormalizer instanceof NormalizerInterface || !$this->objectNormalizer instanceof NormalizerInterface || !$this->notificationTaskBagNormalizer instanceof NormalizerInterface || !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
+        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface && !$this->dateTimeNormalizer instanceof NormalizerInterface && !$this->dateIntervalNormalizer instanceof NormalizerInterface && !$this->objectNormalizer instanceof NormalizerInterface && !$this->notificationTaskBagNormalizer instanceof NormalizerInterface && !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
         }
 
