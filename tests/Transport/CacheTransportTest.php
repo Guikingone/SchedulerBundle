@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Transport;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
@@ -33,7 +32,6 @@ use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 
 /**
@@ -43,7 +41,24 @@ final class CacheTransportTest extends TestCase
 {
     public function testTransportCanBeConfigured(): void
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]));
+        $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
+
+        $serializer = new Serializer([
+            new TaskNormalizer(
+                new DateTimeNormalizer(),
+                new DateTimeZoneNormalizer(),
+                new DateIntervalNormalizer(),
+                $objectNormalizer,
+                new NotificationTaskBagNormalizer($objectNormalizer),
+                $lockTaskBagNormalizer
+            ),
+            new DateTimeNormalizer(),
+            new DateIntervalNormalizer(),
+            new JsonSerializableNormalizer(),
+            $objectNormalizer,
+        ], [new JsonEncoder()]);
+        $objectNormalizer->setSerializer($serializer);
 
         $cacheTransport = new CacheTransport(new InMemoryConfiguration([
             'execution_mode' => 'nice',
@@ -250,18 +265,14 @@ final class CacheTransportTest extends TestCase
         ], [new JsonEncoder()]);
         $objectNormalizer->setSerializer($serializer);
 
-        $pool = $this->createMock(CacheItemPoolInterface::class);
-        $pool->expects(self::exactly(3))->method('hasItem')
-            ->withConsecutive([self::equalTo('_scheduler_task_list')], [self::equalTo('foo')])
-            ->willReturnOnConsecutiveCalls([true], [false], [true])
-        ;
-
-        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), $pool, $serializer, new SchedulePolicyOrchestrator([
+        $cacheTransport = new CacheTransport(new InMemoryConfiguration(), new ArrayAdapter(), $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
 
         $cacheTransport->create(new NullTask('foo'));
         $cacheTransport->create(new NullTask('foo'));
+
+        self::assertCount(1, $cacheTransport->list());
     }
 
     public function testTransportCannotUpdateUndefinedTask(): void

@@ -13,6 +13,7 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->phpVersion(phpVersion: PhpVersion::PHP_80);
     $rectorConfig->importNames();
     $rectorConfig->importShortClasses();
+    $rectorConfig->parallel();
 
     $rectorConfig->autoloadPaths(autoloadPaths: [
         __DIR__ . '/vendor/autoload.php',

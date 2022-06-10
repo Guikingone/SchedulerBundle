@@ -35,7 +35,7 @@ final class CacheTransport extends AbstractTransport
         public SerializerInterface $serializer,
         public SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        parent::__construct($configuration);
+        parent::__construct(configuration: $configuration);
 
         $this->boot();
     }
@@ -46,27 +46,27 @@ final class CacheTransport extends AbstractTransport
     public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
-            return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
+            return new LazyTask(name: $name, sourceTaskClosure: Closure::bind(closure: fn (): TaskInterface => $this->get(name: $name), newThis: $this));
         }
 
         if (self::TASK_LIST_ITEM_NAME === $name) {
-            throw new RuntimeException('This key is internal and cannot be accessed');
+            throw new RuntimeException(message: 'This key is internal and cannot be accessed');
         }
 
-        if (!$this->pool->hasItem($name)) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
+        if (!$this->pool->hasItem(key: $name)) {
+            throw new InvalidArgumentException(message: sprintf('The task "%s" does not exist', $name));
         }
 
-        $item = $this->pool->getItem($name);
+        $item = $this->pool->getItem(key: $name);
         if (!$item->isHit()) {
-            throw new RuntimeException('The task cannot be retrieved');
+            throw new RuntimeException(message: 'The task cannot be retrieved');
         }
 
-        if (!is_string($item->get())) {
-            throw new RuntimeException('The task body is not valid');
+        if (!is_string(value: $item->get())) {
+            throw new RuntimeException(message: 'The task body is not valid');
         }
 
-        return $this->serializer->deserialize($item->get(), TaskInterface::class, 'json');
+        return $this->serializer->deserialize(data: $item->get(), type: TaskInterface::class, format: 'json');
     }
 
     /**
@@ -190,16 +190,16 @@ final class CacheTransport extends AbstractTransport
 
     private function boot(): void
     {
-        if ($this->pool->hasItem(self::TASK_LIST_ITEM_NAME)) {
+        if ($this->pool->hasItem(key: self::TASK_LIST_ITEM_NAME)) {
             return;
         }
 
-        $item = $this->pool->getItem(self::TASK_LIST_ITEM_NAME);
+        $item = $this->pool->getItem(key: self::TASK_LIST_ITEM_NAME);
         if (null !== $item->get()) {
             return;
         }
 
-        $item->set([]);
-        $this->pool->save($item);
+        $item->set(value: []);
+        $this->pool->save(item: $item);
     }
 }
