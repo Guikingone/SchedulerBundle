@@ -76,8 +76,12 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets(sets: [
         SymfonySetList::SYMFONY_50,
         SymfonySetList::SYMFONY_50_TYPES,
+        SymfonySetList::SYMFONY_51,
         SymfonySetList::SYMFONY_52,
         SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
+        SymfonySetList::SYMFONY_52_VALIDATOR_ATTRIBUTES,
+        SymfonySetList::SYMFONY_53,
+        SymfonySetList::SYMFONY_54,
     ]);
 
     '8.1' !== PHP_VERSION
