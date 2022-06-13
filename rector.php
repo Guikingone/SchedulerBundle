@@ -13,7 +13,7 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->phpVersion(phpVersion: PhpVersion::PHP_80);
     $rectorConfig->importNames();
     $rectorConfig->importShortClasses();
-    $rectorConfig->parallel();
+    $rectorConfig->parallel(seconds: 600, maxNumberOfProcess: 32);
 
     $rectorConfig->autoloadPaths(autoloadPaths: [
         __DIR__ . '/vendor/autoload.php',
@@ -24,24 +24,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/tests',
     ]);
 
-    '8.1' !== PHP_VERSION ? $rectorConfig->skip(criteria: [
-        __DIR__ . '/vendor',
-        __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
-        __DIR__ . '/src/Fiber/AbstractFiberHandler.php',
-        __DIR__ . '/src/Middleware/FiberAwareWorkerMiddlewareStack.php',
-        __DIR__ . '/src/Transport/Configuration/FiberConfiguration.php',
-        __DIR__ . '/src/Transport/FiberTransport.php',
-        __DIR__ . '/src/Worker/ExecutionPolicy/FiberPolicy.php',
-        __DIR__ . '/src/Worker/FiberWorker.php',
-        __DIR__ . '/src/FiberScheduler.php',
-        __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
-        __DIR__ . '/tests/FiberSchedulerTest.php',
-        __DIR__ . '/tests/Middleware/FiberAwareWorkerMiddlewareStackTest.php',
-        __DIR__ . '/tests/Transport/Configuration/FiberConfigurationTest.php',
-        __DIR__ . '/tests/Transport/FiberTransportTest.php',
-        __DIR__ . '/tests/Worker/ExecutionPolicy/FiberPolicyTest.php',
-        __DIR__ . '/tests/Worker/FiberWorkerTest.php',
-    ]) : $rectorConfig->skip(criteria: [
+    $rectorConfig->skip(criteria: [
         __DIR__ . '/vendor',
         __DIR__ . '/src/DependencyInjection/SchedulerBundleExtension.php',
         __DIR__ . '/tests/Serializer/TaskNormalizerTest.php',
