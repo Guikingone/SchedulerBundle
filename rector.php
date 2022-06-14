@@ -68,8 +68,5 @@ return static function (RectorConfig $rectorConfig): void {
         SymfonySetList::SYMFONY_54,
     ]);
 
-    '8.1' !== PHP_VERSION
-        ? $rectorConfig->phpstanConfig(filePath: __DIR__ . '/phpstan.neon.8.0.dist')
-        : $rectorConfig->phpstanConfig(filePath: __DIR__ . '/phpstan.neon.8.1.dist')
-    ;
+    $rectorConfig->phpstanConfig(filePath: __DIR__ . '8.0' === PHP_VERSION ? '/phpstan.neon.8.0.dist' : '/phpstan.neon.8.1.dist');
 };
