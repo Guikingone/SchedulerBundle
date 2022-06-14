@@ -68,7 +68,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
-        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface || !$this->dateIntervalNormalizer instanceof NormalizerInterface || !$this->objectNormalizer instanceof NormalizerInterface || !$this->notificationTaskBagNormalizer instanceof NormalizerInterface || !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
+        if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface && !$this->dateTimeNormalizer instanceof NormalizerInterface && !$this->dateIntervalNormalizer instanceof NormalizerInterface && !$this->objectNormalizer instanceof NormalizerInterface && !$this->notificationTaskBagNormalizer instanceof NormalizerInterface && !$this->accessLockBagNormalizer instanceof NormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
         }
 
@@ -103,7 +103,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         };
 
         $taskCallbacksAttributesCallback = function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
-            if (!$this->objectNormalizer instanceof NormalizerInterface) {
+            if (!$this->objectNormalizer instanceof ObjectNormalizer) {
                 throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
             }
 
@@ -150,20 +150,32 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'channels' => array_merge(...array_map(static fn (Recipient $recipient): array => $innerObject->getChannels($recipient), $outerObject->getRecipients())),
                     'importance' => $innerObject->getImportance(),
                 ],
-                'message' => fn ($innerObject, MessengerTask $outerObject, string $attributeName, string $format = null, array $context = []): array => [
-                    'class' => $innerObject::class,
-                    'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
-                ],
-                'callback' => fn ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): array => [
-                    'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
-                    'method' => $innerObject[1],
-                    'type' => $innerObject[0]::class,
-                ],
+                'message' => function ($innerObject, MessengerTask $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                    if (!$this->objectNormalizer instanceof ObjectNormalizer) {
+                        throw new RuntimeException(sprintf('The object normalizer is not an instance of %s.', ObjectNormalizer::class));
+                    }
+
+                    return [
+                        'class' => $innerObject::class,
+                        'payload' => $this->objectNormalizer->normalize($innerObject, $format, $context),
+                    ];
+                },
+                'callback' => function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): array {
+                    if (!$this->objectNormalizer instanceof ObjectNormalizer) {
+                        throw new RuntimeException(sprintf('The object normalizer is not an instance of %s.', ObjectNormalizer::class));
+                    }
+
+                    return [
+                        'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
+                        'method' => $innerObject[1],
+                        'type' => $innerObject[0]::class,
+                    ];
+                },
                 'tasks' => fn (TaskListInterface $innerObject, ChainedTask $outerObject, string $attributeName, string $format = null, array $context = []): array => array_map(fn (TaskInterface $task): array => $this->normalize($task, $format, [
                     AbstractNormalizer::IGNORED_ATTRIBUTES => $task instanceof CommandTask ? [] : [
                         'options' => [],
                     ],
-                ]), $innerObject->toArray(false)),
+                ]), $innerObject->toArray(keepKeys: false)),
                 'accessLockBag' => function (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
                     if (!$this->accessLockBagNormalizer instanceof AccessLockBagNormalizer) {
                         throw new RuntimeException(sprintf('The access lock bag normalizer is not an instance of %s.', AccessLockBagNormalizer::class));
@@ -173,6 +185,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 },
             ],
         ];
+
+        if (!$this->objectNormalizer instanceof NormalizerInterface) {
+            throw new RuntimeException(sprintf('The object normalizer is not an instance of %s.', ObjectNormalizer::class));
+        }
 
         return [
             'body' => $this->objectNormalizer->normalize($object, $format, $context + $normalizationCallbacks + [
@@ -324,7 +340,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
             ]);
         }
 
-        throw new InvalidArgumentException('The task cannot be denormalized as the type is not supported');
+        throw new InvalidArgumentException(message: 'The task cannot be denormalized as the type is not supported');
     }
 
     /**
@@ -332,6 +348,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
-        return is_array($data) && array_key_exists(self::NORMALIZATION_DISCRIMINATOR, $data) || $type === TaskInterface::class;
+        return is_array(value: $data) && array_key_exists(key: self::NORMALIZATION_DISCRIMINATOR, array: $data) || $type === TaskInterface::class;
     }
 }

@@ -212,7 +212,8 @@ final class ConsumeTasksCommand extends Command
         $this->eventDispatcher->addListener(TaskExecutedEvent::class, static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $task = $event->getTask();
             $output = $event->getOutput();
-            $taskExecutionDuration = Helper::formatTime($task->getExecutionComputationTime() ?? 0 / 1000);
+
+            $taskExecutionDuration = Helper::formatTime((int) $task->getExecutionComputationTime() / 100);
             $taskExecutionMemoryUsage = Helper::formatMemory($task->getExecutionMemoryUsage());
 
             if (in_array($task->getExecutionState(), [TaskInterface::TO_RETRY, TaskInterface::INCOMPLETE], true)) {
