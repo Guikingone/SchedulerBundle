@@ -23,6 +23,13 @@ jobs:
         image: redis:6.0.0
         ports:
           - 6379:6379
+      postgres:
+        image: postgres:9.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -53,6 +60,7 @@ jobs:
         run: php vendor/bin/phpunit tests -v
         env:
           SCHEDULER_REDIS_DSN: 'redis://127.0.0.1:6379/_symfony_scheduler_tasks'
+          SCHEDULER_POSTGRES_DSN: 'postgres://postgres:postgres@127.0.0.1:5432/_symfony_scheduler_tasks'
 
       - name: Cache PHPUnit result
         uses: actions/cache@v3
