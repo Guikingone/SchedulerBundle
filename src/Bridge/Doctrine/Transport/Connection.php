@@ -38,7 +38,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         private SerializerInterface $serializer,
         private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        parent::__construct($dbalConnection);
+        parent::__construct(driverConnection: $dbalConnection);
     }
 
     /**
@@ -46,14 +46,14 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function list(): TaskListInterface
     {
-        $existingTasksCount = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
-            ->select((new Expr())->countDistinct('t.id'))
+        $existingTasksCount = $this->createQueryBuilder(table: $this->configuration->get(key: 'table_name'), alias: 't')
+            ->select(select: (new Expr())->countDistinct(x: 't.id'))
         ;
 
         $statement = $this->executeQuery(
-            $existingTasksCount->getSQL(),
-            $existingTasksCount->getParameters(),
-            $existingTasksCount->getParameterTypes()
+            sql: $existingTasksCount->getSQL(),
+            parameters: $existingTasksCount->getParameters(),
+            types: $existingTasksCount->getParameterTypes()
         )->fetchOne();
 
         if (0 === (int) $statement) {
@@ -61,13 +61,13 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         }
 
         try {
-            return $this->dbalConnection->transactional(function (): TaskListInterface {
-                $statement = $this->executeQuery($this->createQueryBuilder($this->configuration->get('table_name'), 't')->getSQL());
+            return $this->dbalConnection->transactional(func: function (): TaskListInterface {
+                $statement = $this->executeQuery(sql: $this->createQueryBuilder(table: $this->configuration->get(key: 'table_name'), alias: 't')->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
-                $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+                $taskList = new TaskList(tasks: array_map(callback: fn (array $task): TaskInterface => $this->serializer->deserialize(data: $task['body'], type: TaskInterface::class, format: 'json'), array: $tasks));
 
-                return $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $taskList);
+                return $this->schedulePolicyOrchestrator->sort(policy: $this->configuration->get(key: 'execution_mode'), tasks: $taskList);
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);

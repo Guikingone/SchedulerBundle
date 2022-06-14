@@ -109,10 +109,10 @@ final class ConnectionIntegrationTest extends TestCase
 
     public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
     {
-        $this->connection->create(new NullTask('foo', [
+        $this->connection->create(task: new NullTask(name: 'foo', options: [
             'scheduled_at' => new DateTimeImmutable(),
         ]));
-        $this->connection->create(new NullTask('bar', [
+        $this->connection->create(task: new NullTask(name: 'bar', options: [
             'scheduled_at' => new DateTimeImmutable(),
         ]));
 
