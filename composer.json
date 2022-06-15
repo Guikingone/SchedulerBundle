@@ -123,12 +123,14 @@
         "symfony/stopwatch": "^5.4 || ^6.0"
     },
     "require-dev": {
+        "ext-grpc": "*",
         "ext-pcntl": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
         "doctrine/dbal": "^3.3.6",
         "doctrine/orm": "^2.8",
         "friendsofphp/php-cs-fixer": "^3.8",
+        "grpc/grpc": "^1.42",
         "infection/infection": "^0.26.10",
         "marcocesarato/php-conventional-changelog": "^1.14",
         "phpstan/phpstan": "^1.7.12",

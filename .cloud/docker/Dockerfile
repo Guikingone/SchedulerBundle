@@ -6,10 +6,10 @@ ENV SCHEDULER_REDIS_DSN 'redis://redis:6379/_symfony_scheduler_tasks'
 WORKDIR /srv/app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libzip-dev=1.7 zip=3.0 redis=5.0 git=2.30 \
-    && pecl install redis xdebug \
+    && apt-get install -y --no-install-recommends libzip-dev zip redis git \
+    && pecl install redis xdebug grpc \
     && docker-php-ext-install pcntl zip \
-    && docker-php-ext-enable pcntl xdebug redis \
+    && docker-php-ext-enable pcntl xdebug redis grpc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
