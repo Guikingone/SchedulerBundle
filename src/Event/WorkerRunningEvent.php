@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerRunningEvent extends Event implements WorkerEventInterface
 {
-    public function __construct(private WorkerInterface $worker, private bool $isIdle = false)
+    public function __construct(private readonly WorkerInterface $worker, private readonly bool $isIdle = false)
     {
     }
 

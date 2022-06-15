@@ -13,7 +13,7 @@ use function sprintf;
  */
 final class ProbeScheduledTask extends Constraint
 {
-    public function __construct(private int $expectedCount)
+    public function __construct(private readonly int $expectedCount)
     {
     }
 

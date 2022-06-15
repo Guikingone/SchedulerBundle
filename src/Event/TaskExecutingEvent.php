@@ -14,7 +14,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskExecutingEvent extends Event implements TaskEventInterface, WorkerEventInterface
 {
-    public function __construct(private TaskInterface $task, private WorkerInterface $worker, private TaskListInterface $currentTasks)
+    public function __construct(private readonly TaskInterface $task, private readonly WorkerInterface $worker, private readonly TaskListInterface $currentTasks)
     {
     }
 

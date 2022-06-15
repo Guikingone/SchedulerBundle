@@ -16,7 +16,7 @@ final class WorkerRegistry implements WorkerRegistryInterface
     /**
      * @var WorkerInterface[]
      */
-    private array $workers;
+    private readonly array $workers;
 
     /**
      * @param WorkerInterface[] $workers

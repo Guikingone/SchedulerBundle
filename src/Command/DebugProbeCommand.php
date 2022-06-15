@@ -29,8 +29,8 @@ use function sprintf;
 final class DebugProbeCommand extends Command
 {
     public function __construct(
-        private ProbeInterface $probe,
-        private SchedulerInterface $scheduler
+        private readonly ProbeInterface $probe,
+        private readonly SchedulerInterface $scheduler
     ) {
         parent::__construct();
     }

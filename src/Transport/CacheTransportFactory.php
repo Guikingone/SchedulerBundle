@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CacheTransportFactory implements TransportFactoryInterface
 {
-    public function __construct(private CacheItemPoolInterface $pool)
+    public function __construct(private readonly CacheItemPoolInterface $pool)
     {
     }
 

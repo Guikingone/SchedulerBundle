@@ -23,10 +23,10 @@ use function sprintf;
 final class SchedulerConfigurationNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     public function __construct(
-        private DenormalizerInterface|NormalizerInterface|TaskNormalizer $taskNormalizer,
-        private DenormalizerInterface|NormalizerInterface|DateTimeZoneNormalizer $dateTimeZoneNormalizer,
-        private DenormalizerInterface|NormalizerInterface|DateTimeNormalizer $dateTimeNormalizer,
-        private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer
+        private readonly DenormalizerInterface|NormalizerInterface|TaskNormalizer $taskNormalizer,
+        private readonly DenormalizerInterface|NormalizerInterface|DateTimeZoneNormalizer $dateTimeZoneNormalizer,
+        private readonly DenormalizerInterface|NormalizerInterface|DateTimeNormalizer $dateTimeNormalizer,
+        private readonly DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer
     ) {
     }
 

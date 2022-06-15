@@ -21,13 +21,8 @@ use function sprintf;
  */
 final class AccessLockBagNormalizer implements NormalizerInterface, DenormalizerInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(
-        private ObjectNormalizer|NormalizerInterface|DenormalizerInterface $objectNormalizer,
-        ?LoggerInterface $logger = null
-    ) {
-        $this->logger = $logger ?? new NullLogger();
+    public function __construct(private readonly ObjectNormalizer|NormalizerInterface|DenormalizerInterface $objectNormalizer, private readonly LoggerInterface $logger = new NullLogger())
+    {
     }
 
     /**

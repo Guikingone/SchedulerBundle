@@ -20,7 +20,7 @@ final class LazyScheduler implements SchedulerInterface, LazyInterface
     private SchedulerInterface $scheduler;
     private bool $initialized = false;
 
-    public function __construct(private SchedulerInterface $sourceScheduler)
+    public function __construct(private readonly SchedulerInterface $sourceScheduler)
     {
     }
 

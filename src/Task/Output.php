@@ -22,9 +22,9 @@ final class Output implements Stringable
     public const ERROR = 'error';
 
     public function __construct(
-        private TaskInterface $task,
-        private ?string $output = 'undefined',
-        private string $type = self::SUCCESS
+        private readonly TaskInterface $task,
+        private readonly ?string $output = 'undefined',
+        private readonly string $type = self::SUCCESS
     ) {
     }
 

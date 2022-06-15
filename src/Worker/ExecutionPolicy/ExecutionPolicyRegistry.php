@@ -20,7 +20,7 @@ final class ExecutionPolicyRegistry implements ExecutionPolicyRegistryInterface
     /**
      * @var ExecutionPolicyInterface[]
      */
-    private array $policies;
+    private readonly array $policies;
 
     /**
      * @param ExecutionPolicyInterface[] $policies

@@ -25,7 +25,7 @@ use const DATE_ATOM;
 )]
 final class ListFailedTasksCommand extends Command
 {
-    public function __construct(private WorkerInterface $worker)
+    public function __construct(private readonly WorkerInterface $worker)
     {
         parent::__construct();
     }

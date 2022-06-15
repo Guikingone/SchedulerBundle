@@ -41,12 +41,12 @@ use function sprintf;
 )]
 final class ConsumeTasksCommand extends Command
 {
-    private LoggerInterface $logger;
+    private readonly LoggerInterface $logger;
 
     public function __construct(
-        private SchedulerInterface $scheduler,
-        private WorkerInterface $worker,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly SchedulerInterface $scheduler,
+        private readonly WorkerInterface $worker,
+        private readonly EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();

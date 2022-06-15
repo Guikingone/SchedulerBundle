@@ -14,7 +14,7 @@ use SchedulerBundle\Task\TaskInterface;
  */
 abstract class AbstractTaskBuilder
 {
-    public function __construct(private ExpressionBuilderInterface $expressionBuilder)
+    public function __construct(private readonly ExpressionBuilderInterface $expressionBuilder)
     {
     }
 

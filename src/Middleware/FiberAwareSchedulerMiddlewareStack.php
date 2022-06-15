@@ -16,7 +16,7 @@ use Throwable;
 final class FiberAwareSchedulerMiddlewareStack extends AbstractFiberHandler implements SchedulerMiddlewareStackInterface
 {
     public function __construct(
-        private SchedulerMiddlewareStackInterface $middlewareStack,
+        private readonly SchedulerMiddlewareStackInterface $middlewareStack,
         ?LoggerInterface $logger = null
     ) {
         parent::__construct(logger: $logger);

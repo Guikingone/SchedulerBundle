@@ -39,7 +39,7 @@ final class ListTasksCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function __construct(private SchedulerInterface $scheduler)
+    public function __construct(private readonly SchedulerInterface $scheduler)
     {
         parent::__construct();
     }

@@ -33,7 +33,7 @@ abstract class AbstractCompoundConfigurationFactory implements ConfigurationFact
             throw new LogicException(sprintf('The %s configuration factory cannot create a configuration', static::class));
         }
 
-        $finalDsnList = explode($delimiter, $dsnList[0]);
+        $finalDsnList = explode($delimiter, (string) $dsnList[0]);
         if ($dsnList[0] === $finalDsnList[0]) {
             throw new InvalidArgumentException('The embedded dsn cannot be used to create a configuration');
         }

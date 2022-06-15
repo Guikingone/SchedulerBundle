@@ -41,16 +41,12 @@ use function sprintf;
 )]
 final class ExecuteTaskCommand extends Command
 {
-    private LoggerInterface $logger;
-
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-        private SchedulerInterface $scheduler,
-        private WorkerInterface $worker,
-        ?LoggerInterface $logger = null
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SchedulerInterface $scheduler,
+        private readonly WorkerInterface $worker,
+        private readonly LoggerInterface $logger = new NullLogger()
     ) {
-        $this->logger = $logger ?? new NullLogger();
-
         parent::__construct();
     }
 

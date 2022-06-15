@@ -16,7 +16,7 @@ use function sprintf;
  */
 abstract class AbstractDoctrineConnection
 {
-    public function __construct(private DBALConnection $driverConnection)
+    public function __construct(private readonly DBALConnection $driverConnection)
     {
     }
 

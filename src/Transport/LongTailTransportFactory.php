@@ -17,7 +17,7 @@ final class LongTailTransportFactory extends AbstractCompoundTransportFactory
     /**
      * @param iterable|TransportFactoryInterface[] $transportFactories
      */
-    public function __construct(private iterable $transportFactories)
+    public function __construct(private readonly iterable $transportFactories)
     {
     }
 

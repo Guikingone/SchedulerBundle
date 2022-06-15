@@ -23,7 +23,7 @@ use function sprintf;
  */
 final class CommandTaskRunner implements RunnerInterface
 {
-    public function __construct(private Application $application)
+    public function __construct(private readonly Application $application)
     {
     }
 
@@ -80,7 +80,7 @@ final class CommandTaskRunner implements RunnerInterface
         $options = [];
         foreach ($commandTask->getOptions() as $key => $option) {
             if (is_int($key)) {
-                $options[] = str_starts_with($option, '--') ? $option : sprintf('--%s', $option);
+                $options[] = str_starts_with((string) $option, '--') ? $option : sprintf('--%s', $option);
 
                 continue;
             }

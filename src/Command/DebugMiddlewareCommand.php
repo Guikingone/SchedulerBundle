@@ -33,8 +33,8 @@ use function sprintf;
 final class DebugMiddlewareCommand extends Command
 {
     public function __construct(
-        private SchedulerMiddlewareStackInterface $schedulerMiddlewareStack,
-        private WorkerMiddlewareStackInterface $workerMiddlewareStack
+        private readonly SchedulerMiddlewareStackInterface $schedulerMiddlewareStack,
+        private readonly WorkerMiddlewareStackInterface $workerMiddlewareStack
     ) {
         parent::__construct();
     }

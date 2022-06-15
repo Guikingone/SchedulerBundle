@@ -15,7 +15,7 @@ final class ExpressionBuilder implements BuilderInterface
     /**
      * @param iterable|ExpressionBuilderInterface[] $builders
      */
-    public function __construct(private iterable $builders)
+    public function __construct(private readonly iterable $builders)
     {
     }
 

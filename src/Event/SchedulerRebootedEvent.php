@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class SchedulerRebootedEvent extends Event
 {
-    public function __construct(private SchedulerInterface $scheduler)
+    public function __construct(private readonly SchedulerInterface $scheduler)
     {
     }
 

@@ -15,7 +15,7 @@ final class LongTailConfigurationFactory extends AbstractCompoundConfigurationFa
     /**
      * @param ConfigurationFactoryInterface[] $factories
      */
-    public function __construct(private iterable $factories)
+    public function __construct(private readonly iterable $factories)
     {
     }
 

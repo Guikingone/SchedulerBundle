@@ -17,7 +17,7 @@ final class FailOverConfiguration extends AbstractCompoundConfiguration
     /**
      * @var SplObjectStorage<object, mixed>
      */
-    private SplObjectStorage $failedConfigurations;
+    private readonly SplObjectStorage $failedConfigurations;
 
     public function __construct(ConfigurationRegistryInterface $configurationRegistry)
     {

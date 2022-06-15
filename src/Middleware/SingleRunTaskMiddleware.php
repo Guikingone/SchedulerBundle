@@ -17,13 +17,8 @@ use function sprintf;
  */
 final class SingleRunTaskMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface, RequiredMiddlewareInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(
-        private TransportInterface $transport,
-        ?LoggerInterface $logger = null
-    ) {
-        $this->logger = $logger ?? new NullLogger();
+    public function __construct(private readonly TransportInterface $transport, private readonly LoggerInterface $logger = new NullLogger())
+    {
     }
 
     /**

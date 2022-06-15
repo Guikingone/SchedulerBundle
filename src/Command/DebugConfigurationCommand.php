@@ -22,7 +22,7 @@ use function sprintf;
 )]
 final class DebugConfigurationCommand extends Command
 {
-    public function __construct(private ConfigurationInterface $configuration)
+    public function __construct(private readonly ConfigurationInterface $configuration)
     {
         parent::__construct();
     }

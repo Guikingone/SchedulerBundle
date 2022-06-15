@@ -11,7 +11,7 @@ use SchedulerBundle\Task\TaskInterface;
  */
 final class TaskToUpdateMessage
 {
-    public function __construct(private string $taskName, private TaskInterface $task)
+    public function __construct(private readonly string $taskName, private readonly TaskInterface $task)
     {
     }
 

@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerForkedEvent extends Event
 {
-    public function __construct(private WorkerInterface $forkedWorker, private WorkerInterface $newWorker)
+    public function __construct(private readonly WorkerInterface $forkedWorker, private readonly WorkerInterface $newWorker)
     {
     }
 

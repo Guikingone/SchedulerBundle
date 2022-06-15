@@ -21,7 +21,7 @@ use function sprintf;
  */
 final class DoctrineTransportFactory implements TransportFactoryInterface
 {
-    public function __construct(private ConnectionRegistry $registry)
+    public function __construct(private readonly ConnectionRegistry $registry)
     {
     }
 

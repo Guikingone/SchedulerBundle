@@ -17,8 +17,8 @@ use function array_keys;
 final class SchedulerPass implements CompilerPassInterface
 {
     public function __construct(
-        private string $schedulerExtraTag = 'scheduler.extra',
-        private string $schedulerEntryPointTag = 'scheduler.entry_point'
+        private readonly string $schedulerExtraTag = 'scheduler.extra',
+        private readonly string $schedulerEntryPointTag = 'scheduler.entry_point'
     ) {
     }
 

@@ -15,11 +15,11 @@ use SchedulerBundle\Task\TaskListInterface;
  */
 final class SchedulerConfiguration
 {
-    private TaskListInterface $dueTasks;
+    private readonly TaskListInterface $dueTasks;
 
     public function __construct(
-        private DateTimeZone $timezone,
-        private DateTimeImmutable $synchronizedDate,
+        private readonly DateTimeZone $timezone,
+        private readonly DateTimeImmutable $synchronizedDate,
         TaskInterface ...$dueTasks
     ) {
         $this->dueTasks = new TaskList(tasks: $dueTasks);

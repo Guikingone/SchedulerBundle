@@ -25,7 +25,7 @@ final class CacheConfiguration extends AbstractConfiguration
      * @param array<string, mixed> $options
      */
     public function __construct(
-        private CacheItemPoolInterface $pool,
+        private readonly CacheItemPoolInterface $pool,
         array $options = []
     ) {
         $this->boot();

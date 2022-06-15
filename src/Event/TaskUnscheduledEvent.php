@@ -11,7 +11,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskUnscheduledEvent extends Event implements TaskEventInterface
 {
-    public function __construct(private string $task)
+    public function __construct(private readonly string $task)
     {
     }
 

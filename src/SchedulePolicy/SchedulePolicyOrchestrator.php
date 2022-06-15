@@ -19,7 +19,7 @@ final class SchedulePolicyOrchestrator implements SchedulePolicyOrchestratorInte
     /**
      * @param PolicyInterface[] $policies
      */
-    public function __construct(private iterable $policies)
+    public function __construct(private readonly iterable $policies)
     {
     }
 
