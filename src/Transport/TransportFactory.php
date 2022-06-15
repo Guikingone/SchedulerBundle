@@ -18,7 +18,7 @@ final class TransportFactory
     /**
      * @param TransportFactoryInterface[] $factories
      */
-    public function __construct(private iterable $factories)
+    public function __construct(private readonly iterable $factories)
     {
     }
 

@@ -15,12 +15,12 @@ use function array_values;
  */
 abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 {
-    private MiddlewareRegistryInterface $middlewareRegistry;
+    private readonly MiddlewareRegistryInterface $middlewareRegistry;
 
     /**
      * @var SplObjectStorage<PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface, null>
      */
-    private SplObjectStorage $executedMiddleware;
+    private readonly SplObjectStorage $executedMiddleware;
 
     /**
      * @param iterable|PreExecutionMiddlewareInterface[]|PostExecutionMiddlewareInterface[]|PreSchedulingMiddlewareInterface[]|PostSchedulingMiddlewareInterface[]|OrderedMiddlewareInterface[] $stack

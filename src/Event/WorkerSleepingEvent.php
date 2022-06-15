@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class WorkerSleepingEvent extends Event implements WorkerEventInterface
 {
-    public function __construct(private int $sleepDuration, private WorkerInterface $worker)
+    public function __construct(private readonly int $sleepDuration, private readonly WorkerInterface $worker)
     {
     }
 

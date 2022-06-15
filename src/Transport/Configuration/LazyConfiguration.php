@@ -15,7 +15,7 @@ final class LazyConfiguration implements ConfigurationInterface, LazyInterface
     private ConfigurationInterface $configuration;
     private bool $initialized = false;
 
-    public function __construct(private ConfigurationInterface $sourceConfiguration)
+    public function __construct(private readonly ConfigurationInterface $sourceConfiguration)
     {
     }
 

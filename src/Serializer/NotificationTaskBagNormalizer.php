@@ -21,7 +21,7 @@ use function sprintf;
  */
 final class NotificationTaskBagNormalizer implements DenormalizerInterface, NormalizerInterface
 {
-    public function __construct(private DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer)
+    public function __construct(private readonly DenormalizerInterface|NormalizerInterface|ObjectNormalizer $objectNormalizer)
     {
     }
 

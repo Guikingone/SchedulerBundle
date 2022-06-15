@@ -32,16 +32,12 @@ use function implode;
 )]
 final class RebootSchedulerCommand extends Command
 {
-    private LoggerInterface $logger;
-
     public function __construct(
-        private SchedulerInterface $scheduler,
-        private WorkerInterface $worker,
-        private EventDispatcherInterface $eventDispatcher,
-        ?LoggerInterface $logger = null
+        private readonly SchedulerInterface $scheduler,
+        private readonly WorkerInterface $worker,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly LoggerInterface $logger = new NullLogger()
     ) {
-        $this->logger = $logger ?? new NullLogger();
-
         parent::__construct();
     }
 

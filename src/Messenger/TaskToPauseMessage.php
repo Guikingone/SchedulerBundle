@@ -9,7 +9,7 @@ namespace SchedulerBundle\Messenger;
  */
 final class TaskToPauseMessage
 {
-    public function __construct(private string $task)
+    public function __construct(private readonly string $task)
     {
     }
 

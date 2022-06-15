@@ -13,7 +13,7 @@ use function sprintf;
  */
 final class TaskExecutionTracker implements TaskExecutionTrackerInterface
 {
-    public function __construct(private Stopwatch $watch)
+    public function __construct(private readonly Stopwatch $watch)
     {
     }
 

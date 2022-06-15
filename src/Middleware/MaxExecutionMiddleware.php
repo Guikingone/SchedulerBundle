@@ -19,13 +19,8 @@ use function sprintf;
  */
 final class MaxExecutionMiddleware implements PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(
-        private ?RateLimiterFactory $rateLimiter = null,
-        ?LoggerInterface $logger = null
-    ) {
-        $this->logger = $logger ?? new NullLogger();
+    public function __construct(private readonly ?RateLimiterFactory $rateLimiter = null, private readonly LoggerInterface $logger = new NullLogger())
+    {
     }
 
     public function preExecute(TaskInterface $task): void

@@ -47,6 +47,6 @@ abstract class AbstractCompoundTransportFactory implements TransportFactoryInter
             }
 
             throw new InvalidArgumentException('The given dsn cannot be used to create a transport');
-        }, explode($delimiter, $dsnList[0]));
+        }, explode($delimiter, (string) $dsnList[0]));
     }
 }

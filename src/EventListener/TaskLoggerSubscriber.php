@@ -18,7 +18,7 @@ use SchedulerBundle\Event\TaskUnscheduledEvent;
  */
 final class TaskLoggerSubscriber implements EventSubscriberInterface
 {
-    private TaskEventList $events;
+    private readonly TaskEventList $events;
 
     public function __construct()
     {

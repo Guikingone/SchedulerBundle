@@ -14,7 +14,7 @@ use function sprintf;
  */
 final class TaskScheduled extends Constraint
 {
-    public function __construct(private int $expectedCount)
+    public function __construct(private readonly int $expectedCount)
     {
     }
 

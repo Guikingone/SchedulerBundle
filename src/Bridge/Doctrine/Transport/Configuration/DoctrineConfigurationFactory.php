@@ -19,7 +19,7 @@ use function sprintf;
  */
 final class DoctrineConfigurationFactory implements ConfigurationFactoryInterface
 {
-    public function __construct(private ConnectionRegistry $registry)
+    public function __construct(private readonly ConnectionRegistry $registry)
     {
     }
 

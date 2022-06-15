@@ -10,7 +10,7 @@ use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
 
 return static function (RectorConfig $rectorConfig): void {
-    $rectorConfig->phpVersion(phpVersion: PhpVersion::PHP_80);
+    $rectorConfig->phpVersion(phpVersion: PhpVersion::PHP_81);
     $rectorConfig->importNames();
     $rectorConfig->importShortClasses();
     $rectorConfig->parallel(seconds: 600, maxNumberOfProcess: 32);
@@ -54,6 +54,7 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::PHP_73,
         SetList::PHP_74,
         SetList::PHP_80,
+        SetList::PHP_81,
         SetList::UNWRAP_COMPAT,
     ]);
 

@@ -16,7 +16,7 @@ use function sprintf;
  */
 abstract class AbstractFiberHandler
 {
-    private LoggerInterface $logger;
+    private readonly LoggerInterface $logger;
 
     public function __construct(?LoggerInterface $logger = null)
     {

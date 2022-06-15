@@ -17,15 +17,12 @@ use function sprintf;
  */
 final class StopWorkerOnFailureLimitSubscriber implements EventSubscriberInterface
 {
-    private LoggerInterface $logger;
     private int $failedTasks = 0;
 
     public function __construct(
-        private int $maximumFailedTasks,
-        ?LoggerInterface $logger = null
+        private readonly int $maximumFailedTasks,
+        private readonly LoggerInterface $logger = new NullLogger()
     ) {
-        $this->logger = $logger ?? new NullLogger();
-
         if ($maximumFailedTasks <= 0) {
             throw new InvalidArgumentException(sprintf('The failure limit must be greater than 0, given %d', $maximumFailedTasks));
         }

@@ -18,8 +18,8 @@ final class TaskBuilder implements TaskBuilderInterface
      * @param iterable|BuilderInterface[] $builders
      */
     public function __construct(
-        private iterable $builders,
-        private PropertyAccessorInterface $propertyAccessor
+        private readonly iterable $builders,
+        private readonly PropertyAccessorInterface $propertyAccessor
     ) {
     }
 

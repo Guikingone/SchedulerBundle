@@ -19,7 +19,7 @@ use function array_key_exists;
  */
 final class ProbeTaskRunner implements RunnerInterface
 {
-    private HttpClientInterface $httpClient;
+    private readonly HttpClientInterface $httpClient;
 
     public function __construct(?HttpClientInterface $httpClient = null)
     {

@@ -31,8 +31,8 @@ use function sprintf;
 final class RemoveFailedTaskCommand extends Command
 {
     public function __construct(
-        private SchedulerInterface $scheduler,
-        private WorkerInterface $worker
+        private readonly SchedulerInterface $scheduler,
+        private readonly WorkerInterface $worker
     ) {
         parent::__construct();
     }

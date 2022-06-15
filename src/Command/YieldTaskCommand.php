@@ -27,7 +27,7 @@ use Throwable;
 )]
 final class YieldTaskCommand extends Command
 {
-    public function __construct(private SchedulerInterface $scheduler)
+    public function __construct(private readonly SchedulerInterface $scheduler)
     {
         parent::__construct();
     }

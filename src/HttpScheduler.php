@@ -24,9 +24,9 @@ use function sprintf;
 final class HttpScheduler implements SchedulerInterface
 {
     public function __construct(
-        private string $externalSchedulerEndpoint,
-        private SerializerInterface $serializer,
-        private HttpClientInterface $httpClient
+        private readonly string $externalSchedulerEndpoint,
+        private readonly SerializerInterface $serializer,
+        private readonly HttpClientInterface $httpClient
     ) {
     }
 

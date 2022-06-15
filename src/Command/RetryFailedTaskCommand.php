@@ -34,11 +34,11 @@ use function sprintf;
 )]
 final class RetryFailedTaskCommand extends Command
 {
-    private LoggerInterface $logger;
+    private readonly LoggerInterface $logger;
 
     public function __construct(
-        private WorkerInterface $worker,
-        private EventDispatcherInterface $eventDispatcher,
+        private readonly WorkerInterface $worker,
+        private readonly EventDispatcherInterface $eventDispatcher,
         LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();

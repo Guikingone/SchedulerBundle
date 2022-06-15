@@ -23,13 +23,13 @@ final class Dsn
      * @param array<string|int, mixed> $options
      */
     public function __construct(
-        private string $scheme,
-        private string $host,
-        private ?string $path = null,
-        private ?string $user = null,
-        private ?string $password = null,
-        private ?int $port = null,
-        private array $options = [],
+        private readonly string $scheme,
+        private readonly string $host,
+        private readonly ?string $path = null,
+        private readonly ?string $user = null,
+        private readonly ?string $password = null,
+        private readonly ?int $port = null,
+        private readonly array $options = [],
         private ?string $root = null
     ) {
     }

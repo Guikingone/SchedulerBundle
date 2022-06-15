@@ -19,7 +19,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
     /**
      * @var SplObjectStorage<object, mixed>
      */
-    private SplObjectStorage $sleepingTransports;
+    private readonly SplObjectStorage $sleepingTransports;
 
     public function __construct(
         TransportRegistryInterface $registry,

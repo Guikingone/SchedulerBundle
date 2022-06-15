@@ -12,9 +12,9 @@ use function sprintf;
  */
 final class FailedTask extends AbstractTask
 {
-    private DateTimeImmutable $failedAt;
+    private readonly DateTimeImmutable $failedAt;
 
-    public function __construct(private TaskInterface $task, private string $reason)
+    public function __construct(private readonly TaskInterface $task, private readonly string $reason)
     {
         $this->failedAt = new DateTimeImmutable();
 

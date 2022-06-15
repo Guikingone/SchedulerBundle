@@ -16,8 +16,8 @@ use Throwable;
 final class Probe implements ProbeInterface
 {
     public function __construct(
-        private SchedulerInterface $scheduler,
-        private WorkerInterface $worker
+        private readonly SchedulerInterface $scheduler,
+        private readonly WorkerInterface $worker
     ) {
     }
 

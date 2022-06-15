@@ -12,7 +12,7 @@ use function sprintf;
  */
 final class ProbeEnabled extends Constraint
 {
-    public function __construct(private bool $expectedState)
+    public function __construct(private readonly bool $expectedState)
     {
     }
 

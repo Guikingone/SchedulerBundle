@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskFailedEvent extends Event implements TaskEventInterface
 {
-    public function __construct(private FailedTask $task)
+    public function __construct(private readonly FailedTask $task)
     {
     }
 

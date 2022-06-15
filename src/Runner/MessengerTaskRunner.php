@@ -16,7 +16,7 @@ use Throwable;
  */
 final class MessengerTaskRunner implements RunnerInterface
 {
-    public function __construct(private ?MessageBusInterface $bus = null)
+    public function __construct(private readonly ?MessageBusInterface $bus = null)
     {
     }
 

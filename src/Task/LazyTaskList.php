@@ -17,7 +17,7 @@ final class LazyTaskList implements TaskListInterface, LazyInterface
     private TaskListInterface $list;
     private bool $initialized = false;
 
-    public function __construct(private TaskListInterface $sourceList)
+    public function __construct(private readonly TaskListInterface $sourceList)
     {
     }
 

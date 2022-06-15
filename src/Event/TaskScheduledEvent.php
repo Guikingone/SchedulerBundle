@@ -12,7 +12,7 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 final class TaskScheduledEvent extends Event implements TaskEventInterface
 {
-    public function __construct(private TaskInterface $task)
+    public function __construct(private readonly TaskInterface $task)
     {
     }
 

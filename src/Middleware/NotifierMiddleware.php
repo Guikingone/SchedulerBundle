@@ -17,7 +17,7 @@ use Symfony\Component\Notifier\Recipient\Recipient;
  */
 final class NotifierMiddleware implements PreSchedulingMiddlewareInterface, PostSchedulingMiddlewareInterface, PreExecutionMiddlewareInterface, PostExecutionMiddlewareInterface, OrderedMiddlewareInterface
 {
-    public function __construct(private ?NotifierInterface $notifier = null)
+    public function __construct(private readonly ?NotifierInterface $notifier = null)
     {
     }
 

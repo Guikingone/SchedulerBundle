@@ -15,10 +15,10 @@ final class NotificationTaskBag implements TaskBagInterface
     /**
      * @var Recipient[]
      */
-    private array $recipients;
+    private readonly array $recipients;
 
     public function __construct(
-        private Notification $notification,
+        private readonly Notification $notification,
         Recipient ...$recipients
     ) {
         $this->recipients = $recipients;

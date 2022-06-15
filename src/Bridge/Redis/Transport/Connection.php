@@ -27,13 +27,13 @@ final class Connection implements ConnectionInterface
 
     public function __construct(
         ConfigurationInterface $configuration,
-        private SerializerInterface $serializer,
+        private readonly SerializerInterface $serializer,
         ?Redis $redis = null
     ) {
         $this->connection = $redis ?? new Redis();
         $this->connection->connect($configuration->get('host'), $configuration->get('port'), $configuration->get('timeout'));
 
-        if (!str_starts_with($this->list = $configuration->get('list'), '_')) {
+        if (!str_starts_with((string) ($this->list = $configuration->get('list')), '_')) {
             throw new InvalidArgumentException('The list name must start with an underscore');
         }
 

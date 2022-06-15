@@ -17,7 +17,7 @@ use Throwable;
  */
 final class HttpTaskRunner implements RunnerInterface
 {
-    private HttpClientInterface $httpClient;
+    private readonly HttpClientInterface $httpClient;
 
     public function __construct(HttpClientInterface $httpClient = null)
     {

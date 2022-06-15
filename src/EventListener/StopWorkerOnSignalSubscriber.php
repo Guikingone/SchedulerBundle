@@ -26,11 +26,8 @@ use const SIGTERM;
  */
 final class StopWorkerOnSignalSubscriber implements EventSubscriberInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(?LoggerInterface $logger = null)
+    public function __construct(private readonly LoggerInterface $logger = new NullLogger())
     {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     public function onTaskExecuting(TaskExecutingEvent $taskExecutingEvent): void

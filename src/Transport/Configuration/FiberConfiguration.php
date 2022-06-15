@@ -14,11 +14,8 @@ use Throwable;
  */
 final class FiberConfiguration extends AbstractFiberHandler implements ConfigurationInterface
 {
-    public function __construct(
-        private ConfigurationInterface $configuration,
-        ?LoggerInterface $logger = null
-    ) {
-        parent::__construct($logger);
+    public function __construct(private readonly ConfigurationInterface $configuration, ?LoggerInterface $logger = null)
+    {
     }
 
     /**

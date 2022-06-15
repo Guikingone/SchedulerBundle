@@ -13,7 +13,7 @@ use SchedulerBundle\Worker\WorkerInterface;
  */
 final class TaskUpdateMiddleware implements PostExecutionMiddlewareInterface, OrderedMiddlewareInterface, RequiredMiddlewareInterface
 {
-    public function __construct(private TransportInterface $transport)
+    public function __construct(private readonly TransportInterface $transport)
     {
     }
 

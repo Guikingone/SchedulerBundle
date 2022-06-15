@@ -19,7 +19,7 @@ final class LazyTransport implements TransportInterface, LazyInterface
     private TransportInterface $transport;
     private bool $initialized = false;
 
-    public function __construct(private TransportInterface $sourceTransport)
+    public function __construct(private readonly TransportInterface $sourceTransport)
     {
     }
 

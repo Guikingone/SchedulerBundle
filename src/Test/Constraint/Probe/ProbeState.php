@@ -17,7 +17,7 @@ final class ProbeState extends Constraint
     /**
      * @param array<string, int> $expectedState
      */
-    public function __construct(private array $expectedState)
+    public function __construct(private readonly array $expectedState)
     {
     }
 
