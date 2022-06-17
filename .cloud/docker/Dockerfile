@@ -1,15 +1,16 @@
 FROM composer:2.1 as composer
 FROM php:8.0-cli
 
+ENV SCHEDULER_POSTGRES_DSN 'postgres://toor:root@postgres:5432/_symfony_scheduler_tasks&charset=utf8'
 ENV SCHEDULER_REDIS_DSN 'redis://redis:6379/_symfony_scheduler_tasks'
 
 WORKDIR /srv/app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libzip-dev=1.7 zip=3.0 redis=5.0 git=2.30 \
+    && apt-get install -y --no-install-recommends libzip-dev zip redis git libpq-dev \
     && pecl install redis xdebug \
-    && docker-php-ext-install pcntl zip \
-    && docker-php-ext-enable pcntl xdebug redis \
+    && docker-php-ext-install pcntl zip pdo_pgsql \
+    && docker-php-ext-enable pcntl xdebug redis pdo_pgsql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

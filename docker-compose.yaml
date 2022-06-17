@@ -7,11 +7,13 @@ services:
     volumes:
       - ./:/srv/app
     depends_on:
+      - postgres
       - redis
 
   postgres:
     image: postgres:11.5-alpine
     environment:
+      POSTGRES_DB: _symfony_scheduler_tasks
       POSTGRES_PASSWORD: root
       POSTGRES_USER: toor
 

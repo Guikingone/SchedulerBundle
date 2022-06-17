@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
 use Exception;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
@@ -21,6 +22,8 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+use SchedulerBundle\Transport\ConnectionInterface;
+use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -33,6 +36,8 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Tests\SchedulerBundle\Bridge\Doctrine\Transport\Assets\MessengerMessage;
 use function file_exists;
+use function getenv;
+use function is_bool;
 use function sprintf;
 use function sys_get_temp_dir;
 use function unlink;
@@ -40,12 +45,14 @@ use function unlink;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  *
+ * @requires extension pdo_pgsql
  * @requires extension pdo_sqlite
  */
 final class ConnectionIntegrationTest extends TestCase
 {
-    private Connection $connection;
-    private DbalConnection $driverConnection;
+    private DbalConnection $postgresConnection;
+    private DbalConnection $sqlLiteConnection;
+    private Serializer $serializer;
     private string $sqliteFile;
 
     /**
@@ -53,13 +60,18 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
+        $postgresDsn = getenv('SCHEDULER_POSTGRES_DSN');
+        if (is_bool($postgresDsn)) {
+            self::markTestSkipped('The "SCHEDULER_POSTGRES_DSN" environment variable is required.');
+        }
+
         $objectNormalizer = new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [
             new PhpDocExtractor(),
             new ReflectionExtractor(),
         ]));
         $lockTaskBagNormalizer = new AccessLockBagNormalizer($objectNormalizer);
 
-        $serializer = new Serializer([
+        $this->serializer = new Serializer([
             new TaskNormalizer(
                 new DateTimeNormalizer(),
                 new DateTimeZoneNormalizer(),
@@ -73,20 +85,25 @@ final class ConnectionIntegrationTest extends TestCase
             new JsonSerializableNormalizer(),
             $objectNormalizer,
         ], [new JsonEncoder()]);
-        $objectNormalizer->setSerializer($serializer);
+        $objectNormalizer->setSerializer($this->serializer);
 
         $this->sqliteFile = sys_get_temp_dir().'/symfony.scheduler.sqlite';
-        $this->driverConnection = DriverManager::getConnection(['url' => sprintf('sqlite:///%s', $this->sqliteFile)]);
-        $this->connection = new Connection(new InMemoryConfiguration([
-            'auto_setup' => true,
-            'table_name' => '_symfony_scheduler_tasks',
-            'execution_mode' => 'first_in_first_out',
-        ], [
-            'auto_setup' => 'bool',
-            'table_name' => 'string',
-        ]), $this->driverConnection, $serializer, new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ]));
+
+        $postgresDsn = getenv('SCHEDULER_POSTGRES_DSN');
+        $postgresDsn = Dsn::fromString($postgresDsn);
+
+        $this->postgresConnection = DriverManager::getConnection([
+            'driver' => 'pdo_pgsql',
+            'host' => $postgresDsn->getHost(),
+            'port' => $postgresDsn->getPort(),
+            'dbname' => '_symfony_scheduler_tasks',
+            'user' => $postgresDsn->getUser(),
+            'password' => $postgresDsn->getPassword(),
+            'charset' => 'utf8',
+        ]);
+        $this->sqlLiteConnection = DriverManager::getConnection([
+            'url' => sprintf('sqlite:///%s', $this->sqliteFile),
+        ]);
     }
 
     /**
@@ -94,76 +111,90 @@ final class ConnectionIntegrationTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $this->driverConnection->close();
+        $this->postgresConnection->close();
+        $this->sqlLiteConnection->close();
+
         if (file_exists($this->sqliteFile)) {
             unlink($this->sqliteFile);
         }
     }
 
-    public function testConnectionCanListEmptyTasks(): void
+    /**
+     * @dataProvider provideDbalConnection
+     */
+    public function testConnectionCanListEmptyTasks(ConnectionInterface $connection): void
     {
-        $list = $this->connection->list();
+        $list = $connection->list();
 
         self::assertCount(0, $list);
     }
 
-    public function testConnectionCanListHydratedTasksWithoutExistingSchema(): void
+    /**
+     * @dataProvider provideDbalConnection
+     */
+    public function testConnectionCanListHydratedTasksWithoutExistingSchema(ConnectionInterface $connection): void
     {
-        $this->connection->create(task: new NullTask(name: 'foo', options: [
+        $connection->create(task: new NullTask(name: 'foo', options: [
             'scheduled_at' => new DateTimeImmutable(),
         ]));
-        $this->connection->create(task: new NullTask(name: 'bar', options: [
+        $connection->create(task: new NullTask(name: 'bar', options: [
             'scheduled_at' => new DateTimeImmutable(),
         ]));
 
-        $list = $this->connection->list();
+        $list = $connection->list();
 
         self::assertNotEmpty($list);
         self::assertCount(2, $list);
-        self::assertSame('foo', $list->toArray(false)[0]->getName());
-        self::assertSame('bar', $list->toArray(false)[1]->getName());
-        self::assertInstanceOf(NullTask::class, $list->get('foo'));
-        self::assertInstanceOf(NullTask::class, $list->get('bar'));
+        self::assertSame('foo', $list->toArray(keepKeys: false)[0]->getName());
+        self::assertSame('bar', $list->toArray(keepKeys: false)[1]->getName());
+        self::assertInstanceOf(NullTask::class, $list->get(taskName: 'foo'));
+        self::assertInstanceOf(NullTask::class, $list->get(taskName: 'bar'));
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testConnectionCanListHydratedTasks(): void
+    public function testConnectionCanListHydratedTasks(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
-        $this->connection->create(new NullTask('bar'));
+        $connection->setup();
+        $connection->create(task: new NullTask(name: 'foo'));
+        $connection->create(task: new NullTask(name: 'bar'));
 
-        $list = $this->connection->list();
+        $list = $connection->list();
 
         self::assertNotEmpty($list);
         self::assertCount(2, $list);
-        self::assertInstanceOf(NullTask::class, $list->get('foo'));
-        self::assertInstanceOf(NullTask::class, $list->get('bar'));
+        self::assertInstanceOf(NullTask::class, $list->get(taskName: 'foo'));
+        self::assertInstanceOf(NullTask::class, $list->get(taskName: 'bar'));
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testConnectionCannotRetrieveAnUndefinedTask(): void
+    public function testConnectionCannotRetrieveAnUndefinedTask(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
+        $connection->setup();
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
-        $this->connection->get('foo');
+        $connection->get('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testConnectionCanRetrieveASingleTaskWithoutExistingSchema(): void
+    public function testConnectionCanRetrieveASingleTaskWithoutExistingSchema(ConnectionInterface $connection): void
     {
-        $this->connection->create(new NullTask('foo'));
+        $connection->create(task: new NullTask(name: 'foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get(taskName: 'foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
@@ -172,13 +203,15 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testConnectionCanRetrieveASingleTask(): void
+    public function testConnectionCanRetrieveASingleTask(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(task: new NullTask(name: 'foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get(taskName: 'foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
@@ -187,23 +220,28 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCannotBeCreatedTwice(): void
+    public function testTaskCannotBeCreatedTwice(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
+        $connection->setup();
 
-        $this->connection->create(new NullTask('foo'));
-        self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
+        $connection->create(new NullTask('foo'));
+        self::assertInstanceOf(NullTask::class, $connection->get('foo'));
 
-        $this->connection->create(new ShellTask('foo', []));
-        self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
+        $connection->create(new ShellTask('foo', []));
+        self::assertInstanceOf(NullTask::class, $connection->get('foo'));
     }
 
-    public function testTaskCanBeCreatedWithoutExistingSchema(): void
+    /**
+     * @dataProvider provideDbalConnection
+     */
+    public function testTaskCanBeCreatedWithoutExistingSchema(ConnectionInterface $connection): void
     {
-        $this->connection->create(new NullTask('foo'));
+        $connection->create(task: new NullTask(name: 'foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
@@ -212,13 +250,15 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCanBeCreated(): void
+    public function testTaskCanBeCreated(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(task: new NullTask(name: 'foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get(taskName: 'foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
@@ -227,13 +267,15 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testMessengerTaskCanBeCreated(): void
+    public function testMessengerTaskCanBeCreated(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new MessengerTask('foo', new MessengerMessage()));
+        $connection->setup();
+        $connection->create(task: new MessengerTask(name: 'foo', message: new MessengerMessage()));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get(taskName: 'foo');
 
         self::assertInstanceOf(MessengerTask::class, $task);
         self::assertInstanceOf(MessengerMessage::class, $task->getMessage());
@@ -243,42 +285,46 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCannotBeUpdatedIfUndefined(): void
+    public function testTaskCannotBeUpdatedIfUndefined(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
+        $connection->setup();
         $nullTask = new NullTask('foo');
         $nullTask->setExpression('0 * * * *');
 
-        $this->connection->update('foo', $nullTask);
+        $connection->update('foo', $nullTask);
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
-        $this->connection->get('foo');
+        $connection->get('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCanBeUpdated(): void
+    public function testTaskCanBeUpdated(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
         $task->setExpression('0 * * * *');
         $task->setLastExecution(new DateTimeImmutable());
 
-        $this->connection->update('foo', $task);
+        $connection->update('foo', $task);
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
@@ -288,21 +334,23 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCanBePaused(): void
+    public function testTaskCanBePaused(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
 
-        $this->connection->pause('foo');
+        $connection->pause('foo');
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame(TaskInterface::PAUSED, $task->getState());
@@ -310,50 +358,54 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCannotBePausedTwice(): void
+    public function testTaskCannotBePausedTwice(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
 
-        $this->connection->pause('foo');
+        $connection->pause('foo');
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" is already paused');
         self::expectExceptionCode(0);
-        $this->connection->pause('foo');
+        $connection->pause('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCanBeEnabled(): void
+    public function testTaskCanBeEnabled(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
 
-        $this->connection->pause('foo');
+        $connection->pause('foo');
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame(TaskInterface::PAUSED, $task->getState());
 
-        $this->connection->resume('foo');
+        $connection->resume('foo');
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame(TaskInterface::ENABLED, $task->getState());
@@ -361,75 +413,112 @@ final class ConnectionIntegrationTest extends TestCase
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCannotBeEnabledTwice(): void
+    public function testTaskCannotBeEnabledTwice(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
 
-        $this->connection->pause('foo');
+        $connection->pause('foo');
 
-        $task = $this->connection->get('foo');
+        $task = $connection->get('foo');
 
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame(TaskInterface::PAUSED, $task->getState());
 
-        $this->connection->resume('foo');
+        $connection->resume('foo');
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" is already enabled');
         self::expectExceptionCode(0);
-        $this->connection->resume('foo');
+        $connection->resume('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCannotBeDeletedIfUndefined(): void
+    public function testTaskCannotBeDeletedIfUndefined(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
+        $connection->setup();
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The given identifier is invalid.');
         self::expectExceptionCode(0);
-        $this->connection->delete('foo');
+        $connection->delete('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskCanBeDeleted(): void
+    public function testTaskCanBeDeleted(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
-        $this->connection->delete('foo');
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
+        $connection->delete('foo');
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
-        $this->connection->get('foo');
+        $connection->get('foo');
     }
 
     /**
      * @throws Exception {@see Connection::setup()}
+     *
+     * @dataProvider provideDbalConnection
      */
-    public function testTaskListCanBeEmpty(): void
+    public function testTaskListCanBeEmpty(ConnectionInterface $connection): void
     {
-        $this->connection->setup();
-        $this->connection->create(new NullTask('foo'));
-        $this->connection->empty();
+        $connection->setup();
+        $connection->create(new NullTask('foo'));
+        $connection->empty();
 
-        self::assertTrue($this->driverConnection->createSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
+        self::assertTrue($this->sqlLiteConnection->createSchemaManager()->tablesExist(['_symfony_scheduler_tasks']));
 
         self::expectException(TransportException::class);
         self::expectExceptionMessage('The task "foo" cannot be found');
         self::expectExceptionCode(0);
-        $this->connection->get('foo');
+        $connection->get('foo');
+    }
+
+    public function provideDbalConnection(): Generator
+    {
+        yield 'postgresql' => [
+            new Connection(new InMemoryConfiguration([
+                'auto_setup' => true,
+                'table_name' => '_symfony_scheduler_tasks',
+                'execution_mode' => 'first_in_first_out',
+            ], [
+                'auto_setup' => 'bool',
+                'table_name' => 'string',
+            ]), $this->postgresConnection, $this->serializer, new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ];
+
+        yield 'sqlite' => [
+            new Connection(new InMemoryConfiguration([
+                'auto_setup' => true,
+                'table_name' => '_symfony_scheduler_tasks',
+                'execution_mode' => 'first_in_first_out',
+            ], [
+                'auto_setup' => 'bool',
+                'table_name' => 'string',
+            ]), $this->sqlLiteConnection, $this->serializer, new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+        ];
     }
 }
