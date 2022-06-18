@@ -132,9 +132,9 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $existingTask = $this->executeQuery(
-            $existingTaskQuery->getSQL(),
-            $existingTaskQuery->getParameters(),
-            $existingTaskQuery->getParameterTypes()
+            sql: $existingTaskQuery->getSQL(),
+            parameters: $existingTaskQuery->getParameters(),
+            types: $existingTaskQuery->getParameterTypes()
         )->fetchOne();
 
         if (0 !== (int) $existingTask) {
@@ -149,8 +149,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                         'task_name' => ':name',
                         'body' => ':body',
                     ])
-                    ->setParameter('name', $task->getName(), ParameterType::STRING)
-                    ->setParameter('body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
+                    ->setParameter(key: 'name', value: $task->getName(), type: ParameterType::STRING)
+                    ->setParameter(key: 'body', value: $this->serializer->serialize($task, 'json'), type: ParameterType::STRING)
                 ;
 
                 $statement = $connection->executeQuery(
@@ -159,8 +159,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                     $query->getParameterTypes()
                 );
 
-                if (false !== $statement->fetchOne()) {
-                    throw new Exception('The given data are invalid.');
+                if (1 !== $statement->rowCount()) {
+                    throw new Exception(message: 'The given data are invalid.');
                 }
             });
         } catch (Throwable $throwable) {
