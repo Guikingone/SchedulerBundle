@@ -51,6 +51,7 @@ abstract class AbstractConnectionIntegrationTest extends TestCase
      */
     protected function tearDown(): void
     {
+        $this->connection->empty();
         $this->dbalConnection->close();
     }
 
@@ -326,6 +327,7 @@ abstract class AbstractConnectionIntegrationTest extends TestCase
         self::assertInstanceOf(NullTask::class, $task);
         self::assertSame('foo', $task->getName());
         self::assertSame('* * * * *', $task->getExpression());
+        self::assertSame(TaskInterface::ENABLED, $task->getState());
 
         $this->connection->pause('foo');
 

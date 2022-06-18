@@ -265,15 +265,15 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     public function empty(): void
     {
         try {
-            $this->dbalConnection->transactional(function (DBALConnection $connection): void {
-                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
-                    ->delete($this->configuration->get('table_name'))
+            $this->dbalConnection->transactional(func: function (DBALConnection $connection): void {
+                $queryBuilder = $this->createQueryBuilder(table: $this->configuration->get('table_name'), alias: 't')
+                    ->delete(delete: $this->configuration->get(key: 'table_name'))
                 ;
 
-                $connection->executeQuery($queryBuilder->getSQL());
+                $connection->executeQuery(sql: $queryBuilder->getSQL());
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), 0, $throwable);
+            throw new TransportException(message: $throwable->getMessage(), code: 0, previous: $throwable);
         }
     }
 
