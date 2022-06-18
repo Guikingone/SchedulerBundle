@@ -25,6 +25,7 @@ jobs:
       postgres:
         image: postgres:9.4
         env:
+          POSTGRES_DB: _symfony_scheduler_tasks
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
