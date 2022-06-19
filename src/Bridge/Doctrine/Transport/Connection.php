@@ -6,6 +6,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
@@ -38,7 +39,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         private SerializerInterface $serializer,
         private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
-        parent::__construct($dbalConnection);
+        parent::__construct(driverConnection: $dbalConnection);
     }
 
     /**
@@ -46,14 +47,14 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function list(): TaskListInterface
     {
-        $existingTasksCount = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
-            ->select((new Expr())->countDistinct('t.id'))
+        $existingTasksCount = $this->createQueryBuilder(table: $this->configuration->get(key: 'table_name'), alias: 't')
+            ->select(select: (new Expr())->countDistinct(x: 't.id'))
         ;
 
         $statement = $this->executeQuery(
-            $existingTasksCount->getSQL(),
-            $existingTasksCount->getParameters(),
-            $existingTasksCount->getParameterTypes()
+            sql: $existingTasksCount->getSQL(),
+            parameters: $existingTasksCount->getParameters(),
+            types: $existingTasksCount->getParameterTypes()
         )->fetchOne();
 
         if (0 === (int) $statement) {
@@ -61,13 +62,13 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         }
 
         try {
-            return $this->dbalConnection->transactional(function (): TaskListInterface {
-                $statement = $this->executeQuery($this->createQueryBuilder($this->configuration->get('table_name'), 't')->getSQL());
+            return $this->dbalConnection->transactional(func: function (): TaskListInterface {
+                $statement = $this->executeQuery(sql: $this->createQueryBuilder(table: $this->configuration->get(key: 'table_name'), alias: 't')->getSQL());
                 $tasks = $statement->fetchAllAssociative();
 
-                $taskList = new TaskList(array_map(fn (array $task): TaskInterface => $this->serializer->deserialize($task['body'], TaskInterface::class, 'json'), $tasks));
+                $taskList = new TaskList(tasks: array_map(callback: fn (array $task): TaskInterface => $this->serializer->deserialize(data: $task['body'], type: TaskInterface::class, format: 'json'), array: $tasks));
 
-                return $this->schedulePolicyOrchestrator->sort($this->configuration->get('execution_mode'), $taskList);
+                return $this->schedulePolicyOrchestrator->sort(policy: $this->configuration->get(key: 'execution_mode'), tasks: $taskList);
             });
         } catch (Throwable $throwable) {
             throw new TransportException($throwable->getMessage(), 0, $throwable);
@@ -132,9 +133,9 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         ;
 
         $existingTask = $this->executeQuery(
-            $existingTaskQuery->getSQL(),
-            $existingTaskQuery->getParameters(),
-            $existingTaskQuery->getParameterTypes()
+            sql: $existingTaskQuery->getSQL(),
+            parameters: $existingTaskQuery->getParameters(),
+            types: $existingTaskQuery->getParameterTypes()
         )->fetchOne();
 
         if (0 !== (int) $existingTask) {
@@ -149,8 +150,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                         'task_name' => ':name',
                         'body' => ':body',
                     ])
-                    ->setParameter('name', $task->getName(), ParameterType::STRING)
-                    ->setParameter('body', $this->serializer->serialize($task, 'json'), ParameterType::STRING)
+                    ->setParameter(key: 'name', value: $task->getName(), type: ParameterType::STRING)
+                    ->setParameter(key: 'body', value: $this->serializer->serialize($task, 'json'), type: ParameterType::STRING)
                 ;
 
                 $statement = $connection->executeQuery(
@@ -159,8 +160,8 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
                     $query->getParameterTypes()
                 );
 
-                if (false !== $statement->fetchOne()) {
-                    throw new Exception('The given data are invalid.');
+                if (1 !== $statement->rowCount()) {
+                    throw new Exception(message: 'The given data are invalid.');
                 }
             });
         } catch (Throwable $throwable) {
@@ -265,15 +266,15 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
     public function empty(): void
     {
         try {
-            $this->dbalConnection->transactional(function (DBALConnection $connection): void {
-                $queryBuilder = $this->createQueryBuilder($this->configuration->get('table_name'), 't')
-                    ->delete($this->configuration->get('table_name'))
+            $this->dbalConnection->transactional(func: function (DBALConnection $connection): void {
+                $queryBuilder = $this->createQueryBuilder(table: $this->configuration->get('table_name'), alias: 't')
+                    ->delete(delete: $this->configuration->get(key: 'table_name'))
                 ;
 
-                $connection->executeQuery($queryBuilder->getSQL());
+                $connection->executeQuery(sql: $queryBuilder->getSQL());
             });
         } catch (Throwable $throwable) {
-            throw new TransportException($throwable->getMessage(), 0, $throwable);
+            throw new TransportException(message: $throwable->getMessage(), code: 0, previous: $throwable);
         }
     }
 
@@ -286,9 +287,9 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
-        $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
+        $configuration->setSchemaAssetsFilter(callable: $schemaAssetsFilter);
 
-        $this->configuration->set('auto_setup', false);
+        $this->configuration->set(key: 'auto_setup', value: false);
     }
 
     public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
@@ -297,48 +298,48 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             return;
         }
 
-        if ($schema->hasTable($this->configuration->get('table_name'))) {
+        if ($schema->hasTable(name: $this->configuration->get(key: 'table_name'))) {
             return;
         }
 
-        $this->addTableToSchema($schema);
+        $this->addTableToSchema(schema: $schema);
     }
 
     protected function addTableToSchema(Schema $schema): void
     {
-        $table = $schema->createTable($this->configuration->get('table_name'));
-        $table->addColumn('id', Types::BIGINT)
-            ->setAutoincrement(true)
-            ->setNotnull(true)
+        $table = $schema->createTable(name: $this->configuration->get('table_name'));
+        $table->addColumn(name: 'id', typeName: Types::BIGINT)
+            ->setAutoincrement(flag: true)
+            ->setNotnull(notnull: true)
         ;
-        $table->addColumn('task_name', Types::STRING)
-            ->setNotnull(true)
+        $table->addColumn(name: 'task_name', typeName: Types::STRING)
+            ->setNotnull(notnull: true)
         ;
-        $table->addColumn('body', Types::TEXT)
-            ->setNotnull(true)
+        $table->addColumn(name: 'body', typeName: Types::TEXT)
+            ->setNotnull(notnull: true)
         ;
 
-        $table->setPrimaryKey(['id']);
-        $table->addIndex(['task_name'], '_symfony_scheduler_tasks_name');
+        $table->setPrimaryKey(columnNames: ['id']);
+        $table->addIndex(columnNames: ['task_name'], indexName: '_symfony_scheduler_tasks_name');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function executeQuery(string $sql, array $parameters = [], array $types = [])
+    protected function executeQuery(string $sql, array $parameters = [], array $types = []): Result
     {
         try {
-            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery(sql: $sql, params: $parameters, types: $types);
         } catch (Throwable $throwable) {
             if ($this->dbalConnection->isTransactionActive()) {
                 throw $throwable;
             }
 
-            if (filter_var($this->configuration->get('auto_setup'), FILTER_VALIDATE_BOOLEAN)) {
+            if (filter_var(value: $this->configuration->get(key: 'auto_setup'), filter: FILTER_VALIDATE_BOOLEAN)) {
                 $this->setup();
             }
 
-            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery(sql: $sql, params: $parameters, types: $types);
         }
     }
 }
