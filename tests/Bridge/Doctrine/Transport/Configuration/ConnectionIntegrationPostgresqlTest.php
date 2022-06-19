@@ -23,32 +23,30 @@ final class ConnectionIntegrationPostgresqlTest extends AbstractConnectionIntegr
 {
     protected function buildConnection(): Connection
     {
-        $postgresDsn = getenv(name: 'SCHEDULER_POSTGRES_DSN');
-        if (is_bool(value: $postgresDsn)) {
+        $postgresDsn = getenv('SCHEDULER_POSTGRES_DSN');
+        if (is_bool($postgresDsn)) {
             self::markTestSkipped(message: 'The "SCHEDULER_POSTGRES_DSN" environment variable is required.');
         }
 
-        $postgresDsn = getenv(name: 'SCHEDULER_POSTGRES_DSN');
         $postgresDsn = Dsn::fromString(dsn: $postgresDsn);
 
-        $this->dbalConnection = DriverManager::getConnection(params: [
+        $this->dbalConnection = DriverManager::getConnection([
+            'charset' => 'utf8',
+            'dbname' => '_symfony_scheduler_tasks',
             'driver' => 'pdo_pgsql',
             'host' => $postgresDsn->getHost(),
-            'port' => $postgresDsn->getPort(),
-            'dbname' => '_symfony_scheduler_tasks',
-            'user' => $postgresDsn->getUser(),
-            'password' => $postgresDsn->getPassword(),
-            'charset' => 'utf8',
+            'user' => $postgresDsn->getUser() ?? 'toor',
+            'password' => $postgresDsn->getPassword() ?? 'root',
         ]);
 
-        return new Connection(new InMemoryConfiguration([
+        return new Connection(configuration: new InMemoryConfiguration(options: [
             'auto_setup' => true,
             'table_name' => '_symfony_scheduler_tasks',
             'execution_mode' => 'first_in_first_out',
-        ], [
+        ], extraOptions: [
             'auto_setup' => 'bool',
             'table_name' => 'string',
-        ]), $this->dbalConnection, $this->buildSerializer(), new SchedulePolicyOrchestrator([
+        ]), dbalConnection: $this->dbalConnection, serializer: $this->buildSerializer(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ]));
     }

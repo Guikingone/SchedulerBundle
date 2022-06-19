@@ -6,6 +6,7 @@ namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
@@ -286,9 +287,9 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
-        $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
+        $configuration->setSchemaAssetsFilter(callable: $schemaAssetsFilter);
 
-        $this->configuration->set('auto_setup', false);
+        $this->configuration->set(key: 'auto_setup', value: false);
     }
 
     public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
@@ -297,48 +298,48 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
             return;
         }
 
-        if ($schema->hasTable($this->configuration->get('table_name'))) {
+        if ($schema->hasTable(name: $this->configuration->get(key: 'table_name'))) {
             return;
         }
 
-        $this->addTableToSchema($schema);
+        $this->addTableToSchema(schema: $schema);
     }
 
     protected function addTableToSchema(Schema $schema): void
     {
-        $table = $schema->createTable($this->configuration->get('table_name'));
-        $table->addColumn('id', Types::BIGINT)
-            ->setAutoincrement(true)
-            ->setNotnull(true)
+        $table = $schema->createTable(name: $this->configuration->get('table_name'));
+        $table->addColumn(name: 'id', typeName: Types::BIGINT)
+            ->setAutoincrement(flag: true)
+            ->setNotnull(notnull: true)
         ;
-        $table->addColumn('task_name', Types::STRING)
-            ->setNotnull(true)
+        $table->addColumn(name: 'task_name', typeName: Types::STRING)
+            ->setNotnull(notnull: true)
         ;
-        $table->addColumn('body', Types::TEXT)
-            ->setNotnull(true)
+        $table->addColumn(name: 'body', typeName: Types::TEXT)
+            ->setNotnull(notnull: true)
         ;
 
-        $table->setPrimaryKey(['id']);
-        $table->addIndex(['task_name'], '_symfony_scheduler_tasks_name');
+        $table->setPrimaryKey(columnNames: ['id']);
+        $table->addIndex(columnNames: ['task_name'], indexName: '_symfony_scheduler_tasks_name');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function executeQuery(string $sql, array $parameters = [], array $types = [])
+    protected function executeQuery(string $sql, array $parameters = [], array $types = []): Result
     {
         try {
-            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery(sql: $sql, params: $parameters, types: $types);
         } catch (Throwable $throwable) {
             if ($this->dbalConnection->isTransactionActive()) {
                 throw $throwable;
             }
 
-            if (filter_var($this->configuration->get('auto_setup'), FILTER_VALIDATE_BOOLEAN)) {
+            if (filter_var(value: $this->configuration->get(key: 'auto_setup'), filter: FILTER_VALIDATE_BOOLEAN)) {
                 $this->setup();
             }
 
-            return $this->dbalConnection->executeQuery($sql, $parameters, $types);
+            return $this->dbalConnection->executeQuery(sql: $sql, params: $parameters, types: $types);
         }
     }
 }
