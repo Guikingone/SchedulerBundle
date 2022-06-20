@@ -32,7 +32,7 @@ final class InMemoryTransport extends AbstractTransport
     ) {
         $this->tasks = new TaskList();
 
-        parent::__construct($configuration);
+        parent::__construct(configuration: $configuration);
     }
 
     /**
@@ -41,10 +41,10 @@ final class InMemoryTransport extends AbstractTransport
     public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
         if ($lazy) {
-            return new LazyTask($name, Closure::bind(fn (): TaskInterface => $this->get($name), $this));
+            return new LazyTask(name: $name, sourceTaskClosure: Closure::bind(closure: fn (): TaskInterface => $this->get(name: $name), newThis: $this));
         }
 
-        return $this->tasks->get($name);
+        return $this->tasks->get(taskName: $name);
     }
 
     /**
@@ -52,9 +52,9 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        $list = $this->schedulePolicyOrchestrator->sort($this->getExecutionMode(), $this->tasks);
+        $list = $this->schedulePolicyOrchestrator->sort(policy: $this->getExecutionMode(), tasks: $this->tasks);
 
-        return $lazy ? new LazyTaskList($list) : $list;
+        return $lazy ? new LazyTaskList(sourceList: $list) : $list;
     }
 
     /**
@@ -62,11 +62,11 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function create(TaskInterface $task): void
     {
-        if ($this->tasks->has($task->getName())) {
+        if ($this->tasks->has(taskName: $task->getName())) {
             return;
         }
 
-        $this->tasks->add($task);
+        $this->tasks->add(task: $task);
     }
 
     /**
@@ -74,11 +74,11 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function update(string $name, TaskInterface $updatedTask): void
     {
-        if (!$this->tasks->has($name)) {
-            throw new InvalidArgumentException(sprintf('The task "%s" does not exist', $name));
+        if (!$this->tasks->has(taskName: $name)) {
+            throw new InvalidArgumentException(message: sprintf('The task "%s" does not exist', $name));
         }
 
-        $this->tasks->add($updatedTask);
+        $this->tasks->add(task: $updatedTask);
     }
 
     /**
@@ -86,7 +86,7 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function delete(string $name): void
     {
-        $this->tasks->remove($name);
+        $this->tasks->remove(taskName: $name);
     }
 
     /**
@@ -94,12 +94,12 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function pause(string $name): void
     {
-        $task = $this->get($name);
+        $task = $this->get(name: $name);
         if (TaskInterface::PAUSED === $task->getState()) {
-            throw new LogicException(sprintf('The task "%s" is already paused', $task->getName()));
+            throw new LogicException(message: sprintf('The task "%s" is already paused', $task->getName()));
         }
 
-        $this->tasks->add($task->setState(TaskInterface::PAUSED));
+        $this->tasks->add(task: $task->setState(state: TaskInterface::PAUSED));
     }
 
     /**
@@ -107,12 +107,12 @@ final class InMemoryTransport extends AbstractTransport
      */
     public function resume(string $name): void
     {
-        $task = $this->get($name);
+        $task = $this->get(name: $name);
         if (TaskInterface::ENABLED === $task->getState()) {
             return;
         }
 
-        $this->tasks->add($task->setState(TaskInterface::ENABLED));
+        $this->tasks->add(task: $task->setState(state: TaskInterface::ENABLED));
     }
 
     /**

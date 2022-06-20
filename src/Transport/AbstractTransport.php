@@ -50,12 +50,12 @@ abstract class AbstractTransport implements TransportInterface
 
     public function getExecutionMode(): string
     {
-        return $this->configuration->get('execution_mode');
+        return $this->configuration->get(key: 'execution_mode');
     }
 
     public function setExecutionMode(string $executionMode): self
     {
-        $this->configuration->set('execution_mode', $executionMode);
+        $this->configuration->set(key: 'execution_mode', value: $executionMode);
 
         return $this;
     }

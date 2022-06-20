@@ -93,15 +93,15 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasks(): void
     {
-        $task = new NullTask('foo');
+        $task = new NullTask(name: 'foo');
 
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(options: [
             'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
+        ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(stack: new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(task: $task);
         self::assertCount(1, $scheduler->getTasks());
     }
 

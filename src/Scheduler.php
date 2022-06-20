@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -69,6 +70,12 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
+        try {
+            $this->transport->get($task->getName());
+        } catch (InvalidArgumentException) {
+            return;
+        }
+
         $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
         $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
