@@ -281,13 +281,10 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCannotScheduleTasksWithErroredAfterCallback(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => false);
+        $task = new NullTask('foo', [
+            'before_scheduling' => null,
+            'after_scheduling' => static fn (): bool => false,
+        ]);
 
         $eventDispatcher = $this->createMock(EventDispatcher::class);
         $eventDispatcher->expects(self::exactly(2))->method('dispatch')->withConsecutive(
@@ -315,13 +312,10 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanScheduleTasksWithAfterCallback(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('setScheduledAt');
-        $task->expects(self::once())->method('setTimezone');
-        $task->expects(self::never())->method('isQueued');
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(null);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => true);
+        $task = new NullTask('foo', [
+            'before_scheduling' => null,
+            'after_scheduling' => static fn (): bool => true,
+        ]);
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
@@ -331,7 +325,8 @@ final class SchedulerTest extends TestCase
             new TaskCallbackMiddleware(),
         ])), new EventDispatcher());
 
-        $scheduler->schedule($task);
+        $scheduler->schedule(task: $task);
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -411,11 +406,8 @@ final class SchedulerTest extends TestCase
      */
     public function testTaskCannotBeScheduledTwice(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
-
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::once())->method('getName')->willReturn('foo');
+        $task = new NullTask(name: 'foo');
+        $secondTask = new NullTask(name: 'foo');
 
         $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
             'execution_mode' => 'first_in_first_out',
@@ -423,8 +415,10 @@ final class SchedulerTest extends TestCase
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
 
-        $scheduler->schedule($task);
-        $scheduler->schedule($secondTask);
+        $scheduler->schedule(task: $task);
+        $scheduler->schedule(task: $secondTask);
+
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -1344,27 +1338,23 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCanYieldTask(): void
     {
-        $dateTimeZone = new DateTimeZone('UTC');
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getName')->willReturn('foo');
-        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($dateTimeZone);
-        $task->expects(self::exactly(2))->method('setScheduledAt');
-        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($dateTimeZone));
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
-        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+        $task = new NullTask('foo', [
+            'timezone' => new DateTimeZone('UTC'),
+        ]);
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
-        $scheduler->schedule($task);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
 
-        $scheduler->yieldTask('foo');
+        $scheduler->schedule($task);
+        $scheduler->yieldTask(name: 'foo');
+
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
     /**
@@ -1373,27 +1363,23 @@ final class SchedulerTest extends TestCase
      */
     public function testSchedulerCannotYieldTaskAsynchronouslyWithoutMessageBus(): void
     {
-        $dateTimeZone = new DateTimeZone('UTC');
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getName')->willReturn('foo');
-        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($dateTimeZone);
-        $task->expects(self::exactly(2))->method('setScheduledAt');
-        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($dateTimeZone));
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
-        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+        $task = new NullTask('foo', [
+            'timezone' => new DateTimeZone('UTC'),
+        ]);
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
-        $scheduler->schedule($task);
+        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
 
-        $scheduler->yieldTask('foo', true);
+        $scheduler->schedule(task: $task);
+        $scheduler->yieldTask(name: 'foo', async: true);
+
+        self::assertCount(1, $scheduler->getDueTasks());
     }
 
     /**
