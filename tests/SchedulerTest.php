@@ -136,6 +136,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         $scheduler->schedule(new NullTask('foo', [
             'before_scheduling' => static fn (): int => 1 + 1,
         ]));
+
         self::assertCount(1, $scheduler->getTasks());
     }
 
@@ -1681,37 +1682,6 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionEndTime());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     */
-    public function testSchedulerCanReturnTheTimezone(): void
-    {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher());
-
-        $timezone = $scheduler->getTimezone();
-        self::assertSame('UTC', $timezone->getName());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::getPoolConfiguration()}
-     */
-    public function testSchedulerPoolConfigurationIsAvailable(): void
-    {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
-
-        $poolConfiguration = $scheduler->getPoolConfiguration();
-        self::assertSame('UTC', $poolConfiguration->getTimezone()->getName());
-        self::assertArrayNotHasKey('foo', $poolConfiguration->getDueTasks());
-        self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 
     /**

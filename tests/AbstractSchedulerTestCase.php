@@ -51,4 +51,30 @@ abstract class AbstractSchedulerTestCase extends TestCase
 
         self::assertCount(expectedCount: 1, haystack: $scheduler->getTasks());
     }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see FiberScheduler::getTimezone()}
+     */
+    public function testSchedulerCanReturnTheTimezone(): void
+    {
+        $scheduler = $this->getScheduler();
+
+        $timezone = $scheduler->getTimezone();
+        self::assertSame(expected: 'UTC', actual: $timezone->getName());
+    }
+
+    /**
+     * @throws Exception {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::getPoolConfiguration()}
+     */
+    public function testSchedulerPoolConfigurationIsAvailable(): void
+    {
+        $scheduler = $this->getScheduler();
+
+        $poolConfiguration = $scheduler->getPoolConfiguration();
+        self::assertSame(expected: 'UTC', actual: $poolConfiguration->getTimezone()->getName());
+        self::assertArrayNotHasKey(key: 'foo', array: $poolConfiguration->getDueTasks());
+        self::assertCount(expectedCount: 0, haystack: $poolConfiguration->getDueTasks());
+    }
 }
