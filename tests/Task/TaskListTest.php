@@ -25,16 +25,16 @@ final class TaskListTest extends TestCase
     {
         $taskList = new TaskList();
 
-        self::assertCount(0, $taskList);
+        self::assertCount(expectedCount: 0, haystack: $taskList);
     }
 
     public function testListCanBeCreatedWithTasks(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $taskList = new TaskList([$task]);
+        $task = $this->createMock(originalClassName: TaskInterface::class);
+        $taskList = new TaskList(tasks: [$task]);
 
-        self::assertNotEmpty($taskList);
-        self::assertSame(1, $taskList->count());
+        self::assertNotEmpty(actual: $taskList);
+        self::assertSame(expected: 1, actual: $taskList->count());
     }
 
     public function testListCanBeHydrated(): void
@@ -266,15 +266,15 @@ final class TaskListTest extends TestCase
 
     public function testListCanApplyClosureOnEachTask(): void
     {
-        $nullTask = new NullTask('foo');
+        $nullTask = new NullTask(name: 'foo');
 
-        self::assertCount(0, $nullTask->getTags());
+        self::assertCount(expectedCount: 0, haystack: $nullTask->getTags());
 
-        $taskList = new TaskList([$nullTask]);
-        $taskList->walk(static fn (TaskInterface $task) => $task->addTag('walk'));
+        $taskList = new TaskList(tasks: [$nullTask]);
+        $taskList->walk(func: static fn (TaskInterface $task): TaskInterface => $task->addTag(tag: 'walk'));
 
-        self::assertCount(1, $nullTask->getTags());
-        self::assertContains('walk', $nullTask->getTags());
+        self::assertCount(expectedCount: 1, haystack: $nullTask->getTags());
+        self::assertContains(needle: 'walk', haystack: $nullTask->getTags());
     }
 
     public function testListCanApplyMapClosure(): void

@@ -8,12 +8,12 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use PDO;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\FiberScheduler;
+use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
@@ -88,42 +88,15 @@ use function sys_get_temp_dir;
  *
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class FiberSchedulerTest extends TestCase
+final class FiberSchedulerTest extends AbstractSchedulerTestCase
 {
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::schedule()}
-     */
-    public function testSchedulerCanScheduleTasks(): void
+    protected function getScheduler(): SchedulerInterface|FiberScheduler|LazyScheduler
     {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+        return new FiberScheduler(scheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(options: [
             'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
+        ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
-
-        $scheduler->schedule(new NullTask('foo'));
-        self::assertCount(1, $scheduler->getTasks());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::schedule()}
-     */
-    public function testSchedulerCanScheduleTasksWithCustomTimezone(): void
-    {
-        $task = new NullTask('foo', [
-            'timezone' => new DateTimeZone('Europe/Paris'),
-        ]);
-
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
-
-        $scheduler->schedule($task);
-        self::assertCount(1, $scheduler->getTasks());
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher()));
     }
 
     /**
@@ -168,6 +141,7 @@ final class FiberSchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('foo', [
             'before_scheduling' => static fn (): int => 1 + 1,
         ]));
+
         self::assertCount(1, $scheduler->getTasks());
     }
 
@@ -1350,9 +1324,10 @@ final class FiberSchedulerTest extends TestCase
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(), new EventDispatcher(), $bus));
-        $scheduler->schedule($task);
 
+        $scheduler->schedule($task);
         $scheduler->yieldTask('foo');
+
         self::assertCount(1, $scheduler->getTasks());
     }
 
@@ -1362,27 +1337,23 @@ final class FiberSchedulerTest extends TestCase
      */
     public function testSchedulerCannotYieldTaskAsynchronouslyWithoutMessageBus(): void
     {
-        $dateTimeZone = new DateTimeZone('UTC');
-
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::never())->method('getName')->willReturn('foo');
-        $task->expects(self::never())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::exactly(2))->method('getTimezone')->willReturn($dateTimeZone);
-        $task->expects(self::exactly(2))->method('setScheduledAt');
-        $task->expects(self::exactly(2))->method('setTimezone')->with(self::equalTo($dateTimeZone));
-
-        $transport = $this->createMock(TransportInterface::class);
-        $transport->expects(self::once())->method('get')->with(self::equalTo('foo'))->willReturn($task);
-        $transport->expects(self::exactly(2))->method('create')->with(self::equalTo($task));
-        $transport->expects(self::once())->method('delete')->with(self::equalTo('foo'));
+        $task = new NullTask('foo', [
+            'timezone' => new DateTimeZone('UTC'),
+        ]);
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher()));
-        $scheduler->schedule($task);
+        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+            'execution_mode' => 'first_in_first_out',
+        ]), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
 
+        $scheduler->schedule($task);
         $scheduler->yieldTask('foo', true);
+
+        self::assertCount(1, $scheduler->getTasks());
     }
 
     /**
@@ -1719,38 +1690,6 @@ final class FiberSchedulerTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionEndTime());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see FiberScheduler::getTimezone()}
-     */
-    public function testSchedulerCanReturnTheTimezone(): void
-    {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
-
-        $timezone = $scheduler->getTimezone();
-        self::assertSame('UTC', $timezone->getName());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see FiberScheduler::getPoolConfiguration()}
-     */
-    public function testSchedulerPoolConfigurationIsAvailable(): void
-    {
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
-
-        $poolConfiguration = $scheduler->getPoolConfiguration();
-        self::assertSame('UTC', $poolConfiguration->getTimezone()->getName());
-        self::assertArrayNotHasKey('foo', $poolConfiguration->getDueTasks());
-        self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 
     /**

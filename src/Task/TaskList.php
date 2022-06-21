@@ -199,7 +199,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetExists($offset): bool
     {
-        if (!is_string($offset)) {
+        if (!is_string(value: $offset)) {
             throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
         }
 
@@ -211,7 +211,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetGet($offset): ?TaskInterface
     {
-        if (!is_string($offset)) {
+        if (!is_string(value: $offset)) {
             throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
         }
 
@@ -240,7 +240,7 @@ final class TaskList implements TaskListInterface
      */
     public function offsetUnset($offset): void
     {
-        if (!is_string($offset)) {
+        if (!is_string(value: $offset)) {
             throw new InvalidArgumentException(message: sprintf('The offset must be a string, received "%s"', gettype($offset)));
         }
 

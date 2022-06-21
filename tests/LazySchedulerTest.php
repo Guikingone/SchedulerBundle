@@ -64,20 +64,19 @@ final class LazySchedulerTest extends TestCase
      */
     public function testSchedulerCanSchedule(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
 
-        $lazyScheduler = new LazyScheduler($scheduler);
-        self::assertFalse($lazyScheduler->isInitialized());
+        self::assertFalse(condition: $lazyScheduler->isInitialized());
 
-        $lazyScheduler->schedule(new NullTask('foo'));
-        self::assertTrue($lazyScheduler->isInitialized());
-        self::assertCount(1, $scheduler->getTasks());
+        $lazyScheduler->schedule(task: new NullTask(name: 'foo'));
+        self::assertTrue(condition: $lazyScheduler->isInitialized());
+        self::assertCount(expectedCount: 1, haystack: $lazyScheduler->getTasks());
 
-        $task = $lazyScheduler->getTasks()->get('foo');
-        self::assertTrue($lazyScheduler->isInitialized());
-        self::assertInstanceOf(NullTask::class, $task);
+        $task = $lazyScheduler->getTasks()->get(taskName: 'foo');
+        self::assertTrue(condition: $lazyScheduler->isInitialized());
+        self::assertInstanceOf(expected: NullTask::class, actual: $task);
     }
 
     /**
@@ -86,11 +85,10 @@ final class LazySchedulerTest extends TestCase
      */
     public function testSchedulerCanUnscheduleWhenNotInitialized(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
 
-        $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
 
         $lazyScheduler->unschedule('foo');
@@ -104,11 +102,10 @@ final class LazySchedulerTest extends TestCase
      */
     public function testSchedulerCanUnschedule(): void
     {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+        $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
 
-        $lazyScheduler = new LazyScheduler($scheduler);
         self::assertFalse($lazyScheduler->isInitialized());
 
         $lazyScheduler->schedule(new NullTask('foo'));

@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -69,22 +70,26 @@ final class Scheduler implements SchedulerInterface
      */
     public function schedule(TaskInterface $task): void
     {
-        $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
+        try {
+            $this->transport->get(name: $task->getName());
+        } catch (InvalidArgumentException) {
+            $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
-        $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
-        $task->setTimezone(dateTimeZone: $task->getTimezone() ?? $this->timezone);
+            $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
+            $task->setTimezone(dateTimeZone: $task->getTimezone() ?? $this->timezone);
 
-        if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
-            $this->bus->dispatch(message: new TaskToExecuteMessage(task: $task));
+            if ($this->bus instanceof MessageBusInterface && $task->isQueued()) {
+                $this->bus->dispatch(message: new TaskToExecuteMessage(task: $task));
+                $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
+
+                return;
+            }
+
+            $this->transport->create(task: $task);
             $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
 
-            return;
+            $this->middlewareStack->runPostSchedulingMiddleware(task: $task, scheduler: $this);
         }
-
-        $this->transport->create(task: $task);
-        $this->eventDispatcher->dispatch(event: new TaskScheduledEvent(task: $task));
-
-        $this->middlewareStack->runPostSchedulingMiddleware(task: $task, scheduler: $this);
     }
 
     /**
