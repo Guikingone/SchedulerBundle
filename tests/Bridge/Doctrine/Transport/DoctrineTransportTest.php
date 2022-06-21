@@ -18,6 +18,7 @@ use JsonException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransport;
+use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
@@ -368,7 +369,7 @@ final class DoctrineTransportTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
 
         $expression = $this->createMock(ExpressionBuilder::class);
         $expression->expects(self::once())->method('eq')
@@ -427,6 +428,9 @@ final class DoctrineTransportTest extends TestCase
             new FirstInFirstOutPolicy(),
         ]));
 
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectExceptionCode(0);
         $transport->create($task);
     }
 
