@@ -23,6 +23,7 @@ use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
@@ -368,8 +369,7 @@ final class DoctrineTransportTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
 
         $expression = $this->createMock(ExpressionBuilder::class);
         $expression->expects(self::once())->method('eq')

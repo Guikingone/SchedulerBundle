@@ -85,7 +85,7 @@ final class Connection implements ConnectionInterface
     public function create(TaskInterface $task): void
     {
         if ($this->connection->hExists($this->list, $task->getName())) {
-            throw new TransportException(sprintf('The task "%s" has already been scheduled!', $task->getName()));
+            throw new TransportException(message: sprintf('The task "%s" has already been scheduled!', $task->getName()));
         }
 
         $data = $this->serializer->serialize($task, 'json');

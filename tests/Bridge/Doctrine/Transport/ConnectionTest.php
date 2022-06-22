@@ -316,8 +316,7 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
 
         $expressionBuilder = $this->createMock(ExpressionBuilder::class);
         $expressionBuilder->expects(self::once())->method('eq')
