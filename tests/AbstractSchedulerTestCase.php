@@ -54,23 +54,11 @@ abstract class AbstractSchedulerTestCase extends TestCase
     }
 
     /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see FiberScheduler::getTimezone()}
-     */
-    public function testSchedulerCanReturnTheTimezone(): void
-    {
-        $scheduler = $this->getScheduler();
-
-        $timezone = $scheduler->getTimezone();
-        self::assertSame(expected: 'UTC', actual: $timezone->getName());
-    }
-
-    /**
      * @throws Throwable {@see Scheduler::__construct()}
      */
     public function testSchedulerCanRebootWithEmptyTasks(): void
     {
-        $scheduler = $this->buildScheduler();
+        $scheduler = $this->getScheduler();
 
         $scheduler->schedule(new NullTask('bar'));
         self::assertCount(1, $scheduler->getTasks());
@@ -84,7 +72,7 @@ abstract class AbstractSchedulerTestCase extends TestCase
      */
     public function testSchedulerCanReboot(): void
     {
-        $scheduler = $this->buildScheduler();
+        $scheduler = $this->getScheduler();
 
         $scheduler->schedule(new NullTask('foo', [
             'expression' => '@reboot',
@@ -104,7 +92,7 @@ abstract class AbstractSchedulerTestCase extends TestCase
     {
         $task = new NullTask('foo');
 
-        $scheduler = $this->buildScheduler();
+        $scheduler = $this->getScheduler();
 
         $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
@@ -116,10 +104,10 @@ abstract class AbstractSchedulerTestCase extends TestCase
      */
     public function testSchedulerCanReturnTheTimezone(): void
     {
-        $scheduler = $this->buildScheduler();
+        $scheduler = $this->getScheduler();
 
         $timezone = $scheduler->getTimezone();
-        self::assertSame('UTC', $timezone->getName());
+        self::assertSame(expected: 'UTC', actual: $timezone->getName());
     }
 
     /**

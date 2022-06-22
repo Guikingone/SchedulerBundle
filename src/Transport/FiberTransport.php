@@ -22,7 +22,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
         private TransportInterface $transport,
         protected ?LoggerInterface $logger = null
     ) {
-        parent::__construct($logger);
+        parent::__construct(logger: $logger);
     }
 
     /**
@@ -32,7 +32,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function get(string $name, bool $lazy = false): TaskInterface|LazyTask
     {
-        return $this->handleOperationViaFiber(fn (): TaskInterface|LazyTask =>  $this->transport->get($name, $lazy));
+        return $this->handleOperationViaFiber(func: fn (): TaskInterface|LazyTask =>  $this->transport->get(name: $name, lazy: $lazy));
     }
 
     /**
@@ -42,7 +42,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function list(bool $lazy = false): TaskListInterface|LazyTaskList
     {
-        return $this->handleOperationViaFiber(fn (): TaskListInterface|LazyTaskList =>  $this->transport->list($lazy));
+        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList =>  $this->transport->list(lazy: $lazy));
     }
 
     /**
@@ -52,8 +52,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function create(TaskInterface $task): void
     {
-        $this->handleOperationViaFiber(function () use ($task): void {
-            $this->transport->create($task);
+        $this->handleOperationViaFiber(func: function () use ($task): void {
+            $this->transport->create(task: $task);
         });
     }
 
@@ -64,8 +64,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function update(string $name, TaskInterface $updatedTask): void
     {
-        $this->handleOperationViaFiber(function () use ($name, $updatedTask): void {
-            $this->transport->update($name, $updatedTask);
+        $this->handleOperationViaFiber(func: function () use ($name, $updatedTask): void {
+            $this->transport->update(name: $name, updatedTask: $updatedTask);
         });
     }
 
@@ -76,8 +76,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function delete(string $name): void
     {
-        $this->handleOperationViaFiber(function () use ($name): void {
-            $this->transport->delete($name);
+        $this->handleOperationViaFiber(func: function () use ($name): void {
+            $this->transport->delete(name: $name);
         });
     }
 
@@ -88,8 +88,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function pause(string $name): void
     {
-        $this->handleOperationViaFiber(function () use ($name): void {
-            $this->transport->pause($name);
+        $this->handleOperationViaFiber(func: function () use ($name): void {
+            $this->transport->pause(name: $name);
         });
     }
 
@@ -100,8 +100,8 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function resume(string $name): void
     {
-        $this->handleOperationViaFiber(function () use ($name): void {
-            $this->transport->resume($name);
+        $this->handleOperationViaFiber(func: function () use ($name): void {
+            $this->transport->resume(name: $name);
         });
     }
 
@@ -112,7 +112,7 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function clear(): void
     {
-        $this->handleOperationViaFiber(function (): void {
+        $this->handleOperationViaFiber(func: function (): void {
             $this->transport->clear();
         });
     }
@@ -124,6 +124,6 @@ final class FiberTransport extends AbstractFiberHandler implements TransportInte
      */
     public function getConfiguration(): ConfigurationInterface
     {
-        return $this->handleOperationViaFiber(fn (): ConfigurationInterface =>  $this->transport->getConfiguration());
+        return $this->handleOperationViaFiber(func: fn (): ConfigurationInterface =>  $this->transport->getConfiguration());
     }
 }

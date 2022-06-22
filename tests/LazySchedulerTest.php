@@ -57,7 +57,7 @@ use Throwable;
  */
 final class LazySchedulerTest extends AbstractSchedulerTestCase
 {
-    protected function buildScheduler(): SchedulerInterface
+    protected function getScheduler(): SchedulerInterface
     {
         return new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -830,23 +830,6 @@ final class LazySchedulerTest extends AbstractSchedulerTestCase
         self::assertTrue($scheduler->isInitialized());
         self::assertCount(1, $scheduler->getTasks());
         self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     */
-    public function testSchedulerCanReturnTheTimezone(): void
-    {
-        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
-        self::assertFalse($scheduler->isInitialized());
-
-        $timezone = $scheduler->getTimezone();
-        self::assertSame('UTC', $timezone->getName());
-        self::assertTrue($scheduler->isInitialized());
     }
 
     /**

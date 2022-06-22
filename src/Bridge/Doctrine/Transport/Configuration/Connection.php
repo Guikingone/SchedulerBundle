@@ -35,7 +35,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
         private DbalConnection $connection,
         private bool $autoSetup
     ) {
-        parent::__construct($connection);
+        parent::__construct(driverConnection: $connection);
     }
 
     /**
@@ -286,7 +286,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                 $statement = $this->executeQuery($queryBuilder->getSQL());
 
                 $keys = $statement->fetchAllAssociative();
-                if (!$keys) {
+                if ([] === $keys) {
                     throw new RuntimeException('No result found');
                 }
 
@@ -311,7 +311,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                 $statement = $this->executeQuery($queryBuilder->getSQL());
                 $result = $statement->fetchAssociative();
 
-                if (!$result) {
+                if (false === $result || [] === $result) {
                     throw new RuntimeException('No result found');
                 }
 
@@ -349,7 +349,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     protected function executeQuery(string $sql, array $parameters = [], array $types = []): Result
     {
         try {
-            return $this->connection->executeQuery($sql, $parameters, $types);
+            return $this->connection->executeQuery(sql: $sql, params: $parameters, types: $types);
         } catch (Throwable $throwable) {
             if ($this->connection->isTransactionActive()) {
                 throw $throwable;
@@ -359,7 +359,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
                 $this->setup();
             }
 
-            return $this->connection->executeQuery($sql, $parameters, $types);
+            return $this->connection->executeQuery(sql: $sql, params: $parameters, types: $types);
         }
     }
 
@@ -372,11 +372,11 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
             return;
         }
 
-        if ($schema->hasTable(self::TABLE_NAME)) {
+        if ($schema->hasTable(name: self::TABLE_NAME)) {
             return;
         }
 
-        $this->addTableToSchema($schema);
+        $this->addTableToSchema(schema: $schema);
     }
 
     /**
@@ -388,7 +388,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
         $schemaAssetsFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter();
         $this->updateSchema();
-        $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
+        $configuration->setSchemaAssetsFilter(callable: $schemaAssetsFilter);
 
         $this->autoSetup = false;
     }

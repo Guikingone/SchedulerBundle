@@ -20,7 +20,9 @@ use function array_key_exists;
  */
 final class ProbeTaskRunner implements RunnerInterface
 {
-    public function __construct(private ?HttpClientInterface $httpClient = null)
+    private HttpClientInterface $httpClient;
+
+    public function __construct(?HttpClientInterface $httpClient = null)
     {
         $this->httpClient = $httpClient ?? HttpClient::create();
     }
@@ -36,6 +38,7 @@ final class ProbeTaskRunner implements RunnerInterface
 
         try {
             $response = $this->httpClient->request(method: 'GET', url: $task->getExternalProbePath());
+
             $body = $response->toArray();
             if (!array_key_exists(key: 'failedTasks', array: $body) || ($task->getErrorOnFailedTasks() && 0 !== $body['failedTasks'])) {
                 throw new RuntimeException(message: 'The probe state is invalid');

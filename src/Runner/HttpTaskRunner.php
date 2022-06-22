@@ -17,7 +17,9 @@ use Throwable;
  */
 final class HttpTaskRunner implements RunnerInterface
 {
-    public function __construct(private ?HttpClientInterface $httpClient = null)
+    private HttpClientInterface $httpClient;
+
+    public function __construct(?HttpClientInterface $httpClient = null)
     {
         $this->httpClient = $httpClient ?? HttpClient::create();
     }

@@ -40,7 +40,7 @@ abstract class AbstractFiberHandler
         });
 
         try {
-            $return = $fiber->start($func);
+            $return = $fiber->start(args: $func);
         } catch (Throwable $throwable) {
             $this->logger->critical(message: sprintf('An error occurred while performing the action: %s', $throwable->getMessage()));
 
