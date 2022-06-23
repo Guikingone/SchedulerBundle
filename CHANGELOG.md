@@ -2,6 +2,64 @@
 
 0.9.3
 -----
+
+### Bug Fixes
+
+##### Bridge
+
+* Exception thrown during task creation (#287) ([25d9da](https://github.com/Guikingone/SchedulerBundle/commit/25d9dad67c1181f3cfbef36010370ceeac1bfc89))
+
+### Code Refactoring
+
+##### Bridge
+
+* Connection improved (#282) ([ee9979](https://github.com/Guikingone/SchedulerBundle/commit/ee9979154763738bf86e87e4377d959a93a39d31))
+
+##### Build
+
+* Improve .gitattributes for composer install (#270) ([a8335c](https://github.com/Guikingone/SchedulerBundle/commit/a8335cb72e8de96f33512ef352465d622bbd1cb5))
+
+##### Command
+
+* Attribute introduced (#281) ([a7326f](https://github.com/Guikingone/SchedulerBundle/commit/a7326f1e9211c0db8bb3f054dd9dd320f8e90a51))
+
+##### Core
+
+* Improvement on command display && normalizer condition (#277) ([d64656](https://github.com/Guikingone/SchedulerBundle/commit/d646564a749be8f2de5f878072773eff8543e6d2))
+* Scheduler scheduling phase improved (#286) ([4b7905](https://github.com/Guikingone/SchedulerBundle/commit/4b7905ef32d4a27a7b8768169a8e811c69dec6c8))
+
+##### Serializer
+
+* Normalizers deprecations removed (#266) ([cd23d8](https://github.com/Guikingone/SchedulerBundle/commit/cd23d898a630abc8815c273fed34b388032e66e3))
+
+### Builds
+
+##### Deps
+
+* Dev depdencies updated (#262) ([fb98d6](https://github.com/Guikingone/SchedulerBundle/commit/fb98d6f82a19d1e3db503a21a8a173ab53d11c5b))
+
+##### Security
+
+* Replace snyk with symfonycorp/security-checker-action (#267) ([1a2a55](https://github.com/Guikingone/SchedulerBundle/commit/1a2a55f155b90ca69b3a319df700f650ed3b95fa))
+
+### Continuous Integrations
+
+##### Docker
+
+* Fix hadolint workflow (#268) ([fc95c8](https://github.com/Guikingone/SchedulerBundle/commit/fc95c859483d9e2d02888ba9d11bfd68d5b94e73))
+
+##### Github
+
+* Simplify workflows (#271) ([19dbac](https://github.com/Guikingone/SchedulerBundle/commit/19dbac3b5c23cac282ca53f52d13e156ce3870e4))
+
+##### Tools
+
+* MacOS dropped for rector & static analysis workflows (#269) ([5427b3](https://github.com/Guikingone/SchedulerBundle/commit/5427b3b160abba4892422bc9ecbbcb8e847c505f))
+
+---
+
+0.9.3
+-----
 ### Features
 
 ##### Command
