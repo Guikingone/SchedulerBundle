@@ -7,12 +7,12 @@ namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Result;
-use Doctrine\DBAL\Result as NextResult;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result as NextResult;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Comparator;
@@ -259,7 +259,7 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task->expects(self::exactly(2))->method('getName')->willReturn('foo');
 
         $expressionBuilder = $this->createMock(ExpressionBuilder::class);
         $expressionBuilder->expects(self::once())->method('eq')
@@ -295,7 +295,6 @@ final class ConnectionTest extends TestCase
         $driverConnection = $this->getDBALConnectionMock();
         $driverConnection->expects(self::once())->method('executeQuery')->willReturn($statement);
         $driverConnection->expects(self::once())->method('createQueryBuilder')->willReturn($queryBuilder);
-        $driverConnection->expects(self::never())->method('transactional');
 
         $connection = new DoctrineConnection(new InMemoryConfiguration([
             'auto_setup' => true,
@@ -306,6 +305,10 @@ final class ConnectionTest extends TestCase
         ]), $driverConnection, $serializer, new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
         ]));
+
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectExceptionCode(0);
         $connection->create($task);
     }
 
@@ -313,8 +316,7 @@ final class ConnectionTest extends TestCase
     {
         $serializer = $this->createMock(SerializerInterface::class);
 
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getName')->willReturn('foo');
+        $task = new NullTask('foo');
 
         $expressionBuilder = $this->createMock(ExpressionBuilder::class);
         $expressionBuilder->expects(self::once())->method('eq')

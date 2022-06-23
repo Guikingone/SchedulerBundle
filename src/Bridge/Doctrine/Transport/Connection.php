@@ -93,7 +93,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         )->fetchOne();
 
         if (0 === (int) $statement) {
-            throw new TransportException(sprintf('The task "%s" cannot be found', $taskName));
+            throw new TransportException(message: sprintf('The task "%s" cannot be found', $taskName));
         }
 
         try {
@@ -139,7 +139,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         )->fetchOne();
 
         if (0 !== (int) $existingTask) {
-            return;
+            throw new TransportException(sprintf('The task "%s" has already been scheduled!', $task->getName()));
         }
 
         try {

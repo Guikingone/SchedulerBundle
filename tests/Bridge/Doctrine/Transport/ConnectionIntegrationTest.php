@@ -195,6 +195,9 @@ final class ConnectionIntegrationTest extends TestCase
         $this->connection->create(new NullTask('foo'));
         self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
 
+        self::expectException(TransportException::class);
+        self::expectExceptionMessage('The task "foo" has already been scheduled!');
+        self::expectExceptionCode(0);
         $this->connection->create(new ShellTask('foo', []));
         self::assertInstanceOf(NullTask::class, $this->connection->get('foo'));
     }
