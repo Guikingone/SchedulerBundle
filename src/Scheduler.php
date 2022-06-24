@@ -256,7 +256,7 @@ final class Scheduler implements SchedulerInterface
             return $filteredTasks;
         }
 
-        $key = new Key($synchronizedCurrentDate->format(format: 'Y_m_d_h_i'));
+        $key = new Key(resource: $synchronizedCurrentDate->format(format: 'Y_m_d_h_i'));
 
         $lock = $this->lockFactory->createLockFromKey(key: $key, autoRelease: false);
         if (!$lock->acquire()) {

@@ -129,7 +129,7 @@ final class FiberScheduler extends AbstractFiberHandler implements SchedulerInte
      */
     public function getDueTasks(bool $lazy = false, bool $strict = false, bool $lock = false): TaskListInterface|LazyTaskList|LockedTaskList
     {
-        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList => $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict, lock: $lock));
+        return $this->handleOperationViaFiber(func: fn (): TaskListInterface|LazyTaskList|LockedTaskList => $this->scheduler->getDueTasks(lazy: $lazy, strict: $strict, lock: $lock));
     }
 
     /**

@@ -107,26 +107,26 @@ final class ConsumeTasksCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $symfonyStyle = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle(input: $input, output: $output);
 
-        $wait = $input->getOption('wait');
-        $force = $input->getOption('force');
-        $lazy = $input->getOption('lazy');
-        $strict = $input->getOption('strict');
+        $wait = $input->getOption(name: 'wait');
+        $force = $input->getOption(name: 'force');
+        $lazy = $input->getOption(name: 'lazy');
+        $strict = $input->getOption(name: 'strict');
 
-        $dueTasks = $this->scheduler->getDueTasks(true === $lazy, true === $strict)->filter(static fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
+        $dueTasks = $this->scheduler->getDueTasks(lazy: true === $lazy, strict: true === $strict)->filter(static fn (TaskInterface $task): bool => !$task instanceof ProbeTask);
         if (0 === $dueTasks->count() && false === $wait) {
-            $symfonyStyle->warning('No due tasks found');
+            $symfonyStyle->warning(message: 'No due tasks found');
 
             return self::SUCCESS;
         }
 
         if (false === $force) {
-            $nonPausedTasks = $dueTasks->filter(static fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
+            $nonPausedTasks = $dueTasks->filter(filter: static fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
             if (0 === $nonPausedTasks->count()) {
-                $symfonyStyle->warning([
+                $symfonyStyle->warning(message: [
                     'Each tasks has already been executed for the current minute',
-                    sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable('+ 1 minute'))->format('Y-m-d h:i')),
+                    sprintf('Consider calling this command again at "%s"', (new DateTimeImmutable(datetime: '+ 1 minute'))->format(format: 'Y-m-d h:i')),
                 ]);
 
                 return self::SUCCESS;
@@ -241,8 +241,8 @@ final class ConsumeTasksCommand extends Command
 
     private function registerWorkerSleepingListener(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(WorkerSleepingEvent::class, static function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
-            $symfonyStyle->info(sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
+        $this->eventDispatcher->addListener(eventName: WorkerSleepingEvent::class, listener: static function (WorkerSleepingEvent $event) use ($symfonyStyle): void {
+            $symfonyStyle->info(message: sprintf('The worker is currently sleeping during %d seconds', $event->getSleepDuration()));
         });
     }
 }

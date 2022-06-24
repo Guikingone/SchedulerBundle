@@ -97,7 +97,7 @@ final class FiberSchedulerTest extends AbstractSchedulerTestCase
             'execution_mode' => 'first_in_first_out',
         ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()), logger: new NullLogger()));
     }
 
     /**
@@ -109,19 +109,19 @@ final class FiberSchedulerTest extends AbstractSchedulerTestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical');
 
-        $scheduler = new FiberScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
+        $scheduler = new FiberScheduler(new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(options: [
             'execution_mode' => 'first_in_first_out',
         ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
         ])), middlewareStack: new SchedulerMiddlewareStack(stack: [
             new NotifierMiddleware(),
             new TaskCallbackMiddleware(),
-        ]), new EventDispatcher()), $logger);
+        ]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())), logger: $logger);
 
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The task cannot be scheduled');
-        self::expectExceptionCode(0);
-        $scheduler->schedule(new NullTask('foo', [
+        self::expectException(exception: RuntimeException::class);
+        self::expectExceptionMessage(message: 'The task cannot be scheduled');
+        self::expectExceptionCode(code: 0);
+        $scheduler->schedule(task: new NullTask(name: 'foo', options: [
             'before_scheduling' => static fn (): bool => false,
         ]));
     }
@@ -138,7 +138,7 @@ final class FiberSchedulerTest extends AbstractSchedulerTestCase
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
-        ]), new EventDispatcher()));
+        ]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()), logger: new NullLogger()));
 
         $scheduler->schedule(new NullTask('foo', [
             'before_scheduling' => static fn (): int => 1 + 1,
@@ -166,7 +166,7 @@ final class FiberSchedulerTest extends AbstractSchedulerTestCase
         ])), new SchedulerMiddlewareStack([
             new TaskCallbackMiddleware(),
             new NotifierMiddleware(),
-        ]), new EventDispatcher()));
+        ]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()), logger: new NullLogger()));
 
         $scheduler->schedule(new NullTask('foo', [
             'before_scheduling_notification' => new NotificationTaskBag($notification, $recipient),

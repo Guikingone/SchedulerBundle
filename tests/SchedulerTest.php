@@ -95,7 +95,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
             'execution_mode' => 'first_in_first_out',
         ]), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack(stack: new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack(stack: new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
     }
 
     /**
@@ -110,7 +110,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
             new FirstInFirstOutPolicy(),
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
             new TaskCallbackMiddleware(),
-        ])), new EventDispatcher());
+        ])), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         self::expectException(RuntimeException::class);
         self::expectExceptionMessage('The task cannot be scheduled');
