@@ -153,37 +153,38 @@ final class ConsumeTasksCommand extends Command
         if ([] !== $stopOptions) {
             $last = array_pop($stopOptions);
             $stopsWhen = ([] !== $stopOptions ? implode(', ', $stopOptions).' or ' : '').$last;
-            $symfonyStyle->comment([
+            $symfonyStyle->comment(message: [
                 'The worker will automatically exit once:',
                 sprintf('- %s', $stopsWhen),
             ]);
         }
 
         if (true === $wait) {
-            $symfonyStyle->note('The worker will wait for tasks every minutes');
+            $symfonyStyle->note(message: 'The worker will wait for tasks every minutes');
         }
 
-        $symfonyStyle->comment('Quit the worker with CONTROL-C.');
+        $symfonyStyle->comment(message: 'Quit the worker with CONTROL-C.');
 
         if (OutputInterface::VERBOSITY_VERY_VERBOSE !== $output->getVerbosity()) {
-            $symfonyStyle->note(sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : ''));
+            $symfonyStyle->note(message: sprintf('The task%s output can be displayed if the -vv option is used', $dueTasks->count() > 1 ? 's' : ''));
         }
 
         if ($output->isVeryVerbose()) {
-            $this->registerOutputSubscriber($symfonyStyle);
+            $this->registerOutputSubscriber(symfonyStyle: $symfonyStyle);
         }
 
-        $this->registerWorkerSleepingListener($symfonyStyle);
-        $this->registerTaskExecutedSubscriber($symfonyStyle);
+        $this->registerWorkerSleepingListener(symfonyStyle: $symfonyStyle);
+        $this->registerTaskExecutedSubscriber(symfonyStyle: $symfonyStyle);
 
         $workerConfiguration = WorkerConfiguration::create();
-        $workerConfiguration->mustStrictlyCheckDate(true === $strict);
-        $workerConfiguration->mustSleepUntilNextMinute(true === $wait);
+        $workerConfiguration->mustStrictlyCheckDate(mustStrictlyCheckDate: true === $strict);
+        $workerConfiguration->mustSleepUntilNextMinute(sleepUntilNextMinute: true === $wait);
+        $workerConfiguration->lockTask(lock: true);
 
         try {
-            $this->worker->execute($workerConfiguration);
+            $this->worker->execute(configuration: $workerConfiguration);
         } catch (Throwable $throwable) {
-            $symfonyStyle->error([
+            $symfonyStyle->error(message: [
                 'An error occurred when executing the tasks',
                 $throwable->getMessage(),
             ]);
