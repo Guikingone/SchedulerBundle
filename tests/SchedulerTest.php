@@ -121,26 +121,6 @@ final class SchedulerTest extends AbstractSchedulerTestCase
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function getScheduler(): SchedulerInterface
-    {
-        $scheduler = new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([
-            new TaskCallbackMiddleware(),
-        ])), new EventDispatcher());
-
-        $scheduler->schedule(new NullTask('foo', [
-            'before_scheduling' => static fn (): int => 1 + 1,
-        ]));
-
-        self::assertCount(1, $scheduler->getTasks());
-    }
-
-    /**
      * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::schedule()}
      */
@@ -1321,7 +1301,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), $bus);
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), lockFactory: new LockFactory(new InMemoryStore()), bus: $bus);
 
         $scheduler->schedule($task);
         $scheduler->yieldTask(name: 'foo');
@@ -1346,7 +1326,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
             'execution_mode' => 'first_in_first_out',
         ]), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher(), lockFactory: new LockFactory(new InMemoryStore()));
 
         $scheduler->schedule(task: $task);
         $scheduler->yieldTask(name: 'foo', async: true);
@@ -1681,6 +1661,17 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getLastExecution());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionStartTime());
         self::assertInstanceOf(DateTimeImmutable::class, $barTask->getExecutionEndTime());
+    }
+
+    /**
+     * @return Generator<array<int, ShellTask>>
+     */
+    public function provideTasks(): Generator
+    {
+        yield 'Shell tasks' => [
+            new ShellTask(name: 'Bar', command: ['echo', 'Symfony']),
+            new ShellTask(name: 'Foo', command: ['echo', 'Symfony']),
+        ];
     }
 
     /**

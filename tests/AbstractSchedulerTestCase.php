@@ -7,14 +7,11 @@ namespace Tests\SchedulerBundle;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\LazyTaskList;
-use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\NullTask;
 use Throwable;
 

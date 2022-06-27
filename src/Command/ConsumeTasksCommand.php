@@ -135,19 +135,19 @@ final class ConsumeTasksCommand extends Command
 
         $stopOptions = [];
 
-        if (null !== $limit = $input->getOption('limit')) {
+        if (null !== $limit = $input->getOption(name: 'limit')) {
             $stopOptions[] = sprintf('%s task%s %s been consumed', $limit, (int) $limit > 1 ? 's' : '', (int) $limit > 1 ? 'have' : 'has');
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnTaskLimitSubscriber((int) $limit, $this->logger));
+            $this->eventDispatcher->addSubscriber(subscriber: new StopWorkerOnTaskLimitSubscriber((int) $limit, $this->logger));
         }
 
-        if (null !== $timeLimit = $input->getOption('time-limit')) {
+        if (null !== $timeLimit = $input->getOption(name: 'time-limit')) {
             $stopOptions[] = sprintf('it has been running for %d seconds', $timeLimit);
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnTimeLimitSubscriber((int) $timeLimit, $this->logger));
+            $this->eventDispatcher->addSubscriber(subscriber: new StopWorkerOnTimeLimitSubscriber((int) $timeLimit, $this->logger));
         }
 
-        if (null !== $failureLimit = $input->getOption('failure-limit')) {
+        if (null !== $failureLimit = $input->getOption(name: 'failure-limit')) {
             $stopOptions[] = sprintf('%d task%s %s failed', $failureLimit, (int) $failureLimit > 1 ? 's' : '', (int) $failureLimit > 1 ? 'have' : 'has');
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
+            $this->eventDispatcher->addSubscriber(subscriber: new StopWorkerOnFailureLimitSubscriber((int) $failureLimit, $this->logger));
         }
 
         if ([] !== $stopOptions) {
@@ -197,28 +197,28 @@ final class ConsumeTasksCommand extends Command
 
     private function registerOutputSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(eventName: TaskExecutedEvent::class, listener: static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $output = $event->getOutput();
             if (null === $output->getOutput()) {
                 return;
             }
 
-            $symfonyStyle->note(sprintf('Output for task "%s":', $event->getTask()->getName()));
-            $symfonyStyle->text($output->getOutput());
+            $symfonyStyle->note(message: sprintf('Output for task "%s":', $event->getTask()->getName()));
+            $symfonyStyle->text(message: $output->getOutput());
         });
     }
 
     private function registerTaskExecutedSubscriber(SymfonyStyle $symfonyStyle): void
     {
-        $this->eventDispatcher->addListener(TaskExecutedEvent::class, static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
+        $this->eventDispatcher->addListener(eventName: TaskExecutedEvent::class, listener: static function (TaskExecutedEvent $event) use ($symfonyStyle): void {
             $task = $event->getTask();
             $output = $event->getOutput();
 
             $taskExecutionDuration = Helper::formatTime((int) $task->getExecutionComputationTime() / 100);
             $taskExecutionMemoryUsage = Helper::formatMemory($task->getExecutionMemoryUsage());
 
-            if (in_array($task->getExecutionState(), [TaskInterface::TO_RETRY, TaskInterface::INCOMPLETE], true)) {
-                $symfonyStyle->warning([
+            if (in_array(needle: $task->getExecutionState(), haystack: [TaskInterface::TO_RETRY, TaskInterface::INCOMPLETE], strict: true)) {
+                $symfonyStyle->warning(message: [
                     sprintf('The task "%s" cannot be executed fully', $task->getName()),
                     'The task will be retried next time',
                 ]);
@@ -227,14 +227,14 @@ final class ConsumeTasksCommand extends Command
             }
 
             if (Output::ERROR === $output->getType()) {
-                $symfonyStyle->error([
+                $symfonyStyle->error(message: [
                     sprintf('Task "%s" failed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
                 ]);
 
                 return;
             }
 
-            $symfonyStyle->success([
+            $symfonyStyle->success(message: [
                 sprintf('Task "%s" succeed. (Duration: %s, Memory used: %s)', $task->getName(), $taskExecutionDuration, $taskExecutionMemoryUsage),
             ]);
         });

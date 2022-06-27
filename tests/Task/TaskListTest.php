@@ -5,27 +5,25 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
+use SchedulerBundle\Task\LockedTaskList;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use stdClass;
 use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskListTest extends TestCase
+final class TaskListTest extends AbstractTaskListTest
 {
-    public function testListCanBeCreatedWithEmptyTasks(): void
+    public function getTaskList(): TaskListInterface|LockedTaskList|LazyTaskList
     {
-        $taskList = new TaskList();
-
-        self::assertCount(expectedCount: 0, haystack: $taskList);
+        return new TaskList();
     }
 
     public function testListCanBeCreatedWithTasks(): void
@@ -35,45 +33,6 @@ final class TaskListTest extends TestCase
 
         self::assertNotEmpty(actual: $taskList);
         self::assertSame(expected: 1, actual: $taskList->count());
-    }
-
-    public function testListCanBeHydrated(): void
-    {
-        $task = $this->createMock(TaskInterface::class);
-        $taskList = new TaskList();
-
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-        $taskList->add($task);
-
-        self::assertNotEmpty($taskList);
-        self::assertSame(1, $taskList->count());
-    }
-
-    public function testListCanBeHydratedWithMultipleTasks(): void
-    {
-        $task = $this->createMock(TaskInterface::class);
-        $secondTask = $this->createMock(TaskInterface::class);
-
-        $taskList = new TaskList();
-
-        $task->expects(self::once())->method('getName')->willReturn('foo');
-        $taskList->add($task, $secondTask);
-
-        self::assertNotEmpty($taskList);
-        self::assertSame(2, $taskList->count());
-    }
-
-    /**
-     * @throws Throwable {@see TaskListInterface::offsetSet()}
-     */
-    public function testListCannotBeHydratedUsingInvalidOffset(): void
-    {
-        $taskList = new TaskList();
-
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('A task must be given, received "object"');
-        self::expectExceptionCode(0);
-        $taskList->offsetSet('foo', new stdClass());
     }
 
     /**

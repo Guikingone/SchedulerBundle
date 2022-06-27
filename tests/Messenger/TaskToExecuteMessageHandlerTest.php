@@ -10,8 +10,8 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToExecuteMessageHandler;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 
@@ -24,9 +24,9 @@ final class TaskToExecuteMessageHandlerTest extends TestCase
 {
     public function testHandlerCanRunDueTaskWithoutASpecificTimezone(): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getTimezone')->willReturn(null);
+        $task = new NullTask(name: 'foo', options: [
+            'timezone' => null,
+        ]);
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('isRunning')->willReturn(false);

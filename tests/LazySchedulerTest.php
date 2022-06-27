@@ -67,7 +67,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(new InMemoryStore())));
 
         self::assertFalse(condition: $lazyScheduler->isInitialized());
 
@@ -88,7 +88,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(new InMemoryStore())));
 
         self::assertFalse($lazyScheduler->isInitialized());
 
@@ -105,7 +105,7 @@ final class LazySchedulerTest extends TestCase
     {
         $lazyScheduler = new LazyScheduler(sourceScheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher()));
+        ])), middlewareStack: new SchedulerMiddlewareStack(new MiddlewareRegistry([])), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(new InMemoryStore())));
 
         self::assertFalse($lazyScheduler->isInitialized());
 
