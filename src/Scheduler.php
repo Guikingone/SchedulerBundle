@@ -133,7 +133,9 @@ final class Scheduler implements SchedulerInterface
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
-        $preemptTasks = $this->getDueTasks()->filter(filter: $filter);
+        $dueTasks = $this->getDueTasks();
+        $preemptTasks = $dueTasks->filter(filter: $filter);
+
         if (0 === $preemptTasks->count()) {
             return;
         }
@@ -296,7 +298,9 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $tasks = $this->getTasks();
+
+        $rebootTasks = $tasks->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 

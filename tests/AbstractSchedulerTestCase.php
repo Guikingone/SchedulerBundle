@@ -10,20 +10,11 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\FiberScheduler;
 use SchedulerBundle\LazyScheduler;
-use SchedulerBundle\Middleware\MiddlewareRegistry;
-use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
-use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
-use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
-use SchedulerBundle\Transport\InMemoryTransport;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\Store\InMemoryStore;
 use Throwable;
 
 /**
@@ -159,7 +150,7 @@ abstract class AbstractSchedulerTestCase extends TestCase
 
         $scheduler = $this->getScheduler();
 
-        $scheduler->preempt(taskToPreempt: 'foo', filter: fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt(taskToPreempt: 'foo', filter: static fn (TaskInterface $task): bool => $task->getName() === 'bar');
         self::assertNotSame(expected: TaskInterface::READY_TO_EXECUTE, actual: $task->getState());
     }
 

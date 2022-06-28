@@ -38,7 +38,6 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
-use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NullTask;

@@ -37,7 +37,6 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
-use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NullTask;
@@ -1131,7 +1130,7 @@ final class FiberSchedulerTest extends AbstractSchedulerTestCase
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
         $scheduler->schedule(new NullTask('reboot'));
-        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'reboot');
 
         $lockFactory = new LockFactory(new InMemoryStore());
 

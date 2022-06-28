@@ -75,16 +75,16 @@ final class WorkerTest extends AbstractWorkerTestCase
     protected function getWorker(): WorkerInterface
     {
         return new Worker(
-            new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            scheduler: new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
                 new FirstInFirstOutPolicy(),
-            ])), new SchedulerMiddlewareStack([]), new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())),
-            new RunnerRegistry([]),
-            new ExecutionPolicyRegistry([]),
-            new TaskExecutionTracker(new Stopwatch()),
-            new WorkerMiddlewareStack(),
-            new EventDispatcher(),
-            new LockFactory(new InMemoryStore()),
-            new NullLogger()
+            ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore())),
+            runnerRegistry: new RunnerRegistry(runners: []),
+            executionPolicyRegistry: new ExecutionPolicyRegistry(policies: []),
+            taskExecutionTracker: new TaskExecutionTracker(watch: new Stopwatch()),
+            middlewareStack: new WorkerMiddlewareStack(),
+            eventDispatcher: new EventDispatcher(),
+            lockFactory: new LockFactory(store: new InMemoryStore()),
+            logger: new NullLogger()
         );
     }
 
