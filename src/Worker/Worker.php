@@ -292,13 +292,8 @@ final class Worker implements WorkerInterface
 
                 $this->taskExecutionTracker->endTracking(task: $task);
                 $task->setExecutionEndTime(dateTimeImmutable: new DateTimeImmutable());
-                $task->setLastExecution(dateTimeImmutable: new DateTimeImmutable());
-
                 $this->defineTaskExecutionState(task: $task, output: $output);
-
-                $this->middlewareStack->runPostExecutionMiddleware(task: $task, worker: $this);
                 $this->eventDispatcher->dispatch(new TaskExecutedEvent(task: $task, output: $output));
-
                 $this->configuration->setLastExecutedTask(lastExecutedTask: $task);
 
                 $executedTasksCount = $this->configuration->getExecutedTasksCount();
@@ -309,8 +304,12 @@ final class Worker implements WorkerInterface
             $this->getFailedTasks()->add(task: $failedTask);
             $this->eventDispatcher->dispatch(event: new TaskFailedEvent(task: $failedTask));
         } finally {
+            $task->setLastExecution(dateTimeImmutable: new DateTimeImmutable());
+
             $this->configuration->setCurrentlyExecutedTask(task: null);
             $this->configuration->run(isRunning: false);
+
+            $this->middlewareStack->runPostExecutionMiddleware(task: $task, worker: $this);
             $this->eventDispatcher->dispatch(event: new WorkerRunningEvent(worker: $this, isIdle: true));
         }
     }
