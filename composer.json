@@ -103,7 +103,10 @@
     "config": {
         "classmap-authoritative": true,
         "optimize-autoloader": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
     },
     "require": {
         "php": ">=8.0",
