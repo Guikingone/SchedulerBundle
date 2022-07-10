@@ -27,7 +27,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             return;
         }
 
-        if (!is_callable($callback)) {
+        if (!is_callable(value: $callback)) {
             return;
         }
 
@@ -46,7 +46,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             return;
         }
 
-        if (!is_callable($callback)) {
+        if (!is_callable(value: $callback)) {
             return;
         }
 
@@ -67,7 +67,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             return;
         }
 
-        if (!is_callable($callback)) {
+        if (!is_callable(value: $callback)) {
             return;
         }
 
@@ -86,7 +86,7 @@ final class TaskCallbackMiddleware implements PreSchedulingMiddlewareInterface, 
             return;
         }
 
-        if (!is_callable($callback)) {
+        if (!is_callable(value: $callback)) {
             return;
         }
 

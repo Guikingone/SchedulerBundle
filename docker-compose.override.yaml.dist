@@ -14,8 +14,8 @@ x-mutagen:
       permissions:
         defaultDirectoryMode: 0755
         defaultFileMode: 0644
-      ignore:
-        vcs: true
+      # ignore:
+      #   vcs: true
     code:
       alpha: "."
       beta: "volume://code"

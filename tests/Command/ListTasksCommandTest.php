@@ -23,6 +23,8 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Throwable;
 
 /**
@@ -30,9 +32,15 @@ use Throwable;
  */
 final class ListTasksCommandTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandIsCorrectlyConfigured(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+
         $listTasksCommand = new ListTasksCommand(scheduler: $scheduler);
 
         self::assertSame('scheduler:list', $listTasksCommand->getName());
@@ -70,7 +78,7 @@ final class ListTasksCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo'));
         $scheduler->schedule(task: new NullTask(name: 'bar'));
 
@@ -92,7 +100,7 @@ final class ListTasksCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo'));
         $scheduler->schedule(task: new NullTask(name: 'bar'));
 
@@ -113,7 +121,7 @@ final class ListTasksCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
 
         $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));
         $commandTester->execute(input: []);
@@ -403,15 +411,19 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('fast', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanReturnTasksWithInvalidExpressionFilter(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             '--expression' => '0 * * * *',
         ]);
 
@@ -419,15 +431,19 @@ final class ListTasksCommandTest extends TestCase
         self::assertStringContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     * @throws Throwable {@see SchedulerInterface::schedule()}
+     */
     public function testCommandCanReturnTasksWithInvalidStateFilter(): void
     {
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getTasks')->willReturn(new TaskList([
-            new NullTask('foo'),
-        ]));
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+        $scheduler->schedule(task: new NullTask(name: 'foo'));
 
-        $commandTester = new CommandTester(new ListTasksCommand($scheduler));
-        $commandTester->execute([
+        $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));
+        $commandTester->execute(input: [
             '--state' => 'test',
         ]);
 
@@ -443,7 +459,7 @@ final class ListTasksCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo'));
 
         $commandTester = new CommandTester(command: new ListTasksCommand(scheduler: $scheduler));

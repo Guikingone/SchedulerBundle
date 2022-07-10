@@ -23,6 +23,7 @@ final class WorkerConfiguration
     private bool $mustStrictlyCheckDate;
     private ?TaskInterface $currentlyExecutedTask = null;
     private string $executionPolicy;
+    private bool $shouldLockTasks;
 
     private function __construct()
     {
@@ -43,6 +44,7 @@ final class WorkerConfiguration
         $self->lastExecutedTask = null;
         $self->forkedFrom = null;
         $self->mustStrictlyCheckDate = false;
+        $self->shouldLockTasks = false;
         $self->executionPolicy = 'default';
 
         return $self;
@@ -166,6 +168,16 @@ final class WorkerConfiguration
     public function isStrictlyCheckingDate(): bool
     {
         return $this->mustStrictlyCheckDate;
+    }
+
+    public function shouldLockTasks(): bool
+    {
+        return $this->shouldLockTasks;
+    }
+
+    public function lockTask(bool $lock): void
+    {
+        $this->shouldLockTasks = $lock;
     }
 
     /**

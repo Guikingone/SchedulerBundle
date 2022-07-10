@@ -18,6 +18,6 @@ final class TaskToUpdateMessageHandler implements MessageHandlerInterface
 
     public function __invoke(TaskToUpdateMessage $message): void
     {
-        $this->transport->update($message->getTaskName(), $message->getTask());
+        $this->transport->update(name: $message->getTaskName(), updatedTask: $message->getTask());
     }
 }

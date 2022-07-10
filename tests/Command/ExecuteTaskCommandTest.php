@@ -7,23 +7,32 @@ namespace Tests\SchedulerBundle\Command;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SchedulerBundle\Command\ExecuteTaskCommand;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
+use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
+use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Throwable;
 
 /**
@@ -31,11 +40,27 @@ use Throwable;
  */
 final class ExecuteTaskCommandTest extends TestCase
 {
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandIsConfigured(): void
     {
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $worker = $this->createMock(WorkerInterface::class);
+        $eventDispatcher = new EventDispatcher();
+
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: $eventDispatcher, lockFactory: new LockFactory(store: new InMemoryStore()));
+
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack(),
+            new EventDispatcher(),
+            new LockFactory(new InMemoryStore()),
+            new NullLogger()
+        );
 
         $command = new ExecuteTaskCommand($eventDispatcher, $scheduler, $worker);
 
@@ -90,11 +115,20 @@ final class ExecuteTaskCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo'));
         $scheduler->schedule(task: new NullTask(name: 'bar'));
 
-        $worker = $this->createMock(WorkerInterface::class);
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack(),
+            new EventDispatcher(),
+            new LockFactory(new InMemoryStore()),
+            new NullLogger()
+        );
 
         $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
         $suggestions = $tester->complete(input: ['--name', 'f']);
@@ -111,11 +145,20 @@ final class ExecuteTaskCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo'));
         $scheduler->schedule(task: new NullTask(name: 'bar'));
 
-        $worker = $this->createMock(WorkerInterface::class);
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack(),
+            new EventDispatcher(),
+            new LockFactory(new InMemoryStore()),
+            new NullLogger()
+        );
 
         $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
         $suggestions = $tester->complete(input: ['--expression', '* * * * *']);
@@ -132,7 +175,7 @@ final class ExecuteTaskCommandTest extends TestCase
     {
         $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
             new FirstInFirstOutPolicy(),
-        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher());
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
         $scheduler->schedule(task: new NullTask(name: 'foo', options: [
             'tags' => ['random'],
         ]));
@@ -140,7 +183,16 @@ final class ExecuteTaskCommandTest extends TestCase
             'tags' => ['second_random'],
         ]));
 
-        $worker = $this->createMock(WorkerInterface::class);
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack(),
+            new EventDispatcher(),
+            new LockFactory(new InMemoryStore()),
+            new NullLogger()
+        );
 
         $tester = new CommandCompletionTester(command: new ExecuteTaskCommand(eventDispatcher: new EventDispatcher(), scheduler: $scheduler, worker: $worker));
         $suggestions = $tester->complete(input: ['--tags', 'random']);
@@ -149,15 +201,28 @@ final class ExecuteTaskCommandTest extends TestCase
         self::assertSame(expected: ['random', 'second_random'], actual: $suggestions);
     }
 
+    /**
+     * @throws Throwable {@see Scheduler::__construct()}
+     */
     public function testCommandCannotExecuteDueTasks(): void
     {
-        $worker = $this->createMock(WorkerInterface::class);
+        $scheduler = new Scheduler(timezone: 'UTC', transport: new InMemoryTransport(configuration: new InMemoryConfiguration(), schedulePolicyOrchestrator: new SchedulePolicyOrchestrator(policies: [
+            new FirstInFirstOutPolicy(),
+        ])), middlewareStack: new SchedulerMiddlewareStack([]), eventDispatcher: new EventDispatcher(), lockFactory: new LockFactory(store: new InMemoryStore()));
+
+        $worker = new Worker(
+            $scheduler,
+            new RunnerRegistry([]),
+            new ExecutionPolicyRegistry([]),
+            new TaskExecutionTracker(new Stopwatch()),
+            new WorkerMiddlewareStack(),
+            new EventDispatcher(),
+            new LockFactory(new InMemoryStore()),
+            new NullLogger()
+        );
 
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::never())->method('dispatch');
-
-        $scheduler = $this->createMock(SchedulerInterface::class);
-        $scheduler->expects(self::once())->method('getDueTasks')->willReturn(new TaskList());
 
         $command = new ExecuteTaskCommand($eventDispatcher, $scheduler, $worker);
         $tester = new CommandTester($command);

@@ -16,46 +16,46 @@ final class ExecutionPolicyRegistryTest extends TestCase
 {
     public function testRegistryCanCount(): void
     {
-        $registry = new ExecutionPolicyRegistry([]);
+        $registry = new ExecutionPolicyRegistry(policies: []);
 
-        self::assertCount(0, $registry);
+        self::assertCount(expectedCount: 0, haystack: $registry);
     }
 
     public function testRegistryCannotReturnInvalidPolicy(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
         ]);
-        self::assertCount(1, $registry);
+        self::assertCount(expectedCount: 1, haystack: $registry);
 
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('No policy found for "foo"');
-        self::expectExceptionCode(0);
-        $registry->find('foo');
+        self::expectException(exception: InvalidArgumentException::class);
+        self::expectExceptionMessage(message: 'No policy found for "foo"');
+        self::expectExceptionCode(code: 0);
+        $registry->find(policy: 'foo');
     }
 
     public function testRegistryCannotReturnMultiplePolicies(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
             new DefaultPolicy(),
         ]);
-        self::assertCount(2, $registry);
+        self::assertCount(expectedCount: 2, haystack: $registry);
 
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('More than one policy found, consider improving the policy(es)');
-        self::expectExceptionCode(0);
-        $registry->find('default');
+        self::expectException(exception: InvalidArgumentException::class);
+        self::expectExceptionMessage(message: 'More than one policy found, consider improving the policy(es)');
+        self::expectExceptionCode(code: 0);
+        $registry->find(policy: 'default');
     }
 
     public function testRegistryCanReturnPolicy(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
         ]);
-        self::assertCount(1, $registry);
+        self::assertCount(expectedCount: 1, haystack: $registry);
 
-        $policy = $registry->find('default');
-        self::assertInstanceOf(DefaultPolicy::class, $policy);
+        $policy = $registry->find(policy: 'default');
+        self::assertInstanceOf(expected: DefaultPolicy::class, actual: $policy);
     }
 }

@@ -123,7 +123,7 @@ final class DebugMiddlewareCommandTest extends TestCase
         self::assertStringContainsString('Required', $tester->getDisplay());
         self::assertStringContainsString('No', $tester->getDisplay());
         self::assertStringContainsString('| TaskCallbackMiddleware  | Yes          | Yes           | 1        | No       |', $tester->getDisplay());
-        self::assertStringContainsString('| TaskLockBagMiddleware   | No           | Yes           | 5        | No       |', $tester->getDisplay());
+        self::assertStringContainsString('| TaskLockBagMiddleware   | Yes          | Yes           | 5        | No       |', $tester->getDisplay());
         self::assertStringContainsString('| SingleRunTaskMiddleware | No           | Yes           | 15       | Yes      |', $tester->getDisplay());
         self::assertStringContainsString('| PostExecutionMiddleware | No           | Yes           | No       | No       |', $tester->getDisplay());
         self::assertStringContainsString('| PreExecutionMiddleware  | Yes          | No            | No       | No       |', $tester->getDisplay());
