@@ -1367,7 +1367,7 @@ final class WorkerTest extends TestCase
         ]), $eventDispatcher, $lockFactory, $logger);
 
         $configuration = WorkerConfiguration::create();
-        $configuration->mustRetrieveTasksLazily(true);
+        $configuration->mustRetrieveTasksLazily(mustRetrieveTasksLazily: true);
 
         $worker->execute($configuration);
 
