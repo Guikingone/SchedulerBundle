@@ -55,7 +55,6 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::PHP_74,
         SetList::PHP_80,
         SetList::PSR_4,
-        SetList::UNWRAP_COMPAT,
     ]);
 
     $rectorConfig->sets(sets: [

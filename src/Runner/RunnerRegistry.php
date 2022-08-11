@@ -8,6 +8,7 @@ use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
+
 use function array_filter;
 use function current;
 use function count;

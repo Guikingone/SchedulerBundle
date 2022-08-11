@@ -13,6 +13,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function sprintf;
 
 /**

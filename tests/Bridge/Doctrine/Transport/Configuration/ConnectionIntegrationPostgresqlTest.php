@@ -11,6 +11,7 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use Tests\SchedulerBundle\Bridge\Doctrine\Transport\AbstractConnectionIntegrationTest;
+
 use function getenv;
 use function is_bool;
 

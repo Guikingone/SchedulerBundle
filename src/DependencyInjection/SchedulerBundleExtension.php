@@ -161,6 +161,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 use function array_key_exists;
 use function array_merge;
 use function class_exists;

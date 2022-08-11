@@ -14,6 +14,7 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function json_encode;
 
 /**

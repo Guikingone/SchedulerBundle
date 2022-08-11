@@ -21,10 +21,12 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use ReflectionClass;
 use Throwable;
+
 use function array_unique;
 use function array_walk;
 use function implode;
 use function sprintf;
+
 use const DATE_ATOM;
 
 /**

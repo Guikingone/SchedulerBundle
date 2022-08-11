@@ -14,6 +14,7 @@ use SchedulerBundle\Runner\HttpTaskRunner;
 use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\NullTask;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 use function json_encode;
 
 /**

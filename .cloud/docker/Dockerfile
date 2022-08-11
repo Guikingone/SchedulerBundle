@@ -1,4 +1,4 @@
-FROM composer:2.1 as composer
+FROM composer:2.3 as composer
 FROM php:8.0-cli
 
 ENV SCHEDULER_POSTGRES_DSN 'postgres://toor:root@postgres:5432/_symfony_scheduler_tasks&charset=utf8'

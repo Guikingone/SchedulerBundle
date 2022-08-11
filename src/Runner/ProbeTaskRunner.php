@@ -12,6 +12,7 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
+
 use function array_key_exists;
 
 /**

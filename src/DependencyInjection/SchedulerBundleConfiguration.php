@@ -7,6 +7,7 @@ namespace SchedulerBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+
 use function array_combine;
 use function array_key_exists;
 use function array_filter;

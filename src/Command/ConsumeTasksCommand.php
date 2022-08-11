@@ -27,6 +27,7 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+
 use function array_pop;
 use function implode;
 use function in_array;

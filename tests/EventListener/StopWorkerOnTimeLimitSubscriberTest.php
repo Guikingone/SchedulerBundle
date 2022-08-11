@@ -12,6 +12,7 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function sleep;
 use function sprintf;
 

@@ -21,6 +21,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+
 use function implode;
 
 /**

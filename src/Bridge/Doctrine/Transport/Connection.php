@@ -23,9 +23,11 @@ use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+
 use function array_map;
 use function filter_var;
 use function sprintf;
+
 use const FILTER_VALIDATE_BOOLEAN;
 
 /**

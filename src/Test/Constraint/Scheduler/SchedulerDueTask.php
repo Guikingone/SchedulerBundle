@@ -6,6 +6,7 @@ namespace SchedulerBundle\Test\Constraint\Scheduler;
 
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\SchedulerInterface;
+
 use function sprintf;
 
 /**

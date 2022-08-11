@@ -8,6 +8,7 @@ use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Task\TaskInterface;
+
 use function sprintf;
 
 /**

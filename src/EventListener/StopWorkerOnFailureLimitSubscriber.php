@@ -10,6 +10,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
+
 use function sprintf;
 
 /**

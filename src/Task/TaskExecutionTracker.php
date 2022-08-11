@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use Symfony\Component\Stopwatch\Stopwatch;
+
 use function memory_get_usage;
 use function sprintf;
 

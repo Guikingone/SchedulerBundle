@@ -9,6 +9,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+
 use function file_exists;
 use function sprintf;
 use function sys_get_temp_dir;

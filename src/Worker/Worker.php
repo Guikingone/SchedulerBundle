@@ -36,6 +36,7 @@ use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+
 use function in_array;
 
 /**

@@ -6,7 +6,9 @@ namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function array_unique;
+
 use const SORT_REGULAR;
 
 /**

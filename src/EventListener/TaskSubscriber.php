@@ -20,6 +20,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+
 use function array_key_exists;
 use function rawurldecode;
 

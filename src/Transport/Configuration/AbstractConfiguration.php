@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport\Configuration;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
 use function array_walk;
 
 /**

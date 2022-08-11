@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use DateTimeImmutable;
+
 use function sprintf;
 
 /**

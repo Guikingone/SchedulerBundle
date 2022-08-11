@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Test\Constraint\Probe;
 
 use PHPUnit\Framework\Constraint\Constraint;
+
 use function sprintf;
 
 /**

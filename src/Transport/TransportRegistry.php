@@ -8,6 +8,7 @@ use ArrayIterator;
 use Closure;
 use SchedulerBundle\Exception\RuntimeException;
 use Traversable;
+
 use function count;
 use function reset;
 use function usort;

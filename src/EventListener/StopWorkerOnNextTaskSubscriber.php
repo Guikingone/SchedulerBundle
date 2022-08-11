@@ -10,6 +10,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
 use function microtime;
 
 /**
@@ -19,11 +20,12 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
 {
     public const STOP_NEXT_TASK_TIMESTAMP_KEY = 'worker.stop_next_task.timestamp';
 
-    private ?float $workerStartTimestamp;
+    private ?float $workerStartTimestamp = null;
+    private LoggerInterface $logger;
 
     public function __construct(
         private CacheItemPoolInterface $stopWorkerCacheItemPool,
-        private ?LoggerInterface $logger = null
+        LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
     }

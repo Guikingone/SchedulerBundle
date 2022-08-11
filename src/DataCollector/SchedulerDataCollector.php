@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use Throwable;
+
 use function array_key_exists;
 use function is_array;
 

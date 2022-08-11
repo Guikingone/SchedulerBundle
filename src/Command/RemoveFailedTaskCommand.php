@@ -19,6 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
+
 use function sprintf;
 
 /**

@@ -6,6 +6,7 @@ namespace SchedulerBundle\Event;
 
 use Countable;
 use SchedulerBundle\Task\ProbeTask;
+
 use function array_filter;
 use function count;
 

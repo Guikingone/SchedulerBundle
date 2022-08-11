@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\Transport\Configuration;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Configuration\LazyConfiguration;
+
 use function sprintf;
 
 /**
