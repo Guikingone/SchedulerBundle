@@ -24,6 +24,7 @@ use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
+use SchedulerBundle\Command\StopWorkerCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
@@ -144,6 +145,7 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use SchedulerBundle\Worker\WorkerRegistry;
 use SchedulerBundle\Worker\WorkerRegistryInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\Compiler\ResolveChildDefinitionsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -316,6 +318,22 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(FiberConfigurationFactory::class)->hasTag('scheduler.configuration_factory'));
         self::assertTrue($container->getDefinition(FiberConfigurationFactory::class)->hasTag('container.preload'));
         self::assertSame(FiberConfigurationFactory::class, $container->getDefinition(FiberConfigurationFactory::class)->getTag('container.preload')[0]['class']);
+    }
+
+    public function testWorkerCacheIsRegistered(): void
+    {
+        $container = $this->getContainer([
+            'path' => '/_foo',
+            'timezone' => 'Europe/Paris',
+            'transport' => [
+                'dsn' => 'memory://first_in_first_out',
+            ],
+        ]);
+
+        self::assertTrue($container->hasDefinition(id: 'scheduler.worker_stop.cache'));
+        self::assertFalse($container->getDefinition(id: 'scheduler.worker_stop.cache')->isPublic());
+        self::assertCount(1, $container->getDefinition(id: 'scheduler.worker_stop.cache')->getTags());
+        self::assertTrue($container->getDefinition(id: 'scheduler.worker_stop.cache')->hasTag('cache.pool'));
     }
 
     public function testConfigurationCanBeConfigured(): void
@@ -801,6 +819,15 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(DebugConfigurationCommand::class)->hasTag('console.command'));
         self::assertTrue($container->getDefinition(DebugConfigurationCommand::class)->hasTag('container.preload'));
         self::assertSame(DebugConfigurationCommand::class, $container->getDefinition(DebugConfigurationCommand::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(StopWorkerCommand::class));
+        self::assertCount(1, $container->getDefinition(StopWorkerCommand::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(StopWorkerCommand::class)->getArgument(0));
+        self::assertSame('scheduler.worker_stop.cache', (string) $container->getDefinition(StopWorkerCommand::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(StopWorkerCommand::class)->getArgument(0)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(StopWorkerCommand::class)->hasTag('console.command'));
+        self::assertTrue($container->getDefinition(StopWorkerCommand::class)->hasTag('container.preload'));
+        self::assertSame(StopWorkerCommand::class, $container->getDefinition(StopWorkerCommand::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testExpressionFactoryAndPoliciesAreRegistered(): void
@@ -2272,6 +2299,8 @@ final class SchedulerBundleExtensionTest extends TestCase
 
         if ($extraDefinitions instanceof Closure) {
             $extraDefinitions($containerBuilder);
+
+            $containerBuilder->register('cache.app', ArrayAdapter::class);
         }
 
         if ($extraPasses instanceof Closure) {

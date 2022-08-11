@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
@@ -22,6 +23,7 @@ use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
+use SchedulerBundle\Command\StopWorkerCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
@@ -201,6 +203,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerAutoConfigure($container);
         $this->registerConfigurationFactories($container);
         $this->registerConfiguration($container, $config);
+        $this->registerWorkerCache($container);
         $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
         $this->registerLockStore($container, $config);
@@ -350,6 +353,14 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->setAlias(TransportConfigurationInterface::class, self::TRANSPORT_CONFIGURATION_TAG);
+    }
+
+    private function registerWorkerCache(ContainerBuilder $container): void
+    {
+        $container->setDefinition('scheduler.worker_stop.cache', new ChildDefinition('cache.app'))
+            ->setPublic(false)
+            ->addTag('cache.pool')
+        ;
     }
 
     /**
@@ -690,6 +701,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('console.command')
             ->addTag('container.preload', [
                 'class' => DebugConfigurationCommand::class,
+            ])
+        ;
+
+        $container->register(StopWorkerCommand::class, StopWorkerCommand::class)
+            ->setArguments([
+                new Reference('scheduler.worker_stop.cache', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => StopWorkerCommand::class,
             ])
         ;
     }
