@@ -29,8 +29,11 @@ use const JSON_THROW_ON_ERROR;
  */
 final class MercureEventSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private HubInterface $hub, private string $updateUrl, private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private HubInterface $hub,
+        private string $updateUrl,
+        private SerializerInterface $serializer
+    ) {
     }
 
     /**

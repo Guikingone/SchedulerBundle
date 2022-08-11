@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;

@@ -2297,10 +2297,10 @@ final class SchedulerBundleExtensionTest extends TestCase
         $containerBuilder->registerExtension(new SchedulerBundleExtension());
         $containerBuilder->loadFromExtension('scheduler_bundle', $configuration);
 
+        $containerBuilder->register('cache.app', ArrayAdapter::class);
+
         if ($extraDefinitions instanceof Closure) {
             $extraDefinitions($containerBuilder);
-
-            $containerBuilder->register('cache.app', ArrayAdapter::class);
         }
 
         if ($extraPasses instanceof Closure) {

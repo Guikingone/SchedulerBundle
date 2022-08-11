@@ -37,7 +37,11 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
     {
-        if (!$this->shouldStop() || $event->isIdle()) {
+        if ($event->isIdle()) {
+            return;
+        }
+
+        if (!$this->shouldStop()) {
             return;
         }
 
