@@ -67,5 +67,6 @@ final class StopWorkerCommandTest extends TestCase
         self::assertStringNotContainsString('An error occurred while trying to stop the worker:', $tester->getDisplay());
         self::assertStringContainsString('The worker will be stopped after the current task', $tester->getDisplay());
         self::assertTrue($adapter->getItem(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY)->isHit());
+        self::assertIsFloat($adapter->getItem(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY)->get());
     }
 }
