@@ -10,13 +10,13 @@ use Attribute;
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class CommandTaskAttribute
+final class AsCommandTask
 {
     public function __construct(
-        private string $name,
-        private string $expression,
-        private bool $singleRun,
-        private array $arguments,
-        private array $options
+        public string $name,
+        public string $expression,
+        public ?bool $singleRun = false,
+        public ?array $arguments = [],
+        public ?array $options = []
     ) {}
 }
