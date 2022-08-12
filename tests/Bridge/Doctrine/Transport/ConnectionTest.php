@@ -824,7 +824,8 @@ final class ConnectionTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
 
         $platform = $this->createMock(AbstractPlatform::class);
-        $platform->expects(self::once())->method('getCreateTableSQL')->willReturn([]);
+        $platform->method('supportsSequences')->willReturn(true);
+        $platform->method('getCreateTableSQL')->willReturn([]);
 
         $table = new Table('_symfony_scheduler_tasks');
 
