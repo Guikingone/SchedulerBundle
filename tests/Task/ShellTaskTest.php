@@ -6,6 +6,7 @@ namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
+
 use function sys_get_temp_dir;
 
 /**

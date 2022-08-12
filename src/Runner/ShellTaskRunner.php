@@ -9,6 +9,7 @@ use Symfony\Component\Process\Process;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+
 use function trim;
 
 /**

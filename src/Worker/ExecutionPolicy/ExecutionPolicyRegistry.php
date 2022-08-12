@@ -7,6 +7,7 @@ namespace SchedulerBundle\Worker\ExecutionPolicy;
 use Closure;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
+
 use function count;
 use function current;
 use function is_array;

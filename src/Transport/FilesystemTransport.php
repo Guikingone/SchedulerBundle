@@ -17,6 +17,7 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function file_get_contents;
 use function sprintf;
 use function strtr;

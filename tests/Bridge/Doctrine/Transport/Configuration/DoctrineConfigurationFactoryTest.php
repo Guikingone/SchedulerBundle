@@ -15,6 +15,7 @@ use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfiguratio
 use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function sprintf;
 use function sys_get_temp_dir;
 

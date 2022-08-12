@@ -14,6 +14,7 @@ use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+
 use function array_map;
 use function sprintf;
 

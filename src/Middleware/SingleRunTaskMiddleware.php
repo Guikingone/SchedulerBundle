@@ -9,6 +9,7 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\TransportInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function in_array;
 use function sprintf;
 

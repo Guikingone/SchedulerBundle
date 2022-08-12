@@ -13,6 +13,7 @@ use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
+
 use function sprintf;
 
 /**

@@ -10,6 +10,7 @@ use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\Dsn;
 use SchedulerBundle\Transport\FilesystemTransportFactory;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function sys_get_temp_dir;
 
 /**

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport\Configuration;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function sprintf;
 use function str_starts_with;
 

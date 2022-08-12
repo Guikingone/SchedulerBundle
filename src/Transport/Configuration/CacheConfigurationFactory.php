@@ -7,6 +7,7 @@ namespace SchedulerBundle\Transport\Configuration;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function str_starts_with;
 
 /**

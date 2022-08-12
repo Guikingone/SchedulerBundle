@@ -22,10 +22,12 @@ use SchedulerBundle\Command\ListTasksCommand;
 use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Command\RetryFailedTaskCommand;
+use SchedulerBundle\Command\StopWorkerCommand;
 use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
+use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -161,6 +163,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 use function array_key_exists;
 use function array_merge;
 use function class_exists;
@@ -200,6 +203,7 @@ final class SchedulerBundleExtension extends Extension
         $this->registerAutoConfigure($container);
         $this->registerConfigurationFactories($container);
         $this->registerConfiguration($container, $config);
+        $this->registerWorkerCache($container);
         $this->registerTransportFactories($container, $config);
         $this->registerTransport($container, $config);
         $this->registerLockStore($container, $config);
@@ -349,6 +353,14 @@ final class SchedulerBundleExtension extends Extension
         ;
 
         $container->setAlias(TransportConfigurationInterface::class, self::TRANSPORT_CONFIGURATION_TAG);
+    }
+
+    private function registerWorkerCache(ContainerBuilder $container): void
+    {
+        $container->setDefinition('scheduler.worker_stop.cache', new ChildDefinition('cache.app'))
+            ->setPublic(false)
+            ->addTag('cache.pool')
+        ;
     }
 
     /**
@@ -689,6 +701,16 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('console.command')
             ->addTag('container.preload', [
                 'class' => DebugConfigurationCommand::class,
+            ])
+        ;
+
+        $container->register(StopWorkerCommand::class, StopWorkerCommand::class)
+            ->setArguments([
+                new Reference('scheduler.worker_stop.cache', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+            ])
+            ->addTag('console.command')
+            ->addTag('container.preload', [
+                'class' => StopWorkerCommand::class,
             ])
         ;
     }
@@ -1115,6 +1137,21 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => WorkerLifecycleSubscriber::class,
+            ])
+        ;
+
+        $container->register(StopWorkerOnNextTaskSubscriber::class, StopWorkerOnNextTaskSubscriber::class)
+            ->setArguments([
+                new Reference('scheduler.worker_stop.cache', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => StopWorkerOnNextTaskSubscriber::class,
             ])
         ;
     }

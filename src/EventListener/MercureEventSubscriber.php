@@ -19,7 +19,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function json_encode;
+
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -27,8 +29,11 @@ use const JSON_THROW_ON_ERROR;
  */
 final class MercureEventSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private HubInterface $hub, private string $updateUrl, private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private HubInterface $hub,
+        private string $updateUrl,
+        private SerializerInterface $serializer
+    ) {
     }
 
     /**

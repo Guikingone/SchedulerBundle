@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Task;
 
 use Closure;
+
 use function is_array;
 
 /**

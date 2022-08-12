@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Middleware;
 
 use SchedulerBundle\Task\TaskInterface;
+
 use function usleep;
 
 /**

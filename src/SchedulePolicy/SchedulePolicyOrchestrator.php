@@ -9,6 +9,7 @@ use RuntimeException;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
+
 use function sprintf;
 
 /**

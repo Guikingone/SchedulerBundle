@@ -25,7 +25,9 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+
 use function json_encode;
+
 use const JSON_THROW_ON_ERROR;
 
 /**

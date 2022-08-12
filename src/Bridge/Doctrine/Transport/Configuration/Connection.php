@@ -19,6 +19,7 @@ use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Transport\Configuration\ExternalConnectionInterface;
 use Throwable;
+
 use function array_map;
 use function array_walk;
 

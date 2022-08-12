@@ -7,6 +7,7 @@ namespace SchedulerBundle\Task;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 use function array_key_exists;
 use function array_walk;
 use function is_array;

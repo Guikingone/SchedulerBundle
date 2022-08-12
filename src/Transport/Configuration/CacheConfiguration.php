@@ -8,6 +8,7 @@ use Closure;
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
+
 use function count;
 use function array_map;
 use function array_walk;

@@ -10,6 +10,7 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use Throwable;
 use Traversable;
+
 use function array_chunk;
 use function array_filter;
 use function array_key_exists;
@@ -23,6 +24,7 @@ use function gettype;
 use function in_array;
 use function is_string;
 use function sprintf;
+
 use const ARRAY_FILTER_USE_BOTH;
 
 /**

@@ -8,6 +8,7 @@ use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function call_user_func;
 use function is_callable;
 use function sprintf;

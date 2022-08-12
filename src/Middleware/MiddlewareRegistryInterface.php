@@ -7,7 +7,9 @@ namespace SchedulerBundle\Middleware;
 use Closure;
 use Countable;
 use IteratorAggregate;
+
 use function uasort;
+
 use const ARRAY_FILTER_USE_BOTH;
 
 /**

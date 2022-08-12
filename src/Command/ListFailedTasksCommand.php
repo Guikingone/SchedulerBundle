@@ -12,8 +12,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use function count;
 use function sprintf;
+
 use const DATE_ATOM;
 
 /**

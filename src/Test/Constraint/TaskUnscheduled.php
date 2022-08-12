@@ -6,6 +6,7 @@ namespace SchedulerBundle\Test\Constraint;
 
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Event\TaskEventList;
+
 use function count;
 use function sprintf;
 

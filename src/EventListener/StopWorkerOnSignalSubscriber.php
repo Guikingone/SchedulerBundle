@@ -13,9 +13,11 @@ use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
+
 use function function_exists;
 use function pcntl_signal;
 use function sprintf;
+
 use const SIGHUP;
 use const SIGINT;
 use const SIGQUIT;

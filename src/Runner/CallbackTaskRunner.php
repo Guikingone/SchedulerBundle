@@ -9,6 +9,7 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
+
 use function call_user_func_array;
 use function trim;
 

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Middleware;
 use Closure;
 use SplObjectStorage;
 use Throwable;
+
 use function array_replace;
 use function array_values;
 

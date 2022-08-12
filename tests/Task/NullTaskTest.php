@@ -18,6 +18,7 @@ use Symfony\Component\Lock\Key;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+
 use function sprintf;
 
 /**

@@ -7,6 +7,7 @@ namespace SchedulerBundle\Task;
 use SchedulerBundle\Task\Builder\BuilderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
+
 use function sprintf;
 
 /**

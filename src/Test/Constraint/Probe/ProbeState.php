@@ -6,6 +6,7 @@ namespace SchedulerBundle\Test\Constraint\Probe;
 
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Probe\ProbeInterface;
+
 use function json_encode;
 use function sprintf;
 

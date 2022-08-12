@@ -12,6 +12,7 @@ use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\Exception\ReserveNotSupportedException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+
 use function sprintf;
 
 /**

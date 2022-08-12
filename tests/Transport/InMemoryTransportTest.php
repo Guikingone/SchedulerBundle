@@ -22,6 +22,7 @@ use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Throwable;
+
 use function sprintf;
 
 /**

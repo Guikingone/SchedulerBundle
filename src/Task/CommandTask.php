@@ -6,6 +6,7 @@ namespace SchedulerBundle\Task;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
+
 use function is_array;
 use function is_string;
 

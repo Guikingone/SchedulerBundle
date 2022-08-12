@@ -32,6 +32,7 @@ use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Tests\SchedulerBundle\Bridge\Doctrine\Transport\Assets\MessengerMessage;
+
 use function file_exists;
 use function sprintf;
 use function sys_get_temp_dir;

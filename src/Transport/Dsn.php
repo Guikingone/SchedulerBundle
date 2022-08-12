@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\Exception\InvalidArgumentException;
+
 use function array_merge;
 use function count;
 use function parse_str;
