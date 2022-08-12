@@ -27,6 +27,7 @@ use SchedulerBundle\Command\YieldTaskCommand;
 use SchedulerBundle\DataCollector\SchedulerDataCollector;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
+use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -1136,6 +1137,21 @@ final class SchedulerBundleExtension extends Extension
             ->addTag('kernel.event_subscriber')
             ->addTag('container.preload', [
                 'class' => WorkerLifecycleSubscriber::class,
+            ])
+        ;
+
+        $container->register(StopWorkerOnNextTaskSubscriber::class, StopWorkerOnNextTaskSubscriber::class)
+            ->setArguments([
+                new Reference('scheduler.worker_stop.cache', ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE),
+                new Reference(LoggerInterface::class, ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ])
+            ->setPublic(false)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('monolog.logger', [
+                'channel' => 'scheduler',
+            ])
+            ->addTag('container.preload', [
+                'class' => StopWorkerOnNextTaskSubscriber::class,
             ])
         ;
     }

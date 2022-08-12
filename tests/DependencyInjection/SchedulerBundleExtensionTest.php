@@ -31,6 +31,7 @@ use SchedulerBundle\DependencyInjection\SchedulerBundleConfiguration;
 use SchedulerBundle\DependencyInjection\SchedulerBundleExtension;
 use SchedulerBundle\EventListener\MercureEventSubscriber;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
+use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnSignalSubscriber;
 use SchedulerBundle\EventListener\TaskLifecycleSubscriber;
 use SchedulerBundle\EventListener\TaskLoggerSubscriber;
@@ -1272,6 +1273,19 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('kernel.event_subscriber'));
         self::assertTrue($container->getDefinition(WorkerLifecycleSubscriber::class)->hasTag('container.preload'));
         self::assertSame(WorkerLifecycleSubscriber::class, $container->getDefinition(WorkerLifecycleSubscriber::class)->getTag('container.preload')[0]['class']);
+
+        self::assertTrue($container->hasDefinition(StopWorkerOnNextTaskSubscriber::class));
+        self::assertFalse($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->isPublic());
+        self::assertCount(2, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArguments());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(0));
+        self::assertSame('scheduler.worker_stop.cache', (string) $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(0));
+        self::assertSame(ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(0)->getInvalidBehavior());
+        self::assertInstanceOf(Reference::class, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(1));
+        self::assertSame(LoggerInterface::class, (string) $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(1));
+        self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(1)->getInvalidBehavior());
+        self::assertTrue($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->hasTag('kernel.event_subscriber'));
+        self::assertTrue($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->hasTag('container.preload'));
+        self::assertSame(StopWorkerOnNextTaskSubscriber::class, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getTag('container.preload')[0]['class']);
     }
 
     public function testTrackerIsRegistered(): void
