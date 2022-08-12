@@ -59,7 +59,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
     public function testSubscriberCannotStopRunningWorkerOnExactSameTimestamp(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+        $logger->expects(self::never())->method('info');
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
