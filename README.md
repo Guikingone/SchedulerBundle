@@ -1,3 +1,6 @@
+composer config repositories.scheduler-bundle '{"type": "path", "url": "/home/tac/survos/bundles/SchedulerBundle"}'
+
+
 ![SchedulerBundleHero](assets/SchedulerBundle.png)
 
 <div align="center">
