@@ -12,6 +12,7 @@ use DateTimeZone;
 use Exception;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -73,7 +74,7 @@ final class Scheduler implements SchedulerInterface
     {
         try {
             $this->transport->get(name: $task->getName());
-        } catch (InvalidArgumentException) {
+        } catch (InvalidArgumentException|TransportException) {
             $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
             $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
