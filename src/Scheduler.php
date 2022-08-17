@@ -12,6 +12,7 @@ use DateTimeZone;
 use Exception;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -73,7 +74,7 @@ final class Scheduler implements SchedulerInterface
     {
         try {
             $this->transport->get(name: $task->getName());
-        } catch (InvalidArgumentException) {
+        } catch (InvalidArgumentException|TransportException) {
             $this->middlewareStack->runPreSchedulingMiddleware(task: $task, scheduler: $this);
 
             $task->setScheduledAt(scheduledAt: $this->getSynchronizedCurrentDate());
@@ -124,7 +125,9 @@ final class Scheduler implements SchedulerInterface
      */
     public function preempt(string $taskToPreempt, Closure $filter): void
     {
-        $preemptTasks = $this->getDueTasks()->filter(filter: $filter);
+        $dueTasks = $this->getDueTasks();
+
+        $preemptTasks = $dueTasks->filter(filter: $filter);
         if (0 === $preemptTasks->count()) {
             return;
         }
@@ -272,7 +275,9 @@ final class Scheduler implements SchedulerInterface
      */
     public function reboot(): void
     {
-        $rebootTasks = $this->getTasks()->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
+        $tasks = $this->getTasks();
+
+        $rebootTasks = $tasks->filter(filter: static fn (TaskInterface $task): bool => Expression::REBOOT_MACRO === $task->getExpression());
 
         $this->transport->clear();
 

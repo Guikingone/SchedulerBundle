@@ -37,10 +37,11 @@ final class FailOverTransportTest extends TestCase
             'mode' => 'string',
         ]));
 
-        self::assertArrayHasKey('mode', $failOverTransport->getConfiguration()->toArray());
-        self::assertSame('normal', $failOverTransport->getConfiguration()->get('mode'));
-        self::assertArrayHasKey('execution_mode', $failOverTransport->getConfiguration()->toArray());
-        self::assertSame('first_in_first_out', $failOverTransport->getConfiguration()->get('execution_mode'));
+        $configuration = $failOverTransport->getConfiguration();
+        self::assertArrayHasKey('mode', $configuration->toArray());
+        self::assertSame('normal', $configuration->get('mode'));
+        self::assertArrayHasKey('execution_mode', $configuration->toArray());
+        self::assertSame('first_in_first_out', $configuration->get('execution_mode'));
     }
 
     public function testTransportCannotBeCreatedWithInvalidConfiguration(): void

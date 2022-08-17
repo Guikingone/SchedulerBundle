@@ -9,6 +9,7 @@ This bundle provides a set of commands to interact with your tasks
 - [Rebooting the scheduler](#rebooting-the-scheduler)
 - [Retrying a failed task](#retrying-a-failed-task)
 - [Removing a failed task](#removing-failed-task)
+- [Stopping the worker](#stopping-the-worker)
 - [Yielding a task](#yielding-a-task)
 - [Probe](#probe)
 - [Executing external probe](#executing-external-probe)
@@ -109,6 +110,14 @@ _Description: Remove a task that has failed during execution_
 
 ```bash
 $ bin/console scheduler:remove:failed **taskname**
+```
+
+## Stopping the worker
+
+_Description: Stop the worker after the current task has been executed_
+
+```bash
+$ bin/console scheduler:stop-worker
 ```
 
 ## Retrying a failed task
