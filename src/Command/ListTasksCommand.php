@@ -4,8 +4,22 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use function array_unique;
+use function array_walk;
+
 use Cron\CronExpression;
+
+use const DATE_ATOM;
+
+use function implode;
+
+use ReflectionClass;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\TaskInterface;
+
+use function sprintf;
+
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
@@ -13,21 +27,13 @@ use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\Table;
+
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
-use ReflectionClass;
+
 use Throwable;
-
-use function array_unique;
-use function array_walk;
-use function implode;
-use function sprintf;
-
-use const DATE_ATOM;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

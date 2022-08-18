@@ -8,6 +8,9 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
 use Exception;
+
+use function file_exists;
+
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\Exception\TransportException;
@@ -21,6 +24,9 @@ use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+
+use function sprintf;
+
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -30,12 +36,13 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 use Symfony\Component\Serializer\Serializer;
+
+use function sys_get_temp_dir;
+
 use Tests\SchedulerBundle\Bridge\Doctrine\Transport\Assets\MessengerMessage;
 
-use function file_exists;
-use function sprintf;
-use function sys_get_temp_dir;
 use function unlink;
 
 /**

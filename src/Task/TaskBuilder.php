@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Task\Builder\BuilderInterface;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Task\Builder\BuilderInterface;
 
 use function sprintf;
+
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

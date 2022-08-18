@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
+use function in_array;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\TransportInterface;
+
 use SchedulerBundle\Worker\WorkerInterface;
 
-use function in_array;
 use function sprintf;
 
 /**

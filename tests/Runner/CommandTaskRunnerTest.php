@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Console\Application;
 use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
+use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Tests\SchedulerBundle\Runner\Assets\BarCommand;
 use Tests\SchedulerBundle\Runner\Assets\FooCommand;

@@ -29,7 +29,7 @@ final class RunnerRegistryTest extends TestCase
 
         self::assertCount(3, $registry);
 
-        $filteredList = $registry->filter(fn (RunnerInterface $runner): bool => $runner->support(new NullTask('foo')));
+        $filteredList = $registry->filter(static fn (RunnerInterface $runner): bool => $runner->support(new NullTask('foo')));
         self::assertCount(1, $filteredList);
     }
 

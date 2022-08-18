@@ -20,10 +20,12 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Throwable;
 
 use function sprintf;
+
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

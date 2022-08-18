@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 use function array_key_exists;
 use function array_walk;
+
 use function is_array;
-use function is_string;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+
 use function sprintf;
+
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
 final class HttpTask extends AbstractTask
 {
+    private string $url;
+    private string $method;
+
     /**
      * @param array<string, mixed> $clientOptions
      */
@@ -26,42 +30,37 @@ final class HttpTask extends AbstractTask
     {
         $this->validateClientOptions(clientOptions: $clientOptions);
         $this->defineOptions(options: [
-            'url' => $url,
-            'method' => $method,
             'client_options' => $clientOptions,
         ], additionalOptions: [
-            'url' => 'string',
-            'method' => 'string',
             'client_options' => ['array', 'string[]'],
         ]);
+
+        $this->url = $url;
+        $this->method = $method;
 
         parent::__construct(name: $name);
     }
 
     public function getUrl(): string
     {
-        if (!is_string(value: $this->options['url'])) {
-            throw new RuntimeException(message: 'The url is not defined');
-        }
-
-        return $this->options['url'];
+        return $this->url;
     }
 
     public function setUrl(string $url): self
     {
-        $this->options['url'] = $url;
+        $this->url = $url;
 
         return $this;
     }
 
     public function getMethod(): string
     {
-        return $this->options['method'] ?? 'GET';
+        return $this->method;
     }
 
     public function setMethod(string $method): self
     {
-        $this->options['method'] = $method;
+        $this->method = $method;
 
         return $this;
     }
@@ -93,7 +92,7 @@ final class HttpTask extends AbstractTask
             return;
         }
 
-        array_walk(array: $clientOptions, callback: function ($_, $key): void {
+        array_walk(array: $clientOptions, callback: static function ($_, $key): void {
             if (!array_key_exists(key: $key, array: HttpClientInterface::OPTIONS_DEFAULTS)) {
                 throw new InvalidArgumentException(message: sprintf('The following option: "%s" is not supported', $key));
             }

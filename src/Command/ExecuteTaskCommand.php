@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function array_walk;
+use function count;
+use function implode;
+use function in_array;
+
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -12,7 +21,11 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
+
+use function sprintf;
+
 use Symfony\Component\Console\Attribute\AsCommand;
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -22,16 +35,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
-
-use function array_map;
-use function array_merge;
-use function array_values;
-use function array_walk;
-use function array_unique;
-use function count;
-use function implode;
-use function in_array;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

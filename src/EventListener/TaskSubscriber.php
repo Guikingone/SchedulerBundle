@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use function array_key_exists;
+
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+
+use function rawurldecode;
+
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,14 +23,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Worker\WorkerInterface;
+
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
-
-use function array_key_exists;
-use function rawurldecode;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

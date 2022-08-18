@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Command;
 
 use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Task\TaskList;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 use SchedulerBundle\Command\ListFailedTasksCommand;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

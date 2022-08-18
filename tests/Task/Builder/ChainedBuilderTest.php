@@ -110,6 +110,7 @@ final class ChainedBuilderTest extends TestCase
 
         self::assertInstanceOf(ChainedTask::class, $task);
         self::assertCount(3, $task->getTasks());
+        self::assertIsArray($configuration['tasks']);
         self::assertInstanceOf(ShellTask::class, $task->getTask($configuration['tasks'][0]['name']));
         self::assertSame('foo', $task->getTask($configuration['tasks'][0]['name'])->getName());
         self::assertInstanceOf(NullTask::class, $task->getTask($configuration['tasks'][1]['name']));

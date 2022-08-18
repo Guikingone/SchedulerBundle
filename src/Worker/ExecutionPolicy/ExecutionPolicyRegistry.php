@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace SchedulerBundle\Worker\ExecutionPolicy;
 
 use Closure;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
 
 use function count;
 use function current;
+
 use function is_array;
 use function iterator_to_array;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

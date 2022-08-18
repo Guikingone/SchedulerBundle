@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\EventListener;
 
 use InvalidArgumentException;
+
+use function json_decode;
+
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\EventListener\TaskSubscriber;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
 use SchedulerBundle\Serializer\TaskNormalizer;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,9 +28,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
-use SchedulerBundle\EventListener\TaskSubscriber;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -34,9 +37,8 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
-use function json_decode;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -241,6 +243,7 @@ final class TaskSubscriberTest extends TestCase
 
         $content = $response->getContent();
         self::assertIsString($content);
+        self::assertIsArray(json_decode($content, true, 512, JSON_THROW_ON_ERROR));
         self::assertArrayHasKey('code', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
         self::assertArrayHasKey('message', json_decode($content, true, 512, JSON_THROW_ON_ERROR));
         self::assertArrayHasKey('trace', json_decode($content, true, 512, JSON_THROW_ON_ERROR));

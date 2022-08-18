@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace SchedulerBundle\EventListener;
 
 use DateTimeImmutable;
+
+use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
+
 use JsonException;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
@@ -17,12 +22,10 @@ use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Event\WorkerStoppedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mercure\HubInterface;
+
 use Symfony\Component\Mercure\Update;
+
 use Symfony\Component\Serializer\SerializerInterface;
-
-use function json_encode;
-
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

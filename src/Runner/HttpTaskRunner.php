@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
-use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 
@@ -19,7 +19,7 @@ final class HttpTaskRunner implements RunnerInterface
 {
     private HttpClientInterface $httpClient;
 
-    public function __construct(HttpClientInterface $httpClient = null)
+    public function __construct(?HttpClientInterface $httpClient = null)
     {
         $this->httpClient = $httpClient ?? HttpClient::create();
     }
@@ -30,14 +30,14 @@ final class HttpTaskRunner implements RunnerInterface
     public function run(TaskInterface $task, WorkerInterface $worker): Output
     {
         if (!$task instanceof HttpTask) {
-            return new Output($task, null, Output::ERROR);
+            return new Output(task: $task, output: null, type: Output::ERROR);
         }
 
         try {
-            $response = $this->httpClient->request($task->getMethod(), $task->getUrl(), $task->getClientOptions());
-            return new Output($task, $response->getContent());
+            $response = $this->httpClient->request(method: $task->getMethod(), url: $task->getUrl(), options: $task->getClientOptions());
+            return new Output(task: $task, output: $response->getContent());
         } catch (Throwable $throwable) {
-            return new Output($task, $throwable->getMessage(), Output::ERROR);
+            return new Output(task: $task, output: $throwable->getMessage(), type: Output::ERROR);
         }
     }
 

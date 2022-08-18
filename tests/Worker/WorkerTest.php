@@ -11,8 +11,11 @@ use Psr\Log\NullLogger;
 use RuntimeException;
 use SchedulerBundle\Event\WorkerPausedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
-use SchedulerBundle\Middleware\NotifierMiddleware;
+use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\Exception\UndefinedRunnerException;
 use SchedulerBundle\Middleware\MaxExecutionMiddleware;
+use SchedulerBundle\Middleware\NotifierMiddleware;
+use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SingleRunTaskMiddleware;
 use SchedulerBundle\Middleware\TaskCallbackMiddleware;
@@ -22,18 +25,26 @@ use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
 use SchedulerBundle\Runner\CallbackTaskRunner;
 use SchedulerBundle\Runner\ChainedTaskRunner;
+use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Runner\NullTaskRunner;
+use SchedulerBundle\Runner\ProbeTaskRunner;
+use SchedulerBundle\Runner\RunnerInterface;
 use SchedulerBundle\Runner\RunnerRegistry;
 use SchedulerBundle\Runner\ShellTaskRunner;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
 use SchedulerBundle\Task\ChainedTask;
-use SchedulerBundle\Runner\CommandTaskRunner;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\FailedTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\Output;
+use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
+use SchedulerBundle\Task\TaskExecutionTrackerInterface;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
@@ -41,20 +52,14 @@ use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
+use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
-use SchedulerBundle\Exception\UndefinedRunnerException;
-use SchedulerBundle\Runner\RunnerInterface;
-use SchedulerBundle\Task\Output;
-use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskExecutionTrackerInterface;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Task\TaskList;
-use SchedulerBundle\Worker\Worker;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\InMemoryStore;
@@ -497,11 +502,11 @@ final class WorkerTest extends TestCase
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'after_executing' => fn (): bool => false,
+            'after_executing' => static fn (): bool => false,
         ]);
 
         $validTask = new NullTask('bar', [
-            'after_executing' => fn (): bool => true,
+            'after_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -1622,7 +1627,7 @@ final class WorkerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+        $eventDispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event): void {
             $worker = $event->getWorker();
             $configuration = $worker->getConfiguration();
 
@@ -1633,7 +1638,7 @@ final class WorkerTest extends TestCase
             $worker->pause();
         });
 
-        $eventDispatcher->addListener(WorkerPausedEvent::class, function (WorkerPausedEvent $event): void {
+        $eventDispatcher->addListener(WorkerPausedEvent::class, static function (WorkerPausedEvent $event): void {
             $worker = $event->getWorker();
 
             self::assertFalse($worker->isRunning());
@@ -1675,7 +1680,7 @@ final class WorkerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+        $eventDispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event): void {
             $worker = $event->getWorker();
             $configuration = $worker->getConfiguration();
 
@@ -1798,5 +1803,54 @@ final class WorkerTest extends TestCase
 
         self::assertNull($barTask->getLastExecution());
         self::assertNull($randomTask->getLastExecution());
+    }
+
+    /**
+     * @group time-sensitive
+     *
+     * @throws Throwable {@see WorkerInterface::execute()}
+     */
+    public function testWorkerCanExecuteProbeTasksWithDelay(): void
+    {
+        $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $mockedHttpClient = new MockHttpClient([
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+            new MockResponse('', [
+                'http_code' => 200,
+            ]),
+        ]);
+
+        $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+
+        $scheduler = new Scheduler('UTC', $transport, new SchedulerMiddlewareStack(), new EventDispatcher());
+        $scheduler->schedule(new NullTask('random'));
+        $scheduler->schedule(new ProbeTask('foo', 'https://foo.com', false, 10));
+        $scheduler->schedule(new ProbeTask('bar', 'https://foo.com', false, 50));
+
+        $lockFactory = new LockFactory(new InMemoryStore());
+
+        $worker = new Worker($scheduler, new RunnerRegistry([
+            new ProbeTaskRunner($mockedHttpClient),
+            new NullTaskRunner(),
+        ]), new ExecutionPolicyRegistry([
+            new DefaultPolicy(),
+        ]), $tracker, new WorkerMiddlewareStack([
+            new SingleRunTaskMiddleware($transport),
+            new TaskUpdateMiddleware($transport),
+            new TaskLockBagMiddleware($lockFactory),
+            new ProbeTaskMiddleware(),
+        ]), new EventDispatcher(), $lockFactory, $logger);
+
+        $worker->execute(WorkerConfiguration::create());
+
+        self::assertSame(2, $mockedHttpClient->getRequestsCount());
+        self::assertInstanceOf(ProbeTask::class, $worker->getLastExecutedTask());
+        self::assertSame('bar', $worker->getLastExecutedTask()->getName());
     }
 }

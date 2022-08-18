@@ -6,11 +6,13 @@ namespace SchedulerBundle\Transport;
 
 use ArrayIterator;
 use Closure;
-use SchedulerBundle\Exception\RuntimeException;
-use Traversable;
 
 use function count;
 use function reset;
+
+use SchedulerBundle\Exception\RuntimeException;
+use Traversable;
+
 use function usort;
 
 /**

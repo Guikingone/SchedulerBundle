@@ -6,20 +6,20 @@ namespace Tests\SchedulerBundle\Command;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Command\RemoveFailedTaskCommand;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Scheduler;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
 use SchedulerBundle\Transport\InMemoryTransport;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
-use SchedulerBundle\Command\RemoveFailedTaskCommand;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**

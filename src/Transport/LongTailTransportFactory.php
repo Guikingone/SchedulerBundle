@@ -6,9 +6,10 @@ namespace SchedulerBundle\Transport;
 
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function str_starts_with;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

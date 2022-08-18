@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
 use Generator;
+
+use function getenv;
+use function is_bool;
+
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransport;
 use SchedulerBundle\Exception\TransportException;
@@ -27,11 +31,9 @@ use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 use Symfony\Component\Serializer\Serializer;
 use Throwable;
-
-use function getenv;
-use function is_bool;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

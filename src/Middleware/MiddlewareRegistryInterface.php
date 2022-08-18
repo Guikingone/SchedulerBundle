@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
+use const ARRAY_FILTER_USE_BOTH;
+
 use Closure;
 use Countable;
+
 use IteratorAggregate;
 
 use function uasort;
-
-use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

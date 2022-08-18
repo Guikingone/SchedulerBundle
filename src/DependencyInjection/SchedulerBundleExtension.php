@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
+use function array_key_exists;
+use function array_merge;
+use function class_exists;
+use function interface_exists;
+
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
@@ -48,13 +53,15 @@ use SchedulerBundle\Messenger\TaskToUpdateMessageHandler;
 use SchedulerBundle\Messenger\TaskToYieldMessageHandler;
 use SchedulerBundle\Middleware\FiberAwareSchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\FiberAwareWorkerMiddlewareStack;
+use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\MiddlewareRegistryInterface;
 use SchedulerBundle\Middleware\MiddlewareStackInterface;
 use SchedulerBundle\Middleware\NotifierMiddleware;
+use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PostSchedulingMiddlewareInterface;
+use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreSchedulingMiddlewareInterface;
-use SchedulerBundle\Middleware\MaxExecutionMiddleware;
 use SchedulerBundle\Middleware\ProbeTaskMiddleware;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Middleware\SchedulerMiddlewareStackInterface;
@@ -64,8 +71,6 @@ use SchedulerBundle\Middleware\TaskExecutionMiddleware;
 use SchedulerBundle\Middleware\TaskLockBagMiddleware;
 use SchedulerBundle\Middleware\TaskUpdateMiddleware;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
-use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
-use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStackInterface;
 use SchedulerBundle\Pool\SchedulerPool;
 use SchedulerBundle\Pool\SchedulerPoolInterface;
@@ -119,8 +124,8 @@ use SchedulerBundle\Transport\CacheTransportFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface as TransportConfigurationInterface;
-use SchedulerBundle\Transport\Configuration\FiberConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\FailOverConfigurationFactory;
+use SchedulerBundle\Transport\Configuration\FiberConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LazyConfigurationFactory;
 use SchedulerBundle\Transport\Configuration\LongTailConfigurationFactory;
@@ -144,6 +149,9 @@ use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerInterface;
 use SchedulerBundle\Worker\WorkerRegistry;
 use SchedulerBundle\Worker\WorkerRegistryInterface;
+
+use function sprintf;
+
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
@@ -153,22 +161,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Mercure\Hub;
-use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\StoreFactory;
+use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
+
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-
-use function array_key_exists;
-use function array_merge;
-use function class_exists;
-use function interface_exists;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

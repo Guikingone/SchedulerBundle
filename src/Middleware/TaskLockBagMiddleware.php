@@ -11,10 +11,12 @@ use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\AccessLockBag;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Lock\Key;
-use Symfony\Component\Lock\LockFactory;
 
 use function sprintf;
+
+use Symfony\Component\Lock\Key;
+
+use Symfony\Component\Lock\LockFactory;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

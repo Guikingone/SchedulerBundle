@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Expression;
 
+use function explode;
+
 use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
-use Throwable;
 
-use function explode;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

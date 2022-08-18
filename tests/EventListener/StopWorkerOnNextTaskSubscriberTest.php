@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
+use function microtime;
+
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
-use function microtime;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

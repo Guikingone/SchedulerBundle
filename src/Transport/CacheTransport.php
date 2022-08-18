@@ -4,7 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use function array_map;
+use function array_search;
+
 use Closure;
+
+use function in_array;
+use function is_string;
+
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -12,16 +19,14 @@ use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
+
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
-use function array_map;
-use function array_search;
-use function in_array;
-use function is_string;
 use function sprintf;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

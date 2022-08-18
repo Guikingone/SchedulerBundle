@@ -4,24 +4,28 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use function function_exists;
+use function pcntl_signal;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Event\WorkerEventInterface;
-use SchedulerBundle\Event\WorkerSleepingEvent;
-use SchedulerBundle\Task\TaskInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 
-use function function_exists;
-use function pcntl_signal;
-use function sprintf;
+use SchedulerBundle\Task\TaskInterface;
 
 use const SIGHUP;
 use const SIGINT;
+
 use const SIGQUIT;
 use const SIGTERM;
+
+use function sprintf;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

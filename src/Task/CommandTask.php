@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
-
 use function is_array;
 use function is_string;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

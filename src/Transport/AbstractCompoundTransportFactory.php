@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport;
 
+use function array_map;
+use function explode;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
-use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
-use function array_map;
-use function explode;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+
 use function sprintf;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

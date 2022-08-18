@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use function microtime;
+
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -11,9 +13,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Throwable;
 
-use function microtime;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

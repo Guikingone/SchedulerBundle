@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Worker\WorkerInterface;
-
 use function array_unique;
+
+use SchedulerBundle\Task\TaskInterface;
+
+use SchedulerBundle\Worker\WorkerInterface;
 
 use const SORT_REGULAR;
 

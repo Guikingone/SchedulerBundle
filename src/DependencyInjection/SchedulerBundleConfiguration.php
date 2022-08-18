@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-
 use function array_combine;
-use function array_key_exists;
 use function array_filter;
+use function array_key_exists;
+
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -18,6 +15,10 @@ use function array_replace;
 use function array_values;
 use function count;
 use function sprintf;
+
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

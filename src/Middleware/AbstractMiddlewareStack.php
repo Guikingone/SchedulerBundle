@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
-use Closure;
-use SplObjectStorage;
-use Throwable;
-
 use function array_replace;
 use function array_values;
+
+use Closure;
+
+use SplObjectStorage;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

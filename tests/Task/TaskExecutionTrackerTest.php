@@ -9,9 +9,10 @@ use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskExecutionTracker;
 use SchedulerBundle\Task\TaskInterface;
-use Symfony\Component\Stopwatch\Stopwatch;
 
 use function sleep;
+
+use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

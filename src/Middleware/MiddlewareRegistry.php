@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
+use function array_filter;
+
+use const ARRAY_FILTER_USE_BOTH;
+
+use function array_walk;
+
 use ArrayIterator;
 use Closure;
 
-use function array_filter;
-use function array_walk;
 use function count;
 use function is_array;
 use function iterator_to_array;
-use function uasort;
 
-use const ARRAY_FILTER_USE_BOTH;
+use function uasort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

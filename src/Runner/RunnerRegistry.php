@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use function array_filter;
+
 use Closure;
+
+use function count;
+use function current;
+
+use function is_array;
+use function iterator_to_array;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\TaskInterface;
-
-use function array_filter;
-use function current;
-use function count;
-use function is_array;
-use function iterator_to_array;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

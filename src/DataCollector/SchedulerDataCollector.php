@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DataCollector;
 
+use function array_key_exists;
+use function is_array;
+
+use SchedulerBundle\Event\TaskEventList;
+use SchedulerBundle\EventListener\TaskLoggerSubscriber;
 use SchedulerBundle\Probe\ProbeInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector;
-use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
-use SchedulerBundle\Event\TaskEventList;
-use SchedulerBundle\EventListener\TaskLoggerSubscriber;
-use Throwable;
 
-use function array_key_exists;
-use function is_array;
+use Symfony\Component\HttpKernel\DataCollector\LateDataCollectorInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

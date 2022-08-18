@@ -525,11 +525,11 @@ final class FiberWorkerTest extends TestCase
     public function testTaskCanBeExecutedWithErroredAfterExecutionCallback(): void
     {
         $task = new NullTask('foo', [
-            'after_executing' => fn (): bool => false,
+            'after_executing' => static fn (): bool => false,
         ]);
 
         $validTask = new NullTask('bar', [
-            'after_executing' => fn (): bool => true,
+            'after_executing' => static fn (): bool => true,
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -1716,7 +1716,7 @@ final class FiberWorkerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+        $eventDispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event): void {
             $worker = $event->getWorker();
             $configuration = $worker->getConfiguration();
 
@@ -1727,7 +1727,7 @@ final class FiberWorkerTest extends TestCase
             $worker->pause();
         });
 
-        $eventDispatcher->addListener(WorkerPausedEvent::class, function (WorkerPausedEvent $event): void {
+        $eventDispatcher->addListener(WorkerPausedEvent::class, static function (WorkerPausedEvent $event): void {
             $worker = $event->getWorker();
 
             self::assertFalse($worker->isRunning());
@@ -1772,7 +1772,7 @@ final class FiberWorkerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+        $eventDispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event): void {
             $worker = $event->getWorker();
             $configuration = $worker->getConfiguration();
 

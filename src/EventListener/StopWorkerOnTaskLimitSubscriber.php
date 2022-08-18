@@ -6,8 +6,8 @@ namespace SchedulerBundle\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

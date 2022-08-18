@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
-use RuntimeException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use SchedulerBundle\Runner\MessengerTaskRunner;
+use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Worker\WorkerInterface;
 use stdClass;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use SchedulerBundle\Runner\MessengerTaskRunner;
-use SchedulerBundle\Task\MessengerTask;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**

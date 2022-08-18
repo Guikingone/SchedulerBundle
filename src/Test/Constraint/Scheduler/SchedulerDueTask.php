@@ -9,6 +9,8 @@ use SchedulerBundle\SchedulerInterface;
 
 use function sprintf;
 
+use Throwable;
+
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
@@ -28,9 +30,15 @@ final class SchedulerDueTask extends Constraint
 
     /**
      * @param mixed|SchedulerInterface $other
+     *
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function matches($other): bool
     {
+        if (!$other instanceof SchedulerInterface) {
+            return false;
+        }
+
         return $this->expectedCount === $other->getDueTasks()->count();
     }
 }

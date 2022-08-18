@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use function implode;
+use function is_int;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Output\BufferedOutput;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
-use Throwable;
+use SchedulerBundle\Worker\WorkerInterface;
 
-use function implode;
-use function is_int;
 use function sprintf;
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -9,10 +9,12 @@ use Psr\Log\NullLogger;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function sprintf;
+
 use function str_starts_with;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -40,11 +42,11 @@ final class FiberTransportFactory implements TransportFactoryInterface
         SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ): FiberTransport {
         foreach ($this->factories as $factory) {
-            if (!$factory->support($dsn->getOptions()[0])) {
+            if (!$factory->support((string) $dsn->getOptions()[0])) {
                 continue;
             }
 
-            $dsn = Dsn::fromString($dsn->getOptions()[0]);
+            $dsn = Dsn::fromString((string) $dsn->getOptions()[0]);
 
             return new FiberTransport(
                 $factory->createTransport($dsn, $options, $configuration, $serializer, $schedulePolicyOrchestrator),

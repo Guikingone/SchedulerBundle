@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\EventListener;
 
+use function json_decode;
+
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\EventListener\ProbeStateSubscriber;
 use SchedulerBundle\Probe\Probe;
@@ -15,9 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Throwable;
 
-use function json_decode;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -96,6 +97,7 @@ final class ProbeStateSubscriberTest extends TestCase
         self::assertIsString($content);
 
         $body = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($body);
         self::assertArrayHasKey('scheduledTasks', $body);
         self::assertSame(0, $body['scheduledTasks']);
         self::assertArrayHasKey('executedTasks', $body);

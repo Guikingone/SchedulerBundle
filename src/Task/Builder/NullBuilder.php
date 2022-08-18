@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use SchedulerBundle\Task\NullTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
+use function getenv;
+use function is_bool;
+
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Bridge\Redis\Transport\RedisTransportFactory;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Serializer\SerializerInterface;
-
-use function getenv;
-use function is_bool;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

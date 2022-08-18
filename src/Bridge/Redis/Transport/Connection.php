@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use function array_map;
+
 use Redis;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
@@ -12,11 +14,11 @@ use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\ConnectionInterface;
+
+use function sprintf;
+
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
-
-use function array_map;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

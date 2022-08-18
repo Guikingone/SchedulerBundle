@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
-use Closure;
-
 use function array_key_exists;
+
 use function array_map;
 use function array_walk;
+
+use Closure;
+
 use function count;
 
 /**

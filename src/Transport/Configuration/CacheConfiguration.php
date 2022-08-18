@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use function array_map;
+use function array_walk;
+
 use Closure;
+
+use function count;
+
+use function in_array;
+
 use Psr\Cache\CacheItemPoolInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 
-use function count;
-use function array_map;
-use function array_walk;
-use function in_array;
 use function sprintf;
 
 /**

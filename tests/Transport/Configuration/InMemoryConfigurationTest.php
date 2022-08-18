@@ -111,7 +111,7 @@ final class InMemoryConfigurationTest extends TestCase
         $configuration->set('foo', 'bar');
         $configuration->set('bar', 'foo');
 
-        $mappedConfiguration = $configuration->map(fn (string $value): string => sprintf('%s_value', $value));
+        $mappedConfiguration = $configuration->map(static fn (string $value): string => sprintf('%s_value', $value));
 
         self::assertContains('bar_value', $mappedConfiguration);
         self::assertContains('foo_value', $mappedConfiguration);

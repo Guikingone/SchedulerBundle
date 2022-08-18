@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Event;
 
-use Countable;
-use SchedulerBundle\Task\ProbeTask;
-
 use function array_filter;
 use function count;
+
+use Countable;
+use SchedulerBundle\Task\ProbeTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

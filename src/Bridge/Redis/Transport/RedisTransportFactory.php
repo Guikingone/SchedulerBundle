@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Redis\Transport;
 
+use function class_exists;
+use function phpversion;
+
 use Redis;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 use SchedulerBundle\Transport\Dsn;
+
 use SchedulerBundle\Transport\TransportFactoryInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-use function class_exists;
-use function phpversion;
 use function version_compare;
 
 /**

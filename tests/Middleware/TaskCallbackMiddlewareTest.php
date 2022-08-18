@@ -40,7 +40,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): bool => false);
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(static fn (): bool => false);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
@@ -55,7 +55,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(fn (): bool => true);
+        $task->expects(self::once())->method('getBeforeScheduling')->willReturn(static fn (): bool => true);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
         $taskCallbackMiddleware->preScheduling($task, $scheduler);
@@ -79,7 +79,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
 
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::once())->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => false);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(static fn (): bool => false);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
 
@@ -94,7 +94,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $scheduler = $this->createMock(SchedulerInterface::class);
 
         $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::once())->method('getAfterScheduling')->willReturn(fn (): bool => true);
+        $task->expects(self::once())->method('getAfterScheduling')->willReturn(static fn (): bool => true);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
         $taskCallbackMiddleware->postScheduling($task, $scheduler);
@@ -112,7 +112,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
     public function testMiddlewareCannotPreExecuteErroredBeforeExecutingCallback(): void
     {
         $nullTask = new NullTask('foo', [
-            'before_executing' => fn (): bool => false,
+            'before_executing' => static fn (): bool => false,
         ]);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
@@ -127,7 +127,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
     {
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
-        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(fn (): bool => true);
+        $task->expects(self::once())->method('getBeforeExecuting')->willReturn(static fn (): bool => true);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
         $taskCallbackMiddleware->preExecute($task);
@@ -148,7 +148,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
 
         $nullTask = new NullTask('foo', [
-            'after_executing' => fn (): bool => false,
+            'after_executing' => static fn (): bool => false,
         ]);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
@@ -164,7 +164,7 @@ final class TaskCallbackMiddlewareTest extends TestCase
         $worker = $this->createMock(WorkerInterface::class);
         $task = $this->createMock(TaskInterface::class);
         $task->expects(self::never())->method('getName');
-        $task->expects(self::once())->method('getAfterExecuting')->willReturn(fn (): bool => true);
+        $task->expects(self::once())->method('getAfterExecuting')->willReturn(static fn (): bool => true);
 
         $taskCallbackMiddleware = new TaskCallbackMiddleware();
         $taskCallbackMiddleware->postExecute($task, $worker);

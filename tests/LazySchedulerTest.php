@@ -7,7 +7,6 @@ namespace Tests\SchedulerBundle;
 use DateTimeImmutable;
 use Exception;
 use Generator;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
@@ -56,8 +55,15 @@ use Throwable;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class LazySchedulerTest extends TestCase
+final class LazySchedulerTest extends AbstractSchedulerTestCase
 {
+    protected function getScheduler(): SchedulerInterface
+    {
+        return new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
+    }
+
     /**
      * @throws Exception {@see Scheduler::__construct()}
      * @throws Throwable {@see SchedulerInterface::getTasks()}
@@ -674,7 +680,7 @@ final class LazySchedulerTest extends TestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
         self::assertFalse($scheduler->isInitialized());
 
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
     }
 
@@ -693,7 +699,7 @@ final class LazySchedulerTest extends TestCase
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
     }
 
     /**
@@ -716,7 +722,7 @@ final class LazySchedulerTest extends TestCase
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
         $scheduler->schedule(new NullTask('reboot'));
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'reboot' === $task->getName());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 
@@ -824,39 +830,6 @@ final class LazySchedulerTest extends TestCase
         self::assertTrue($scheduler->isInitialized());
         self::assertCount(1, $scheduler->getTasks());
         self::assertSame('0 * * * *', $scheduler->getTasks()->get('foo')->getExpression());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     */
-    public function testSchedulerCanReturnTheTimezone(): void
-    {
-        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration([
-            'execution_mode' => 'first_in_first_out',
-        ]), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(), new EventDispatcher()));
-        self::assertFalse($scheduler->isInitialized());
-
-        $timezone = $scheduler->getTimezone();
-        self::assertSame('UTC', $timezone->getName());
-        self::assertTrue($scheduler->isInitialized());
-    }
-
-    /**
-     * @throws Exception {@see Scheduler::__construct()}
-     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
-     */
-    public function testSchedulerPoolConfigurationIsAvailable(): void
-    {
-        $scheduler = new LazyScheduler(new Scheduler('UTC', new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
-            new FirstInFirstOutPolicy(),
-        ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
-
-        $poolConfiguration = $scheduler->getPoolConfiguration();
-
-        self::assertSame('UTC', $poolConfiguration->getTimezone()->getName());
-        self::assertCount(0, $poolConfiguration->getDueTasks());
     }
 
     /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport;
 
-use RuntimeException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;

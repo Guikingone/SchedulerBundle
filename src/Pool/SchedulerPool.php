@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Pool;
 
-use SchedulerBundle\SchedulerInterface;
-
 use function count;
+
+use SchedulerBundle\SchedulerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

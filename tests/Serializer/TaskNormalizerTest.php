@@ -7,10 +7,20 @@ namespace Tests\SchedulerBundle\Serializer;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Serializer\AccessLockBagNormalizer;
 use SchedulerBundle\Serializer\NotificationTaskBagNormalizer;
+use SchedulerBundle\Serializer\TaskNormalizer;
+use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\ChainedTask;
+use SchedulerBundle\Task\CommandTask;
+use SchedulerBundle\Task\HttpTask;
+use SchedulerBundle\Task\MessengerTask;
+use SchedulerBundle\Task\NotificationTask;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\Task\ShellTask;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
 use stdClass;
 use Symfony\Component\Notifier\Notification\Notification;
@@ -18,16 +28,6 @@ use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Serializer\TaskNormalizer;
-use SchedulerBundle\Task\CallbackTask;
-use SchedulerBundle\Task\CommandTask;
-use SchedulerBundle\Task\HttpTask;
-use SchedulerBundle\Task\MessengerTask;
-use SchedulerBundle\Task\NotificationTask;
-use SchedulerBundle\Task\NullTask;
-use SchedulerBundle\Task\ShellTask;
-use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
@@ -131,7 +131,7 @@ final class TaskNormalizerTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('CallbackTask with closure cannot be sent to external transport, consider executing it thanks to "SchedulerBundle\Worker\Worker::execute()"');
         self::expectExceptionCode(0);
-        $taskNormalizer->normalize(new CallbackTask('foo', function (): void {
+        $taskNormalizer->normalize(new CallbackTask('foo', static function (): void {
             echo 'Symfony!';
         }));
     }
@@ -311,7 +311,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
-        $shellTask->beforeScheduling(fn (): int => 1 * 1);
+        $shellTask->beforeScheduling(static fn (): int => 1 * 1);
         $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -383,7 +383,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
-        $shellTask->afterScheduling(fn (): int => 1 * 1);
+        $shellTask->afterScheduling(static fn (): int => 1 * 1);
         $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -455,7 +455,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
-        $shellTask->beforeExecuting(fn (): int => 1 * 1);
+        $shellTask->beforeExecuting(static fn (): int => 1 * 1);
         $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);
@@ -527,7 +527,7 @@ final class TaskNormalizerTest extends TestCase
         $objectNormalizer->setSerializer($serializer);
 
         $shellTask = new ShellTask('foo', ['echo', 'Symfony']);
-        $shellTask->afterExecuting(fn (): int => 1 * 1);
+        $shellTask->afterExecuting(static fn (): int => 1 * 1);
         $shellTask->setScheduledAt(new DateTimeImmutable());
 
         self::expectException(InvalidArgumentException::class);

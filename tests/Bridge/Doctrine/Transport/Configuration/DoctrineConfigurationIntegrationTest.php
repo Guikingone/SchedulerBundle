@@ -6,11 +6,14 @@ namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\DriverManager;
-use PHPUnit\Framework\TestCase;
-use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfiguration;
-use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 
 use function file_exists;
+
+use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfiguration;
+
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
+
 use function sprintf;
 use function sys_get_temp_dir;
 use function unlink;
