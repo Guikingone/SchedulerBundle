@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
+use function array_map;
+use function array_walk;
+
 use Closure;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception;
@@ -18,11 +21,9 @@ use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
+
 use SchedulerBundle\Transport\Configuration\ExternalConnectionInterface;
 use Throwable;
-
-use function array_map;
-use function array_walk;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

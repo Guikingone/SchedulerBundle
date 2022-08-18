@@ -4,29 +4,34 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
+use function array_key_exists;
+
 use Cron\CronExpression;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Expression\Expression;
-use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\NotificationTaskBag;
-use Symfony\Component\OptionsResolver\Options;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\LogicException;
 
-use function array_key_exists;
 use function in_array;
 use function is_array;
 use function is_bool;
 use function is_float;
 use function is_int;
 use function is_string;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+
+use SchedulerBundle\Exception\LogicException;
+use SchedulerBundle\Exception\RuntimeException;
+use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\TaskBag\AccessLockBag;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
+
 use function sprintf;
 use function strtotime;
+
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -179,7 +184,7 @@ abstract class AbstractTask implements TaskInterface
         $optionsResolver->setInfo(option: 'tracked', info: 'Define if the task will be tracked during execution, this option enable the "duration" sort');
         $optionsResolver->setInfo(option: 'timezone', info: 'Define the timezone used by the task, this value is set by the Scheduler and can be overridden');
 
-        if ($additionalOptions === []) {
+        if ([] === $additionalOptions) {
             $this->options = $optionsResolver->resolve(options: $options);
         }
 

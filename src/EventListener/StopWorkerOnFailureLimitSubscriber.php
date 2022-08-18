@@ -6,12 +6,13 @@ namespace SchedulerBundle\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use SchedulerBundle\Exception\InvalidArgumentException;
 
 use function sprintf;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

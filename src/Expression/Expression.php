@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Expression;
 
-use Stringable;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\InvalidExpressionException;
-
 use function array_key_exists;
 use function count;
 use function explode;
+
 use function implode;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\InvalidExpressionException;
+
 use function sprintf;
+
+use Stringable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

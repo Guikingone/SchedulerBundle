@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use SchedulerBundle\Exception\InvalidArgumentException;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 use function array_key_exists;
 use function array_walk;
+
 use function is_array;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+
 use function sprintf;
+
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -89,7 +92,7 @@ final class HttpTask extends AbstractTask
             return;
         }
 
-        array_walk(array: $clientOptions, callback: function ($_, $key): void {
+        array_walk(array: $clientOptions, callback: static function ($_, $key): void {
             if (!array_key_exists(key: $key, array: HttpClientInterface::OPTIONS_DEFAULTS)) {
                 throw new InvalidArgumentException(message: sprintf('The following option: "%s" is not supported', $key));
             }

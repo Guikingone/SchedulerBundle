@@ -22,19 +22,19 @@ final class ComputedExpressionBuilder implements ExpressionBuilderInterface
         $parts = explode(' ', $expression);
 
         foreach ($parts as $position => $part) {
-            if (0 === $position && $part === '#') {
+            if (0 === $position && '#' === $part) {
                 $parts[$position] = random_int(0, 59);
             }
 
-            if (1 === $position && $part === '#') {
+            if (1 === $position && '#' === $part) {
                 $parts[$position] = random_int(0, 23);
             }
 
-            if (2 === $position && $part === '#') {
+            if (2 === $position && '#' === $part) {
                 $parts[$position] = random_int(1, 31);
             }
 
-            if (3 === $position && $part === '#') {
+            if (3 === $position && '#' === $part) {
                 $parts[$position] = random_int(1, 12);
             }
 
@@ -42,7 +42,7 @@ final class ComputedExpressionBuilder implements ExpressionBuilderInterface
                 continue;
             }
 
-            if ($part !== '#') {
+            if ('#' !== $part) {
                 continue;
             }
 

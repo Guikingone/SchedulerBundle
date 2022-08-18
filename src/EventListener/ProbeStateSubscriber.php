@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use function rawurldecode;
+
 use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -11,9 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Throwable;
 
-use function rawurldecode;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -7,9 +7,10 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function sprintf;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

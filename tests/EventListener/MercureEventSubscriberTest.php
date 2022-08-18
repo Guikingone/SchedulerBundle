@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\EventListener;
 
 use DateTimeInterface;
+
+use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
+
 use JsonException;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -23,12 +28,10 @@ use SchedulerBundle\Task\Output;
 use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Mercure\HubInterface;
+
 use Symfony\Component\Mercure\Update;
+
 use Symfony\Component\Serializer\SerializerInterface;
-
-use function json_encode;
-
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

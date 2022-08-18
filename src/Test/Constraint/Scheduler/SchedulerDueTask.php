@@ -7,8 +7,9 @@ namespace SchedulerBundle\Test\Constraint\Scheduler;
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\SchedulerInterface;
 
-use Throwable;
 use function sprintf;
+
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

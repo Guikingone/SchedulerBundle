@@ -4,28 +4,35 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task;
 
-use ArrayIterator;
-use Closure;
-use SchedulerBundle\Exception\InvalidArgumentException;
-use SchedulerBundle\Exception\RuntimeException;
-use Throwable;
-use Traversable;
-
 use function array_chunk;
 use function array_filter;
+
+use const ARRAY_FILTER_USE_BOTH;
+
 use function array_key_exists;
 use function array_key_last;
+use function array_map;
+
 use function array_values;
 use function array_walk;
-use function array_map;
-use function uasort;
+
+use ArrayIterator;
+use Closure;
+
 use function count;
 use function gettype;
 use function in_array;
 use function is_string;
+
+use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
+
 use function sprintf;
 
-use const ARRAY_FILTER_USE_BOTH;
+use Throwable;
+use Traversable;
+
+use function uasort;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

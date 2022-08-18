@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Test\Constraint;
 
+use function count;
+
 use PHPUnit\Framework\Constraint\Constraint;
+
 use SchedulerBundle\Event\TaskEventList;
 
-use function count;
 use function sprintf;
 
 /**

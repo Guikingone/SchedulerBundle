@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use const ENT_QUOTES;
+
+use function htmlspecialchars;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+
+use function sprintf;
+
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
@@ -14,17 +23,11 @@ use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Worker\WorkerInterface;
-use Throwable;
 
-use function filter_var;
-use function is_string;
-use function htmlspecialchars;
-use function sprintf;
-use const ENT_QUOTES;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

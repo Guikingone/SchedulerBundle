@@ -10,15 +10,17 @@ use SchedulerBundle\Probe\ProbeInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\TaskInterface;
+
+use function sprintf;
+
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
-use function sprintf;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -6,12 +6,15 @@ namespace SchedulerBundle\Transport\Configuration;
 
 use ArrayIterator;
 use Closure;
-use SchedulerBundle\Exception\RuntimeException;
-use Traversable;
 
 use function is_array;
 use function iterator_to_array;
+
 use function reset;
+
+use SchedulerBundle\Exception\RuntimeException;
+use Traversable;
+
 use function usort;
 
 /**

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use function microtime;
+
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-use function microtime;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

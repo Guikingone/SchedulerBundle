@@ -10,10 +10,10 @@ use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
-use SchedulerBundle\Task\NullTask;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 use SchedulerBundle\Task\Builder\NullBuilder;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

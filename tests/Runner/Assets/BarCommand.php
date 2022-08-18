@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner\Assets;
 
+use function sprintf;
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
-use function sprintf;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

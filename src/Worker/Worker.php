@@ -6,6 +6,9 @@ namespace SchedulerBundle\Worker;
 
 use DateTimeImmutable;
 use Exception;
+
+use function in_array;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -35,9 +38,8 @@ use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistryInterface;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Throwable;
 
-use function in_array;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

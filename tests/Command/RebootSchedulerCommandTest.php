@@ -6,16 +6,16 @@ namespace Tests\SchedulerBundle\Command;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SchedulerBundle\Command\RebootSchedulerCommand;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
+use SchedulerBundle\SchedulerInterface;
+use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Worker\WorkerConfiguration;
+use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use SchedulerBundle\Command\RebootSchedulerCommand;
-use SchedulerBundle\SchedulerInterface;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
 
 /**

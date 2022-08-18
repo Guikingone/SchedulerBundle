@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Task;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Task\NotificationTask;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
-use SchedulerBundle\Task\NotificationTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

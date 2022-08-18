@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\DependencyInjection;
 
-use SchedulerBundle\SchedulerInterface;
-use stdClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use SchedulerBundle\DependencyInjection\SchedulerPass;
+use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
+use stdClass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use Tests\SchedulerBundle\DependencyInjection\Assets\SchedulerEntryPoint;

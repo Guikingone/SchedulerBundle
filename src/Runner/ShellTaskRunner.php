@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
-use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Process\Process;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Process\Process;
 
 use function trim;
 

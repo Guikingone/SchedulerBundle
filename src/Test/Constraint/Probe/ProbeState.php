@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Test\Constraint\Probe;
 
+use function json_encode;
+
 use PHPUnit\Framework\Constraint\Constraint;
+
 use SchedulerBundle\Probe\ProbeInterface;
 
-use function json_encode;
 use function sprintf;
 
 /**

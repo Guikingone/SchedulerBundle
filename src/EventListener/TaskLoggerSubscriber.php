@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
-use SchedulerBundle\Test\Constraint\TaskQueued;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\TaskEventInterface;
 use SchedulerBundle\Event\TaskEventList;
 use SchedulerBundle\Event\TaskExecutedEvent;
 use SchedulerBundle\Event\TaskFailedEvent;
 use SchedulerBundle\Event\TaskScheduledEvent;
 use SchedulerBundle\Event\TaskUnscheduledEvent;
+use SchedulerBundle\Test\Constraint\TaskQueued;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

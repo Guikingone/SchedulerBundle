@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Transport;
 
 use DateTimeImmutable;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -21,7 +22,6 @@ use SchedulerBundle\Transport\FiberTransport;
 use SchedulerBundle\Transport\InMemoryTransport;
 use SchedulerBundle\Transport\TransportInterface;
 use Throwable;
-use Generator;
 
 /**
  * @requires PHP 8.1

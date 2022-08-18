@@ -15,9 +15,10 @@ use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Throwable;
 
 use function sprintf;
+
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -31,9 +32,16 @@ abstract class AbstractFiberHandler
         $this->logger = $logger ?? new NullLogger();
     }
 
+    /**
+     * @param Closure $func
+     *
+     * @return TaskListInterface|LazyTaskList|TaskInterface|LazyTask|SchedulerConfiguration|ConfigurationInterface|DateTimeZone|string|float|int|bool|array<int|string, mixed>|null
+     *
+     * @throws Throwable
+     */
     protected function handleOperationViaFiber(Closure $func): TaskListInterface|LazyTaskList|TaskInterface|LazyTask|SchedulerConfiguration|ConfigurationInterface|DateTimeZone|string|float|int|bool|array|null
     {
-        $fiber = new Fiber(callback: function (Closure $operation): void {
+        $fiber = new Fiber(callback: static function (Closure $operation): void {
             $value = $operation();
 
             Fiber::suspend(value: $value);

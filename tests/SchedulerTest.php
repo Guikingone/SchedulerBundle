@@ -8,6 +8,10 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use Generator;
+
+use function getcwd;
+use function in_array;
+
 use PDO;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\TaskScheduledEvent;
@@ -54,6 +58,9 @@ use SchedulerBundle\Worker\ExecutionPolicy\DefaultPolicy;
 use SchedulerBundle\Worker\ExecutionPolicy\ExecutionPolicyRegistry;
 use SchedulerBundle\Worker\Worker;
 use SchedulerBundle\Worker\WorkerConfiguration;
+
+use function sprintf;
+
 use stdClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Lock\LockFactory;
@@ -75,14 +82,13 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Throwable;
 
-use function getcwd;
-use function in_array;
-use function sprintf;
 use function sys_get_temp_dir;
+
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -519,7 +525,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher());
 
         $scheduler->schedule($task);
-        $filteredTasks = $scheduler->getTasks()->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
+        $filteredTasks = $scheduler->getTasks()->filter(static fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
 
         self::assertCount(1, $filteredTasks);
     }
@@ -542,7 +548,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         $dueTasks = $scheduler->getTasks(true);
         self::assertInstanceOf(LazyTaskList::class, $dueTasks);
 
-        $dueTasks = $dueTasks->filter(fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
+        $dueTasks = $dueTasks->filter(static fn (TaskInterface $task): bool => null !== $task->getTimezone() && 0 === $task->getPriority());
         self::assertCount(1, $dueTasks);
     }
 
@@ -925,7 +931,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         $task->addTag('new_tag');
         $scheduler->update($task->getName(), $task);
 
-        $updatedTask = $scheduler->getTasks(true)->filter(fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
+        $updatedTask = $scheduler->getTasks(true)->filter(static fn (TaskInterface $task): bool => in_array('new_tag', $task->getTags(), true));
         self::assertInstanceOf(LazyTaskList::class, $updatedTask);
         self::assertCount(1, $updatedTask);
     }
@@ -950,11 +956,11 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         self::assertCount(1, $scheduler->getTasks());
 
         $scheduler->pause($task->getName());
-        $pausedTasks = $scheduler->getTasks()->filter(fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::PAUSED === $task->getState());
+        $pausedTasks = $scheduler->getTasks()->filter(static fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::PAUSED === $task->getState());
         self::assertNotEmpty($pausedTasks);
 
         $scheduler->resume($task->getName());
-        $resumedTasks = $scheduler->getTasks()->filter(fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::ENABLED === $task->getState());
+        $resumedTasks = $scheduler->getTasks()->filter(static fn (TaskInterface $storedTask): bool => $task->getName() === $storedTask->getName() && TaskInterface::ENABLED === $task->getState());
         self::assertNotEmpty($resumedTasks);
     }
 
@@ -1572,7 +1578,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), $eventDispatcher);
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
     }
 
     /**
@@ -1594,7 +1600,7 @@ final class SchedulerTest extends AbstractSchedulerTestCase
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
         $scheduler->schedule(new NullTask('reboot'));
-        $scheduler->preempt('foo', fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'reboot' === $task->getName());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 

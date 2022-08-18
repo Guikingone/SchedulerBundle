@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\DependencyInjection;
 
+use function array_keys;
+
 use SchedulerBundle\SchedulerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Reference;
 
-use function array_keys;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

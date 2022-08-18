@@ -4,43 +4,48 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+
 use Closure;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
+
+use function is_array;
+use function is_object;
+
 use SchedulerBundle\Exception\BadMethodCallException;
-use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Task\ChainedTask;
-use SchedulerBundle\Task\TaskListInterface;
-use SchedulerBundle\Task\ProbeTask;
-use SchedulerBundle\TaskBag\AccessLockBag;
-use SchedulerBundle\TaskBag\NotificationTaskBag;
-use Symfony\Component\Notifier\Notification\Notification;
-use Symfony\Component\Notifier\Recipient\Recipient;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\CallbackTask;
+use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\NotificationTask;
 use SchedulerBundle\Task\NullTask;
+use SchedulerBundle\Task\ProbeTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskListInterface;
+use SchedulerBundle\TaskBag\AccessLockBag;
+use SchedulerBundle\TaskBag\NotificationTaskBag;
 use SchedulerBundle\Worker\Worker;
+
+use function sprintf;
+
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-
-use function array_key_exists;
-use function array_map;
-use function array_merge;
-use function is_array;
-use function is_object;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -349,6 +354,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
     {
-        return is_array(value: $data) && array_key_exists(key: self::NORMALIZATION_DISCRIMINATOR, array: $data) || $type === TaskInterface::class;
+        return is_array(value: $data) && array_key_exists(key: self::NORMALIZATION_DISCRIMINATOR, array: $data) || TaskInterface::class === $type;
     }
 }

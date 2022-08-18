@@ -11,9 +11,10 @@ use SchedulerBundle\Exception\ConfigurationException;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Transport\Configuration\ConfigurationFactoryInterface;
 use SchedulerBundle\Transport\Dsn;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function sprintf;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

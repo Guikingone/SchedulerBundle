@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\EventListener;
 
+use function microtime;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\Task\TaskInterface;
 
-use function microtime;
 use function sprintf;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

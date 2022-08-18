@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
+use SchedulerBundle\Task\CommandTask;
 use SchedulerBundle\Task\TaskInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use SchedulerBundle\Task\CommandTask;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

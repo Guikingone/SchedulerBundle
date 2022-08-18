@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use function call_user_func_array;
+
 use SchedulerBundle\Task\CallbackTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
+
 use Throwable;
 
-use function call_user_func_array;
 use function trim;
 
 /**

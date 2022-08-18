@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\SchedulePolicy;
 
-use RuntimeException;
-use InvalidArgumentException;
 use DateInterval;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use SchedulerBundle\SchedulePolicy\BatchPolicy;
 use SchedulerBundle\SchedulePolicy\DeadlinePolicy;
 use SchedulerBundle\SchedulePolicy\ExecutionDurationPolicy;

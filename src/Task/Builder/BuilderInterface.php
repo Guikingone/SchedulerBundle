@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

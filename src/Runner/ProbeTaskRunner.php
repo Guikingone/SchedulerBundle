@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
+use function array_key_exists;
+
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ProbeTask;
@@ -11,9 +13,8 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Throwable;
 
-use function array_key_exists;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -16,7 +16,7 @@ final class LazyTaskTest extends TestCase
 {
     public function testTaskCanReturnEmbeddedTask(): void
     {
-        $lazyTask = new LazyTask('foo', fn (): TaskInterface => new NullTask('foo'));
+        $lazyTask = new LazyTask('foo', static fn (): TaskInterface => new NullTask('foo'));
 
         self::assertSame('foo.lazy', $lazyTask->getName());
         self::assertFalse($lazyTask->isInitialized());

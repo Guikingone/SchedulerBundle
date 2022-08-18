@@ -11,10 +11,11 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Worker\WorkerConfiguration;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
 use function sprintf;
+
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -10,9 +10,19 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+
+use function is_bool;
+use function next;
+
+use SchedulerBundle\Event\SchedulerRebootedEvent;
 use SchedulerBundle\Event\TaskExecutingEvent;
+use SchedulerBundle\Event\TaskScheduledEvent;
+use SchedulerBundle\Event\TaskUnscheduledEvent;
 use SchedulerBundle\Exception\InvalidArgumentException;
+use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Exception\TransportException;
+use SchedulerBundle\Expression\Expression;
+use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Messenger\TaskToPauseMessage;
 use SchedulerBundle\Messenger\TaskToUpdateMessage;
 use SchedulerBundle\Messenger\TaskToYieldMessage;
@@ -20,23 +30,16 @@ use SchedulerBundle\Middleware\SchedulerMiddlewareStack;
 use SchedulerBundle\Pool\Configuration\SchedulerConfiguration;
 use SchedulerBundle\Task\LazyTask;
 use SchedulerBundle\Task\LazyTaskList;
-use SchedulerBundle\Task\TaskList;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
-use SchedulerBundle\Event\SchedulerRebootedEvent;
-use SchedulerBundle\Event\TaskScheduledEvent;
-use SchedulerBundle\Event\TaskUnscheduledEvent;
-use SchedulerBundle\Exception\RuntimeException;
-use SchedulerBundle\Expression\Expression;
-use SchedulerBundle\Messenger\TaskToExecuteMessage;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\TransportInterface;
-use Throwable;
 
-use function is_bool;
-use function next;
 use function sprintf;
+
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -196,7 +199,7 @@ final class Scheduler implements SchedulerInterface
     {
         $synchronizedCurrentDate = $this->getSynchronizedCurrentDate();
 
-        if ($synchronizedCurrentDate->format(format: 's') !== '00' && $strict) {
+        if ('00' !== $synchronizedCurrentDate->format(format: 's') && $strict) {
             return $lazy ? new LazyTaskList(sourceList: new TaskList()) : new TaskList();
         }
 
@@ -265,7 +268,7 @@ final class Scheduler implements SchedulerInterface
         }
 
         return $lazy
-            ? new LazyTask(name: $nextTask->getName(), sourceTaskClosure: Closure::bind(fn (): TaskInterface => $nextTask, $this))
+            ? new LazyTask(name: $nextTask->getName(), sourceTaskClosure: Closure::bind(static fn (): TaskInterface => $nextTask, $this))
             : $nextTask
         ;
     }

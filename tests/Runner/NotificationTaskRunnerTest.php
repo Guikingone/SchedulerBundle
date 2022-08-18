@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Runner;
 
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Runner\NotificationTaskRunner;
+use SchedulerBundle\Task\NotificationTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -12,8 +14,6 @@ use Symfony\Component\Notifier\Exception\LogicException;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
-use SchedulerBundle\Runner\NotificationTaskRunner;
-use SchedulerBundle\Task\NotificationTask;
 use Tests\SchedulerBundle\Runner\Assets\BarTask;
 
 /**

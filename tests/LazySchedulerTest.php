@@ -680,7 +680,7 @@ final class LazySchedulerTest extends AbstractSchedulerTestCase
         ])), new SchedulerMiddlewareStack(new MiddlewareRegistry([])), new EventDispatcher()));
         self::assertFalse($scheduler->isInitialized());
 
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
     }
 
@@ -699,7 +699,7 @@ final class LazySchedulerTest extends AbstractSchedulerTestCase
         self::assertFalse($scheduler->isInitialized());
 
         $scheduler->schedule(new NullTask('foo'));
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
     }
 
     /**
@@ -722,7 +722,7 @@ final class LazySchedulerTest extends AbstractSchedulerTestCase
         $scheduler->schedule(new NullTask('foo'));
         $scheduler->schedule(new NullTask('bar'));
         $scheduler->schedule(new NullTask('reboot'));
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'reboot');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'reboot' === $task->getName());
 
         $lockFactory = new LockFactory(new InMemoryStore());
 

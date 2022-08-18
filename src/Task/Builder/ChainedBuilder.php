@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Task\Builder;
 
+use function array_map;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Expression\BuilderInterface as ExpressionBuilderInterface;
 use SchedulerBundle\Task\ChainedTask;
 use SchedulerBundle\Task\TaskInterface;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-use function array_map;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

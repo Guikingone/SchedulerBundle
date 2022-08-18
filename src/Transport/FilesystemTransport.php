@@ -5,22 +5,25 @@ declare(strict_types=1);
 namespace SchedulerBundle\Transport;
 
 use Closure;
-use SchedulerBundle\Task\LazyTask;
-use SchedulerBundle\Task\LazyTaskList;
-use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
+
+use function file_get_contents;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestratorInterface;
+use SchedulerBundle\Task\LazyTask;
+use SchedulerBundle\Task\LazyTaskList;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
 
-use function file_get_contents;
 use function sprintf;
 use function strtr;
+
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

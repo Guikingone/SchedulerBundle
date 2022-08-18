@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Bridge\Doctrine\Transport;
 
+use function array_map;
+
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Result;
@@ -11,6 +13,11 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
 use Exception;
+
+use const FILTER_VALIDATE_BOOLEAN;
+
+use function filter_var;
+
 use SchedulerBundle\Bridge\Doctrine\Connection\AbstractDoctrineConnection;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\LogicException;
@@ -20,15 +27,14 @@ use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Task\TaskList;
 use SchedulerBundle\Task\TaskListInterface;
 use SchedulerBundle\Transport\Configuration\ConfigurationInterface;
-use SchedulerBundle\Transport\ConnectionInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Throwable;
 
-use function array_map;
-use function filter_var;
+use SchedulerBundle\Transport\ConnectionInterface;
+
 use function sprintf;
 
-use const FILTER_VALIDATE_BOOLEAN;
+use Symfony\Component\Serializer\SerializerInterface;
+
+use Throwable;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -49,7 +55,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
      */
     public function list(): TaskListInterface
     {
-        $existingTasksCount = $this->createQueryBuilder(table: $this->configuration->get(key: 'table_name'), alias: 't')
+        $existingTasksCount = $this->createQueryBuilder(table: (string) $this->configuration->get(key: 'table_name'), alias: 't')
             ->select(select: (new Expr())->countDistinct(x: 't.id'))
         ;
 

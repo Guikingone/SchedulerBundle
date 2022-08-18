@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport\Configuration;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Configuration\CacheConfigurationFactory;
@@ -12,7 +13,6 @@ use SchedulerBundle\Transport\Configuration\InMemoryConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
-use Generator;
 use Throwable;
 
 /**

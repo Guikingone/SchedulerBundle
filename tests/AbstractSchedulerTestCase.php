@@ -94,7 +94,7 @@ abstract class AbstractSchedulerTestCase extends TestCase
 
         $scheduler = $this->getScheduler();
 
-        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => $task->getName() === 'bar');
+        $scheduler->preempt('foo', static fn (TaskInterface $task): bool => 'bar' === $task->getName());
         self::assertNotSame(TaskInterface::READY_TO_EXECUTE, $task->getState());
     }
 

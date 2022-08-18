@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Serializer;
 
+use function array_map;
+use function array_merge;
+
 use SchedulerBundle\Exception\BadMethodCallException;
 use SchedulerBundle\TaskBag\NotificationTaskBag;
+
+use function sprintf;
+
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-
-use function array_map;
-use function array_merge;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Transport\Configuration;
 
+use function is_string;
+
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Dsn;
-use Symfony\Component\Serializer\SerializerInterface;
 
-use function is_string;
 use function sprintf;
 use function str_starts_with;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

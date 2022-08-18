@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Runner;
 
+use function json_encode;
+
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Runner\HttpTaskRunner;
+use SchedulerBundle\Task\HttpTask;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
-use SchedulerBundle\Runner\HttpTaskRunner;
-use SchedulerBundle\Task\HttpTask;
-use SchedulerBundle\Task\NullTask;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-use function json_encode;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

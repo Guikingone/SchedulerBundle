@@ -6,13 +6,12 @@ namespace Tests\SchedulerBundle\Task;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
+use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Expression\ComputedExpressionBuilder;
 use SchedulerBundle\Expression\CronExpressionBuilder;
 use SchedulerBundle\Expression\ExpressionBuilder;
 use SchedulerBundle\Expression\FluentExpressionBuilder;
 use SchedulerBundle\Task\Builder\BuilderInterface;
-use Symfony\Component\PropertyAccess\PropertyAccess;
-use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Task\Builder\CommandBuilder;
 use SchedulerBundle\Task\Builder\HttpBuilder;
 use SchedulerBundle\Task\Builder\NullBuilder;
@@ -22,6 +21,7 @@ use SchedulerBundle\Task\HttpTask;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\ShellTask;
 use SchedulerBundle\Task\TaskBuilder;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

@@ -7,9 +7,10 @@ namespace SchedulerBundle\Transport\Configuration;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\RuntimeException;
 use SchedulerBundle\Transport\Dsn;
-use Symfony\Component\Serializer\SerializerInterface;
 
 use function sprintf;
+
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

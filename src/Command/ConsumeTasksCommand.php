@@ -4,34 +4,39 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Command;
 
+use function array_pop;
+
 use DateTimeImmutable;
+
+use function implode;
+use function in_array;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SchedulerBundle\Event\WorkerSleepingEvent;
-use SchedulerBundle\Task\ProbeTask;
-use SchedulerBundle\Task\TaskInterface;
-use SchedulerBundle\Worker\WorkerConfiguration;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Helper;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use SchedulerBundle\Event\TaskExecutedEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\EventListener\StopWorkerOnFailureLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTaskLimitSubscriber;
 use SchedulerBundle\EventListener\StopWorkerOnTimeLimitSubscriber;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\Output;
+use SchedulerBundle\Task\ProbeTask;
+use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
+
+use function sprintf;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Helper;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Throwable;
-
-use function array_pop;
-use function implode;
-use function in_array;
-use function sprintf;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
@@ -123,7 +128,7 @@ final class ConsumeTasksCommand extends Command
         }
 
         if (false === $force) {
-            $nonPausedTasks = $dueTasks->filter(static fn (TaskInterface $task): bool => $task->getState() !== TaskInterface::PAUSED);
+            $nonPausedTasks = $dueTasks->filter(static fn (TaskInterface $task): bool => TaskInterface::PAUSED !== $task->getState());
             if (0 === $nonPausedTasks->count()) {
                 $symfonyStyle->warning([
                     'Each tasks has already been executed for the current minute',

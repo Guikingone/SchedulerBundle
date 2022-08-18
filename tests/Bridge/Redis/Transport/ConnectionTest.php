@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Bridge\Redis\Transport;
 
 use Generator;
+
+use function json_encode;
+
 use PHPUnit\Framework\TestCase;
 use Redis;
 use SchedulerBundle\Bridge\Redis\Transport\Connection;
@@ -13,9 +16,8 @@ use SchedulerBundle\Exception\TransportException;
 use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
-use Symfony\Component\Serializer\SerializerInterface;
 
-use function json_encode;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

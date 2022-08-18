@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Middleware;
 
+use function call_user_func;
+use function is_callable;
+
 use SchedulerBundle\Exception\MiddlewareException;
 use SchedulerBundle\SchedulerInterface;
+
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 
-use function call_user_func;
-use function is_callable;
 use function sprintf;
 
 /**

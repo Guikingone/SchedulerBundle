@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\SchedulerBundle\Transport\Configuration;
 
+use Generator;
 use PHPUnit\Framework\TestCase;
 use SchedulerBundle\Transport\Configuration\CacheConfigurationFactory;
 use SchedulerBundle\Transport\Dsn;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Generator;
 use Symfony\Component\Serializer\Serializer;
 
 /**

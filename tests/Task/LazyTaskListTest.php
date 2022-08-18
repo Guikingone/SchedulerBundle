@@ -97,10 +97,10 @@ final class LazyTaskListTest extends TestCase
         $lazyList = new LazyTaskList(new TaskList());
 
         self::assertFalse($lazyList->isInitialized());
-        self::assertCount(0, $lazyList->filter(static fn (TaskInterface $task): bool => $task->getExpression() === '@reboot'));
+        self::assertCount(0, $lazyList->filter(static fn (TaskInterface $task): bool => '@reboot' === $task->getExpression()));
 
         $lazyList->add(new NullTask('foo'));
-        $filteredLazyList = $lazyList->filter(static fn (TaskInterface $task): bool => $task->getExpression() === '* * * * *');
+        $filteredLazyList = $lazyList->filter(static fn (TaskInterface $task): bool => '* * * * *' === $task->getExpression());
 
         self::assertInstanceOf(LazyInterface::class, $filteredLazyList);
         self::assertTrue($filteredLazyList->isInitialized());
@@ -126,12 +126,12 @@ final class LazyTaskListTest extends TestCase
         $list = new LazyTaskList(new TaskList());
         self::assertCount(0, $list);
 
-        $list->walk(function (TaskInterface $task): void {
+        $list->walk(static function (TaskInterface $task): void {
             $task->addTag('walk');
         });
         self::assertCount(0, $list);
 
-        $list->walk(function (TaskInterface $task): void {
+        $list->walk(static function (TaskInterface $task): void {
             $task->addTag('walk');
         });
         self::assertCount(0, $list);
@@ -146,7 +146,7 @@ final class LazyTaskListTest extends TestCase
         $task = $list->get('foo');
         self::assertCount(0, $task->getTags());
 
-        $list->walk(function (TaskInterface $task): void {
+        $list->walk(static function (TaskInterface $task): void {
             $task->addTag('walk');
         });
 

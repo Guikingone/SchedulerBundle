@@ -6,8 +6,8 @@ namespace SchedulerBundle\Task\Builder;
 
 use DateTimeZone;
 use SchedulerBundle\Expression\BuilderInterface as ExpressionBuilderInterface;
-use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use SchedulerBundle\Task\TaskInterface;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>

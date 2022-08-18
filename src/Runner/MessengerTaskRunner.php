@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SchedulerBundle\Runner;
 
-use SchedulerBundle\Worker\WorkerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use SchedulerBundle\Task\MessengerTask;
 use SchedulerBundle\Task\Output;
 use SchedulerBundle\Task\TaskInterface;
+use SchedulerBundle\Worker\WorkerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
 /**

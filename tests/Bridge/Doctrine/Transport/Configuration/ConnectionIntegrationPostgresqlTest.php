@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Tests\SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
 use Doctrine\DBAL\DriverManager;
+
+use function getenv;
+use function is_bool;
+
 use SchedulerBundle\Bridge\Doctrine\Transport\Connection;
 use SchedulerBundle\SchedulePolicy\FirstInFirstOutPolicy;
 use SchedulerBundle\SchedulePolicy\SchedulePolicyOrchestrator;
 use SchedulerBundle\Transport\Configuration\InMemoryConfiguration;
+
 use SchedulerBundle\Transport\Dsn;
 use Tests\SchedulerBundle\Bridge\Doctrine\Transport\AbstractConnectionIntegrationTest;
-
-use function getenv;
-use function is_bool;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
