@@ -106,8 +106,8 @@ final class TaskNormalizerTest extends TestCase
         self::assertContainsEquals('state', $data['body']);
         self::assertContainsEquals('timezone', $data['body']);
         self::assertContainsEquals('tracked', $data['body']);
-        self::assertSame(NullTask::class, $data['taskInternalType']);
         self::assertArrayHasKey('taskInternalType', $data);
+        self::assertSame(NullTask::class, $data['taskInternalType']);
 
         $task = $serializer->denormalize($data, TaskInterface::class, 'json');
 

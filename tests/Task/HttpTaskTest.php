@@ -57,7 +57,7 @@ final class HttpTaskTest extends TestCase
         self::assertArrayHasKey('http_version', $httpTask->getClientOptions());
         self::assertSame('2.0', $httpTask->getClientOptions()['http_version']);
 
-        $httpTask->setClientOptions([
+        $httpTask = $httpTask->setClientOptions([
             'http_version' => '1.0',
         ]);
         self::assertArrayHasKey('http_version', $httpTask->getClientOptions());
