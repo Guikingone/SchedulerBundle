@@ -71,7 +71,7 @@ final class ShellTaskTest extends TestCase
         self::assertArrayHasKey('APP_ENV', $shellTask->getEnvironmentVariables());
         self::assertSame('test', $shellTask->getEnvironmentVariables()['APP_ENV']);
 
-        $shellTask->setEnvironmentVariables([
+        $shellTask = $shellTask->setEnvironmentVariables([
             'APP_ENV' => 'prod',
         ]);
         self::assertArrayHasKey('APP_ENV', $shellTask->getEnvironmentVariables());
