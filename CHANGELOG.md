@@ -1,6 +1,33 @@
 # Changelog
 
-0.9.3
+0.10.0
+-----
+
+### Features
+
+##### Command
+
+* StopWorkerCommand introduced (#296) ([f07a8a](https://github.com/Guikingone/SchedulerBundle/commit/f07a8afe0c8e9a53c35aa02942befd070e8c2ace))
+
+### Code Refactoring
+
+##### Scheduler
+
+* Reboot handling improved (#298) ([b3e493](https://github.com/Guikingone/SchedulerBundle/commit/b3e4939aabdd80366d38a156d13eab7b3d930ce1))
+
+### Builds
+
+##### Composer
+
+* Infection extension support added (#293) ([7ae19f](https://github.com/Guikingone/SchedulerBundle/commit/7ae19f53ec5a915c075c1274cb27f744ea9542bc))
+
+##### Docker
+
+* Pin apt versions for Dockerfile (#291) ([dd3972](https://github.com/Guikingone/SchedulerBundle/commit/dd39721e4bc6f16a5c83e81122392638fefe4c6a))
+
+---
+
+0.9.4
 -----
 
 ### Bug Fixes
