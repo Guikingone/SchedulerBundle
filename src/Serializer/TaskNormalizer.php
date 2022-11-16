@@ -40,6 +40,7 @@ use function array_map;
 use function array_merge;
 use function is_array;
 use function is_object;
+use function is_string;
 use function sprintf;
 
 /**
@@ -78,42 +79,62 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
         }
 
         $dateAttributesCallback = function (?DateTimeImmutable $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null): ?string {
-            if (!$this->dateTimeNormalizer instanceof DateTimeNormalizer) {
-                throw new RuntimeException(sprintf('The datetime normalizer is not an instance of %s.', DateTimeNormalizer::class));
+            if (!$this->dateTimeNormalizer instanceof NormalizerInterface) {
+                throw new RuntimeException(sprintf('The datetime normalizer is not an instance of %s.', NormalizerInterface::class));
             }
 
-            return $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
+            $result = $innerObject instanceof DateTimeImmutable ? $this->dateTimeNormalizer->normalize($innerObject, $format, [
                 DateTimeNormalizer::FORMAT_KEY => "Y-m-d H:i:s.u",
             ]) : null;
+
+            if (!is_string($result) && null !== $result) {
+                throw new RuntimeException(sprintf('The %s does not return a string or null, "%s" returned instead.', DateTimeNormalizer::class, get_debug_type($result)));
+            }
+
+            return $result;
         };
 
         $dateIntervalAttributesCallback = function (?DateInterval $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-            if (!$this->dateIntervalNormalizer instanceof DateIntervalNormalizer) {
-                throw new RuntimeException(sprintf('The date interval normalizer is not an instance of %s.', DateIntervalNormalizer::class));
+            if (!$this->dateIntervalNormalizer instanceof NormalizerInterface) {
+                throw new RuntimeException(sprintf('The date interval normalizer is not an instance of %s.', NormalizerInterface::class));
             }
 
-            return $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
+            $result = $innerObject instanceof DateInterval ? $this->dateIntervalNormalizer->normalize($innerObject, $format, $context) : null;
+
+            if (!is_string($result) && null !== $result) {
+                throw new RuntimeException(sprintf('The %s does not return a string or null, "%s" returned instead.', DateIntervalNormalizer::class, get_debug_type($result)));
+            }
+
+            return $result;
         };
 
         $notificationTaskBagCallback = function (?NotificationTaskBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
-            if (!$this->notificationTaskBagNormalizer instanceof NotificationTaskBagNormalizer) {
-                throw new RuntimeException(sprintf('The notification task bag normalizer is not an instance of %s.', NotificationTaskBagNormalizer::class));
+            if (!$this->notificationTaskBagNormalizer instanceof NormalizerInterface) {
+                throw new RuntimeException(sprintf('The notification task bag normalizer is not an instance of %s.', NormalizerInterface::class));
             }
 
-            return $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
+            $result = $innerObject instanceof NotificationTaskBag ? $this->notificationTaskBagNormalizer->normalize($innerObject, $format, $context) : null;
+
+            if (!is_array($result) && null !== $result) {
+                throw new RuntimeException(sprintf('The %s normalizer does not return an array or null, "%s" returned instead.', NotificationTaskBagNormalizer::class, get_debug_type($result)));
+            }
+
+            return $result;
         };
 
         $taskCallbacksAttributesCallback = function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
-            if (!$this->objectNormalizer instanceof ObjectNormalizer) {
-                throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+            if (!$this->objectNormalizer instanceof NormalizerInterface) {
+                throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, NormalizerInterface::class));
             }
 
             if ($innerObject instanceof Closure) {
                 throw new InvalidArgumentException('The callback cannot be normalized as its a Closure instance');
             }
 
+            $result = is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null;
+
             return null === $innerObject ? null : [
-                'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
+                'class' => $result,
                 'method' => $innerObject[1],
                 'type' => $innerObject[0]::class,
             ];
@@ -129,11 +150,17 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 'lastExecution' => $dateAttributesCallback,
                 'scheduledAt' => $dateAttributesCallback,
                 'timezone' => function (?DateTimeZone $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?string {
-                    if (!$this->dateTimeZoneNormalizer instanceof DateTimeZoneNormalizer) {
-                        throw new RuntimeException(sprintf('The datetimezone normalizer is not an instance of %s.', DateTimeZoneNormalizer::class));
+                    if (!$this->dateTimeZoneNormalizer instanceof NormalizerInterface) {
+                        throw new RuntimeException(sprintf('The %s is not an instance of %s.', DateTimeZoneNormalizer::class, NormalizerInterface::class));
                     }
 
-                    return $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
+                    $result = $innerObject instanceof DateTimeZone ? $this->dateTimeZoneNormalizer->normalize($innerObject, $format, $context) : null;
+
+                    if (!is_string($result) && null !== $result) {
+                        throw new RuntimeException(sprintf('The %s normalizer does not return an array or null, "%s" returned instead.', DateTimeZoneNormalizer::class, get_debug_type($result)));
+                    }
+
+                    return $result;
                 },
                 'beforeScheduling' => $taskCallbacksAttributesCallback,
                 'afterScheduling' => $taskCallbacksAttributesCallback,
@@ -152,8 +179,8 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     'importance' => $innerObject->getImportance(),
                 ],
                 'message' => function ($innerObject, MessengerTask $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    if (!$this->objectNormalizer instanceof ObjectNormalizer) {
-                        throw new RuntimeException(sprintf('The object normalizer is not an instance of %s.', ObjectNormalizer::class));
+                    if (!$this->objectNormalizer instanceof NormalizerInterface) {
+                        throw new RuntimeException(sprintf('The %s is not an instance of %s.', ObjectNormalizer::class, NormalizerInterface::class));
                     }
 
                     return [
@@ -162,12 +189,18 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     ];
                 },
                 'callback' => function ($innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): array {
-                    if (!$this->objectNormalizer instanceof ObjectNormalizer) {
-                        throw new RuntimeException(sprintf('The object normalizer is not an instance of %s.', ObjectNormalizer::class));
+                    if (!$this->objectNormalizer instanceof NormalizerInterface) {
+                        throw new RuntimeException(sprintf('The %s is not an instance of %s.', ObjectNormalizer::class, NormalizerInterface::class));
+                    }
+
+                    $result = is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null;
+
+                    if (!is_array($result) && null !== $result) {
+                        throw new RuntimeException(sprintf('The %s normalizer does not return an array or null, "%s" returned instead.', ObjectNormalizer::class, get_debug_type($result)));
                     }
 
                     return [
-                        'class' => is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null,
+                        'class' => $result,
                         'method' => $innerObject[1],
                         'type' => $innerObject[0]::class,
                     ];
@@ -178,11 +211,17 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                     ],
                 ]), $innerObject->toArray(keepKeys: false)),
                 'accessLockBag' => function (?AccessLockBag $innerObject, TaskInterface $outerObject, string $attributeName, string $format = null, array $context = []): ?array {
-                    if (!$this->accessLockBagNormalizer instanceof AccessLockBagNormalizer) {
-                        throw new RuntimeException(sprintf('The access lock bag normalizer is not an instance of %s.', AccessLockBagNormalizer::class));
+                    if (!$this->accessLockBagNormalizer instanceof NormalizerInterface) {
+                        throw new RuntimeException(sprintf('The %s is not an instance of %s.', AccessLockBagNormalizer::class, NormalizerInterface::class));
                     }
 
-                    return $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null;
+                    $result = $innerObject instanceof AccessLockBag ? $this->accessLockBagNormalizer->normalize($innerObject, $format, $context) : null;
+
+                    if (!is_array($result) && null !== $result) {
+                        throw new RuntimeException(sprintf('The %s normalizer does not return an array or null, "%s" returned instead.', AccessLockBagNormalizer::class, get_debug_type($result)));
+                    }
+
+                    return $result;
                 },
             ],
         ];
