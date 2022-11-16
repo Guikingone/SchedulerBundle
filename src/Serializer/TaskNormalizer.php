@@ -131,7 +131,7 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
                 throw new InvalidArgumentException('The callback cannot be normalized as its a Closure instance');
             }
 
-            $result = is_object($innerObject[0]) ? $this->objectNormalizer->normalize($innerObject[0], $format, $context) : null;
+            $result = is_object($innerObject) ? $this->objectNormalizer->normalize($innerObject, $format, $context) : null;
 
             return null === $innerObject ? null : [
                 'class' => $result,
