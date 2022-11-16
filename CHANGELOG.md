@@ -1,5 +1,22 @@
 # Changelog
 
+0.10.1
+-----
+
+### Builds
+
+##### Deps
+
+* Deps improved (#300) ([f7fca6](https://github.com/Guikingone/SchedulerBundle/commit/f7fca660aee9dd8366c472b25fa8ad9d9db50000))
+
+### Documentation
+
+##### Best practices
+
+* best_practices.md updated (#301) ([005cc3](https://github.com/Guikingone/SchedulerBundle/commit/005cc3bf9edf6a6fc4f84d0b3fb02528bd344df0))
+
+---
+
 0.10.0
 -----
 
