@@ -143,7 +143,7 @@
         "phpstan/phpstan-symfony": "^1.2.16",
         "phpunit/phpunit": "^9.5.26",
         "psr/cache": "^1.0 || ^2.0 || ^3.0",
-        "rector/rector": "0.14.6",
+        "rector/rector": "0.14.8",
         "symfony/cache": "^5.4 || ^6.0",
         "symfony/dependency-injection": "^5.4 || ^6.0",
         "symfony/error-handler": "^5.4 || ^6.0",

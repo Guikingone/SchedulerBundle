@@ -133,7 +133,7 @@ final class Dsn
     {
         preg_match('#\(([^()]|(?R))*\)#', $dsn, $matches);
 
-        if (0 === count($matches)) {
+        if ([] === $matches) {
             return [];
         }
 
