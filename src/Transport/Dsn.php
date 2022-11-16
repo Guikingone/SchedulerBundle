@@ -7,7 +7,6 @@ namespace SchedulerBundle\Transport;
 use SchedulerBundle\Exception\InvalidArgumentException;
 
 use function array_merge;
-use function count;
 use function parse_str;
 use function parse_url;
 use function preg_match;
