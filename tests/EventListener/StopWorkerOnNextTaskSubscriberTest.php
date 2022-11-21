@@ -7,6 +7,7 @@ namespace Tests\SchedulerBundle\EventListener;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -41,6 +42,22 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
         $subscriber = new StopWorkerOnNextTaskSubscriber(stopWorkerCacheItemPool: $adapter, logger: $logger);
         $subscriber->onWorkerStarted();
         $subscriber->onWorkerRunning(new WorkerRunningEvent(worker: $worker, isIdle: true));
+    }
+
+    public function testSubscriberCannotStopSleepingIdleWorker(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::never())->method('stop');
+
+        $adapter = new ArrayAdapter();
+        $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
+
+        $subscriber = new StopWorkerOnNextTaskSubscriber(stopWorkerCacheItemPool: $adapter, logger: $logger);
+        $subscriber->onWorkerStarted();
+        $subscriber->onWorkerSleeping(new WorkerSleepingEvent(sleepDuration: 10, worker: $worker));
     }
 
     public function testSubscriberCannotStopRunningWorkerWithoutCacheKey(): void

@@ -8,6 +8,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\WorkerRunningEvent;
+use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -41,12 +42,18 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$this->shouldStop()) {
+        $this->doStopWorker($event);
+
+        $this->logger->info(message: 'Worker will stop once the next task is executed');
+    }
+
+    public function onWorkerSleeping(WorkerSleepingEvent $event): void
+    {
+        if ($event->getSleepDuration() > 0) {
             return;
         }
 
-        $worker = $event->getWorker();
-        $worker->stop();
+        $this->doStopWorker($event);
 
         $this->logger->info(message: 'Worker will stop once the next task is executed');
     }
@@ -56,7 +63,18 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         return [
             WorkerStartedEvent::class => 'onWorkerStarted',
             WorkerRunningEvent::class => 'onWorkerRunning',
+            WorkerSleepingEvent::class => 'onWorkerSleeping',
         ];
+    }
+
+    private function doStopWorker(WorkerRunningEvent|WorkerSleepingEvent $event): void
+    {
+        if (!$this->shouldStop()) {
+            return;
+        }
+
+        $worker = $event->getWorker();
+        $worker->stop();
     }
 
     private function shouldStop(): bool

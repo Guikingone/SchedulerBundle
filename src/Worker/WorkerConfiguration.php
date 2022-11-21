@@ -41,7 +41,6 @@ final class WorkerConfiguration
         $self->shouldRetrieveTasksLazily = false;
         $self->isRunning = false;
         $self->lastExecutedTask = null;
-        $self->forkedFrom = null;
         $self->mustStrictlyCheckDate = false;
         $self->executionPolicy = 'default';
 
