@@ -49,13 +49,16 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
 
     public function onWorkerSleeping(WorkerSleepingEvent $event): void
     {
-        if ($event->getSleepDuration() > 0) {
+        $worker = $event->getWorker();
+        $configuration = $worker->getConfiguration();
+
+        if (!$event->getSleepDuration() > 0 || !$configuration->isSleepingUntilNextMinute()) {
             return;
         }
 
         $this->doStopWorker($event);
 
-        $this->logger->info(message: 'Worker will stop once the next task is executed');
+        $this->logger->info(message: 'Worker will stop once the sleeping period is over');
     }
 
     public static function getSubscribedEvents(): array
