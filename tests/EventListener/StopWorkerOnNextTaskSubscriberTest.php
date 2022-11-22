@@ -10,6 +10,7 @@ use SchedulerBundle\Event\WorkerRunningEvent;
 use SchedulerBundle\Event\WorkerSleepingEvent;
 use SchedulerBundle\Event\WorkerStartedEvent;
 use SchedulerBundle\EventListener\StopWorkerOnNextTaskSubscriber;
+use SchedulerBundle\Worker\WorkerConfiguration;
 use SchedulerBundle\Worker\WorkerInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
@@ -35,6 +36,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $adapter = new ArrayAdapter();
         $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
