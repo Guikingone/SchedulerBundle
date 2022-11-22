@@ -52,7 +52,7 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $worker = $event->getWorker();
         $configuration = $worker->getConfiguration();
 
-        if (!($event->getSleepDuration() > 0) || !$configuration->isSleepingUntilNextMinute()) {
+        if ($configuration->shouldStop()) {
             return;
         }
 

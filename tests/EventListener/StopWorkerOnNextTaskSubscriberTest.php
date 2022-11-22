@@ -23,10 +23,13 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
+        self::assertCount(2, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
         self::assertArrayHasKey(WorkerStartedEvent::class, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerStarted', StopWorkerOnNextTaskSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerRunning', StopWorkerOnNextTaskSubscriber::getSubscribedEvents()[WorkerRunningEvent::class]);
+        self::assertArrayHasKey(WorkerSleepingEvent::class, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
+        self::assertSame('onWorkerSleeping', StopWorkerOnNextTaskSubscriber::getSubscribedEvents()[WorkerSleepingEvent::class]);
     }
 
     public function testSubscriberCannotStopIdleWorker(): void
@@ -45,14 +48,17 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
         $subscriber->onWorkerRunning(new WorkerRunningEvent(worker: $worker, isIdle: true));
     }
 
-    public function testSubscriberCannotStopSleepingIdleWorker(): void
+    public function testSubscriberCannotStopSleepingWorkerWhileItShouldBeStoppedSoon(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+        $logger->expects(self::never())->method('info')->with(self::equalTo('Worker will stop once the sleeping period is over'));
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->stop();
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
-        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
+        $worker->expects(self::once())->method('getConfiguration')->willReturn($configuration);
 
         $adapter = new ArrayAdapter();
         $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
@@ -105,5 +111,25 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
         $subscriber = new StopWorkerOnNextTaskSubscriber(stopWorkerCacheItemPool: $adapter, logger: $logger);
         $subscriber->onWorkerStarted();
         $subscriber->onWorkerRunning(new WorkerRunningEvent(worker: $worker, isIdle: false));
+    }
+
+    public function testSubscriberCanStopSleepingWorker(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info')->with(self::equalTo('Worker will stop once the sleeping period is over'));
+
+        $configuration = WorkerConfiguration::create();
+        $configuration->stop();
+
+        $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method('stop');
+        $worker->expects(self::once())->method('getConfiguration')->willReturn($configuration);
+
+        $adapter = new ArrayAdapter();
+        $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
+
+        $subscriber = new StopWorkerOnNextTaskSubscriber(stopWorkerCacheItemPool: $adapter, logger: $logger);
+        $subscriber->onWorkerStarted();
+        $subscriber->onWorkerSleeping(new WorkerSleepingEvent(sleepDuration: 10, worker: $worker));
     }
 }
