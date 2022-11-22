@@ -23,7 +23,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
 {
     public function testSubscriberIsConfigured(): void
     {
-        self::assertCount(2, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
+        self::assertCount(3, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
         self::assertArrayHasKey(WorkerStartedEvent::class, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
         self::assertSame('onWorkerStarted', StopWorkerOnNextTaskSubscriber::getSubscribedEvents()[WorkerStartedEvent::class]);
         self::assertArrayHasKey(WorkerRunningEvent::class, StopWorkerOnNextTaskSubscriber::getSubscribedEvents());
@@ -118,12 +118,9 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info')->with(self::equalTo('Worker will stop once the sleeping period is over'));
 
-        $configuration = WorkerConfiguration::create();
-        $configuration->stop();
-
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
-        $worker->expects(self::once())->method('getConfiguration')->willReturn($configuration);
+        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
 
         $adapter = new ArrayAdapter();
         $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
