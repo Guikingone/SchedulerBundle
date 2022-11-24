@@ -118,8 +118,8 @@ final class Worker implements WorkerInterface
 
             $lock = $this->lockFactory->createLockFromKey(
                 key: $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
-                ? $accessLockBag->getKey()
-                : TaskLockBagMiddleware::createKey($task)
+                    ? $accessLockBag->getKey()
+                    : TaskLockBagMiddleware::createKey($task)
             );
 
             $lock->release();
