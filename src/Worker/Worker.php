@@ -186,6 +186,8 @@ final class Worker implements WorkerInterface
      */
     public function stop(): void
     {
+        $this->configuration->mustSleepUntilNextMinute(sleepUntilNextMinute: false);
+        $this->configuration->mustStrictlyCheckDate(mustStrictlyCheckDate: false);
         $this->configuration->stop();
     }
 
