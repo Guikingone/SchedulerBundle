@@ -6,6 +6,7 @@ namespace SchedulerBundle\Worker;
 
 use DateTimeImmutable;
 use Exception;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Event\TaskExecutedEvent;
@@ -56,7 +57,8 @@ final class Worker implements WorkerInterface
         private WorkerMiddlewareStack $middlewareStack,
         private EventDispatcherInterface $eventDispatcher,
         private LockFactory $lockFactory,
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger = null,
+        private ?ClockInterface $clock = null
     ) {
         $this->configuration = WorkerConfiguration::create();
         $this->logger = $logger ?? new NullLogger();
@@ -292,15 +294,15 @@ final class Worker implements WorkerInterface
                 $this->configuration->setCurrentlyExecutedTask(task: $task);
                 $this->eventDispatcher->dispatch(event: new WorkerRunningEvent(worker: $this));
                 $this->eventDispatcher->dispatch(event: new TaskExecutingEvent(task: $task, worker: $this, currentTasks: $taskList));
-                $task->setArrivalTime(dateTimeImmutable: new DateTimeImmutable());
-                $task->setExecutionStartTime(dateTimeImmutable: new DateTimeImmutable());
+                $task->setArrivalTime(dateTimeImmutable: $this->getCurrentDateAsDatetimeImmutable());
+                $task->setExecutionStartTime(dateTimeImmutable: $this->getCurrentDateAsDatetimeImmutable());
                 $this->taskExecutionTracker->startTracking(task: $task);
 
                 $output = $runner->run(task: $task, worker: $this);
 
                 $this->taskExecutionTracker->endTracking(task: $task);
-                $task->setExecutionEndTime(dateTimeImmutable: new DateTimeImmutable());
-                $task->setLastExecution(dateTimeImmutable: new DateTimeImmutable());
+                $task->setExecutionEndTime(dateTimeImmutable: $this->getCurrentDateAsDatetimeImmutable());
+                $task->setLastExecution(dateTimeImmutable: $this->getCurrentDateAsDatetimeImmutable());
 
                 $this->defineTaskExecutionState(task: $task, output: $output);
 
@@ -364,10 +366,19 @@ final class Worker implements WorkerInterface
      */
     private function getSleepDuration(): int
     {
-        $nextMinute = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $nextMinute->setTime(hour: (int) $nextMinute->format('H'), minute: (int) $nextMinute->format('i'));
+        $schedulerTimezone = $this->scheduler->getTimezone();
 
-        return (new DateTimeImmutable(datetime: 'now', timezone: $this->scheduler->getTimezone()))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
+        $currentDatetimeMinusOneMinute = $this->clock instanceof ClockInterface
+            ? $this->clock->now()->setTimezone(timezone: $schedulerTimezone)->modify('-1 minute')
+            : new DateTimeImmutable(datetime: '+ 1 minute', timezone: $schedulerTimezone)
+        ;
+
+        $updatedNextExecutionDate = $currentDatetimeMinusOneMinute->setTime(
+            hour: (int) $currentDatetimeMinusOneMinute->format('H'),
+            minute: (int) $currentDatetimeMinusOneMinute->format('i')
+        );
+
+        return (new DateTimeImmutable(datetime: 'now', timezone: $schedulerTimezone))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }
 
     private function defineTaskExecutionState(TaskInterface $task, Output $output): void
@@ -377,5 +388,13 @@ final class Worker implements WorkerInterface
         }
 
         $task->setExecutionState(executionState: Output::ERROR === $output->getType() ? TaskInterface::ERRORED : TaskInterface::SUCCEED);
+    }
+
+    private function getCurrentDateAsDatetimeImmutable(): DateTimeImmutable
+    {
+        return $this->clock instanceof ClockInterface
+            ? $this->clock->now()
+            : new DateTimeImmutable()
+        ;
     }
 }

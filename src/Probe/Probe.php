@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Probe;
 
 use DateTimeImmutable;
+use Psr\Clock\ClockInterface;
 use SchedulerBundle\SchedulerInterface;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
@@ -17,7 +18,8 @@ final class Probe implements ProbeInterface
 {
     public function __construct(
         private SchedulerInterface $scheduler,
-        private WorkerInterface $worker
+        private WorkerInterface $worker,
+        private ?ClockInterface $clock = null,
     ) {
     }
 
@@ -26,14 +28,23 @@ final class Probe implements ProbeInterface
      */
     public function getExecutedTasks(): int
     {
-        return $this->scheduler->getTasks()->filter(filter: static function (TaskInterface $task): bool {
+        $tasks = $this->scheduler->getTasks();
+
+        $filteredTasks = $tasks->filter(filter: function (TaskInterface $task): bool {
             $lastExecutionDate = $task->getLastExecution();
             if (!$lastExecutionDate instanceof DateTimeImmutable) {
                 return false;
             }
 
-            return $lastExecutionDate->format(format: 'Y-m-d h:i') === (new DateTimeImmutable())->format(format: 'Y-m-d h:i');
-        })->count();
+            $currentDate = $this->clock instanceof ClockInterface
+                ? $this->clock->now()->format(format: 'Y-m-d h:i')
+                : (new DateTimeImmutable())->format(format: 'Y-m-d h:i')
+            ;
+
+            return $lastExecutionDate->format(format: 'Y-m-d h:i') === $currentDate;
+        });
+
+        return $filteredTasks->count();
     }
 
     /**
@@ -41,7 +52,9 @@ final class Probe implements ProbeInterface
      */
     public function getFailedTasks(): int
     {
-        return $this->worker->getFailedTasks()->count();
+        $failedTasks = $this->worker->getFailedTasks();
+
+        return $failedTasks->count();
     }
 
     /**
@@ -49,6 +62,8 @@ final class Probe implements ProbeInterface
      */
     public function getScheduledTasks(): int
     {
-        return $this->scheduler->getTasks()->filter(filter: static fn (TaskInterface $task): bool => null !== $task->getScheduledAt())->count();
+        $tasks = $this->scheduler->getTasks();
+
+        return $tasks->filter(filter: static fn (TaskInterface $task): bool => null !== $task->getScheduledAt())->count();
     }
 }
