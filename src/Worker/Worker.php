@@ -358,8 +358,8 @@ final class Worker implements WorkerInterface
      */
     private function getSleepDuration(): int
     {
-        $dateTimeImmutable = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $dateTimeImmutable->setTime(hour: (int) $dateTimeImmutable->format('H'), minute: (int) $dateTimeImmutable->format('i'));
+        $nextMinute = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
+        $updatedNextExecutionDate = $nextMinute->setTime(hour: (int) $nextMinute->format('H'), minute: (int) $nextMinute->format('i'));
 
         return (new DateTimeImmutable(datetime: 'now', timezone: $this->scheduler->getTimezone()))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }

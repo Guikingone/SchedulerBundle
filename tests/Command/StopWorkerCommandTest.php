@@ -51,7 +51,7 @@ final class StopWorkerCommandTest extends TestCase
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
         self::assertStringContainsString('An error occurred while trying to stop the worker:', $tester->getDisplay());
         self::assertStringContainsString('Error', $tester->getDisplay());
-        self::assertStringNotContainsString('The worker will be stopped after the current task', $tester->getDisplay());
+        self::assertStringNotContainsString('The worker will be stopped after executing the current task or once the sleep phase is over', $tester->getDisplay());
     }
 
     public function testCommandCanTriggerWorkerStop(): void
@@ -65,7 +65,7 @@ final class StopWorkerCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertStringNotContainsString('An error occurred while trying to stop the worker:', $tester->getDisplay());
-        self::assertStringContainsString('The worker will be stopped after the current task', $tester->getDisplay());
+        self::assertStringContainsString('The worker will be stopped after executing the current task or once the sleep phase is over', $tester->getDisplay());
         self::assertTrue($adapter->getItem(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY)->isHit());
         self::assertIsFloat($adapter->getItem(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY)->get());
     }
