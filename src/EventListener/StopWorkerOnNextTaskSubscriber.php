@@ -42,7 +42,7 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $worker->stop();
 
         $this->stopWorkerCacheItemPool->deleteItem(key: self::STOP_NEXT_TASK_TIMESTAMP_KEY);
-        $this->logger->info(message: 'Worker will be stopped');
+        $this->logger->info(message: 'The worker will be stopped');
     }
 
     public function onWorkerRunning(WorkerRunningEvent $event): void
@@ -61,7 +61,7 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $worker = $event->getWorker();
         $worker->stop();
 
-        $this->logger->info(message: 'Worker will stop once the next task is executed');
+        $this->logger->info(message: 'The worker will stop once the next task is executed');
     }
 
     public static function getSubscribedEvents(): array

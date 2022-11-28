@@ -32,7 +32,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
     public function testSubscriberCannotStopIdleWorker(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+        $logger->expects(self::never())->method('info')->with(self::equalTo('The worker will stop once the next task is executed'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
@@ -48,7 +48,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
     public function testSubscriberCannotStopRunningWorkerWithoutCacheKey(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+        $logger->expects(self::never())->method('info')->with(self::equalTo('The worker will stop once the next task is executed'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::never())->method('stop');
@@ -77,7 +77,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
     public function testSubscriberCanStopRunningWorker(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('info')->with(self::equalTo('Worker will stop once the next task is executed'));
+        $logger->expects(self::once())->method('info')->with(self::equalTo('The worker will stop once the next task is executed'));
 
         $worker = $this->createMock(WorkerInterface::class);
         $worker->expects(self::once())->method('stop');
