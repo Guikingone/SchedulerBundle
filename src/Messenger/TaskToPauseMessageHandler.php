@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace SchedulerBundle\Messenger;
 
 use SchedulerBundle\SchedulerInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskToPauseMessageHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+final class TaskToPauseMessageHandler
 {
     public function __construct(private SchedulerInterface $scheduler)
     {

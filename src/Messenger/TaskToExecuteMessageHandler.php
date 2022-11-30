@@ -11,7 +11,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SchedulerBundle\Worker\WorkerConfiguration;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use SchedulerBundle\Worker\WorkerInterface;
 
 use function sprintf;
@@ -19,7 +19,8 @@ use function sprintf;
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskToExecuteMessageHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+final class TaskToExecuteMessageHandler
 {
     private LoggerInterface $logger;
 
