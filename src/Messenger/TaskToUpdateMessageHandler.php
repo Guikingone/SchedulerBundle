@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace SchedulerBundle\Messenger;
 
 use SchedulerBundle\Transport\TransportInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * @author Guillaume Loulier <contact@guillaumeloulier.fr>
  */
-final class TaskToUpdateMessageHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+final class TaskToUpdateMessageHandler
 {
     public function __construct(private TransportInterface $transport)
     {
