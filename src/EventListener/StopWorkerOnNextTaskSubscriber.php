@@ -58,7 +58,6 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $worker = $event->getWorker();
         $worker->stop();
 
         $this->logger->info(message: 'The worker will stop once the next task is executed');
