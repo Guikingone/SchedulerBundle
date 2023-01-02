@@ -56,16 +56,21 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
                     continue;
                 } finally {
-                    $event = $stopWatch->stop('quantum');
-
-                    $duration = $event->getDuration() / 1000;
-                    if ($duration > ($this->registry->count() * $this->configuration->get('quantum'))) {
-                        $this->sleepingTransports->attach($transport);
-                    }
+                    $this->storeSleepingTransports($stopWatch, $transport);
                 }
             }
         }
 
         throw new TransportException('All the transports failed to execute the requested action');
+    }
+
+    private function storeSleepingTransports(Stopwatch $stopWatch, TransportInterface $transport): void
+    {
+        $event = $stopWatch->stop('quantum');
+
+        $duration = $event->getDuration() / 1000;
+        if ($duration > ($this->registry->count() * $this->configuration->get('quantum'))) {
+            $this->sleepingTransports->attach($transport);
+        }
     }
 }

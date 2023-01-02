@@ -153,7 +153,8 @@
         "symfony/mercure": "^0.5.3",
         "symfony/messenger": "^5.4 || ^6.0",
         "symfony/notifier": "^5.4 || ^6.0",
-        "symfony/rate-limiter": "^5.4 || ^6.0"
+        "symfony/rate-limiter": "^5.4 || ^6.0",
+        "tomasvotruba/cognitive-complexity": "0.0.5.72"
     },
     "suggest": {
         "symfony/http-client": "For dispatching http tasks and / or using external probe clients",

@@ -4,6 +4,7 @@ includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
     - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/tomasvotruba/cognitive-complexity/config/extension.neon
 
 parameters:
     level: 8
@@ -18,3 +19,6 @@ parameters:
         - '#Call to static method suspend\(\) on an unknown class Fiber#'
         # The following can be dropped once Symfony 7.0+ will be required
         - '#Method .* has parameter \$context with no value type specified in iterable type array.#'
+    cognitive_complexity:
+        class: 50
+        function: 8
