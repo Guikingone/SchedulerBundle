@@ -50,7 +50,11 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $worker = $event->getWorker();
         $workerConfiguration = $worker->getConfiguration();
 
-        if ($event->isIdle() || $workerConfiguration->shouldStop()) {
+        if ($event->isIdle()) {
+            return;
+        }
+
+        if ($workerConfiguration->shouldStop()) {
             return;
         }
 
@@ -78,10 +82,15 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         }
 
         $cacheItem = $this->stopWorkerCacheItemPool->getItem(key: self::STOP_NEXT_TASK_TIMESTAMP_KEY);
+
         if (!$cacheItem->isHit()) {
             return false;
         }
 
-        return ($this->workerStartTimestamp > $cacheItem->get() || $this->workerStartTimestamp < $cacheItem->get());
+        if ($this->workerStartTimestamp > $cacheItem->get()) {
+            return true;
+        }
+
+        return $this->workerStartTimestamp < $cacheItem->get();
     }
 }
