@@ -319,12 +319,12 @@ final class Worker implements WorkerInterface
 
     protected function shouldStop(TaskListInterface $taskList): bool
     {
-        if ($this->configuration->isSleepingUntilNextMinute()) {
-            return false;
-        }
-
         if ($this->configuration->shouldStop()) {
             return true;
+        }
+
+        if ($this->configuration->isSleepingUntilNextMinute()) {
+            return false;
         }
 
         if (0 === $this->configuration->getExecutedTasksCount()) {
