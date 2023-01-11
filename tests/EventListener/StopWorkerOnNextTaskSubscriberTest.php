@@ -83,6 +83,7 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
         $logger->expects(self::once())->method('info')->with(self::equalTo('The worker will be stopped'));
 
         $worker = $this->createMock(WorkerInterface::class);
+        $worker->expects(self::once())->method(constraint: 'getConfiguration')->willReturn(value: WorkerConfiguration::create());
         $worker->expects(self::once())->method('stop');
 
         $adapter = new ArrayAdapter();

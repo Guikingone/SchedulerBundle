@@ -90,8 +90,6 @@ final class WorkerLifecycleSubscriber implements EventSubscriberInterface
         $worker = $workerStoppedEvent->getWorker();
         $lastExecutedTask = $worker->getLastExecutedTask();
 
-        dd(debug_backtrace());
-
         $this->logger->info('The worker has been stopped', [
             'failedTasks' => $worker->getFailedTasks()->count(),
             'lastExecutedTask' => $lastExecutedTask instanceof TaskInterface ? $lastExecutedTask->getName() : null,
