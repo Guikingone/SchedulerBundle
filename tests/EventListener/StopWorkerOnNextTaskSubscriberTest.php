@@ -32,14 +32,14 @@ final class StopWorkerOnNextTaskSubscriberTest extends TestCase
     public function testSubscriberCannotStopIdleWorker(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::never())->method('info')->with(self::equalTo('The worker will stop once the next task is executed'));
+        $logger->expects(self::never())->method(constraint: 'info')->with(self::equalTo(value: 'The worker will stop once the next task is executed'));
 
         $worker = $this->createMock(WorkerInterface::class);
-        $worker->expects(self::once())->method('getConfiguration')->willReturn(WorkerConfiguration::create());
-        $worker->expects(self::never())->method('stop');
+        $worker->expects(self::once())->method(constraint: 'getConfiguration')->willReturn(WorkerConfiguration::create());
+        $worker->expects(self::never())->method(constraint: 'stop');
 
         $adapter = new ArrayAdapter();
-        $adapter->get(StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, static fn (): float => microtime(as_float: true));
+        $adapter->get(key: StopWorkerOnNextTaskSubscriber::STOP_NEXT_TASK_TIMESTAMP_KEY, callback: static fn (): float => microtime(as_float: true));
 
         $subscriber = new StopWorkerOnNextTaskSubscriber(stopWorkerCacheItemPool: $adapter, logger: $logger);
         $subscriber->onWorkerStarted(new WorkerStartedEvent(worker: $worker));

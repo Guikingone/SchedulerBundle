@@ -87,10 +87,6 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
             return false;
         }
 
-        if ($this->workerStartTimestamp > $cacheItem->get()) {
-            return true;
-        }
-
         return $this->workerStartTimestamp < $cacheItem->get();
     }
 }

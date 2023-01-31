@@ -68,6 +68,10 @@ final class Worker implements WorkerInterface
      */
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void
     {
+        if ($this->configuration->shouldStop()) {
+            return;
+        }
+
         if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException(message: 'No runner found');
         }
@@ -100,6 +104,8 @@ final class Worker implements WorkerInterface
 
             if ($this->configuration->isSleepingUntilNextMinute()) {
                 $this->sleep();
+                $this->stop();
+
                 $this->execute($this->configuration, ...$tasks);
             }
         }
