@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Throwable;
 
+use function is_array;
 use function sprintf;
 
 /**
@@ -80,6 +81,10 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     {
         if (!$this->objectNormalizer instanceof DenormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
+        if (!is_array($data)) {
+            throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as the data is not an array.', __METHOD__));
         }
 
         return $this->objectNormalizer->denormalize(data: $data, type: $type, format: $format, context: [

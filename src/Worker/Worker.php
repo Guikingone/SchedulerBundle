@@ -68,6 +68,10 @@ final class Worker implements WorkerInterface
      */
     public function execute(WorkerConfiguration $configuration, TaskInterface ...$tasks): void
     {
+        if ($this->configuration->shouldStop()) {
+            return;
+        }
+
         if (0 === $this->runnerRegistry->count()) {
             throw new UndefinedRunnerException(message: 'No runner found');
         }
@@ -100,6 +104,8 @@ final class Worker implements WorkerInterface
 
             if ($this->configuration->isSleepingUntilNextMinute()) {
                 $this->sleep();
+                $this->stop();
+
                 $this->execute($this->configuration, ...$tasks);
             }
         }
@@ -118,8 +124,8 @@ final class Worker implements WorkerInterface
 
             $lock = $this->lockFactory->createLockFromKey(
                 key: $accessLockBag instanceof AccessLockBag && $accessLockBag->getKey() instanceof Key
-                ? $accessLockBag->getKey()
-                : TaskLockBagMiddleware::createKey($task)
+                    ? $accessLockBag->getKey()
+                    : TaskLockBagMiddleware::createKey($task)
             );
 
             $lock->release();
@@ -186,6 +192,8 @@ final class Worker implements WorkerInterface
      */
     public function stop(): void
     {
+        $this->configuration->mustSleepUntilNextMinute(sleepUntilNextMinute: false);
+        $this->configuration->mustStrictlyCheckDate(mustStrictlyCheckDate: false);
         $this->configuration->stop();
     }
 
@@ -317,12 +325,12 @@ final class Worker implements WorkerInterface
 
     protected function shouldStop(TaskListInterface $taskList): bool
     {
-        if ($this->configuration->isSleepingUntilNextMinute()) {
-            return false;
-        }
-
         if ($this->configuration->shouldStop()) {
             return true;
+        }
+
+        if ($this->configuration->isSleepingUntilNextMinute()) {
+            return false;
         }
 
         if (0 === $this->configuration->getExecutedTasksCount()) {
@@ -356,8 +364,8 @@ final class Worker implements WorkerInterface
      */
     private function getSleepDuration(): int
     {
-        $dateTimeImmutable = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
-        $updatedNextExecutionDate = $dateTimeImmutable->setTime(hour: (int) $dateTimeImmutable->format('H'), minute: (int) $dateTimeImmutable->format('i'));
+        $nextMinute = new DateTimeImmutable(datetime: '+ 1 minute', timezone: $this->scheduler->getTimezone());
+        $updatedNextExecutionDate = $nextMinute->setTime(hour: (int) $nextMinute->format('H'), minute: (int) $nextMinute->format('i'));
 
         return (new DateTimeImmutable(datetime: 'now', timezone: $this->scheduler->getTimezone()))->diff(targetObject: $updatedNextExecutionDate)->s + $this->configuration->getSleepDurationDelay();
     }

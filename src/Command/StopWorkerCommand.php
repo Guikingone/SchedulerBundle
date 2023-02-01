@@ -63,7 +63,11 @@ final class StopWorkerCommand extends Command
             return Command::FAILURE;
         }
 
-        $style->success(message: 'The worker will be stopped after the current task');
+        $style->success(message: [
+            'The worker will be stopped according the following conditions:',
+            ' - The current task has been executed',
+            ' - The sleep phase is over',
+        ]);
 
         return Command::SUCCESS;
     }

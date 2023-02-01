@@ -30,16 +30,9 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $this->logger = $logger ?? new NullLogger();
     }
 
-    public function onWorkerStarted(): void
+    public function onWorkerStarted(WorkerStartedEvent $event): void
     {
         $this->workerStartTimestamp = microtime(as_float: true);
-    }
-
-    public function onWorkerRunning(WorkerRunningEvent $event): void
-    {
-        if ($event->isIdle()) {
-            return;
-        }
 
         if (!$this->shouldStop()) {
             return;
@@ -48,7 +41,30 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         $worker = $event->getWorker();
         $worker->stop();
 
-        $this->logger->info(message: 'Worker will stop once the next task is executed');
+        $this->stopWorkerCacheItemPool->deleteItem(key: self::STOP_NEXT_TASK_TIMESTAMP_KEY);
+        $this->logger->info(message: 'The worker will be stopped');
+    }
+
+    public function onWorkerRunning(WorkerRunningEvent $event): void
+    {
+        $worker = $event->getWorker();
+        $workerConfiguration = $worker->getConfiguration();
+
+        if ($event->isIdle()) {
+            return;
+        }
+
+        if ($workerConfiguration->shouldStop()) {
+            return;
+        }
+
+        if (!$this->shouldStop()) {
+            return;
+        }
+
+        $worker->stop();
+
+        $this->logger->info(message: 'The worker will stop once the next task is executed');
     }
 
     public static function getSubscribedEvents(): array
@@ -66,6 +82,7 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
         }
 
         $cacheItem = $this->stopWorkerCacheItemPool->getItem(key: self::STOP_NEXT_TASK_TIMESTAMP_KEY);
+
         if (!$cacheItem->isHit()) {
             return false;
         }

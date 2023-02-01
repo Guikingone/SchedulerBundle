@@ -38,6 +38,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function get_debug_type;
 use function is_array;
 use function is_object;
 use function is_string;
@@ -255,6 +256,10 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     {
         if (!$this->objectNormalizer instanceof DenormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
+        }
+
+        if (!is_array($data)) {
+            throw new RuntimeException(sprintf('The data to denormalize must be an array, "%s" given.', get_debug_type($data)));
         }
 
         $objectType = $data[self::NORMALIZATION_DISCRIMINATOR];
