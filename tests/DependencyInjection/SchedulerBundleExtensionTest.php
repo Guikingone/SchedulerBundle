@@ -1284,7 +1284,11 @@ final class SchedulerBundleExtensionTest extends TestCase
         self::assertSame(LoggerInterface::class, (string) $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(1));
         self::assertSame(ContainerInterface::NULL_ON_INVALID_REFERENCE, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getArgument(1)->getInvalidBehavior());
         self::assertTrue($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->hasTag('kernel.event_subscriber'));
+        self::assertTrue($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->hasTag('monolog.logger'));
+        self::assertArrayHasKey('channel', $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getTag('monolog.logger')[0]);
+        self::assertSame('scheduler', $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getTag('monolog.logger')[0]['channel']);
         self::assertTrue($container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->hasTag('container.preload'));
+        self::assertArrayHasKey('class', $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getTag('container.preload')[0]);
         self::assertSame(StopWorkerOnNextTaskSubscriber::class, $container->getDefinition(StopWorkerOnNextTaskSubscriber::class)->getTag('container.preload')[0]['class']);
     }
 

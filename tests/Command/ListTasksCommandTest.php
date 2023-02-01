@@ -139,21 +139,21 @@ final class ListTasksCommandTest extends TestCase
      */
     public function testCommandCanListTaskWithSpecificState(string $stateOption): void
     {
-        $task = $this->createMock(TaskInterface::class);
-        $task->expects(self::exactly(3))->method('getName')->willReturn('foo');
-        $task->expects(self::once())->method('getDescription')->willReturn('A random task');
-        $task->expects(self::exactly(2))->method('getExpression')->willReturn('* * * * *');
-        $task->expects(self::once())->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $task->expects(self::exactly(2))->method('getState')->willReturn(TaskInterface::ENABLED);
-        $task->expects(self::once())->method('getTags')->willReturn(['app', 'slow']);
+        $task = new NullTask('foo', [
+            'description' => 'A random task',
+            'expression' => '* * * * *',
+            'state' => TaskInterface::ENABLED,
+            'tags' => ['app', 'slow'],
+        ]);
+        $task->setLastExecution(new DateTimeImmutable());
 
-        $secondTask = $this->createMock(TaskInterface::class);
-        $secondTask->expects(self::exactly(1))->method('getName')->willReturn('bar');
-        $secondTask->expects(self::never())->method('getDescription')->willReturn('A random task');
-        $secondTask->expects(self::never())->method('getExpression')->willReturn('* * * * *');
-        $secondTask->expects(self::never())->method('getLastExecution')->willReturn(new DateTimeImmutable());
-        $secondTask->expects(self::once())->method('getState')->willReturn(TaskInterface::DISABLED);
-        $secondTask->expects(self::never())->method('getTags')->willReturn(['app', 'slow']);
+        $secondTask = new NullTask('bar', [
+            'description' => 'A random task',
+            'expression' => '* * * * *',
+            'state' => TaskInterface::DISABLED,
+            'tags' => ['app', 'slow'],
+        ]);
+        $secondTask->setLastExecution(new DateTimeImmutable());
 
         $taskList = new TaskList([$task, $secondTask]);
 
@@ -166,9 +166,10 @@ final class ListTasksCommandTest extends TestCase
         ]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringNotContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
         self::assertStringContainsString('Type', $commandTester->getDisplay());
-        self::assertStringContainsString('Mock_TaskInterface_', $commandTester->getDisplay());
+        self::assertStringContainsString('NullTask', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('foo', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
@@ -232,6 +233,7 @@ final class ListTasksCommandTest extends TestCase
         $commandTester->execute([]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringNotContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
         self::assertStringContainsString('Type', $commandTester->getDisplay());
         self::assertStringContainsString('ChainedTask', $commandTester->getDisplay());
@@ -302,6 +304,7 @@ final class ListTasksCommandTest extends TestCase
         ]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringNotContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
@@ -333,6 +336,7 @@ final class ListTasksCommandTest extends TestCase
         $commandTester->execute([]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringNotContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] 1 task found', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('Description', $commandTester->getDisplay());
@@ -380,6 +384,7 @@ final class ListTasksCommandTest extends TestCase
         ]);
 
         self::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        self::assertStringNotContainsString('[WARNING] No tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('[OK] 2 tasks found', $commandTester->getDisplay());
         self::assertStringContainsString('Name', $commandTester->getDisplay());
         self::assertStringContainsString('foo', $commandTester->getDisplay());
