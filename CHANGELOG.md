@@ -1,5 +1,20 @@
 # Changelog
 
+0.10.2
+-----
+
+### Code Refactoring
+
+##### Eventlistener
+
+* StopWorkerOnNextTaskSubscriber improved (#306) ([be1729](https://github.com/Guikingone/SchedulerBundle/commit/be1729d44753dc4b310bffcb5f1356da3cba7a44))
+
+##### Messenger
+
+* Fix deprecations symfony 6.2 (#309) ([784587](https://github.com/Guikingone/SchedulerBundle/commit/784587fa8dcd2cbf1b774eb759c5685bc20468f7))
+
+---
+
 0.10.1
 -----
 
