@@ -49,6 +49,7 @@ final class RedisTransportFactoryTest extends TestCase
         self::assertSame($dsn->getPort(), $transport->getConfiguration()->get('port'));
         self::assertSame($dsn->getScheme(), $transport->getConfiguration()->get('scheme'));
         self::assertSame($dsn->getOption('timeout', 30), $transport->getConfiguration()->get('timeout'));
+        self::assertSame($dsn->getOption('auth'), $this->transport->getConfiguration()->get('auth'));
         self::assertArrayHasKey('execution_mode', $transport->getConfiguration()->toArray());
         self::assertSame('first_in_first_out', $transport->getConfiguration()->get('execution_mode'));
         self::assertArrayHasKey('list', $transport->getConfiguration()->toArray());

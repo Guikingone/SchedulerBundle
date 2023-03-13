@@ -51,7 +51,7 @@ final class RedisTransportFactory implements TransportFactoryInterface
             'port' => $dsn->getPort() ?? 6379,
             'scheme' => $dsn->getScheme(),
             'timeout' => $dsn->getOption('timeout', 30),
-            'auth' => $dsn->getOption('host'),
+            'auth' => $dsn->getOption('auth'),
             'dbindex' => $dsn->getOption('dbindex'),
             'transaction_mode' => $dsn->getOption('transaction_mode'),
             'execution_mode' => $dsn->getOption('execution_mode', 'first_in_first_out'),
