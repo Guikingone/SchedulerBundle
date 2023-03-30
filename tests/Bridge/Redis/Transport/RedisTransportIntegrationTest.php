@@ -77,7 +77,7 @@ final class RedisTransportIntegrationTest extends TestCase
                 'port' => $dsn->getPort(),
                 'scheme' => $dsn->getScheme(),
                 'timeout' => $dsn->getOption('timeout', 30),
-                'auth' => $dsn->getOption('host'),
+                'auth' => $dsn->getOption('auth'),
                 'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
                 'dbindex' => $dsn->getOption('dbindex', 0),
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
@@ -101,6 +101,7 @@ final class RedisTransportIntegrationTest extends TestCase
             self::assertSame($dsn->getPort(), $this->transport->getConfiguration()->get('port'));
             self::assertSame($dsn->getScheme(), $this->transport->getConfiguration()->get('scheme'));
             self::assertSame($dsn->getOption('timeout', 30), $this->transport->getConfiguration()->get('timeout'));
+            self::assertSame($dsn->getOption('auth'), $this->transport->getConfiguration()->get('auth'));
             self::assertArrayHasKey('execution_mode', $this->transport->getConfiguration()->toArray());
             self::assertSame('first_in_first_out', $this->transport->getConfiguration()->get('execution_mode'));
             self::assertArrayHasKey('list', $this->transport->getConfiguration()->toArray());

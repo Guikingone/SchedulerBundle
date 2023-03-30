@@ -74,7 +74,7 @@ final class ConnectionIntegrationTest extends TestCase
                 'port' => $dsn->getPort(),
                 'scheme' => $dsn->getScheme(),
                 'timeout' => $dsn->getOption('timeout', 30),
-                'auth' => $dsn->getOption('host'),
+                'auth' => $dsn->getOption('auth'),
                 'list' => $dsn->getOption('list', '_symfony_scheduler_tasks'),
                 'dbindex' => $dsn->getOption('dbindex', 0),
                 'transaction_mode' => $dsn->getOption('transaction_mode'),
