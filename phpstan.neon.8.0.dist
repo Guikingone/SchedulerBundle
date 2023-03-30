@@ -4,7 +4,7 @@ includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
     - vendor/phpstan/phpstan-symfony/extension.neon
-    #- vendor/tomasvotruba/cognitive-complexity/config/extension.neon
+    - vendor/tomasvotruba/type-coverage/config/extension.neon
 
 parameters:
     level: 8
@@ -22,3 +22,8 @@ parameters:
     #cognitive_complexity:
     #    class: 50
     #    function: 8
+    type_coverage:
+        return_type: 90
+        param_type: 90
+        property_type: 90
+        print_suggestions: true
