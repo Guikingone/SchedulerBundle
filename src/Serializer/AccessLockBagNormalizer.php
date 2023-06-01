@@ -103,4 +103,12 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     {
         return AccessLockBag::class === $type;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['*'];
+    }
 }

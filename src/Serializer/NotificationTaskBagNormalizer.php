@@ -91,4 +91,12 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     {
         return NotificationTaskBag::class === $type;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['*'];
+    }
 }
