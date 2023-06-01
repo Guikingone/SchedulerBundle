@@ -93,7 +93,7 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<class-string|'*'|'object'|string, bool|null>
      */
     public function getSupportedTypes(?string $format): array
     {

@@ -105,7 +105,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<class-string|'*'|'object'|string, bool|null>
      */
     public function getSupportedTypes(?string $format): array
     {
