@@ -508,8 +508,28 @@ final class WorkerTest extends TestCase
         $logger->expects(self::never())->method('info');
 
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
-        $tracker->expects(self::exactly(2))->method('startTracking')->withConsecutive([$task], [$validTask]);
-        $tracker->expects(self::exactly(2))->method('endTracking')->withConsecutive([$task], [$validTask]);
+
+        $startTrackingMatcher = self::exactly(2);
+        $tracker
+            ->expects($startTrackingMatcher)
+            ->method('startTracking')
+            ->willReturnCallback(function (NullTask $param) use ($startTrackingMatcher, $task, $validTask): void {
+                match ($startTrackingMatcher->getInvocationCount()) {
+                    1 => self::assertSame($param, $task),
+                    2 => self::assertSame($param, $validTask),
+                };
+            });
+
+        $endTrackingMatcher = self::exactly(2);
+        $tracker
+            ->expects($endTrackingMatcher)
+            ->method('endTracking')
+            ->willReturnCallback(function ($param) use ($endTrackingMatcher, $task, $validTask) {
+                match ($endTrackingMatcher->getInvocationCount()) {
+                    1 => self::assertSame($param, $task),
+                    2 => self::assertSame($param, $validTask),
+                };
+            });
 
         $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
@@ -1231,21 +1251,30 @@ final class WorkerTest extends TestCase
         $tracker = $this->createMock(TaskExecutionTrackerInterface::class);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::exactly(2))->method('info')->withConsecutive([
-            self::equalTo('The following task "bar" is paused|disabled, consider enable it if it should be executed!'),
-            [
-                'name' => 'bar',
-                'expression' => '* * * * *',
-                'state' => TaskInterface::PAUSED,
-            ],
-        ], [
-            self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
-            [
-                'name' => 'foo',
-                'expression' => '* * * * *',
-                'state' => TaskInterface::PAUSED,
-            ],
-        ]);
+        $matcher = self::exactly(2);
+        $logger
+            ->expects($matcher)
+            ->method('info')
+            ->willReturnCallback(function () use ($matcher): void {
+                match ($matcher->getInvocationCount()) {
+                    1 => [
+                        self::equalTo('The following task "bar" is paused|disabled, consider enable it if it should be executed!'),
+                        [
+                            'name' => 'bar',
+                            'expression' => '* * * * *',
+                            'state' => TaskInterface::PAUSED,
+                        ]
+                    ],
+                    2 => [
+                        self::equalTo('The following task "foo" is paused|disabled, consider enable it if it should be executed!'),
+                        [
+                            'name' => 'foo',
+                            'expression' => '* * * * *',
+                            'state' => TaskInterface::PAUSED,
+                        ],
+                    ],
+                };
+            });
 
         $transport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
             new FirstInFirstOutPolicy(),
