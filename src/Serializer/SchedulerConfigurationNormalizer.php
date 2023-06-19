@@ -92,4 +92,12 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     {
         return SchedulerConfiguration::class === $type;
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['*' => true];
+    }
 }

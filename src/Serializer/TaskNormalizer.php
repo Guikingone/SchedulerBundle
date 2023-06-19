@@ -395,4 +395,12 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
     {
         return is_array(value: $data) && array_key_exists(key: self::NORMALIZATION_DISCRIMINATOR, array: $data) || $type === TaskInterface::class;
     }
+
+    /**
+     * @return array<class-string|'*'|'object'|string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['*' => true];
+    }
 }
