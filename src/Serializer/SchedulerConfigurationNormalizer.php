@@ -98,6 +98,6 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      */
     public function getSupportedTypes(?string $format): array
     {
-        return ['*'];
+        return ['*' => true];
     }
 }

@@ -401,6 +401,6 @@ final class TaskNormalizer implements DenormalizerInterface, NormalizerInterface
      */
     public function getSupportedTypes(?string $format): array
     {
-        return ['*'];
+        return ['*' => true];
     }
 }

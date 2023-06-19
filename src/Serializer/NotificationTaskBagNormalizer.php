@@ -97,6 +97,6 @@ final class NotificationTaskBagNormalizer implements DenormalizerInterface, Norm
      */
     public function getSupportedTypes(?string $format): array
     {
-        return ['*'];
+        return ['*' => true];
     }
 }
