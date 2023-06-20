@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\Core\ValueObject\PhpVersion;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\PHPUnit\Set\PHPUnitSetList;
+use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
 
@@ -45,16 +46,11 @@ return static function (RectorConfig $rectorConfig): void {
     ]);
 
     $rectorConfig->sets(sets: [
+        LevelSetList::UP_TO_PHP_80,
+        SetList::PSR_4,
         SetList::CODE_QUALITY,
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
-        SetList::PHP_70,
-        SetList::PHP_71,
-        SetList::PHP_72,
-        SetList::PHP_73,
-        SetList::PHP_74,
-        SetList::PHP_80,
-        SetList::PSR_4,
     ]);
 
     $rectorConfig->sets(sets: [
