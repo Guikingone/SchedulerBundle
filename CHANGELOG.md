@@ -1,5 +1,28 @@
 # Changelog
 
+0.10.3
+-----
+
+### Bug Fixes
+
+##### Bridge
+
+* Misnamed auth option in Redis transport factory (#312) ([a5b266](https://github.com/Guikingone/SchedulerBundle/commit/a5b26642f0d7787c7cf470585ad028c3439746b3))
+
+##### Build
+
+* Docker deps updated ([38ee77](https://github.com/Guikingone/SchedulerBundle/commit/38ee77f4c3993fdc62193081db11965df4bbcfb1))
+
+##### Deps
+
+* Symfony 6.3 deprecations removed ([647f3f](https://github.com/Guikingone/SchedulerBundle/commit/647f3fbe941683f5d611c9c2062dc7111a52837d))
+
+##### Security
+
+* Symfony/http-kernel updated ([379616](https://github.com/Guikingone/SchedulerBundle/commit/3796163f6a978481b28784cba3b54ae18bda9f1a))
+
+---
+
 0.10.2
 -----
 
