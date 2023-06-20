@@ -7,6 +7,7 @@ namespace SchedulerBundle\Test\Constraint\Scheduler;
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\SchedulerInterface;
 
+use Throwable;
 use function sprintf;
 
 /**
@@ -28,9 +29,16 @@ final class SchedulerDueTask extends Constraint
 
     /**
      * @param mixed|SchedulerInterface $other
+     * @throws Throwable {@see SchedulerInterface::getDueTasks()}
      */
     protected function matches($other): bool
     {
-        return $this->expectedCount === $other->getDueTasks()->count();
+        if (!$other instanceof SchedulerInterface) {
+            return false;
+        }
+
+        $dueTasks = $other->getDueTasks();
+
+        return $this->expectedCount === $dueTasks->count();
     }
 }

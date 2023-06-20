@@ -118,7 +118,10 @@ final class Worker implements WorkerInterface
      */
     public function preempt(TaskListInterface $preemptTaskList, TaskListInterface $toPreemptTasksList): void
     {
-        $nonExecutedTasks = $toPreemptTasksList->slice(...$preemptTaskList->map(func: static fn (TaskInterface $task): string => $task->getName(), keepKeys: false));
+        /** @var string[] $taskNameList */
+        $taskNameList = $preemptTaskList->map(func: static fn (TaskInterface $task): string => $task->getName(), keepKeys: false);
+
+        $nonExecutedTasks = $toPreemptTasksList->slice(...$taskNameList);
         $nonExecutedTasks->walk(func: function (TaskInterface $task): void {
             $accessLockBag = $task->getAccessLockBag();
 

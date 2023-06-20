@@ -31,6 +31,10 @@ final class ProbeExecutedTask extends Constraint
      */
     protected function matches($other): bool
     {
+        if (!$other instanceof ProbeInterface) {
+            return false;
+        }
+
         return $this->expectedCount === $other->getExecutedTasks();
     }
 }

@@ -56,7 +56,10 @@ final class HttpTask extends AbstractTask
 
     public function getMethod(): string
     {
-        return $this->options['method'] ?? 'GET';
+        return is_string(value: $this->options['method'])
+            ? $this->options['method']
+            : 'GET'
+        ;
     }
 
     public function setMethod(string $method): self
@@ -71,7 +74,10 @@ final class HttpTask extends AbstractTask
      */
     public function getClientOptions(): array
     {
-        return is_array(value: $this->options['client_options']) ? $this->options['client_options'] : [];
+        return is_array(value: $this->options['client_options'])
+            ? $this->options['client_options']
+            : []
+        ;
     }
 
     /**

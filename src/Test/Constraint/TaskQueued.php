@@ -32,6 +32,10 @@ final class TaskQueued extends Constraint
      */
     protected function matches($other): bool
     {
+        if (!$other instanceof TaskEventList) {
+            return false;
+        }
+
         return $this->expectedCount === $this->countQueuedTasks($other);
     }
 
@@ -43,7 +47,9 @@ final class TaskQueued extends Constraint
                 continue;
             }
 
-            if (!$taskEvent->getTask()->isQueued()) {
+            $task = $taskEvent->getTask();
+
+            if (!$task->isQueued()) {
                 continue;
             }
 

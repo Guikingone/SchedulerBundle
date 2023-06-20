@@ -7,6 +7,7 @@ namespace SchedulerBundle\Test\Constraint\Probe;
 use PHPUnit\Framework\Constraint\Constraint;
 use SchedulerBundle\Probe\ProbeInterface;
 
+use Throwable;
 use function json_encode;
 use function sprintf;
 
@@ -32,9 +33,14 @@ final class ProbeState extends Constraint
 
     /**
      * @param mixed|ProbeInterface $other
+     * @throws Throwable {@see ProbeInterface::getScheduledTasks()}
      */
     protected function matches($other): bool
     {
+        if (!$other instanceof ProbeInterface) {
+            return false;
+        }
+
         return $this->expectedState === [
             'executedTasks' => $other->getExecutedTasks(),
             'failedTasks' => $other->getFailedTasks(),
