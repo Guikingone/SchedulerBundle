@@ -21,3 +21,6 @@ tests/.assets/**/*.json
 
 # Docker
 docker-compose.override.yaml
+
+# Dagger
+cue.mod
