@@ -67,6 +67,10 @@ phpstan_81: ## Run PHPStan (the configuration must be defined in phpstan.neon.di
 phpstan_81: phpstan.neon.8.1.dist
 	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug --configuration phpstan.neon.8.1.dist
 
+phpstan_82: ## Run PHPStan (the configuration must be defined in phpstan.neon.dist)
+phpstan_82: phpstan.neon.8.2.dist
+	$(PHP) vendor/bin/phpstan analyse --memory-limit 2G --xdebug --configuration phpstan.neon.8.2.dist
+
 rector: rector.php
 	$(PHP) vendor/bin/rector
 
