@@ -13,6 +13,7 @@ use function count;
 use function is_array;
 use function iterator_to_array;
 use function uasort;
+use function next;
 
 use const ARRAY_FILTER_USE_BOTH;
 
@@ -71,6 +72,14 @@ final class MiddlewareRegistry implements MiddlewareRegistryInterface
     public function toArray(): array
     {
         return $this->middlewareList;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function next(): void
+    {
+        next(array: $this->middlewareList);
     }
 
     /**
