@@ -1,5 +1,16 @@
 # Changelog
 
+0.10.4
+-----
+
+### Build
+
+##### Dependencies
+
+* build(deps): symfony 7 support (#323) ([d2172a9](https://github.com/Guikingone/SchedulerBundle/commit/d2172a984c72590d71c1fec549fd1aebd5edee96))
+
+---
+
 0.10.3
 -----
 
