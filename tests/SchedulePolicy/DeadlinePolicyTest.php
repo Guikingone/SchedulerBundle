@@ -39,7 +39,7 @@ final class DeadlinePolicyTest extends TestCase
         $deadlinePolicy = new DeadlinePolicy();
 
         self::expectException(RuntimeException::class);
-        self::expectDeprecationMessage('The arrival time must be defined, consider executing the task "foo" first');
+        self::expectExceptionMessage('The arrival time must be defined, consider executing the task "foo" first');
         self::expectExceptionCode(0);
         $deadlinePolicy->sort(new TaskList([
             $secondTask,
@@ -62,7 +62,7 @@ final class DeadlinePolicyTest extends TestCase
         $deadlinePolicy = new DeadlinePolicy();
 
         self::expectException(RuntimeException::class);
-        self::expectDeprecationMessage('The execution relative deadline must be defined, consider using SchedulerBundle\Task\TaskInterface::setExecutionRelativeDeadline()');
+        self::expectExceptionMessage('The execution relative deadline must be defined, consider using SchedulerBundle\Task\TaskInterface::setExecutionRelativeDeadline()');
         self::expectExceptionCode(0);
         $deadlinePolicy->sort(new TaskList([$secondTask, $task]));
     }
