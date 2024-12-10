@@ -38,7 +38,7 @@ final class SchedulerDataCollector extends DataCollector implements LateDataColl
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, Throwable $exception = null): void
+    public function collect(Request $request, Response $response, ?Throwable $exception = null): void
     {
         // As data can comes from Messenger, local or remote schedulers|workers, we should collect it as late as possible.
     }

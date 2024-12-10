@@ -37,7 +37,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
      *
      * @return array<string, mixed>
      */
-    public function normalize($object, string $format = null, array $context = []): array
+    public function normalize($object, ?string $format = null, array $context = []): array
     {
         if (!$this->objectNormalizer instanceof NormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, NormalizerInterface::class));
@@ -48,7 +48,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
                 'bag' => AccessLockBag::class,
                 'body' => $this->objectNormalizer->normalize(object: $object, format: $format, context: [
                     AbstractNormalizer::CALLBACKS => [
-                        'key' => static fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, string $format = null, array $context = []): string => serialize(value: $innerObject),
+                        'key' => static fn (Key $innerObject, AccessLockBag $outerObject, string $attributeName, ?string $format = null, array $context = []): string => serialize(value: $innerObject),
                     ],
                 ]),
             ];
@@ -69,7 +69,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null, array $context = []): bool
+    public function supportsNormalization($data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof AccessLockBag;
     }
@@ -77,7 +77,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, string $type, string $format = null, array $context = []): AccessLockBag
+    public function denormalize($data, string $type, ?string $format = null, array $context = []): AccessLockBag
     {
         if (!$this->objectNormalizer instanceof DenormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
@@ -99,7 +99,7 @@ final class AccessLockBagNormalizer implements NormalizerInterface, Denormalizer
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
+    public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
     {
         return AccessLockBag::class === $type;
     }

@@ -19,7 +19,7 @@ final class TaskLifecycleSubscriber implements EventSubscriberInterface
 {
     private LoggerInterface $logger;
 
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(?LoggerInterface $logger = null)
     {
         $this->logger = $logger ?? new NullLogger();
     }

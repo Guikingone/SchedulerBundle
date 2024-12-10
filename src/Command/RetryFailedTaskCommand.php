@@ -40,7 +40,7 @@ final class RetryFailedTaskCommand extends Command
     public function __construct(
         private WorkerInterface $worker,
         private EventDispatcherInterface $eventDispatcher,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
 

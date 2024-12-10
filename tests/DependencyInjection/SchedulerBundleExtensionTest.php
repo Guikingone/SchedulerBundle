@@ -2309,7 +2309,7 @@ final class SchedulerBundleExtensionTest extends TestCase
     /**
      * @param array<string, mixed> $configuration
      */
-    private function getContainer(array $configuration = [], Closure $extraDefinitions = null, Closure $extraPasses = null): ContainerBuilder
+    private function getContainer(array $configuration = [], ?Closure $extraDefinitions = null, ?Closure $extraPasses = null): ContainerBuilder
     {
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->registerExtension(new SchedulerBundleExtension());
