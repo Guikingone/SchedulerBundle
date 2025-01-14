@@ -48,7 +48,7 @@ final class ConsumeTasksCommand extends Command
         private SchedulerInterface $scheduler,
         private WorkerInterface $worker,
         private EventDispatcherInterface $eventDispatcher,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
 

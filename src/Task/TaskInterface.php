@@ -114,7 +114,7 @@ interface TaskInterface
     /**
      * Set the date from which the task has been retrieved by the worker and started its execution.
      */
-    public function setArrivalTime(DateTimeImmutable $dateTimeImmutable = null): self;
+    public function setArrivalTime(?DateTimeImmutable $dateTimeImmutable = null): self;
 
     /**
      * Return the date from which the task has been retrieved by the worker and started its execution.
@@ -141,19 +141,19 @@ interface TaskInterface
      */
     public function getBeforeScheduling(): callable|array|null;
 
-    public function beforeSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
+    public function beforeSchedulingNotificationBag(?NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getBeforeSchedulingNotificationBag(): ?NotificationTaskBag;
 
-    public function afterSchedulingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
+    public function afterSchedulingNotificationBag(?NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getAfterSchedulingNotificationBag(): ?NotificationTaskBag;
 
-    public function beforeExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
+    public function beforeExecutingNotificationBag(?NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getBeforeExecutingNotificationBag(): ?NotificationTaskBag;
 
-    public function afterExecutingNotificationBag(NotificationTaskBag $notificationTaskBag = null): TaskInterface;
+    public function afterExecutingNotificationBag(?NotificationTaskBag $notificationTaskBag = null): TaskInterface;
 
     public function getAfterExecutingNotificationBag(): ?NotificationTaskBag;
 
@@ -187,7 +187,7 @@ interface TaskInterface
      */
     public function getAfterExecuting(): callable|array|null;
 
-    public function setDescription(string $description = null): self;
+    public function setDescription(?string $description = null): self;
 
     public function getDescription(): ?string;
 
@@ -195,17 +195,17 @@ interface TaskInterface
 
     public function getExpression(): string;
 
-    public function setExecutionAbsoluteDeadline(DateInterval $dateInterval = null): self;
+    public function setExecutionAbsoluteDeadline(?DateInterval $dateInterval = null): self;
 
     public function getExecutionAbsoluteDeadline(): ?DateInterval;
 
     public function getExecutionComputationTime(): ?float;
 
-    public function setExecutionComputationTime(float $executionComputationTime = null): self;
+    public function setExecutionComputationTime(?float $executionComputationTime = null): self;
 
     public function getExecutionDelay(): ?int;
 
-    public function setExecutionDelay(int $executionDelay = null): self;
+    public function setExecutionDelay(?int $executionDelay = null): self;
 
     public function getExecutionMemoryUsage(): int;
 
@@ -213,34 +213,34 @@ interface TaskInterface
 
     public function getExecutionPeriod(): ?float;
 
-    public function setExecutionPeriod(float $executionPeriod = null): self;
+    public function setExecutionPeriod(?float $executionPeriod = null): self;
 
     public function getExecutionRelativeDeadline(): ?DateInterval;
 
-    public function setExecutionRelativeDeadline(DateInterval $dateInterval = null): self;
+    public function setExecutionRelativeDeadline(?DateInterval $dateInterval = null): self;
 
-    public function setExecutionStartDate(string $executionStartDate = null): self;
+    public function setExecutionStartDate(?string $executionStartDate = null): self;
 
     /**
      * Return the date from which the task is allowed to be executed / considered as "due".
      */
     public function getExecutionStartDate(): ?DateTimeImmutable;
 
-    public function setExecutionEndDate(string $executionEndDate = null): self;
+    public function setExecutionEndDate(?string $executionEndDate = null): self;
 
     /**
      * Return the date until which the task is allowed to be executed / considered as "due".
      */
     public function getExecutionEndDate(): ?DateTimeImmutable;
 
-    public function setExecutionStartTime(DateTimeImmutable $dateTimeImmutable = null): self;
+    public function setExecutionStartTime(?DateTimeImmutable $dateTimeImmutable = null): self;
 
     /**
      * Return the date since the task started to being executed.
      */
     public function getExecutionStartTime(): ?DateTimeImmutable;
 
-    public function setExecutionEndTime(DateTimeImmutable $dateTimeImmutable = null): self;
+    public function setExecutionEndTime(?DateTimeImmutable $dateTimeImmutable = null): self;
 
     /**
      * Return the date since the task stopped to being executed.
@@ -259,25 +259,25 @@ interface TaskInterface
      */
     public function getAccessLockBag(): ?AccessLockBag;
 
-    public function setLastExecution(DateTimeImmutable $dateTimeImmutable = null): self;
+    public function setLastExecution(?DateTimeImmutable $dateTimeImmutable = null): self;
 
     public function getLastExecution(): ?DateTimeImmutable;
 
-    public function setMaxDuration(float $maxDuration = null): self;
+    public function setMaxDuration(?float $maxDuration = null): self;
 
     public function getMaxDuration(): ?float;
 
-    public function setMaxExecutions(int $maxExecutions = null): TaskInterface;
+    public function setMaxExecutions(?int $maxExecutions = null): TaskInterface;
 
     public function getMaxExecutions(): ?int;
 
-    public function setMaxRetries(int $maxRetries = null): TaskInterface;
+    public function setMaxRetries(?int $maxRetries = null): TaskInterface;
 
     public function getMaxRetries(): ?int;
 
     public function getNice(): ?int;
 
-    public function setNice(int $nice = null): self;
+    public function setNice(?int $nice = null): self;
 
     public function get(string $key, mixed $default = null): mixed;
 
@@ -297,7 +297,7 @@ interface TaskInterface
      *
      * @throws InvalidArgumentException If the state is not allowed.
      */
-    public function setExecutionState(string $executionState = null): self;
+    public function setExecutionState(?string $executionState = null): self;
 
     public function isOutput(): bool;
 
@@ -341,7 +341,7 @@ interface TaskInterface
 
     public function getTimezone(): ?DateTimeZone;
 
-    public function setTimezone(DateTimeZone $dateTimeZone = null): self;
+    public function setTimezone(?DateTimeZone $dateTimeZone = null): self;
 
     public function isTracked(): bool;
 

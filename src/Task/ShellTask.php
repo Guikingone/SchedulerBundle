@@ -22,7 +22,7 @@ final class ShellTask extends AbstractTask
     public function __construct(
         string $name,
         array $command,
-        string $cwd = null,
+        ?string $cwd = null,
         array $environmentVariables = [],
         float $timeout = 60.0,
         array $options = []

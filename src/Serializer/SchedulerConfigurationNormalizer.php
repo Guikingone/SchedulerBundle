@@ -36,7 +36,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
      *
      * @return array<string, mixed>
      */
-    public function normalize($object, string $format = null, array $context = []): array
+    public function normalize($object, ?string $format = null, array $context = []): array
     {
         if (!$this->taskNormalizer instanceof NormalizerInterface || !$this->dateTimeZoneNormalizer instanceof NormalizerInterface || !$this->dateTimeNormalizer instanceof NormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected normalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
@@ -60,7 +60,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, string $format = null, array $context = []): bool
+    public function supportsNormalization($data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof SchedulerConfiguration;
     }
@@ -68,7 +68,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     /**
      * {@inheritdoc}
      */
-    public function denormalize($data, string $type, string $format = null, array $context = []): SchedulerConfiguration
+    public function denormalize($data, string $type, ?string $format = null, array $context = []): SchedulerConfiguration
     {
         if (!$this->objectNormalizer instanceof DenormalizerInterface || !$this->taskNormalizer instanceof DenormalizerInterface || !$this->dateTimeZoneNormalizer instanceof DenormalizerInterface || !$this->dateTimeNormalizer instanceof DenormalizerInterface) {
             throw new BadMethodCallException(sprintf('The "%s()" method cannot be called as injected denormalizer does not implements "%s".', __METHOD__, DenormalizerInterface::class));
@@ -88,7 +88,7 @@ final class SchedulerConfigurationNormalizer implements NormalizerInterface, Den
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
+    public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
     {
         return SchedulerConfiguration::class === $type;
     }

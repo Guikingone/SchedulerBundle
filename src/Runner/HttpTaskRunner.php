@@ -19,7 +19,7 @@ final class HttpTaskRunner implements RunnerInterface
 {
     private HttpClientInterface $httpClient;
 
-    public function __construct(HttpClientInterface $httpClient = null)
+    public function __construct(?HttpClientInterface $httpClient = null)
     {
         $this->httpClient = $httpClient ?? HttpClient::create();
     }

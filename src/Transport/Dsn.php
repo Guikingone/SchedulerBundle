@@ -88,7 +88,7 @@ final class Dsn
         return $this->password;
     }
 
-    public function getPort(int $default = null): ?int
+    public function getPort(?int $default = null): ?int
     {
         return $this->port ?? $default;
     }
