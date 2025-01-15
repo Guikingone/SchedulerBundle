@@ -84,7 +84,7 @@ final class DebugProbeCommandTest extends TestCase
     {
         $probe = $this->createMock(ProbeInterface::class);
 
-        $executionDate = new DatetimeImmutable();
+        $executionDate = new DateTimeImmutable();
         $probeTask = new ProbeTask('foo', '/_external_path');
         $probeTask->setLastExecution($executionDate);
         $probeTask->setState(TaskInterface::PAUSED);

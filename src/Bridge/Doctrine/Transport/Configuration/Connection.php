@@ -365,7 +365,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
     /**
      * {@inheritdoc}
      */
-    public function configureSchema(Schema $schema, DBALConnection $dbalConnection): void
+    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
     {
         if ($dbalConnection !== $this->connection) {
             return;

@@ -33,7 +33,7 @@ abstract class AbstractDoctrineConnection
      */
     abstract protected function executeQuery(string $sql, array $parameters = [], array $types = []);
 
-    abstract public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void;
+    abstract public function configureSchema(Schema $schema, DBALConnection $dbalConnection): void;
 
     /**
      * @throws Exception

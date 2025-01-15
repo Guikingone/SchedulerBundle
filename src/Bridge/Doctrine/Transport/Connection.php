@@ -37,7 +37,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
 {
     public function __construct(
         private ConfigurationInterface $configuration,
-        private DbalConnection $dbalConnection,
+        private DBALConnection $dbalConnection,
         private SerializerInterface $serializer,
         private SchedulePolicyOrchestratorInterface $schedulePolicyOrchestrator
     ) {
@@ -294,7 +294,7 @@ final class Connection extends AbstractDoctrineConnection implements ConnectionI
         $this->configuration->set(key: 'auto_setup', value: false);
     }
 
-    public function configureSchema(Schema $schema, DbalConnection $dbalConnection): void
+    public function configureSchema(Schema $schema, DBALConnection $dbalConnection): void
     {
         if ($dbalConnection !== $this->dbalConnection) {
             return;
