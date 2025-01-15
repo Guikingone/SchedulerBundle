@@ -39,7 +39,7 @@ final class TaskSubscriber implements EventSubscriberInterface
         private WorkerInterface $worker,
         private EventDispatcherInterface $eventDispatcher,
         private SerializerInterface $serializer,
-        LoggerInterface $logger = null,
+        ?LoggerInterface $logger = null,
         private string $tasksPath = '/_tasks'
     ) {
         $this->logger = $logger ?? new NullLogger();

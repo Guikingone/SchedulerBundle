@@ -25,7 +25,7 @@ final class StopWorkerOnNextTaskSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private CacheItemPoolInterface $stopWorkerCacheItemPool,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
     }
