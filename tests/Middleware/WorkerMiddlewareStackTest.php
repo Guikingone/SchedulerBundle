@@ -9,6 +9,7 @@ use SchedulerBundle\Middleware\MiddlewareRegistry;
 use SchedulerBundle\Middleware\PostExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\PreExecutionMiddlewareInterface;
 use SchedulerBundle\Middleware\WorkerMiddlewareStack;
+use SchedulerBundle\Task\NullTask;
 use SchedulerBundle\Task\TaskInterface;
 use SchedulerBundle\Worker\WorkerInterface;
 use Throwable;
@@ -23,7 +24,7 @@ final class WorkerMiddlewareStackTest extends TestCase
      */
     public function testStackCanRunEmptyPreMiddlewareList(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask(name: 'foo');
 
         $middleware = $this->createMock(PostExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('postExecute')->with($task);
@@ -40,7 +41,7 @@ final class WorkerMiddlewareStackTest extends TestCase
      */
     public function testStackCanRunPreMiddlewareList(): void
     {
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask(name: 'foo');
 
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::once())->method('preExecute')->with($task);
@@ -62,7 +63,7 @@ final class WorkerMiddlewareStackTest extends TestCase
     public function testStackCanRunEmptyPostMiddlewareList(): void
     {
         $worker = $this->createMock(WorkerInterface::class);
-        $task = $this->createMock(TaskInterface::class);
+        $task = new NullTask(name: 'foo');
 
         $middleware = $this->createMock(PreExecutionMiddlewareInterface::class);
         $middleware->expects(self::never())->method('preExecute')->with($task);

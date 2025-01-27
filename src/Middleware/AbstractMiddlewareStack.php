@@ -62,7 +62,9 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
                 $this->executedMiddleware->attach(object: $middleware);
             });
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
+            $middlewareList->next();
+        } finally {
             foreach ($requiredMiddlewareList as $singleRequiredMiddlewareList) {
                 if ($this->executedMiddleware->contains(object: $singleRequiredMiddlewareList)) {
                     continue;
@@ -70,8 +72,6 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
 
                 $func($singleRequiredMiddlewareList);
             }
-
-            throw $throwable;
         }
     }
 

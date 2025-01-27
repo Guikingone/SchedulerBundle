@@ -16,14 +16,14 @@ final class ExecutionPolicyRegistryTest extends TestCase
 {
     public function testRegistryCanCount(): void
     {
-        $registry = new ExecutionPolicyRegistry([]);
+        $registry = new ExecutionPolicyRegistry(policies: []);
 
         self::assertCount(0, $registry);
     }
 
     public function testRegistryCannotReturnInvalidPolicy(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
         ]);
         self::assertCount(1, $registry);
@@ -36,7 +36,7 @@ final class ExecutionPolicyRegistryTest extends TestCase
 
     public function testRegistryCannotReturnMultiplePolicies(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
             new DefaultPolicy(),
         ]);
@@ -50,12 +50,12 @@ final class ExecutionPolicyRegistryTest extends TestCase
 
     public function testRegistryCanReturnPolicy(): void
     {
-        $registry = new ExecutionPolicyRegistry([
+        $registry = new ExecutionPolicyRegistry(policies: [
             new DefaultPolicy(),
         ]);
         self::assertCount(1, $registry);
 
-        $policy = $registry->find('default');
+        $policy = $registry->find(policy: 'default');
         self::assertInstanceOf(DefaultPolicy::class, $policy);
     }
 }
