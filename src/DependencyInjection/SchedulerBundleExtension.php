@@ -7,6 +7,7 @@ namespace SchedulerBundle\DependencyInjection;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
+use SchedulerBundle\Attribute\AsCommandTask;
 use SchedulerBundle\Bridge\Doctrine\SchemaListener\SchedulerDoctrineSchemaSubscriber;
 use SchedulerBundle\Bridge\Doctrine\Transport\Configuration\DoctrineConfigurationFactory;
 use SchedulerBundle\Bridge\Doctrine\Transport\DoctrineTransportFactory;
@@ -158,6 +159,7 @@ use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\StoreFactory;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -201,6 +203,7 @@ final class SchedulerBundleExtension extends Extension
 
         $this->registerParameters($container, $config);
         $this->registerAutoConfigure($container);
+        $this->registerAttribute($container);
         $this->registerConfigurationFactories($container);
         $this->registerConfiguration($container, $config);
         $this->registerWorkerCache($container);
@@ -266,6 +269,13 @@ final class SchedulerBundleExtension extends Extension
         $container->registerForAutoconfiguration(TaskBagInterface::class)->addTag('scheduler.task_bag');
         $container->registerForAutoconfiguration(SchedulerAwareInterface::class)->addTag('scheduler.entry_point');
         $container->registerForAutoconfiguration(ExecutionPolicyInterface::class)->addTag(self::EXECUTION_POLICY_TAG);
+    }
+
+    private function registerAttribute(ContainerBuilder $container): void
+    {
+        $container->registerAttributeForAutoconfiguration(AsCommandTask::class, static function (ChildDefinition $definition, AsMessageHandler $attribute): void {
+
+        });
     }
 
     private function registerConfigurationFactories(ContainerBuilder $container): void
