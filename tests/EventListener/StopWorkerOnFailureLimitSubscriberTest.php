@@ -26,7 +26,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
     public function testSubscriberCannotUseNegativeLimit(): void
     {
         self::expectException(InvalidArgumentException::class);
-        self::expectErrorMessage('The failure limit must be greater than 0, given -1');
+        self::expectExceptionMessage('The failure limit must be greater than 0, given -1');
         self::expectExceptionCode(0);
         new StopWorkerOnFailureLimitSubscriber(-1);
     }
@@ -34,7 +34,7 @@ final class StopWorkerOnFailureLimitSubscriberTest extends TestCase
     public function testSubscriberCannotUseZeroLimit(): void
     {
         self::expectException(InvalidArgumentException::class);
-        self::expectErrorMessage('The failure limit must be greater than 0, given 0');
+        self::expectExceptionMessage('The failure limit must be greater than 0, given 0');
         self::expectExceptionCode(0);
         new StopWorkerOnFailureLimitSubscriber(0);
     }
