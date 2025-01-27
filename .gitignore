@@ -18,6 +18,7 @@ summary.log
 # Tests
 .phpunit.result.cache
 tests/.assets/**/*.json
+assets/**/*.json
 
 # Docker
 docker-compose.override.yaml
