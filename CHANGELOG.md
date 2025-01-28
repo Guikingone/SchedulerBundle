@@ -1,5 +1,17 @@
 # Changelog
 
+0.10.5
+-----
+
+### Code Refactoring
+
+##### Code style && deprecations
+
+* refactor(core): style improved (#325) ([c4c7250](https://github.com/Guikingone/SchedulerBundle/commit/c4c7250cca562640382f747e54ba484610a9d84f))
+* refactor(core): 8.4 deprecations (#326) ([55c58a3](https://github.com/Guikingone/SchedulerBundle/commit/55c58a3d6fb96e270311eaa530709600ba54254e))
+
+---
+
 0.10.4
 -----
 
