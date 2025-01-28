@@ -6,7 +6,8 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
 ;
 
-$config = new PhpCsFixer\Config();
+$config = (new PhpCsFixer\Config())
+    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect());
 
 return $config->setRules([
     '@PSR1' => true,
