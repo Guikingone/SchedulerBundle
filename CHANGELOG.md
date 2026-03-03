@@ -1,5 +1,17 @@
 # Changelog
 
+0.11.0
+-----
+
+### Build
+
+##### Dependencies
+
+* refactor(core): update on code style and deps (#329) ([003bb33](https://github.com/Guikingone/SchedulerBundle/commit/003bb33f4924fb74c6cc19b79796223b4f55e45f))
+* deps(core): add support for Symfony 8 (#331) ([e87e6a4](https://github.com/Guikingone/SchedulerBundle/commit/e87e6a4c51ba2de86f37edd7e3ead1d0fc6f967b))
+
+---
+
 0.10.5
 -----
 
