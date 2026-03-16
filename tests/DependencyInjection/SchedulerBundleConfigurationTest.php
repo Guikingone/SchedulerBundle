@@ -24,6 +24,7 @@ final class SchedulerBundleConfigurationTest extends TestCase
         self::assertArrayHasKey('timezone', $configuration);
         self::assertArrayHasKey('tasks', $configuration);
         self::assertArrayNotHasKey('probe', $configuration);
+        self::assertArrayNotHasKey('notifier', $configuration);
         self::assertArrayHasKey('lock_store', $configuration);
         self::assertArrayHasKey('pool', $configuration);
         self::assertArrayHasKey('worker', $configuration);
