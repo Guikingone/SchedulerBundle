@@ -47,7 +47,7 @@ final class TaskLockBagMiddlewareTest extends TestCase
         $middleware = new TaskLockBagMiddleware($lockFactory, $logger);
 
         self::expectException(RuntimeException::class);
-        self::expectErrorMessage(sprintf('The task "foo" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', WorkerInterface::class, SchedulerInterface::class));
+        self::expectExceptionMessage(sprintf('The task "foo" must be linked to an access lock bag, consider using %s::execute() or %s::schedule()', WorkerInterface::class, SchedulerInterface::class));
         self::expectExceptionCode(0);
         $middleware->postExecute(new NullTask('foo'), $worker);
     }

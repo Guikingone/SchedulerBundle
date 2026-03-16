@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SchedulerBundle\Bridge\Doctrine\Transport\Configuration;
 
 use Closure;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
@@ -45,7 +46,7 @@ final class Connection extends AbstractDoctrineConnection implements ExternalCon
         $qb = $this->createQueryBuilder(self::TABLE_NAME, 'stc');
         $existingKeysQuery = $qb->select('stc.configuration_key_name')
             ->where($qb->expr()->in('stc.configuration_key_name', ':keys'))
-            ->setParameter('keys', array_keys($options), DbalConnection::PARAM_STR_ARRAY)
+            ->setParameter('keys', array_keys($options), ArrayParameterType::STRING)
         ;
 
         $existingConfigurationKeys = $this->executeQuery(
