@@ -10,6 +10,7 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Psr\Clock\ClockInterface;
 use SchedulerBundle\Event\TaskExecutingEvent;
 use SchedulerBundle\Exception\InvalidArgumentException;
 use SchedulerBundle\Exception\TransportException;
@@ -56,10 +57,14 @@ final class Scheduler implements SchedulerInterface
         private TransportInterface $transport,
         private SchedulerMiddlewareStack $middlewareStack,
         private EventDispatcherInterface $eventDispatcher,
-        private ?MessageBusInterface $bus = null
+        private ?MessageBusInterface $bus = null,
+        private ?ClockInterface $clock = null
     ) {
         $this->timezone = new DateTimeZone(timezone: $timezone);
-        $this->initializationDate = new DateTimeImmutable(datetime: 'now', timezone: $this->timezone);
+        $this->initializationDate = $clock instanceof ClockInterface
+            ? $clock->now()->setTimezone(timezone: $this->timezone)
+            : new DateTimeImmutable(timezone: $this->timezone)
+        ;
 
         $this->minSynchronizationDelay = new DateInterval(duration: 'PT1S');
         $this->maxSynchronizationDelay = new DateInterval(duration: 'P1D');
@@ -311,7 +316,11 @@ final class Scheduler implements SchedulerInterface
      */
     private function getSynchronizedCurrentDate(): DateTimeImmutable
     {
-        $currentDate = new DateTimeImmutable(datetime: 'now', timezone: $this->timezone);
+        $currentDate = $this->clock instanceof ClockInterface
+            ? $this->clock->now()->setTimezone(timezone: $this->timezone)
+            : new DateTimeImmutable(datetime: 'now', timezone: $this->timezone)
+        ;
+
         $currentDateIntervalWithInitialization = $this->initializationDate->diff(targetObject: $currentDate);
 
         $currentDateWithMinInterval = $currentDate->add(interval: $this->minSynchronizationDelay);
