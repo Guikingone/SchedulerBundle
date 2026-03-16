@@ -112,10 +112,10 @@ final class SchedulerTest extends AbstractSchedulerTestCase
             new TaskCallbackMiddleware(),
         ])), new EventDispatcher());
 
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('The task cannot be scheduled');
-        self::expectExceptionCode(0);
-        $scheduler->schedule(new NullTask('foo', [
+        self::expectException(exception: RuntimeException::class);
+        self::expectExceptionMessage(message: 'The task cannot be scheduled');
+        self::expectExceptionCode(code: 0);
+        $scheduler->schedule(task: new NullTask(name: 'foo', options: [
             'before_scheduling' => static fn (): bool => false,
         ]));
     }

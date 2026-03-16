@@ -45,6 +45,11 @@ interface MiddlewareRegistryInterface extends Countable, IteratorAggregate
     public function uasort(Closure $func): MiddlewareRegistryInterface;
 
     /**
+     * Change the internal cursor of the middleware list, mainly used by {@see AbstractMiddlewareStack::runMiddleware()} to iterate over the list when an exception is thrown.
+     */
+    public function next(): void;
+
+    /**
      * @return array<int, PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface>
      */
     public function toArray(): array;
