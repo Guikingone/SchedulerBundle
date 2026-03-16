@@ -23,6 +23,7 @@ final class WorkerConfiguration
     private bool $mustStrictlyCheckDate;
     private ?TaskInterface $currentlyExecutedTask = null;
     private string $executionPolicy;
+    private int $period;
 
     private function __construct()
     {
