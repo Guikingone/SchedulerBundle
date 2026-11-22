@@ -60,7 +60,7 @@ abstract class AbstractMiddlewareStack implements MiddlewareStackInterface
             $middlewareList->walk(func: function (PostExecutionMiddlewareInterface|PreExecutionMiddlewareInterface|PreSchedulingMiddlewareInterface|PostSchedulingMiddlewareInterface|RequiredMiddlewareInterface|OrderedMiddlewareInterface $middleware) use ($func): void {
                 $func($middleware);
 
-                $this->executedMiddleware->attach(object: $middleware);
+                $this->executedMiddleware->offsetSet(object: $middleware);
             });
         } catch (Throwable $throwable) {
             foreach ($requiredMiddlewareList as $singleRequiredMiddlewareList) {

@@ -40,7 +40,7 @@ final class FailOverConfiguration extends AbstractCompoundConfiguration
             try {
                 return $func($configurationStorage);
             } catch (Throwable) {
-                $this->failedConfigurations->attach($configurationStorage);
+                $this->failedConfigurations->offsetSet($configurationStorage);
 
                 continue;
             }

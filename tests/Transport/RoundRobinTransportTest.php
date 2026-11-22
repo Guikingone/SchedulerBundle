@@ -672,4 +672,41 @@ final class RoundRobinTransportTest extends TestCase
 
         $roundRobinTransport->clear();
     }
+
+    /**
+     * @throws Throwable {@see TransportInterface::get()}
+     */
+    public function testTransportCanRetrieveTaskWithFailingTransportsWithoutDeprecations(): void
+    {
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $secondTransport->create(new NullTask('foo'));
+
+        $roundRobinTransport = new RoundRobinTransport(new TransportRegistry([
+            new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+                new FirstInFirstOutPolicy(),
+            ])),
+            $secondTransport,
+        ]), new InMemoryConfiguration([
+            'quantum' => 2,
+        ], [
+            'quantum' => 'int',
+        ]));
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, E_DEPRECATED);
+
+        try {
+            self::assertInstanceOf(NullTask::class, $roundRobinTransport->get('foo'));
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+    }
 }

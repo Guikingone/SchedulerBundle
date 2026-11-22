@@ -144,4 +144,33 @@ final class FailOverConfigurationTest extends TestCase
         self::assertArrayHasKey('foo', $failOverConfiguration->toArray());
         self::assertSame('bar', $failOverConfiguration->toArray()['foo']);
     }
+
+    public function testTransportCanSetValueWithAFailingConfigurationWithoutDeprecations(): void
+    {
+        $failingConfiguration = $this->createMock(ConfigurationInterface::class);
+        $failingConfiguration->expects(self::once())->method('set')
+            ->with(self::equalTo('foo'), self::equalTo('bar'))
+            ->willThrowException(new InvalidArgumentException('An error occurred'))
+        ;
+
+        $failOverConfiguration = new FailOverConfiguration(new ConfigurationRegistry([
+            $failingConfiguration,
+            new InMemoryConfiguration(),
+        ]));
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, E_DEPRECATED);
+
+        try {
+            $failOverConfiguration->set('foo', 'bar');
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+    }
 }
