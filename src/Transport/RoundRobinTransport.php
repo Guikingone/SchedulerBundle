@@ -52,7 +52,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
                     return $func($transport);
                 } catch (Throwable) {
-                    $this->sleepingTransports->attach($transport);
+                    $this->sleepingTransports->offsetSet($transport);
 
                     continue;
                 } finally {
@@ -70,7 +70,7 @@ final class RoundRobinTransport extends AbstractCompoundTransport
 
         $duration = $event->getDuration() / 1000;
         if ($duration > ($this->registry->count() * $this->configuration->get('quantum'))) {
-            $this->sleepingTransports->attach($transport);
+            $this->sleepingTransports->offsetSet($transport);
         }
     }
 }

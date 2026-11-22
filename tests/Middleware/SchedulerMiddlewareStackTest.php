@@ -269,4 +269,35 @@ final class SchedulerMiddlewareStackTest extends TestCase
 
         self::assertSame('Description', $task->getDescription());
     }
+
+    /**
+     * @throws Throwable {@see SchedulerMiddlewareStack::runPreSchedulingMiddleware()}
+     */
+    public function testStackCanRunPreMiddlewareListWithoutDeprecations(): void
+    {
+        $scheduler = $this->createMock(SchedulerInterface::class);
+        $task = $this->createMock(TaskInterface::class);
+
+        $middleware = $this->createMock(PreSchedulingMiddlewareInterface::class);
+        $middleware->expects(self::once())->method('preScheduling')->with(self::equalTo($task));
+
+        $schedulerMiddlewareStack = new SchedulerMiddlewareStack(new MiddlewareRegistry([
+            $middleware,
+        ]));
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, E_DEPRECATED);
+
+        try {
+            $schedulerMiddlewareStack->runPreSchedulingMiddleware($task, $scheduler);
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+    }
 }

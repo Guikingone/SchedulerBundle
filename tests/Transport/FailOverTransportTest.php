@@ -636,4 +636,38 @@ final class FailOverTransportTest extends TestCase
 
         $failOverTransport->clear();
     }
+
+    public function testTransportCanRetrieveTaskWithoutDeprecations(): void
+    {
+        $firstTransport = $this->createMock(TransportInterface::class);
+        $firstTransport->expects(self::once())->method('get')
+            ->with(self::equalTo('foo'), self::equalTo(false))
+            ->willThrowException(new RuntimeException('Task not found'))
+        ;
+
+        $secondTransport = new InMemoryTransport(new InMemoryConfiguration(), new SchedulePolicyOrchestrator([
+            new FirstInFirstOutPolicy(),
+        ]));
+        $secondTransport->create(new NullTask('foo'));
+
+        $failOverTransport = new FailOverTransport(new TransportRegistry([
+            $firstTransport,
+            $secondTransport,
+        ]), new InMemoryConfiguration());
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, E_DEPRECATED);
+
+        try {
+            self::assertInstanceOf(NullTask::class, $failOverTransport->get('foo'));
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+    }
 }

@@ -46,7 +46,7 @@ final class FailOverTransport extends AbstractCompoundTransport
             try {
                 return $func($transport);
             } catch (Throwable) {
-                $this->failedTransports->attach($transport);
+                $this->failedTransports->offsetSet($transport);
 
                 continue;
             }
